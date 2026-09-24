@@ -970,9 +970,20 @@
     if (svgSlot.dataset.src === icon && svgSlot.firstChild) {
       return;
     }
+    let iconUrl;
+    try {
+      iconUrl = new URL(icon, "chrome://browser/content/browser.xhtml");
+    } catch (err) {
+      mark?.remove();
+      return;
+    }
+    if (!["chrome:", "resource:", "moz-extension:", "data:", "https:"].includes(iconUrl.protocol)) {
+      mark?.remove();
+      return;
+    }
     svgSlot.dataset.src = icon;
     svgSlot.replaceChildren();
-    fetch(icon)
+    fetch(iconUrl.href)
       .then((response) => response.text())
       .then((source) => {
         if (svgSlot.dataset.src !== icon) {
