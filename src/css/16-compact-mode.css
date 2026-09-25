@@ -27,6 +27,20 @@
   transition: none !important;
 }
 
+/* Windows: the window buttons live in that top bar and stay put while the
+   sidebar is out; everything else in it hides as above. */
+@media (-moz-platform: windows) {
+  :root[zen-compact-mode="true"][zia-panel-open="true"] #zen-appcontent-navbar-container {
+    opacity: 1 !important;
+    visibility: hidden !important;
+
+    & .titlebar-buttonbox-container {
+      visibility: visible !important;
+      pointer-events: auto !important;
+    }
+  }
+}
+
 #urlbar {
   transition: opacity 0.12s ease;
 }
