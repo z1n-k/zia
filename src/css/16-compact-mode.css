@@ -38,11 +38,6 @@
 :root[zen-compact-mode="true"] #titlebar > #zen-sidebar-top-buttons {
   margin-block-start: calc(var(--zia-top-row-space) - 8px) !important;
 }
-@media (-moz-platform: windows) {
-  :root[zen-compact-mode="true"] #zen-sidebar-top-buttons .titlebar-buttonbox-container {
-    display: none !important;
-  }
-}
 
 :root[zen-compact-mode="true"]:not([zen-single-toolbar="true"]) #navigator-toolbox:not([animate="true"]) {
   margin-top: 0 !important;

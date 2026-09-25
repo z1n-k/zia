@@ -1620,6 +1620,15 @@ zen-essentials-promo {
   color: inherit;
 }
 
+/* Windows' font sits its text lower in the line than macOS's, which left
+   the space's icon riding high beside the name; it's brought level. */
+@media (-moz-platform: windows) {
+  #zia-space-label:is([zia-has-icon])::before,
+  #zia-space-label > .zia-space-svg {
+    translate: 0 2px;
+  }
+}
+
 zen-folder > .tab-group-label-container > .zia-folder-close {
   display: none;
   list-style-image: url("chrome://browser/skin/zen-icons/close.svg");
@@ -3814,11 +3823,6 @@ tooltip[default="true"] {
 
 :root[zen-compact-mode="true"] #titlebar > #zen-sidebar-top-buttons {
   margin-block-start: calc(var(--zia-top-row-space) - 8px) !important;
-}
-@media (-moz-platform: windows) {
-  :root[zen-compact-mode="true"] #zen-sidebar-top-buttons .titlebar-buttonbox-container {
-    display: none !important;
-  }
 }
 
 :root[zen-compact-mode="true"]:not([zen-single-toolbar="true"]) #navigator-toolbox:not([animate="true"]) {

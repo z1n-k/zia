@@ -24,6 +24,11 @@ Every release of Zia, newest first. The format follows
 - Windows: the address bar's hover with no tab open is a light see-through
   wash instead of a solid grey block.
 
+- Windows: the minimise, maximise and close buttons show again with the
+  sidebar hidden (compact mode); Zia was hiding them.
+
+- Windows: the space's icon sits level with its name.
+
 ## [2.55.0] — 2026-09-25
 
 ### Changed

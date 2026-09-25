@@ -423,6 +423,15 @@
   color: inherit;
 }
 
+/* Windows' font sits its text lower in the line than macOS's, which left
+   the space's icon riding high beside the name; it's brought level. */
+@media (-moz-platform: windows) {
+  #zia-space-label:is([zia-has-icon])::before,
+  #zia-space-label > .zia-space-svg {
+    translate: 0 2px;
+  }
+}
+
 zen-folder > .tab-group-label-container > .zia-folder-close {
   display: none;
   list-style-image: url("chrome://browser/skin/zen-icons/close.svg");
