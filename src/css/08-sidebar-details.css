@@ -15,11 +15,11 @@
   opacity: 1 !important;
 }
 
-:root:not(#zia-none) zen-folder[zia-folder-color] > .tab-group-label-container > label {
+:root:not(#zia-none) :is(zen-folder[zia-folder-color], tab-group:not([split-view-group])) > .tab-group-label-container > label {
   color: color-mix(in srgb, var(--zia-folder-swatch, white) var(--zia-folder-name-tint), white) !important;
 }
 
-:root:not(#zia-none) zen-folder[zia-folder-color]:hover > .tab-group-label-container > label {
+:root:not(#zia-none) :is(zen-folder[zia-folder-color], tab-group:not([split-view-group])):hover > .tab-group-label-container > label {
   color: color-mix(in srgb, var(--zia-folder-swatch, white) var(--zia-folder-name-tint-hover), white) !important;
 }
 

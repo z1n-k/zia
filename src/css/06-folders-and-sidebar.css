@@ -379,6 +379,27 @@
   }
 }
 
+/* Advanced Tab Groups: a group wears its own colour; gradients arrive via --zia-group-swatch (zia.uc.js) */
+:root[zen-sidebar-expanded="true"] tab-group:not([split-view-group]) {
+  --zia-folder-swatch: var(--zia-group-swatch, var(--tab-group-background-color, var(--tab-group-color, var(--zia-fc-white))));
+
+  &::after {
+    opacity: 1;
+  }
+
+  &::before {
+    background-color: color-mix(in srgb, var(--zia-folder-swatch) var(--zia-folder-wash), transparent);
+  }
+
+  &:hover::before {
+    background-color: color-mix(in srgb, var(--zia-folder-swatch) var(--zia-folder-tint), transparent);
+  }
+
+  &[zia-drop-slot]::before {
+    background-color: color-mix(in srgb, var(--zia-folder-swatch) var(--zia-folder-wash), transparent) !important;
+  }
+}
+
 #zia-space-label {
   display: flex;
   align-items: center;
