@@ -640,11 +640,13 @@
   --toolbox-textcolor: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
   --toolbar-color: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
   --toolbar-field-color: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
-  --toolbarbutton-icon-fill: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
+  /* The buttons are white on every dark site, as in Dia, so a dimmed one
+     (back with nowhere to go) still reads; the address keeps the softer ink. */
+  --toolbarbutton-icon-fill: rgb(251, 251, 254) !important;
 
   & toolbarbutton:not(.webextension-browser-action, [id$="-browser-action"], [id$="-BAP"]) {
-    color: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
-    fill: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
+    color: rgb(251, 251, 254) !important;
+    fill: rgb(251, 251, 254) !important;
   }
 }
 
