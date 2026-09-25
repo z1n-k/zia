@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.56.2] — 2026-09-25
+
+### Fixed
+
+- The open tab in a collapsed folder has its whole glow again; it was cut
+  off by the folder's edge.
+
+- The address bar's copy link (paperclip) button follows the toolbar's
+  colour like the icons beside it; it stayed white on light sites.
+
 ## [2.56.1] — 2026-09-25
 
 ### Fixed

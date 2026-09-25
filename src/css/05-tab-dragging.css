@@ -36,8 +36,18 @@
   }
 }
 
+/* A collapsed folder showing its open tab clips its other tabs away (the
+   ones above are pushed up out of it). The open tab's glow reaches further
+   than that clip allowed, so the clip gives it the glow's full reach all
+   round, and the hidden tabs are see-through so none peeks into it. */
 zen-folder[collapsed][has-active] > .tab-group-container {
-  overflow-clip-margin: 12px;
+  --zia-glow-room: calc(-1 * (var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)));
+  overflow: visible !important;
+  clip-path: inset(var(--zia-glow-room));
+}
+
+zen-folder[collapsed][has-active] .tabbrowser-tab:not([selected], [visuallyselected], [folder-active="true"], [atg-folder-active], tab-group[split-view-group] > .tabbrowser-tab) {
+  opacity: 0 !important;
 }
 
 /* That margin lets the active tab's glow show, but it also left the
