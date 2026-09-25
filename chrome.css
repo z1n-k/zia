@@ -2127,6 +2127,81 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
   }
 }
 
+/* ...but on an essential, a small card fanned out from behind the
+   essential's icon, which steps aside for it. It springs out of the icon;
+   closing, a stand-in (.zia-glance-ghost, zia.uc.js) is sucked back in. */
+.tabbrowser-tab[zen-essential] > .tab-stack > .tab-content > :is(.tabbrowser-tab[zen-glance-tab], .zia-glance-ghost):not(#zia-none) {
+  position: absolute !important;
+  top: 6px !important;
+  bottom: 6px !important;
+  right: 5px !important;
+  left: auto !important;
+  width: 26px !important;
+  min-width: 26px !important;
+  max-width: 26px !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 1;
+  pointer-events: none;
+  rotate: 6deg;
+  transform-origin: 50% 50%;
+}
+
+.tabbrowser-tab[zen-essential] > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]:not(#zia-none) {
+  animation: zia-glance-out 0.4s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+
+  & > .tab-stack > .tab-background,
+  & > .tab-stack > .tab-background::before {
+    border: none !important;
+    border-radius: 9px !important;
+    corner-shape: round !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  & .tab-icon-image {
+    width: 13px !important;
+    height: 13px !important;
+  }
+}
+
+.zia-glance-ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
+
+  & > .zia-glance-ghost-icon {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+.tabbrowser-tab[zen-essential] > .tab-stack > .tab-content > .tab-icon-stack {
+  transition: translate 0.3s cubic-bezier(0.3, 1.4, 0.5, 1) 0.1s;
+}
+
+.tabbrowser-tab[zen-essential]:has(> .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]) > .tab-stack > .tab-content > .tab-icon-stack {
+  translate: -8px 0;
+  transition: translate 0.4s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+@keyframes zia-glance-out {
+  from { translate: -26px 0; scale: 0.12; rotate: 0deg; opacity: 0; }
+  20% { opacity: 1; }
+  to { translate: 0 0; scale: 1; rotate: 6deg; opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabbrowser-tab[zen-essential] > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab] {
+    animation: none !important;
+  }
+}
+
 :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) > .tab-group-container > .tabbrowser-tab {
   margin-inline-end: 0 !important;
 }

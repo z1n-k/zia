@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- A page glanced at from an essential shows as a small card fanned out from
+  behind the essential's icon, springing out of it as the glance opens and
+  sucked back in as it closes, instead of a tile hanging off the corner.
+
 ## [2.56.2] — 2026-09-25
 
 ### Fixed

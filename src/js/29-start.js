@@ -383,6 +383,7 @@
     safely("matchTabCorners", matchTabCorners);
     safely("addCopyLinkButton", addCopyLinkButton);
     safely("addToastCloseButtons", addToastCloseButtons);
+    safely("suckInEssentialGlances", suckInEssentialGlances);
     safely("animateNavButtons", animateNavButtons);
     safely("springReloadHover", springReloadHover);
     safely("watchEdgeGlow", watchEdgeGlow);
