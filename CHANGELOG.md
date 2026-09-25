@@ -16,6 +16,9 @@ Every release of Zia, newest first. The format follows
   end of the address is much less faint; on bright colours white can't be
   read on (a vivid green, say), the text turns dark.
 
+- Tab groups from Advanced Tab Groups wear their own colour, like Zia's
+  folders (gradient colours use their first colour).
+
 ### Fixed
 
 - Windows: folder colours are less vivid, at rest and on hover, closer to
@@ -38,6 +41,9 @@ Every release of Zia, newest first. The format follows
   sidebar hidden (compact mode); Zia was hiding them.
 
 - Windows: the space's icon sits level with its name.
+
+- Split view no longer puts a solid grey tray behind pages when
+  transparent pages are switched on (Transparent Zen and similar).
 
 ## [2.55.0] — 2026-09-25
 
