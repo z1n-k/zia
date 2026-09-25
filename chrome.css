@@ -1053,8 +1053,15 @@
   }
 }
 
+/* A collapsed folder showing its open tab clips its other tabs away (the
+   ones above are pushed up out of it). The open tab's glow reaches further
+   than a plain clip margin would allow, so the clip gives it the glow's
+   full reach at the sides and below, but only a little above, where the
+   hidden tabs are. */
 zen-folder[collapsed][has-active] > .tab-group-container {
-  overflow-clip-margin: 12px;
+  --zia-glow-room: calc(-1 * (var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)));
+  overflow: visible !important;
+  clip-path: inset(-12px var(--zia-glow-room) var(--zia-glow-room) var(--zia-glow-room));
 }
 
 /* That margin lets the active tab's glow show, but it also left the
