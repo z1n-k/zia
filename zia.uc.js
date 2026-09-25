@@ -5385,6 +5385,11 @@
       if (topButtons.parentElement !== titlebar) {
         titlebar.prepend(topButtons);
       }
+      // Windows' minimise, maximise and close stay top right, where Zen puts
+      // them; only macOS's traffic lights join the sidebar's top row.
+      if (window.gZenVerticalTabsManager?.isWindowsStyledButtons) {
+        return;
+      }
       const buttons = windowButtons();
       if (buttons && buttons.parentElement !== topButtons) {
         topButtons.prepend(buttons);
