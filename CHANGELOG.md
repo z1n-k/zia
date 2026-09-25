@@ -15,6 +15,15 @@ Every release of Zia, newest first. The format follows
   its hidden tabs: the space just below the open tab brought up the
   folder's last tab's card, and clicking there opened it.
 
+- Windows: tabs have the same rounded corners hovered as selected.
+
+- Windows: the page's corners match Windows 11's own window corners.
+
+- Windows: the download button's hover square is an even square.
+
+- Windows: the address bar's hover with no tab open is a light see-through
+  wash instead of a solid grey block.
+
 ## [2.55.0] — 2026-09-25
 
 ### Changed

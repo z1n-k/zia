@@ -27,6 +27,15 @@
   outline: none !important;
 }
 
+/* Windows, with no tab open: the address bar's hover showed as a flat,
+   solid grey block; it's the same light see-through wash as elsewhere. */
+@media (-moz-platform: windows) {
+  :root[zen-has-empty-tab="true"] #urlbar:is(:hover, [focused]):not([breakout-extend]) > .urlbar-background {
+    background: rgba(255, 255, 255, 0.09) !important;
+    background-color: rgba(255, 255, 255, 0.09) !important;
+  }
+}
+
 #urlbar[breakout-extend]:not([zia-classic]):not([zen-floating-urlbar="true"]) {
   border-radius: 16.5px !important;
   translate: var(--zia-urlbar-open-offset-x, 0px) var(--zia-urlbar-open-offset) !important;
