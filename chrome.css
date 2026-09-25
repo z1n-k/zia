@@ -2152,7 +2152,10 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
 }
 
 .tabbrowser-tab[zen-essential] > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]:not(#zia-none) {
-  animation: zia-glance-out 0.4s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+  /* hidden until zia.uc.js springs it out */
+  &:not([zia-glance-shown]) {
+    opacity: 0 !important;
+  }
 
   & > .tab-stack > .tab-background,
   & > .tab-stack > .tab-background::before {
@@ -2205,18 +2208,6 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
 .tabbrowser-tab[zen-essential]:has(> .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]) > .tab-stack > .tab-content > .tab-icon-stack {
   translate: -8px 0;
   transition: translate 0.4s cubic-bezier(0.3, 1.4, 0.5, 1);
-}
-
-@keyframes zia-glance-out {
-  from { translate: -26px 0; scale: 0.12; rotate: 0deg; opacity: 0; }
-  20% { opacity: 1; }
-  to { translate: 0 0; scale: 1; rotate: 6deg; opacity: 1; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tabbrowser-tab[zen-essential] > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab] {
-    animation: none !important;
-  }
 }
 
 :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) > .tab-group-container > .tabbrowser-tab {

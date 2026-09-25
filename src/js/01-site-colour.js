@@ -520,6 +520,8 @@
 
     setTimeout(() => updateColor(false, isLoading(browser)), 1200);
     setTimeout(() => updateColor(false, isLoading(browser)), 2800);
+    // pages that recolour their header once their scripts run (GitHub)
+    setTimeout(() => updateColor(false, isLoading(browser)), 5000);
   };
 
   window.ziaOnPageScroll = (browser, position) => {

@@ -12,6 +12,12 @@ Every release of Zia, newest first. The format follows
   mid grey, so back and forward are easy to see even when there's nowhere
   to go.
 
+- The glance card on an essential springs out once, instead of playing
+  its animation twice as the glance opens.
+
+- The toolbar catches up with pages that recolour their header a few
+  seconds after loading (GitHub's goes from grey to black).
+
 ## [2.57.0] — 2026-09-25
 
 ### Changed
