@@ -110,6 +110,23 @@
   --zia-color-fade: 0.15s;
 }
 
+/* Windows draws the sidebar over a flatter, darker backdrop than macOS's
+   translucent one, so the same folder colours read far more vivid there;
+   they get a lighter wash and hover tint. */
+@media (-moz-platform: windows) {
+  :root {
+    --zia-folder-wash: 20%;
+    --zia-folder-tint: 34%;
+  }
+}
+
+/* Transparent pages show the window through, so split view mustn't lay an opaque tray under them */
+@media -moz-pref("browser.tabs.allow_transparent_browser") {
+  :root {
+    --zia-split-backdrop: transparent;
+  }
+}
+
 @media -moz-pref("zia.loading-bar.accent-color") {
   :root {
     --zia-loading-color: var(--zen-primary-color);
@@ -215,6 +232,15 @@
   background: var(--zia-urlbar-hover-bg) !important;
   box-shadow: none !important;
   outline: none !important;
+}
+
+/* Windows, with no tab open: the address bar's hover showed as a flat,
+   solid grey block; it's the same light see-through wash as elsewhere. */
+@media (-moz-platform: windows) {
+  :root[zen-has-empty-tab="true"] #urlbar:is(:hover, [focused]):not([breakout-extend]) > .urlbar-background {
+    background: rgba(255, 255, 255, 0.09) !important;
+    background-color: rgba(255, 255, 255, 0.09) !important;
+  }
 }
 
 #urlbar[breakout-extend]:not([zia-classic]):not([zen-floating-urlbar="true"]) {
@@ -620,6 +646,31 @@
   opacity: 0.36;
 }
 
+/* Strong mid colours (a bright red): the toolbar's text and buttons are
+   full white, and the dimmed end of the address a lot less dim. */
+:root[zia-site-mid="true"] #zen-appcontent-navbar-wrapper {
+  color: rgb(255, 255, 255) !important;
+  --toolbox-textcolor: rgb(255, 255, 255) !important;
+  --toolbar-color: rgb(255, 255, 255) !important;
+  --toolbar-field-color: rgb(255, 255, 255) !important;
+  --toolbarbutton-icon-fill: rgb(255, 255, 255) !important;
+  --zen-toolbar-element-bg-hover: rgba(0, 0, 0, 0.14) !important;
+
+  & toolbarbutton:not(.webextension-browser-action, [id$="-browser-action"], [id$="-BAP"]) {
+    color: rgb(255, 255, 255) !important;
+    fill: rgb(255, 255, 255) !important;
+    fill-opacity: 1 !important;
+  }
+
+  & #PersonalToolbar :is(.toolbarbutton-text, .toolbarbutton-icon) {
+    opacity: 1 !important;
+  }
+}
+
+:root[zia-site-mid="true"] :is(#zia-url-title, #zia-url-plain) .zia-url-title-rest {
+  opacity: 0.78;
+}
+
 :root[zia-site-light="true"] #zen-appcontent-navbar-wrapper {
   color-scheme: light !important;
   color: rgb(28, 28, 30) !important;
@@ -843,6 +894,22 @@
   }
 }
 
+/* Windows: the page's corners follow Windows 11's own window corners
+   (8px) rather than Zia's rounder macOS ones. Zen's own radius there is
+   stretched for its squarer corner shape, which Zia's round corners don't
+   use, so it's scaled back the same way Zen does. */
+@media (-moz-platform: windows) {
+  :root:not(#zia-none) {
+    --zia-card-radius: calc(var(--zen-native-inner-radius, 10.5px) / var(--zen-squircle-value, 1));
+  }
+}
+
+@media (-moz-platform: windows) and -moz-pref("zia.page.rounding") {
+  :root:not(#zia-none) {
+    --zia-card-radius: 8px;
+  }
+}
+
 /* The last essential stretches across whatever's left of its row */
 @media -moz-pref("zia.essentials.fill-row") {
   :root[zen-sidebar-expanded="true"] .zen-essentials-container > .tabbrowser-tab[zen-essential][zia-fill-row] {
@@ -988,6 +1055,14 @@
 
 zen-folder[collapsed][has-active] > .tab-group-container {
   overflow-clip-margin: 12px;
+}
+
+/* That margin lets the active tab's glow show, but it also left the
+   folder's hidden tabs reachable just below it: hovering there brought up
+   the last tab's card and a click opened it. Only the tabs a collapsed
+   folder shows can be pointed at. */
+zen-folder[collapsed] .tabbrowser-tab:not([selected], [visuallyselected], [folder-active="true"], [atg-folder-active]) {
+  pointer-events: none;
 }
 
 :root[zia-dragging-tab] .tabbrowser-tab[zen-essential] {
@@ -1328,6 +1403,15 @@ zen-essentials-promo {
   overflow: hidden !important;
 }
 
+/* Windows: Zen squares its corners off more there than on macOS, which the
+   selected tab (always round, for its shine) didn't follow, so hovered and
+   selected tabs had different corners. Every tab is round there. */
+@media (-moz-platform: windows) {
+  :root {
+    --zia-tab-corner: round !important;
+  }
+}
+
 :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group]))[zia-bg-shift] {
   overflow: visible !important;
 
@@ -1524,6 +1608,27 @@ zen-essentials-promo {
   }
 }
 
+/* Advanced Tab Groups: a group wears its own colour; gradients arrive via --zia-group-swatch (zia.uc.js) */
+:root[zen-sidebar-expanded="true"] tab-group:not([split-view-group]) {
+  --zia-folder-swatch: var(--zia-group-swatch, var(--tab-group-background-color, var(--tab-group-color, var(--zia-fc-white))));
+
+  &::after {
+    opacity: 1;
+  }
+
+  &::before {
+    background-color: color-mix(in srgb, var(--zia-folder-swatch) var(--zia-folder-wash), transparent);
+  }
+
+  &:hover::before {
+    background-color: color-mix(in srgb, var(--zia-folder-swatch) var(--zia-folder-tint), transparent);
+  }
+
+  &[zia-drop-slot]::before {
+    background-color: color-mix(in srgb, var(--zia-folder-swatch) var(--zia-folder-wash), transparent) !important;
+  }
+}
+
 #zia-space-label {
   display: flex;
   align-items: center;
@@ -1566,6 +1671,15 @@ zen-essentials-promo {
   width: 16px;
   height: 16px;
   color: inherit;
+}
+
+/* Windows' font sits its text lower in the line than macOS's, which left
+   the space's icon riding high beside the name; it's brought level. */
+@media (-moz-platform: windows) {
+  #zia-space-label:is([zia-has-icon])::before,
+  #zia-space-label > .zia-space-svg {
+    translate: 0 2px;
+  }
 }
 
 zen-folder > .tab-group-label-container > .zia-folder-close {
@@ -2035,11 +2149,11 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
   opacity: 1 !important;
 }
 
-:root:not(#zia-none) zen-folder[zia-folder-color] > .tab-group-label-container > label {
+:root:not(#zia-none) :is(zen-folder[zia-folder-color], tab-group:not([split-view-group])) > .tab-group-label-container > label {
   color: color-mix(in srgb, var(--zia-folder-swatch, white) var(--zia-folder-name-tint), white) !important;
 }
 
-:root:not(#zia-none) zen-folder[zia-folder-color]:hover > .tab-group-label-container > label {
+:root:not(#zia-none) :is(zen-folder[zia-folder-color], tab-group:not([split-view-group])):hover > .tab-group-label-container > label {
   color: color-mix(in srgb, var(--zia-folder-swatch, white) var(--zia-folder-name-tint-hover), white) !important;
 }
 
@@ -3465,6 +3579,23 @@ findbar {
   }
 }
 
+/* Windows gives toolbar buttons more padding, which stretched the hover
+   square into an uneven tall shape; it's held to an even square there. */
+@media (-moz-platform: windows) {
+  #downloads-button {
+    width: var(--zia-space-pill-height) !important;
+    min-width: var(--zia-space-pill-height) !important;
+    max-width: var(--zia-space-pill-height) !important;
+    padding: 0 !important;
+    corner-shape: round !important;
+
+    & > :is(.toolbarbutton-badge-stack, #downloads-indicator-anchor, .toolbarbutton-icon) {
+      padding: 0 !important;
+      margin: auto !important;
+    }
+  }
+}
+
 #downloads-indicator-icon {
   width: 18px !important;
   height: 18px !important;
@@ -3745,11 +3876,6 @@ tooltip[default="true"] {
 
 :root[zen-compact-mode="true"] #titlebar > #zen-sidebar-top-buttons {
   margin-block-start: calc(var(--zia-top-row-space) - 8px) !important;
-}
-@media (-moz-platform: windows) {
-  :root[zen-compact-mode="true"] #zen-sidebar-top-buttons .titlebar-buttonbox-container {
-    display: none !important;
-  }
 }
 
 :root[zen-compact-mode="true"]:not([zen-single-toolbar="true"]) #navigator-toolbox:not([animate="true"]) {
@@ -4110,7 +4236,7 @@ zen-folder .tab-reset-button {
 }
 
 :is(#back-button, #forward-button, #stop-button)[disabled] {
-  --zia-nav-rest: 0.4;
+  --zia-nav-rest: 0.6;
 }
 
 :is(#back-button, #forward-button, #stop-button)::before {

@@ -61,6 +61,23 @@
   }
 }
 
+/* Windows gives toolbar buttons more padding, which stretched the hover
+   square into an uneven tall shape; it's held to an even square there. */
+@media (-moz-platform: windows) {
+  #downloads-button {
+    width: var(--zia-space-pill-height) !important;
+    min-width: var(--zia-space-pill-height) !important;
+    max-width: var(--zia-space-pill-height) !important;
+    padding: 0 !important;
+    corner-shape: round !important;
+
+    & > :is(.toolbarbutton-badge-stack, #downloads-indicator-anchor, .toolbarbutton-icon) {
+      padding: 0 !important;
+      margin: auto !important;
+    }
+  }
+}
+
 #downloads-indicator-icon {
   width: 18px !important;
   height: 18px !important;

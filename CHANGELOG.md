@@ -4,6 +4,47 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.56.0] — 2026-09-25
+
+### Changed
+
+- Back and forward are easier to see when there's nowhere to go: their
+  dimmed look is lighter, closer to Dia's.
+
+- The toolbar stays readable on strong site colours. On a vivid mid colour
+  like a bright red, its text, buttons and bookmarks are full white and the
+  end of the address is much less faint; on bright colours white can't be
+  read on (a vivid green, say), the text turns dark.
+
+- Tab groups from Advanced Tab Groups wear their own colour, like Zia's
+  folders (gradient colours use their first colour).
+
+### Fixed
+
+- Windows: folder colours are less vivid, at rest and on hover, closer to
+  how they look on macOS. macOS is unchanged.
+
+- A collapsed folder with an open tab showing no longer lets you point at
+  its hidden tabs: the space just below the open tab brought up the
+  folder's last tab's card, and clicking there opened it.
+
+- Windows: tabs have the same rounded corners hovered as selected.
+
+- Windows: the page's corners match Windows 11's own window corners.
+
+- Windows: the download button's hover square is an even square.
+
+- Windows: the address bar's hover with no tab open is a light see-through
+  wash instead of a solid grey block.
+
+- Windows: the minimise, maximise and close buttons show again with the
+  sidebar hidden (compact mode); Zia was hiding them.
+
+- Windows: the space's icon sits level with its name.
+
+- Split view no longer puts a solid grey tray behind pages when
+  transparent pages are switched on (Transparent Zen and similar).
+
 ## [2.55.0] — 2026-09-25
 
 ### Changed

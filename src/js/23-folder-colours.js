@@ -176,6 +176,41 @@
     });
   }
 
+  const GROUP_COLOR_TOKEN = /(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([^()]*\)|#[0-9a-f]{3,8}\b/i;
+
+  // Advanced Tab Groups' picker colours are gradients, which color-mix can't take: the group gets the first stop
+  function paintGroupSwatch(group) {
+    if (group?.localName !== "tab-group" || group.hasAttribute("split-view-group")) {
+      return;
+    }
+    const color = getComputedStyle(group).getPropertyValue("--tab-group-color").trim();
+    const stop = color.includes("gradient") ? color.match(GROUP_COLOR_TOKEN)?.[0] : null;
+    const swatch = stop ? `rgb(from ${stop} r g b)` : "";
+    if (group.style.getPropertyValue("--zia-group-swatch") === swatch) {
+      return;
+    }
+    if (swatch) {
+      group.style.setProperty("--zia-group-swatch", swatch);
+    } else {
+      group.style.removeProperty("--zia-group-swatch");
+    }
+  }
+
+  function watchGroupColors() {
+    const paintAll = () => document.querySelectorAll("tab-group:not([split-view-group])").forEach(paintGroupSwatch);
+    for (const type of ["TabGroupCreate", "TabGroupUpdate"]) {
+      gBrowser.tabContainer.addEventListener(type, (event) => paintGroupSwatch(event.target));
+    }
+    // Advanced Tab Groups recolours by writing --tab-group-color inline, without an event
+    new MutationObserver((records) => {
+      for (const record of records) {
+        paintGroupSwatch(record.target);
+      }
+    }).observe(gBrowser.tabContainer, { subtree: true, attributes: true, attributeFilter: ["style"] });
+    paintAll();
+    setTimeout(paintAll, 1500);
+  }
+
   function addFolderCloseButton(folder) {
     if (!folder?.isZenFolder) {
       return;

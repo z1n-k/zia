@@ -262,6 +262,7 @@
     safely("watchNewFolders", watchNewFolders);
     safely("watchFolderColors", watchFolderColors);
     safely("addFolderColorPicker", addFolderColorPicker);
+    safely("watchGroupColors", watchGroupColors);
     safely("watchFolderCloseButtons", watchFolderCloseButtons);
     safely("watchEmptyFolders", watchEmptyFolders);
     safely("watchEssentialRows", watchEssentialRows);

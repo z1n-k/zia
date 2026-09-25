@@ -27,6 +27,15 @@
   outline: none !important;
 }
 
+/* Windows, with no tab open: the address bar's hover showed as a flat,
+   solid grey block; it's the same light see-through wash as elsewhere. */
+@media (-moz-platform: windows) {
+  :root[zen-has-empty-tab="true"] #urlbar:is(:hover, [focused]):not([breakout-extend]) > .urlbar-background {
+    background: rgba(255, 255, 255, 0.09) !important;
+    background-color: rgba(255, 255, 255, 0.09) !important;
+  }
+}
+
 #urlbar[breakout-extend]:not([zia-classic]):not([zen-floating-urlbar="true"]) {
   border-radius: 16.5px !important;
   translate: var(--zia-urlbar-open-offset-x, 0px) var(--zia-urlbar-open-offset) !important;
@@ -428,6 +437,31 @@
 
 :root[zia-site-dark="true"] :is(#zia-url-title, #zia-url-plain) .zia-url-title-rest {
   opacity: 0.36;
+}
+
+/* Strong mid colours (a bright red): the toolbar's text and buttons are
+   full white, and the dimmed end of the address a lot less dim. */
+:root[zia-site-mid="true"] #zen-appcontent-navbar-wrapper {
+  color: rgb(255, 255, 255) !important;
+  --toolbox-textcolor: rgb(255, 255, 255) !important;
+  --toolbar-color: rgb(255, 255, 255) !important;
+  --toolbar-field-color: rgb(255, 255, 255) !important;
+  --toolbarbutton-icon-fill: rgb(255, 255, 255) !important;
+  --zen-toolbar-element-bg-hover: rgba(0, 0, 0, 0.14) !important;
+
+  & toolbarbutton:not(.webextension-browser-action, [id$="-browser-action"], [id$="-BAP"]) {
+    color: rgb(255, 255, 255) !important;
+    fill: rgb(255, 255, 255) !important;
+    fill-opacity: 1 !important;
+  }
+
+  & #PersonalToolbar :is(.toolbarbutton-text, .toolbarbutton-icon) {
+    opacity: 1 !important;
+  }
+}
+
+:root[zia-site-mid="true"] :is(#zia-url-title, #zia-url-plain) .zia-url-title-rest {
+  opacity: 0.78;
 }
 
 :root[zia-site-light="true"] #zen-appcontent-navbar-wrapper {

@@ -112,6 +112,22 @@
   }
 }
 
+/* Windows: the page's corners follow Windows 11's own window corners
+   (8px) rather than Zia's rounder macOS ones. Zen's own radius there is
+   stretched for its squarer corner shape, which Zia's round corners don't
+   use, so it's scaled back the same way Zen does. */
+@media (-moz-platform: windows) {
+  :root:not(#zia-none) {
+    --zia-card-radius: calc(var(--zen-native-inner-radius, 10.5px) / var(--zen-squircle-value, 1));
+  }
+}
+
+@media (-moz-platform: windows) and -moz-pref("zia.page.rounding") {
+  :root:not(#zia-none) {
+    --zia-card-radius: 8px;
+  }
+}
+
 /* The last essential stretches across whatever's left of its row */
 @media -moz-pref("zia.essentials.fill-row") {
   :root[zen-sidebar-expanded="true"] .zen-essentials-container > .tabbrowser-tab[zen-essential][zia-fill-row] {
