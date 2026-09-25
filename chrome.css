@@ -120,6 +120,13 @@
   }
 }
 
+/* Transparent pages show the window through, so split view mustn't lay an opaque tray under them */
+@media -moz-pref("browser.tabs.allow_transparent_browser") {
+  :root {
+    --zia-split-backdrop: transparent;
+  }
+}
+
 @media -moz-pref("zia.loading-bar.accent-color") {
   :root {
     --zia-loading-color: var(--zen-primary-color);
