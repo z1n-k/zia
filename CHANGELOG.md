@@ -4,6 +4,20 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.57.1] — 2026-09-26
+
+### Fixed
+
+- On dark sites the toolbar's buttons are white, as in Dia, instead of a
+  mid grey, so back and forward are easy to see even when there's nowhere
+  to go.
+
+- The glance card on an essential springs out once, instead of playing
+  its animation twice as the glance opens.
+
+- The toolbar catches up with pages that recolour their header a few
+  seconds after loading (GitHub's goes from grey to black).
+
 ## [2.57.0] — 2026-09-25
 
 ### Changed

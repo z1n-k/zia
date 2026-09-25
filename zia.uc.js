@@ -558,6 +558,8 @@
 
     setTimeout(() => updateColor(false, isLoading(browser)), 1200);
     setTimeout(() => updateColor(false, isLoading(browser)), 2800);
+    // pages that recolour their header once their scripts run (GitHub)
+    setTimeout(() => updateColor(false, isLoading(browser)), 5000);
   };
 
   window.ziaOnPageScroll = (browser, position) => {
@@ -9542,6 +9544,41 @@
   // icon.
   function suckInEssentialGlances() {
     const SUCK_MS = 220;
+    const OUT_MS = 400;
+    const sprung = new WeakSet();
+
+    // Out: once per glance. Zen restyles the tab more than once as it opens
+    // it, which would replay a CSS animation, so it's played from here.
+    const springOut = (tab) => {
+      if (sprung.has(tab) || !tab.hasAttribute("zen-glance-tab") ||
+          !tab.parentElement?.closest(".tabbrowser-tab[zen-essential]")) {
+        return;
+      }
+      sprung.add(tab);
+      tab.setAttribute("zia-glance-shown", "true");
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        return;
+      }
+      tab.animate(
+        [
+          { translate: "-26px 0", scale: 0.12, rotate: "0deg", opacity: 0 },
+          { opacity: 1, offset: 0.2 },
+          { translate: "0 0", scale: 1, rotate: "6deg", opacity: 1 },
+        ],
+        { duration: OUT_MS, easing: "cubic-bezier(0.3, 1.4, 0.5, 1)" }
+      );
+    };
+    new MutationObserver((records) => {
+      for (const record of records) {
+        springOut(record.target);
+      }
+    }).observe(gBrowser.tabContainer, { subtree: true, attributes: true, attributeFilter: ["zen-glance-tab"] });
+    // any glance already open when Zia starts just shows
+    for (const tab of gBrowser.tabContainer.querySelectorAll(".tabbrowser-tab[zen-glance-tab]")) {
+      sprung.add(tab);
+      tab.setAttribute("zia-glance-shown", "true");
+    }
+
     gBrowser.tabContainer.addEventListener("GlanceClose", (event) => {
       const glanceTab = event.target;
       const content = glanceTab?.parentElement;
