@@ -11,6 +11,10 @@ Every release of Zia, newest first. The format follows
 - Windows: folder colours are less vivid, at rest and on hover, closer to
   how they look on macOS. macOS is unchanged.
 
+- A collapsed folder with an open tab showing no longer lets you point at
+  its hidden tabs: the space just below the open tab brought up the
+  folder's last tab's card, and clicking there opened it.
+
 ## [2.55.0] — 2026-09-25
 
 ### Changed

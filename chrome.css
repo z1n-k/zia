@@ -1000,6 +1000,14 @@ zen-folder[collapsed][has-active] > .tab-group-container {
   overflow-clip-margin: 12px;
 }
 
+/* That margin lets the active tab's glow show, but it also left the
+   folder's hidden tabs reachable just below it: hovering there brought up
+   the last tab's card and a click opened it. Only the tabs a collapsed
+   folder shows can be pointed at. */
+zen-folder[collapsed] .tabbrowser-tab:not([selected], [visuallyselected], [folder-active="true"], [atg-folder-active]) {
+  pointer-events: none;
+}
+
 :root[zia-dragging-tab] .tabbrowser-tab[zen-essential] {
   visibility: inherit !important;
 }
