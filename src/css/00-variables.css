@@ -110,6 +110,16 @@
   --zia-color-fade: 0.15s;
 }
 
+/* Windows draws the sidebar over a flatter, darker backdrop than macOS's
+   translucent one, so the same folder colours read far more vivid there;
+   they get a lighter wash and hover tint. */
+@media (-moz-platform: windows) {
+  :root {
+    --zia-folder-wash: 20%;
+    --zia-folder-tint: 34%;
+  }
+}
+
 @media -moz-pref("zia.loading-bar.accent-color") {
   :root {
     --zia-loading-color: var(--zen-primary-color);
