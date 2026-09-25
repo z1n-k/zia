@@ -439,6 +439,31 @@
   opacity: 0.36;
 }
 
+/* Strong mid colours (a bright red): the toolbar's text and buttons are
+   full white, and the dimmed end of the address a lot less dim. */
+:root[zia-site-mid="true"] #zen-appcontent-navbar-wrapper {
+  color: rgb(255, 255, 255) !important;
+  --toolbox-textcolor: rgb(255, 255, 255) !important;
+  --toolbar-color: rgb(255, 255, 255) !important;
+  --toolbar-field-color: rgb(255, 255, 255) !important;
+  --toolbarbutton-icon-fill: rgb(255, 255, 255) !important;
+  --zen-toolbar-element-bg-hover: rgba(0, 0, 0, 0.14) !important;
+
+  & toolbarbutton:not(.webextension-browser-action, [id$="-browser-action"], [id$="-BAP"]) {
+    color: rgb(255, 255, 255) !important;
+    fill: rgb(255, 255, 255) !important;
+    fill-opacity: 1 !important;
+  }
+
+  & #PersonalToolbar :is(.toolbarbutton-text, .toolbarbutton-icon) {
+    opacity: 1 !important;
+  }
+}
+
+:root[zia-site-mid="true"] :is(#zia-url-title, #zia-url-plain) .zia-url-title-rest {
+  opacity: 0.78;
+}
+
 :root[zia-site-light="true"] #zen-appcontent-navbar-wrapper {
   color-scheme: light !important;
   color: rgb(28, 28, 30) !important;

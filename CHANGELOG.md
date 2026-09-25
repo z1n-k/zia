@@ -11,6 +11,11 @@ Every release of Zia, newest first. The format follows
 - Back and forward are easier to see when there's nowhere to go: their
   dimmed look is lighter, closer to Dia's.
 
+- The toolbar stays readable on strong site colours. On a vivid mid colour
+  like a bright red, its text, buttons and bookmarks are full white and the
+  end of the address is much less faint; on bright colours white can't be
+  read on (a vivid green, say), the text turns dark.
+
 ### Fixed
 
 - Windows: folder colours are less vivid, at rest and on hover, closer to

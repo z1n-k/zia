@@ -71,6 +71,7 @@
       root.style.removeProperty("--zia-site-bg");
       setFlag("zia-site-light", false);
       setFlag("zia-site-dark", true);
+      setFlag("zia-site-mid", false);
 
       const fallback = fallbackColor();
       updateDarkSiteInk(fallback, brightnessOf(fallback),  true);
@@ -78,8 +79,12 @@
     }
     root.style.setProperty("--zia-site-bg", cssColor(rgb));
     const brightness = brightnessOf(rgb);
-    setFlag("zia-site-light", brightness > LIGHT_THRESHOLD);
+    const light = wantsDarkInk(rgb);
+    setFlag("zia-site-light", light);
     setFlag("zia-site-dark", brightness < INK_MAX);
+    // Between the two (a strong red, say), white text stays but nothing on
+    // the toolbar is left faint.
+    setFlag("zia-site-mid", !light && brightness >= INK_MAX);
     updateDarkSiteInk(rgb, brightness);
   }
 
@@ -243,6 +248,24 @@
     return ((r * 299 + g * 587 + b * 114) / 1000) * (a / 255) + behind * (1 - a / 255);
   }
 
+  // How far white text stands out on a colour (WCAG contrast, 1 to 21).
+  function whiteContrastOn([r, g, b, a = 255]) {
+    const behind = matchMedia("(prefers-color-scheme: dark)").matches ? 0 : 255;
+    const channel = (c) => {
+      const v = (c * (a / 255) + behind * (1 - a / 255)) / 255;
+      return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+    };
+    const luminance = 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+    return 1.05 / (luminance + 0.05);
+  }
+
+  // Dark text on light colours, and on bright mid colours (a vivid green,
+  // say) that white text can't be read on, though they're not light.
+  const MIN_WHITE_CONTRAST = 3;
+  function wantsDarkInk(rgb) {
+    return brightnessOf(rgb) > LIGHT_THRESHOLD || whiteContrastOn(rgb) < MIN_WHITE_CONTRAST;
+  }
+
   function colorDistance(a, b) {
     if (!a || !b) {
       return Infinity;
@@ -396,7 +419,7 @@
     const behind = matchMedia("(prefers-color-scheme: dark)").matches ? [0, 0, 0, 255] : [255, 255, 255, 255];
     const rgb = colorOver(parseColor(text), behind);
     urlbar.style.setProperty("--zia-pop-site-bg", cssColor(rgb.slice(0, 3)));
-    urlbar.setAttribute("zia-pop-site", brightnessOf(rgb) > LIGHT_THRESHOLD ? "light" : "dark");
+    urlbar.setAttribute("zia-pop-site", wantsDarkInk(rgb) ? "light" : "dark");
   }
 
   function watchPopUpColor() {
@@ -3556,7 +3579,7 @@
       return;
     }
     bar.style.setProperty("--zia-pane-bg", cssColor(reading.rgb));
-    bar.toggleAttribute("light", brightnessOf(reading.rgb) > LIGHT_THRESHOLD);
+    bar.toggleAttribute("light", wantsDarkInk(reading.rgb));
   }
 
   function colorPaneSoon(container, delay = 60) {

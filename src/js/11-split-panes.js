@@ -253,7 +253,7 @@
       return;
     }
     bar.style.setProperty("--zia-pane-bg", cssColor(reading.rgb));
-    bar.toggleAttribute("light", brightnessOf(reading.rgb) > LIGHT_THRESHOLD);
+    bar.toggleAttribute("light", wantsDarkInk(reading.rgb));
   }
 
   function colorPaneSoon(container, delay = 60) {
