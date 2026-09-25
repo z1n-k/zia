@@ -47,7 +47,7 @@
 }
 
 :is(#back-button, #forward-button, #stop-button)[disabled] {
-  --zia-nav-rest: 0.4;
+  --zia-nav-rest: 0.6;
 }
 
 :is(#back-button, #forward-button, #stop-button)::before {
