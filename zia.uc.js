@@ -6828,14 +6828,6 @@
       button.hidden = !uri || !/^https?$/.test(uri.scheme);
     };
 
-    const siteIcon = siteData.querySelector("image");
-    if (siteIcon) {
-      const style = getComputedStyle(siteIcon);
-      icon.style.fill = style.fill;
-      icon.style.fillOpacity = style.fillOpacity;
-      icon.style.opacity = style.opacity;
-      button.style.color = getComputedStyle(siteData).color;
-    }
     gBrowser.tabContainer.addEventListener("TabSelect", update);
     gBrowser.addProgressListener({
       onLocationChange: (progress) => {

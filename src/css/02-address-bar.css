@@ -314,6 +314,12 @@
   pointer-events: none !important;
 }
 
+/* Takes the address bar's colour as it changes with the site, like the
+   icons beside it. */
+#zia-copy-link-button {
+  color: inherit !important;
+}
+
 #zia-copy-link-button image {
   list-style-image: url("chrome://sine/content/zia/icons/tabler/outline/paperclip.svg") !important;
   -moz-context-properties: fill, fill-opacity, stroke, stroke-opacity;
