@@ -176,14 +176,10 @@ The compact sidebar, the hover cards and the address pop-up are frosted glass: s
 
 ![The compact sidebar as frosted glass over a photo](<https://raw.githubusercontent.com/z1n-k/zia/readme-images/glass-compact-sidebar.webp>)
 
-<details>
-<summary>The hover cards and the address pop-up</summary>
-
-<img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/glass-hover-card.png" alt="A tab's hover card as frosted glass" width="520">
-
-![The address bar pop-up as frosted glass over a photo](<https://raw.githubusercontent.com/z1n-k/zia/readme-images/glass-address-pop-up.webp>)
-
-</details>
+<p>
+  <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/glass-hover-card.png" alt="A tab's hover card as frosted glass" width="38%">
+  <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/glass-address-pop-up.webp" alt="The address bar pop-up as frosted glass over a photo" width="60%">
+</p>
 
 ### Split view
 
