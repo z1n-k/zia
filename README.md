@@ -176,10 +176,14 @@ The compact sidebar, the hover cards and the address pop-up are frosted glass: s
 
 ![The compact sidebar as frosted glass over a photo](<https://raw.githubusercontent.com/z1n-k/zia/readme-images/glass-compact-sidebar.webp>)
 
-<p>
-  <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/glass-hover-card.png" alt="A tab's hover card as frosted glass" width="38%">
-  <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/glass-address-pop-up.webp" alt="The address bar pop-up as frosted glass over a photo" width="60%">
-</p>
+![The address bar pop-up as frosted glass over a photo](<https://raw.githubusercontent.com/z1n-k/zia/readme-images/glass-address-pop-up.webp>)
+
+<details>
+<summary>The hover cards</summary>
+
+<img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/glass-hover-card.png" alt="A tab's hover card as frosted glass" width="520">
+
+</details>
 
 ### Split view
 
@@ -187,13 +191,13 @@ Drag a tab over the page and drop cards rise on either side, growing and turning
 
 ![Dragging a tab into a split](https://github.com/user-attachments/assets/50fed722-962c-4af6-9979-18800ae01a50)
 
+![Two sites in split view, each with its own toolbar and address](https://github.com/user-attachments/assets/5318d0ce-d6b3-4adb-aef9-56ffbed72ae9)
+
 <details>
 <summary>More</summary>
 
 - Even spacing and a frame around the pair.
 - Your pinned extensions sit in the focused pane's toolbar and move with the focus.
-
-![Two sites in split view](https://github.com/user-attachments/assets/5318d0ce-d6b3-4adb-aef9-56ffbed72ae9)
 
 </details>
 
