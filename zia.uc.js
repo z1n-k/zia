@@ -9909,6 +9909,18 @@
       } else {
         closeListRoom();
       }
+      // Diagnostic: the dragged tile has been seen to stretch the width of
+      // the sidebar mid-drag; say once per drag what state it was in
+      if (!asTab && !state.wideNoted) {
+        const drawn = copy.getBoundingClientRect();
+        if (drawn.width > state.tile.width * 1.6) {
+          state.wideNoted = true;
+          console.warn(`[Zia] Essential drag: tile drawn ${Math.round(drawn.width)}px wide (should be ${Math.round(state.tile.width)}). ` +
+            `style width "${copy.style.width}", parent ${copy.parentNode?.id || copy.parentNode?.localName}, ` +
+            `pointer ${Math.round(point.x)},${Math.round(point.y)}, essentials bottom ${Math.round(essentialsBottom())}, ` +
+            `transition "${copy.style.transition}", attrs ${[...copy.attributes].map((a) => a.name).join(" ")}`);
+        }
+      }
       const x = asTab
         ? (document.getElementById("navigator-toolbox")?.getBoundingClientRect().left || 0) + 8 + plainTabSize().width / 2
         : point.x - state.offset.x;
@@ -10154,6 +10166,26 @@
       }
     };
 
+    // A dropped folder keeps its hover box until the pointer really leaves
+    // it: the drag's own look ends a frame before the browser sees the
+    // pointer is still over it, and the box blinked off and on in between.
+    const holdFolderHover = (folder) => {
+      folder.setAttribute("zia-hover-held", "true");
+      let timer = 0;
+      const check = () => {
+        if (!folder.matches(":hover")) {
+          release();
+        }
+      };
+      const release = () => {
+        folder.removeAttribute("zia-hover-held");
+        window.removeEventListener("mousemove", check, true);
+        clearTimeout(timer);
+      };
+      window.addEventListener("mousemove", check, true);
+      timer = setTimeout(release, 4000);
+    };
+
     let droppedFrom = null;
     let isRealDrop = false;
     let pendingFinish = false;
@@ -10217,6 +10249,9 @@
       }
       if (landing?.node?.isConnected) {
         const node = landing.node;
+        if (isFolderEl(node)) {
+          holdFolderHover(node);
+        }
 
         node.setAttribute("zia-landing", "true");
         const held = node.getBoundingClientRect();
