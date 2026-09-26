@@ -254,3 +254,9 @@ zen-essentials-promo {
 zen-split-fake-tab {
   display: none !important;
 }
+
+/* the list measured again mid-drag (a dragged folder that has just shut) */
+#tabbrowser-tabs[zia-measuring],
+#tabbrowser-tabs[zia-measuring] * {
+  transition: none !important;
+}

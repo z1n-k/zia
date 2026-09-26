@@ -8637,10 +8637,49 @@
       }
     };
 
+    // A dragged folder whose height has changed since the list was measured
+    // (it shut after the drag began): the list is measured again, or every
+    // row would be moved by the old height and the drop land in the wrong
+    // place.
+    const remeasureFolderDrag = (folder) => {
+      const strip = document.getElementById("tabbrowser-tabs");
+      // measured where they sit, not partway through sliding back
+      strip?.setAttribute("zia-measuring", "true");
+      for (const row of drag.rows) {
+        if (row.node !== folder && !folder.contains(row.node)) {
+          place(row.node, 0, false);
+          row.delta = 0;
+          row.shownY = 0;
+        }
+      }
+      placeSep(0);
+      const kept = folder.style.getPropertyValue("transform");
+      const keptPriority = folder.style.getPropertyPriority("transform");
+      folder.style.removeProperty("transform");
+      // (a real layout read first: the measuring below reads it unflushed)
+      folder.getBoundingClientRect();
+      const rows = measureRows(null);
+      const box = layoutTop(folder);
+      folder.style.setProperty("transform", kept, keptPriority);
+      strip?.removeAttribute("zia-measuring");
+      const mine = rows.find((row) => row.node === folder || folder.contains(row.node));
+      const sep = currentSeparator();
+      drag.rows = rows;
+      drag.origin = box.top;
+      drag.height = box.height;
+      drag.pitch = box.height;
+      drag.index = mine?.index ?? drag.index;
+      drag.shifted = new Set();
+      drag.sepTop = sep ? sep.getBoundingClientRect().top : null;
+    };
+
     const apply = (dy) => {
       const moving = drag?.moving;
       if (!moving?.isConnected || !drag.rows) {
         return;
+      }
+      if (drag.folder && !drag.essentials && Math.abs(drag.folder.getBoundingClientRect().height - drag.height) > 3) {
+        remeasureFolderDrag(drag.folder);
       }
       const visualMid = drag.origin + dy + drag.height / 2;
       place(moving, dy, true);
