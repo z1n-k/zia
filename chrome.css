@@ -3965,6 +3965,15 @@ tooltip[default="true"] {
   transition: none !important;
 }
 
+/* Windows, compact mode: no window-button box in the sidebar's top row.
+   The real minimise, maximise and close stay top right (zia.uc.js leaves
+   them there), and a box left in the row pushed the space's name out. */
+@media (-moz-platform: windows) {
+  :root[zen-compact-mode="true"] #zen-sidebar-top-buttons .titlebar-buttonbox-container {
+    display: none !important;
+  }
+}
+
 /* Windows: the window buttons live in that top bar and stay put while the
    sidebar is out; everything else in it hides as above. */
 @media (-moz-platform: windows) {

@@ -23,6 +23,9 @@ Every release of Zia, newest first. The format follows
 - The last tab in the list has its whole glow; it was cut off at the
   bottom on macOS and Linux.
 
+- Windows: the space's name shows again at the top of the sidebar when it
+  slides out in compact mode.
+
 ## [2.57.1] — 2026-09-26
 
 ### Fixed
