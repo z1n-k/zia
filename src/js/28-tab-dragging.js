@@ -1213,15 +1213,66 @@
       true
     );
 
+    // An open folder folds shut as it's picked up, over a few frames. The
+    // list is measured once it has, or every row below would be moved by
+    // the open folder's height and land on the rows above.
+    let foldingFolder = null;
+    const beginOnceFolded = (folder, event) => {
+      foldingFolder = folder;
+      let point = { clientY: event.clientY, screenY: event.screenY };
+      const track = (over) => {
+        point = { clientY: over.clientY, screenY: over.screenY };
+      };
+      const stop = () => {
+        window.removeEventListener("dragover", track, true);
+        window.removeEventListener("dragend", cancel, true);
+      };
+      const cancel = () => {
+        foldingFolder = null;
+        stop();
+      };
+      window.addEventListener("dragover", track, true);
+      window.addEventListener("dragend", cancel, true);
+      let last = null;
+      let still = 0;
+      let frames = 0;
+      const step = () => {
+        if (foldingFolder !== folder || !folder.isConnected) {
+          stop();
+          return;
+        }
+        const height = Math.round(folder.getBoundingClientRect().height);
+        still = height === last ? still + 1 : 0;
+        last = height;
+        if ((isCollapsed(folder) && still >= 2) || still >= 8 || ++frames > 40) {
+          foldingFolder = null;
+          stop();
+          begin(folder, point);
+          return;
+        }
+        requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
+
+    const startOn = (target, event) => {
+      const folder = target && !target.hasAttribute?.("zen-essential") && (target.localName === "zen-folder" || target.isZenFolder) ? target : null;
+      if (folder && !isCollapsed(folder)) {
+        beginOnceFolded(folder, event);
+        return;
+      }
+      begin(target, event);
+    };
+
     const onStart = (event) => {
       const tab = tabFromEvent(event);
       if (tab) {
-        begin(tab, event);
+        startOn(tab, event);
         return;
       }
       const inSidebar = event.target?.closest?.("#navigator-toolbox, #tabbrowser-tabs");
       if (inSidebar && pending?.tab) {
-        begin(pending.tab, event);
+        startOn(pending.tab, event);
       }
     };
     window.addEventListener("dragstart", onStart, true);
