@@ -6774,57 +6774,85 @@
   const tabIcon = (tab) => tab?.getAttribute("image") || "";
   const tabUrl = (tab) => tab?.linkedBrowser?.currentURI?.spec || "";
 
-  // The tile: the right site's icon beside the essential's own, and its
-  // icon for the blended glow (the essential's own is Zen's
-  // --zen-essential-tab-icon).
+  const DEFAULT_ICON = "chrome://sine/content/zia/icons/tab-default.svg";
+  const cssUrl = (url) => `url("${url.replace(/"/g, "%22")}")`;
+
+  // The tile: both sites' icons, each in an upright half of its own (the
+  // essential's own icon is hidden; it never loads, so it would only be
+  // Zen's placeholder).
   function drawSplitTile(essential) {
     const data = splitDataOf(essential);
     const content = essential.querySelector(".tab-content");
-    let half = content?.querySelector(":scope > .zia-split-half");
+    const halves = content ? [...content.querySelectorAll(":scope > .zia-split-half")] : [];
     if (!data || !splitEssentialsOn()) {
-      half?.remove();
+      halves.forEach((half) => half.remove());
       essential.removeAttribute("zia-split-tile");
-      essential.style.removeProperty("--zia-split-icon-b");
+      essential.style.removeProperty("--zia-split-glow");
       return;
     }
     if (!content) {
       return;
     }
-    if (!half) {
-      half = document.createXULElement("hbox");
-      half.className = "zia-split-half";
-      half.append(document.createXULElement("image"));
-      const ownIcon = content.querySelector(":scope > .tab-icon-stack");
-      if (ownIcon) {
-        ownIcon.after(half);
-      } else {
-        content.prepend(half);
+    for (const side of ["a", "b"]) {
+      let half = halves.find((el) => el.getAttribute("side") === side);
+      if (!half) {
+        half = document.createXULElement("hbox");
+        half.className = "zia-split-half";
+        half.setAttribute("side", side);
+        half.append(document.createXULElement("image"));
+        content.append(half);
+      }
+      const icon = data[side]?.icon || DEFAULT_ICON;
+      const image = half.firstElementChild;
+      if (image.getAttribute("src") !== icon) {
+        image.setAttribute("src", icon);
       }
     }
-    const icon = data.b?.icon || "chrome://sine/content/zia/icons/tab-default.svg";
-    const image = half.firstElementChild;
-    if (image.getAttribute("src") !== icon) {
-      image.setAttribute("src", icon);
-    }
-    essential.style.setProperty("--zia-split-icon-b", `url("${icon.replace(/"/g, "%22")}")`);
     essential.setAttribute("zia-split-tile", "true");
+    paintSplitGlow(essential);
   }
 
-  // Selected look while its split is showing, leaning to the half you're in
+  // The selected look takes the colour of the half you're in, over the
+  // whole tile
+  function paintSplitGlow(essential) {
+    const data = splitDataOf(essential);
+    const side = essential.getAttribute("zia-split-focus") || essential.ziaLastSide || "a";
+    const icon = data?.[side]?.icon;
+    if (icon) {
+      essential.style.setProperty("--zia-split-glow", cssUrl(icon));
+    } else {
+      essential.style.removeProperty("--zia-split-glow");
+    }
+  }
+
+  // Selected look while its split is showing
   function syncSplitSelection() {
     const selected = gBrowser.selectedTab;
     const showing = essentialFor(selected);
     for (const essential of splitEssentials()) {
       const on = essential === showing;
       if (on) {
-        essential.setAttribute("zia-split-focus", selected.getAttribute(SPLIT_SIDE) === "b" ? "b" : "a");
+        const side = selected.getAttribute(SPLIT_SIDE) === "b" ? "b" : "a";
+        essential.setAttribute("zia-split-focus", side);
+        essential.ziaLastSide = side;
       } else {
         essential.removeAttribute("zia-split-focus");
       }
+      paintSplitGlow(essential);
       if (on !== essential.hasAttribute("visuallyselected")) {
         essential._visuallySelected = on;
       }
     }
+  }
+
+  // The hover card shows the half you're in (or were last in)
+  function splitCardSource(tab) {
+    const data = splitDataOf(tab);
+    if (!data) {
+      return null;
+    }
+    const side = tab.getAttribute("zia-split-focus") || tab.ziaLastSide || "a";
+    return pairOf(data.id)[side] || null;
   }
 
   function addTabFor(url) {
@@ -6928,7 +6956,7 @@
     }
     saveSplitData(essential, {
       id,
-      a: { url: tabUrl(a), title: a.label },
+      a: { url: tabUrl(a), title: a.label, icon: tabIcon(a) },
       b: { url: tabUrl(b), title: b.label, icon: tabIcon(b) },
     });
     tagPairTab(a, id, "a");
@@ -6954,19 +6982,67 @@
     }
   }
 
+  function splitBackToList(essential) {
+    const data = essential.ziaSplit;
+    if (!data?.id || essential.closing || !essential.isConnected) {
+      return;
+    }
+    let { a, b } = pairOf(data.id);
+    releaseSplit(essential);
+    try {
+      if (!(a && b && a.group && a.group === b.group)) {
+        for (const leftover of [a, b]) {
+          if (leftover) {
+            gBrowser.removeTab(leftover, { animate: false });
+          }
+        }
+        a = addTabFor(data.a?.url);
+        b = addTabFor(data.b?.url);
+        window.gZenViewSplitter?.splitTabs([a, b], "vsep", -1, { activate: false });
+      }
+      const space = essential.getAttribute("zen-workspace-id") || window.gZenWorkspaces?.activeWorkspace;
+      if (space && a.getAttribute("zen-workspace-id") !== space) {
+        window.gZenWorkspaces?.moveTabsToWorkspace([a, b], space);
+      }
+      if (a.group) {
+        gBrowser.moveTabBefore(a.group, essential);
+      }
+    } catch (err) {
+      noteError("split essentials: back to the list", err);
+    }
+    const wasSelected = essential.selected;
+    gBrowser.removeTab(essential, { animate: false });
+    if (wasSelected && a && !a.closing) {
+      gBrowser.selectedTab = a;
+    }
+  }
+
   function watchSplitEssentials() {
     const container = gBrowser.tabContainer;
 
-    // Clicking the tile shows its split, at the half that was clicked
-    container.addEventListener("mousedown", (event) => {
+    // Clicking the tile shows its split, at the half that was clicked. The
+    // press itself only keeps Zen from selecting the essential (so it can
+    // still be dragged); the split opens on the click.
+    const tileUnder = (event) => {
       if (event.button !== 0 || !splitEssentialsOn()) {
-        return;
+        return null;
       }
       const essential = event.target.closest?.(".tabbrowser-tab[zia-split-tile]");
       if (!essential || event.target.closest(".tab-close-button, .tab-reset-button, .tab-icon-overlay, .tab-audio-button")) {
+        return null;
+      }
+      return essential;
+    };
+    container.addEventListener("mousedown", (event) => {
+      if (tileUnder(event)) {
+        event.stopPropagation();
+      }
+    }, true);
+    container.addEventListener("click", (event) => {
+      const essential = tileUnder(event);
+      if (!essential) {
         return;
       }
-      event.preventDefault();
       event.stopPropagation();
       const box = essential.getBoundingClientRect();
       openSplitEssential(essential, event.clientX > box.left + box.width / 2 ? "b" : "a");
@@ -7007,25 +7083,27 @@
       }
     });
 
-    // Taken out of the essentials
+    // Taken out of the essentials (dragged back to the list, or Remove from
+    // Essentials): its split takes its place there, and the essential goes
     new MutationObserver((records) => {
       for (const { target } of records) {
         if (target.ziaSplit?.id && !target.hasAttribute("zen-essential")) {
-          releaseSplit(target);
+          setTimeout(() => splitBackToList(target), 0);
         }
       }
     }).observe(container, { subtree: true, attributes: true, attributeFilter: ["zen-essential"] });
 
-    // The right-hand site's icon follows it
+    // Each half's icon follows its site
     container.addEventListener("TabAttrModified", (event) => {
       const tab = event.target;
-      if (tab.getAttribute(SPLIT_SIDE) !== "b" || !event.detail?.changed?.includes("image")) {
+      const side = tab.getAttribute(SPLIT_SIDE);
+      if (!side || !event.detail?.changed?.includes("image")) {
         return;
       }
       const essential = essentialFor(tab);
       const data = essential && splitDataOf(essential);
-      if (data && tabIcon(tab) && data.b.icon !== tabIcon(tab)) {
-        saveSplitData(essential, { ...data, b: { ...data.b, icon: tabIcon(tab) } });
+      if (data && tabIcon(tab) && data[side]?.icon !== tabIcon(tab)) {
+        saveSplitData(essential, { ...data, [side]: { ...data[side], icon: tabIcon(tab) } });
         drawSplitTile(essential);
       }
     });
@@ -7442,10 +7520,12 @@
   }
 
   function fillTabCard(card, tab) {
-    const isNew = tabCardKind(tab) === "new";
-    card.querySelector(".zia-tab-card-title").textContent = tab.label || "New Tab";
+    // a split essential's card is about the half you're in
+    const shown = splitCardSource(tab) || tab;
+    const isNew = tabCardKind(shown) === "new";
+    card.querySelector(".zia-tab-card-title").textContent = shown.label || "New Tab";
     const sub = card.querySelector(".zia-tab-card-sub");
-    sub.textContent = isNew ? "" : tabCardDomain(tab);
+    sub.textContent = isNew ? "" : tabCardDomain(shown);
     sub.hidden = !sub.textContent;
 
     const row = card.querySelector("#zia-tab-card-actions");
@@ -9238,13 +9318,12 @@
         debugDrag(event, point, sidebar, essentials);
         drag.essentials = !drag.folder && !drag.split && overEssentials && canBeEssential(drag.tab);
         // A two-site split over the essentials becomes a split essential
-        // (24b-split-essentials.js); the essentials are outlined meanwhile.
+        // (24b-split-essentials.js)
         drag.splitEssential = !!drag.split && overEssentials && canBecomeSplitEssential(drag.tab);
         if (drag.split && overEssentials && !drag.splitEssential && !drag.splitRefusalNoted) {
           drag.splitRefusalNoted = true;
           console.warn(`[Zia] Split essentials: this split can't go in the essentials: ${splitEssentialRefusal(drag.tab)}`);
         }
-        essentials?.toggleAttribute("zia-split-drop", drag.splitEssential);
         // Zen turns a split down over the essentials, and without a yes
         // there'd be no drop at all
         if (drag.splitEssential) {
@@ -9904,7 +9983,6 @@
       }
       drag = null;
       pending = null;
-      document.querySelectorAll("[zia-split-drop]").forEach((el) => el.removeAttribute("zia-split-drop"));
       document.documentElement.removeAttribute("zia-dragging-tab");
       muteZenHaptics(false);
       reclip();

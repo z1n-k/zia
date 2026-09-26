@@ -1288,13 +1288,12 @@
         debugDrag(event, point, sidebar, essentials);
         drag.essentials = !drag.folder && !drag.split && overEssentials && canBeEssential(drag.tab);
         // A two-site split over the essentials becomes a split essential
-        // (24b-split-essentials.js); the essentials are outlined meanwhile.
+        // (24b-split-essentials.js)
         drag.splitEssential = !!drag.split && overEssentials && canBecomeSplitEssential(drag.tab);
         if (drag.split && overEssentials && !drag.splitEssential && !drag.splitRefusalNoted) {
           drag.splitRefusalNoted = true;
           console.warn(`[Zia] Split essentials: this split can't go in the essentials: ${splitEssentialRefusal(drag.tab)}`);
         }
-        essentials?.toggleAttribute("zia-split-drop", drag.splitEssential);
         // Zen turns a split down over the essentials, and without a yes
         // there'd be no drop at all
         if (drag.splitEssential) {
@@ -1954,7 +1953,6 @@
       }
       drag = null;
       pending = null;
-      document.querySelectorAll("[zia-split-drop]").forEach((el) => el.removeAttribute("zia-split-drop"));
       document.documentElement.removeAttribute("zia-dragging-tab");
       muteZenHaptics(false);
       reclip();

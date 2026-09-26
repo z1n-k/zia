@@ -130,7 +130,7 @@ Essentials sit as tiles, four to a row, or six when the sidebar is wide.
 
 [Glance](https://docs.zen-browser.app/user-manual/glance), Zen's link preview (Alt-click a link, or Option-click on macOS), gets a look of its own. From an essential, a small card with the site's icon springs out from behind the essential's own, and is sucked back in when you close the glance. From a tab, the glanced site sits as a small square tile at the tab's end.
 
-**Split essentials** (experimental): keep a split of two sites as one essential, the way Dia can. Drag a two-site split onto the essentials, or right-click one of its tabs and choose **Add Split to Essentials**. The tile shows both sites in halves of their own; click it and the split opens, at whichever half you clicked. While it's open the tile glows in both sites' colours, leaning towards the half you're in. Zen can't hold a split among its essentials yet, so Zia keeps the split as two ordinary tabs hidden from the tab list; remove the essential and they come back as an ordinary split.
+**Split essentials** (experimental): keep a split of two sites as one essential, the way Dia can. Drag a two-site split onto the essentials, or right-click one of its tabs and choose **Add Split to Essentials**. The tile shows both sites in halves of their own; click it and the split opens, at whichever half you clicked. While it's open the tile takes the colour of the half you're in, and so does its hover card; drag it back to the tab list and it's an ordinary split again. Zen can't hold a split among its essentials yet, so Zia keeps the split as two ordinary tabs hidden from the tab list.
 
 <!-- image: a split essential, open -->
 
@@ -274,7 +274,7 @@ Changed at the default level only. If you've set either yourself in `about:confi
 
 - Linux gets little testing
 - Light mode and Zen's layouts other than **Sidebar and Top Toolbar** are less polished
-- Split essentials are experimental: Zen doesn't support them itself yet, so Zia works around it, and a split essential can't be dragged to a new spot among the essentials yet
+- Split essentials are experimental: Zen doesn't support them itself yet, so Zia works around it
 
 ---
 

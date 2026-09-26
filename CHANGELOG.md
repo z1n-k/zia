@@ -9,13 +9,14 @@ Every release of Zia, newest first. The format follows
 ### Added
 
 - Split essentials (experimental): keep a split of two sites as one
-  essential, as Dia can. Right-click a tab in a two-site split and choose
-  **Add Split to Essentials**, or drag the split onto the essentials. The tile shows both sites side by side;
-  clicking it opens the split, at the half you clicked, and while it's open
-  the tile glows in both sites' colours, leaning towards the half you're
-  in. Zen can't hold a split among its essentials yet, so the split is
-  kept as two ordinary tabs hidden from the tab list; take the essential
-  out of the essentials and they're an ordinary split again.
+  essential, as Dia can. Drag a two-site split onto the essentials, or
+  right-click one of its tabs and choose **Add Split to Essentials**. The
+  tile shows both sites in upright halves; clicking it opens the split, at
+  the half you clicked, and while it's open the tile takes the colour of
+  the half you're in, as does its hover card. Drag it back to the tab list
+  (or remove it from the essentials) and it's an ordinary split again. Zen
+  can't hold a split among its essentials yet, so the split is kept as two
+  ordinary tabs hidden from the tab list.
 
 ### Fixed
 
