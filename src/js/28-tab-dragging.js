@@ -1069,8 +1069,8 @@
       );
     };
 
-    const fitZenSlot = () => {
-      const slot = gBrowser.tabContainer.tabDragAndDrop?._fakeEssentialTab;
+    const fitZenSlot = () => fitSlot(gBrowser.tabContainer.tabDragAndDrop?._fakeEssentialTab);
+    const fitSlot = (slot) => {
       if (!slot?.isConnected || slot.ziaFitted) {
         return;
       }
@@ -1097,6 +1097,26 @@
       slot.style.setProperty("margin-inline-end", `${Math.min(0, (own.width || first.width) - width)}px`, "important");
       slot.style.setProperty("margin-block-end", `${Math.min(0, first.height - height)}px`, "important");
       slot.ziaFitted = true;
+    };
+
+    // Zen opens a cell for a tab dragged over the essentials (a new row when
+    // the last is full), but turns a split down there, so a split essential
+    // on its way in had no room made for it: Zia opens the same cell
+    let splitSlot = null;
+    const holdSplitSlot = (on) => {
+      const grid = on ? window.gZenWorkspaces?.getCurrentEssentialsContainer?.() : null;
+      if (splitSlot && splitSlot.parentElement === grid) {
+        return;
+      }
+      splitSlot?.remove();
+      splitSlot = null;
+      if (!grid) {
+        return;
+      }
+      splitSlot = document.createXULElement("vbox");
+      splitSlot.setAttribute("zia-split-slot", "true");
+      grid.appendChild(splitSlot);
+      fitSlot(splitSlot);
     };
 
     const dropProxy = () => {
@@ -1529,6 +1549,7 @@
         }
         // Zen turns a split down over the essentials, and without a yes
         // there'd be no drop at all
+        holdSplitSlot(drag.splitEssential);
         if (drag.splitEssential) {
           acceptSplitDrop(event);
           if (point.x) {
@@ -2535,6 +2556,7 @@
       hideThumb(true);
       document.querySelectorAll("[zia-drag-away]").forEach((node) => node.removeAttribute("zia-drag-away"));
       makeRoom(null);
+      holdSplitSlot(false);
       document.querySelectorAll("[zia-sep-open]").forEach((node) => node.removeAttribute("zia-sep-open"));
 
       if (raf) {
