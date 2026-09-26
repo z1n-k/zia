@@ -141,6 +141,27 @@
     return all[0] || null;
   }
 
+  // The sidebar only ever scrolls up and down. Where its tab list is a few
+  // pixels wider than the sidebar (on Linux), selecting a tab scrolled it
+  // sideways into view too, so the tabs shifted over against the page and
+  // the essentials were cut off on both sides. Any sideways scroll goes
+  // straight back.
+  function keepSidebarUnscrolledSideways() {
+    const toolbox = document.getElementById("navigator-toolbox");
+    const LISTS = "#zen-tabs-wrapper, .workspace-arrowscrollbox, #tabbrowser-arrowscrollbox, .zen-essentials-container";
+    toolbox?.addEventListener("scroll", (event) => {
+      const target = event.target;
+      if (!target?.matches?.(LISTS)) {
+        return;
+      }
+      for (const el of [target, target.scrollbox]) {
+        if (el?.scrollLeft) {
+          el.scrollLeft = 0;
+        }
+      }
+    }, { capture: true, passive: true });
+  }
+
   function watchEdgeGlow() {
     let pending = 0;
     const update = () => {
@@ -389,6 +410,7 @@
     safely("animateNavButtons", animateNavButtons);
     safely("springReloadHover", springReloadHover);
     safely("watchEdgeGlow", watchEdgeGlow);
+    safely("keepSidebarUnscrolledSideways", keepSidebarUnscrolledSideways);
     safely("watchColorDrift", watchColorDrift);
     safely("watchPopUpColor", watchPopUpColor);
     safely("quietZenHaptics", quietZenHaptics);
