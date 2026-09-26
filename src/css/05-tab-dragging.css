@@ -184,8 +184,8 @@ zen-essentials-promo {
   opacity: 1 !important;
 }
 
-:root[zia-dragging-tab] .tabbrowser-tab :is(.tab-close-button, .tab-reset-button),
-#tabbrowser-tabs[zia-settling] .tabbrowser-tab :is(.tab-close-button, .tab-reset-button) {
+:root[zia-dragging-tab] .tabbrowser-tab:not([zia-hover-held]) :is(.tab-close-button, .tab-reset-button),
+#tabbrowser-tabs[zia-settling] .tabbrowser-tab:not([zia-hover-held]) :is(.tab-close-button, .tab-reset-button) {
   opacity: 0 !important;
   transition: none !important;
 }
@@ -227,3 +227,9 @@ zen-essentials-promo {
   to { scale: 1; filter: blur(0); opacity: 1; }
 }
 
+
+/* A tab just dropped keeps its hover wash until the pointer leaves it
+   (zia-hover-held, zia.uc.js) */
+.tabbrowser-tab:not([zen-essential], [visuallyselected])[zia-hover-held] > .tab-stack > .tab-background {
+  background: var(--zia-tab-hover-bg) !important;
+}

@@ -36,7 +36,16 @@
 
     const setDragImage = DataTransfer.prototype.setDragImage;
     const updateDragImage = DataTransfer.prototype.updateDragImage;
-    const isTabGhost = (node) => !!(node?.querySelector?.("[drag-image]") || node?.hasAttribute?.("drag-image"));
+    // What's dragged in the sidebar has Zia's own stand-in, so the system's
+    // snapshot picture is blanked: a tab's, and while an essential is
+    // dragged, anything (it showed as a blurred band the width of the
+    // window, the whole essentials row in it).
+    const isTabGhost = (node) =>
+      !!(node?.querySelector?.("[drag-image]") || node?.hasAttribute?.("drag-image")) ||
+      !!essentialDragging ||
+      !!node?.closest?.("#zen-essentials, .zen-essentials-container") ||
+      !!node?.querySelector?.(".tabbrowser-tab[zen-essential]");
+    let essentialDragging = false;
     DataTransfer.prototype.setDragImage = function (node, x, y) {
       if (isTabGhost(node)) {
         return setDragImage.call(this, blankImage(), 0, 0);
@@ -1530,6 +1539,12 @@
       if (!tab || tab.hasAttribute("zia-essential-proxy") || !featureOn("dia-tab-drag")) {
         return;
       }
+      essentialDragging = true;
+      try {
+        event.dataTransfer?.setDragImage(blankImage(), 0, 0);
+      } catch (err) {
+        noteError("tab dragging: essential drag picture", err);
+      }
 
       if (essentialDrag) {
         essentialDrag.copy?.remove();
@@ -1805,18 +1820,6 @@
       } else {
         closeListRoom();
       }
-      // Diagnostic: the dragged tile has been seen to stretch the width of
-      // the sidebar mid-drag; say once per drag what state it was in
-      if (!asTab && !state.wideNoted) {
-        const drawn = copy.getBoundingClientRect();
-        if (drawn.width > state.tile.width * 1.6) {
-          state.wideNoted = true;
-          console.warn(`[Zia] Essential drag: tile drawn ${Math.round(drawn.width)}px wide (should be ${Math.round(state.tile.width)}). ` +
-            `style width "${copy.style.width}", parent ${copy.parentNode?.id || copy.parentNode?.localName}, ` +
-            `pointer ${Math.round(point.x)},${Math.round(point.y)}, essentials bottom ${Math.round(essentialsBottom())}, ` +
-            `transition "${copy.style.transition}", attrs ${[...copy.attributes].map((a) => a.name).join(" ")}`);
-        }
-      }
       const x = asTab
         ? (document.getElementById("navigator-toolbox")?.getBoundingClientRect().left || 0) + 8 + plainTabSize().width / 2
         : point.x - state.offset.x;
@@ -1853,6 +1856,7 @@
     const endEssentialDrag = (event) => {
       const state = essentialDrag;
       essentialDrag = null;
+      essentialDragging = false;
       if (!state) {
         return;
       }
@@ -2062,9 +2066,10 @@
       }
     };
 
-    // A dropped folder keeps its hover box until the pointer really leaves
-    // it: the drag's own look ends a frame before the browser sees the
-    // pointer is still over it, and the box blinked off and on in between.
+    // What's just dropped (a folder or a tab) keeps its hover look (box, ×)
+    // until the pointer really leaves it: the drag's own look ends a frame
+    // before the browser sees the pointer is still over it, and the box and
+    // × blinked off and on in between.
     const holdFolderHover = (folder) => {
       folder.setAttribute("zia-hover-held", "true");
       let timer = 0;
@@ -2145,9 +2150,7 @@
       }
       if (landing?.node?.isConnected) {
         const node = landing.node;
-        if (isFolderEl(node)) {
-          holdFolderHover(node);
-        }
+        holdFolderHover(node);
 
         node.setAttribute("zia-landing", "true");
         const held = node.getBoundingClientRect();

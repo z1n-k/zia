@@ -483,7 +483,8 @@ zen-folder > .tab-group-label-container > .zia-folder-close {
   margin-inline-start: auto;
 }
 
-zen-folder > .tab-group-label-container:hover > .zia-folder-close {
+zen-folder > .tab-group-label-container:hover > .zia-folder-close,
+zen-folder[zia-hover-held] > .tab-group-label-container > .zia-folder-close {
   display: flex;
 }
 
