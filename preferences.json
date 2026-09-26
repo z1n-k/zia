@@ -109,7 +109,7 @@
   },
   {
     "type": "checkbox",
-    "label": "PDFs open in Dia's viewer look (off: Firefox's own; reopen a PDF to see the change)",
+    "label": "PDFs open in Zia's viewer look (off: Firefox's own; reopen a PDF to see the change)",
     "property": "zia.pdf.dia-style",
     "defaultValue": true
   },
@@ -119,7 +119,7 @@
   },
   {
     "type": "checkbox",
-    "label": "Dia-style address bar pop-up (off: Zen's own)",
+    "label": "Zia's address bar pop-up (off: Zen's own)",
     "property": "zia.urlbar.dia-style",
     "defaultValue": true
   },
@@ -193,7 +193,7 @@
   },
   {
     "type": "checkbox",
-    "label": "Dia-style picture-in-picture controls (off: Firefox's own)",
+    "label": "Zia's picture-in-picture controls (off: Firefox's own)",
     "property": "zia.pip.dia-style",
     "defaultValue": true
   },
