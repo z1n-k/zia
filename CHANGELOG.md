@@ -22,6 +22,8 @@ Every release of Zia, newest first. The format follows
   glide, which starts from where its background showed.
 - A tab dropped into a folder (or pulled out of one) no longer flashes an
   × before its − (or the other way round): it swaps the moment it's let go.
+- Dropping an essential no longer throws an error in the Browser Console
+  (and skips the end of the drop's tidy-up).
 
 ## [2.59.3] — 2026-09-26
 

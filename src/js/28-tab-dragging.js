@@ -2245,7 +2245,7 @@
             }, 0);
           }
           landProxy(tab);
-        } else if (drag.folder && !drag.away && drag.target) {
+        } else if (drag?.folder && !drag.away && drag.target) {
           const folder = drag.folder;
           const target = drag.target;
           pendingFinish = true;
