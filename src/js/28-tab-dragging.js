@@ -442,17 +442,38 @@
         start = 0;
         end = 0;
       }
-      moving.style.setProperty("margin-inline-start", `${base.start + start}px`, "important");
-      moving.style.setProperty("margin-inline-end", `${base.end + end}px`, "important");
-      moving.style.setProperty("transition", "margin-inline-start 120ms ease-out, margin-inline-end 120ms ease-out", "important");
       moving.setAttribute("zia-morph-folder", "true");
+      // eased frame by frame (the drag's own rules turn transitions off)
+      const from = drag.folderShown || { start: base.start, end: base.end };
+      const to = { start: base.start + start, end: base.end + end };
+      const began = performance.now();
+      const id = (drag.folderMorphId = (drag.folderMorphId || 0) + 1);
+      const draw = (at) => {
+        moving.style.setProperty("margin-inline-start", `${at.start}px`, "important");
+        moving.style.setProperty("margin-inline-end", `${at.end}px`, "important");
+        if (drag) {
+          drag.folderShown = at;
+        }
+      };
+      const step = (now) => {
+        if (!drag || drag.folder !== moving || drag.folderMorphId !== id || !moving.hasAttribute("zia-morph-folder")) {
+          return;
+        }
+        const t = Math.min(1, (now - began) / 140);
+        const k = 1 - Math.pow(1 - t, 3);
+        draw({ start: from.start + (to.start - from.start) * k, end: from.end + (to.end - from.end) * k });
+        if (t < 1) {
+          requestAnimationFrame(step);
+        }
+      };
+      requestAnimationFrame(step);
     };
     const unmorphFolder = (folder) => {
       if (!folder?.hasAttribute?.("zia-morph-folder")) {
         return;
       }
       folder.removeAttribute("zia-morph-folder");
-      for (const name of ["margin-inline-start", "margin-inline-end", "transition"]) {
+      for (const name of ["margin-inline-start", "margin-inline-end"]) {
         folder.style.removeProperty(name);
       }
     };
