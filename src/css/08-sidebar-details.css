@@ -51,9 +51,11 @@
   }
 }
 
-/* Zen's "Clear" beside the separator keeps its down arrow */
+/* Zen's "Clear" beside the separator shows its down arrow along with its
+   label, whenever the sidebar shows the button */
 #zen-workspace-close-unpinned-tabs-button > .toolbarbutton-icon {
   display: flex !important;
+  visibility: inherit !important;
 }
 
 .pinned-tabs-container-separator toolbarseparator {

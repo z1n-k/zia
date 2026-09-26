@@ -12,7 +12,8 @@ Every release of Zia, newest first. The format follows
   in the list: Firefox's inner scroll box ended at the last row and cut off
   whatever went past it.
 
-- Zen's "Clear" button beside the separator shows its down arrow again.
+- Zen's "Clear" button beside the separator shows its down arrow again,
+  with its label, when you hover the sidebar.
 
 ## [2.59.0] — 2026-09-26
 
