@@ -1450,6 +1450,41 @@
     let essentialDropped = null;
     const ESSENTIAL_MS = 140;
 
+    // Zen clears the size and place of every essential when a drop lands:
+    // a floating copy with none stretches across the window and falls to
+    // its bottom. Whatever of those it loses, it gets straight back.
+    const PLACEMENT = [
+      "position", "left", "top", "translate", "transform", "margin", "z-index",
+      "width", "height", "min-width", "max-width", "min-height", "max-height",
+    ];
+    const keepPlacement = (node) => {
+      if (node.ziaPlacementGuard) {
+        return;
+      }
+      const seen = {};
+      const note = () => {
+        for (const name of PLACEMENT) {
+          const value = node.style.getPropertyValue(name);
+          if (value) {
+            seen[name] = value;
+          }
+        }
+      };
+      note();
+      node.ziaPlacementGuard = new MutationObserver(() => {
+        for (const name of PLACEMENT) {
+          if (seen[name] && !node.style.getPropertyValue(name)) {
+            node.style.setProperty(name, seen[name], "important");
+          }
+        }
+        if (node.style.getPropertyValue("width") !== `${Math.round(node.ziaSize.width)}px`) {
+          sizeCopy(node, node.ziaSize.width, node.ziaSize.height);
+        }
+        note();
+      });
+      node.ziaPlacementGuard.observe(node, { attributes: true, attributeFilter: ["style"] });
+    };
+
     const sizeCopy = (node, width, height) => {
       node.ziaSize = { width, height };
       for (const [name, value] of [
@@ -1462,18 +1497,7 @@
       ]) {
         node.style.setProperty(name, `${Math.round(value)}px`, "important");
       }
-      // Zen clears the width of every essential when a drop lands, and a
-      // fixed copy with no width stretches across the whole window
-      if (!node.ziaSizeGuard) {
-        node.ziaSizeGuard = new MutationObserver(() => {
-          const { width: w, height: h } = node.ziaSize;
-          const px = `${Math.round(w)}px`;
-          if (node.style.getPropertyValue("width") !== px || node.style.getPropertyValue("max-width") !== px) {
-            sizeCopy(node, w, h);
-          }
-        });
-        node.ziaSizeGuard.observe(node, { attributes: true, attributeFilter: ["style"] });
-      }
+      keepPlacement(node);
     };
 
     const moveCopyTo = (copy, host) => {
@@ -1897,8 +1921,14 @@
         // Heads for wherever the tile is on each frame, so it still lands
         // right while Zen is sliding the tiles into their new order
         const shift = copy.ziaHostShift || { x: 0, y: 0 };
+        // from where it was last drawn under the pointer (its left and top
+        // are its centre), not wherever Zen's drop may have knocked it
         const from = copy.getBoundingClientRect();
-        const start = { x: from.left + from.width / 2, y: from.top + from.height / 2 };
+        const left = parseFloat(copy.style.getPropertyValue("left"));
+        const top = parseFloat(copy.style.getPropertyValue("top"));
+        const start = Number.isFinite(left) && Number.isFinite(top)
+          ? { x: left + shift.x, y: top + shift.y }
+          : { x: from.left + from.width / 2, y: from.top + from.height / 2 };
         // longer the further it has to go, so it drifts home rather than flies
         const home = state.tab.getBoundingClientRect();
         const far = Math.hypot(home.left + home.width / 2 - start.x, home.top + home.height / 2 - start.y);
@@ -2098,8 +2128,11 @@
       if (!row) {
         return;
       }
-      const buttons = [...row.querySelectorAll(".tab-close-button, .tab-reset-button")].filter((button) => {
-        if (button.closest(".tabbrowser-tab, zen-folder, tab-group") !== row) {
+      // a split shows the x of both its tabs while it's hovered
+      const split = row.closest?.("tab-group[split-view-group]");
+      const rows = split ? [...split.querySelectorAll(".tabbrowser-tab")] : [row];
+      const buttons = rows.flatMap((one) => [...one.querySelectorAll(".tab-close-button, .tab-reset-button")]).filter((button) => {
+        if (!rows.includes(button.closest(".tabbrowser-tab, zen-folder, tab-group"))) {
           return false;
         }
         const box = button.getBoundingClientRect();
