@@ -6953,10 +6953,15 @@
     }
     // looks as it will once it lands: in colour (of the half being dragged)
     // if the split's the one showing, plain if not
+    proxy.removeAttribute("zia-split-focus");
     if (tabs.some((t) => t.selected)) {
       proxy.setAttribute("visuallyselected", "true");
       proxy.setAttribute("selected", "true");
-      const icon = tabIcon(tab) || tabIcon(tabs.find((t) => t.selected));
+      // the half you're in outlined, as it will be (the split's first tab
+      // is its left half)
+      const shown = tabs.find((t) => t.selected);
+      proxy.setAttribute("zia-split-focus", shown === tabs[0] ? "a" : "b");
+      const icon = tabIcon(shown) || tabIcon(tab);
       if (icon) {
         proxy.style.setProperty("--zia-split-glow", cssUrl(icon));
       }
