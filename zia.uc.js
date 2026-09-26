@@ -11060,35 +11060,6 @@
     return all[0] || null;
   }
 
-  // Zen's "Clear" beside the separator shows its down arrow only when every
-  // unpinned tab in the space could be closed (none selected, playing sound
-  // or in picture-in-picture). Zen checks that as tabs open and close, but
-  // not reliably as they're selected or start playing, so with Zia's
-  // layout the arrow went stale; Zen is asked to check again then.
-  function watchClearArrow() {
-    let pending = 0;
-    const recheck = () => {
-      if (!pending) {
-        pending = requestAnimationFrame(() => {
-          pending = 0;
-          try {
-            window.gZenWorkspaces?.updateTabsContainers?.();
-          } catch (err) {
-            noteError("clear arrow", err);
-          }
-        });
-      }
-    };
-    const container = gBrowser.tabContainer;
-    container.addEventListener("TabSelect", recheck);
-    container.addEventListener("TabAttrModified", (event) => {
-      if (event.detail?.changed?.some((name) => name === "soundplaying" || name === "pictureinpicture")) {
-        recheck();
-      }
-    });
-    container.addEventListener("TabMultiSelect", recheck);
-  }
-
   function watchEdgeGlow() {
     let pending = 0;
     const update = () => {
@@ -11337,7 +11308,6 @@
     safely("animateNavButtons", animateNavButtons);
     safely("springReloadHover", springReloadHover);
     safely("watchEdgeGlow", watchEdgeGlow);
-    safely("watchClearArrow", watchClearArrow);
     safely("watchColorDrift", watchColorDrift);
     safely("watchPopUpColor", watchPopUpColor);
     safely("quietZenHaptics", quietZenHaptics);

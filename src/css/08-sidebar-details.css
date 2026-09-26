@@ -51,14 +51,20 @@
   }
 }
 
-/* Zen's "Clear" beside the separator fades in and out with the pointer on
-   the sidebar, the same speed both ways (Zen keeps its hover a moment
-   after the pointer has gone) */
+/* Zen's "Clear" beside the separator: its down arrow always shows with its
+   label (Zen shows it only while it last found every unpinned tab closable,
+   and Zia's layout has it check again at moments that hide it), and it
+   fades in and out with the pointer on the sidebar, the same speed both
+   ways (Zen keeps its hover a moment after the pointer has gone) */
 .zen-workspace-close-unpinned-tabs-button {
   transition: opacity 0.15s ease, visibility 0.15s !important;
 
   #navigator-toolbox:not(:hover) & {
     opacity: 0 !important;
+  }
+
+  & > .toolbarbutton-icon {
+    display: flex !important;
   }
 }
 
