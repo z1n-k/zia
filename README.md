@@ -2,7 +2,7 @@
 
 **Zen Browser, rebuilt with a Dia-inspired finish.**
 
-Zia is a [Sine](https://github.com/CosmoCreeper/Sine) mod that reworks Zen from the frame in. The page sits in a rounded card, the toolbar takes on the colour of whatever site you're on, and the sidebar, address bar, PDFs, media and picture-in-picture are all redesigned to match. It takes its cues from [Dia](https://www.diabrowser.com) and then keeps going: the music player, Multiview and picture-in-picture tucking are Zia's own, and Dia has nothing like them.
+Zia is a [Sine](https://github.com/CosmoCreeper/Sine) mod that reworks Zen from the frame in. The page sits in a rounded card, the toolbar takes on the colour of whatever site you're on, and the sidebar, address bar, PDFs, media and picture-in-picture are all redesigned to match. Every part of it is Zia's own design, down to the music player, Multiview and picture-in-picture tucking.
 
 ![Status](https://img.shields.io/badge/status-beta-yellow)
 ![Platform](https://img.shields.io/badge/tested%20on-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-informational)
@@ -14,12 +14,12 @@ What's new in each release: [CHANGELOG.md](CHANGELOG.md).
 
 **At a glance**
 
-- [A site-coloured toolbar](#the-page-and-the-toolbar) in one rounded card with the page, always readable, with Dia's back, forward and reload animations
-- [Dia's address bar pop-up](#the-address-bar), at the top or the bottom
-- [Dia's PDF viewer look](#pdf-view)
-- [Picture-in-picture](#picture-in-picture) with Dia's controls, that you can throw off the edge of the screen to tuck away
+- [A site-coloured toolbar](#the-page-and-the-toolbar) in one rounded card with the page, always readable, with animated back, forward and reload buttons
+- [A redesigned address bar pop-up](#the-address-bar), at the top or the bottom
+- [A cleaner PDF viewer](#pdf-view)
+- [Picture-in-picture](#picture-in-picture) with new controls, that you can throw off the edge of the screen to tuck away
 - [Multiview](#multiview): a tab that grids up to four videos and live streams
-- [A redesigned sidebar](#the-sidebar): essential tiles, coloured folders, Dia-style tab dragging, hover cards, Glance and 5,166 icons
+- [A redesigned sidebar](#the-sidebar): essential tiles, coloured folders, smooth tab dragging, hover cards, Glance and 5,166 icons
 - [Glass](#glass): the compact sidebar, hover cards and address bar pop-up frosted over the page
 - [Split view](#split-view) with drop cards and a toolbar per pane
 - [A music player card](#music) and sound bars on playing tabs
@@ -72,7 +72,7 @@ Other mods may conflict, and Zia won't be adjusted around them. If something loo
 
 ### Workspace icons
 
-Workspace and folder icons do a lot of the work in the Dia look, so they're worth five minutes.
+Workspace and folder icons do a lot of the work in Zia's look, so they're worth five minutes.
 
 ▶ **[Zia: setting up workspace icons](https://vimeo.com/1228144298)**
 
@@ -84,23 +84,23 @@ Workspace and folder icons do a lot of the work in the Dia look, so they're wort
 
 The page and toolbar sit together in one rounded card. The toolbar picks up the colour of the site underneath and follows it as you scroll. Its text and buttons always stay readable: dark on light sites, white on dark ones, and full white with nothing left faint on strong colours like a bright red. Colours are remembered per site, so pages open already in their colour instead of fading into it. Every few seconds Zia checks the colour against the page again, and if the page has changed (a header that recolours itself after loading) or the first reading was off, the toolbar corrects itself. While a page loads, a glow runs along the address bar. The address itself reads as `domain / title`, and hovering it shows the full URL.
 
-Back, forward and reload move the way Dia's do. Hovering back or forward squeezes the arrow; click and it slides away while a fresh one slides in. Hover reload and its arrowhead draws back round the circle; start a load and it spins into a stop cross, which turns back into the arrow when the page is done. With nowhere to go, back and forward fade to a dimmed look rather than snapping to it.
+Back, forward and reload are animated. Hovering back or forward squeezes the arrow; click and it slides away while a fresh one slides in. Hover reload and its arrowhead draws back round the circle; start a load and it spins into a stop cross, which turns back into the arrow when the page is done. With nowhere to go, back and forward fade to a dimmed look rather than snapping to it.
 
 <!-- image: back/forward/reload animations (short GIF or video) -->
 
 ### The address bar
 
-The address pop-up follows Dia's shape: short rows with room around them, one size and weight of text throughout, and none of Firefox's chips, row menus or extra engine bars. What you type lines up exactly with the results underneath. It can take on the toolbar's colour as it opens, so it reads as the same bar growing. As you type an address, the site's own icon takes the place of the magnifying glass. A paperclip beside site settings copies the page's link and pops into a tick. The whole bar can also move to the **bottom**, under the page, with the pop-up opening upwards, in a single page or a split.
+The address pop-up is pared back: short rows with room around them, one size and weight of text throughout, and none of Firefox's chips, row menus or extra engine bars. What you type lines up exactly with the results underneath. It can take on the toolbar's colour as it opens, so it reads as the same bar growing. As you type an address, the site's own icon takes the place of the magnifying glass. A paperclip beside site settings copies the page's link and pops into a tick. The whole bar can also move to the **bottom**, under the page, with the pop-up opening upwards, in a single page or a split.
 
 ### PDF view
 
-PDFs open in Dia's viewer look: a grey toolbar with the document's name on the left, the page and zoom in the middle beside fit to page, rotate and undo/redo, and download, print and more on the right. The pen opens a second row with Firefox's tools (draw, highlight, text, signature, image and comment). The sidebar is just the pages, the current one framed in blue.
+PDFs open in a cleaner viewer: a grey toolbar with the document's name on the left, the page and zoom in the middle beside fit to page, rotate and undo/redo, and download, print and more on the right. The pen opens a second row with Firefox's tools (draw, highlight, text, signature, image and comment). The sidebar is just the pages, the current one framed in blue.
 
-![A PDF in Zia's Dia-style viewer](<https://raw.githubusercontent.com/z1n-k/zia/readme-images/pdf-view.webp>)
+![A PDF in Zia's viewer](<https://raw.githubusercontent.com/z1n-k/zia/readme-images/pdf-view.webp>)
 
 ### Picture-in-picture
 
-Picture-in-picture looks like Dia's. At rest it's just the video, with nothing laid over it. Hover it and the video dims to show **Back to Tab** and **Close** at the top with the site between them, big 15-second skip and play/pause buttons in the middle, a speaker, volume line and the time in the bottom left, and a thin progress line along the bottom.
+Picture-in-picture gets new controls. At rest it's just the video, with nothing laid over it. Hover it and the video dims to show **Back to Tab** and **Close** at the top with the site between them, big 15-second skip and play/pause buttons in the middle, a speaker, volume line and the time in the bottom left, and a thin progress line along the bottom.
 
 ![Picture-in-picture with its controls](<https://raw.githubusercontent.com/z1n-k/zia/readme-images/pip-controls.webp>)
 
@@ -130,7 +130,7 @@ Essentials sit as tiles, four to a row, or six when the sidebar is wide.
 
 [Glance](https://docs.zen-browser.app/user-manual/glance), Zen's link preview (Alt-click a link, or Option-click on macOS), gets a look of its own. From an essential, a small card with the site's icon springs out from behind the essential's own, and is sucked back in when you close the glance. From a tab, the glanced site sits as a small square tile at the tab's end.
 
-**Split essentials** (experimental): keep a split of two sites as one essential, the way Dia can. Drag a two-site split onto the essentials, or right-click one of its tabs and choose **Add Split to Essentials**. The tile shows both sites in halves of their own; click it and the split opens, at whichever half you clicked. While it's open the tile takes the colour of the half you're in, and so does its hover card; drag it back to the tab list and it's an ordinary split again. Zen can't hold a split among its essentials yet, so Zia keeps the split as two ordinary tabs hidden from the tab list.
+**Split essentials** (experimental): keep a split of two sites as one essential. Drag a two-site split onto the essentials, or right-click one of its tabs and choose **Add Split to Essentials**. The tile shows both sites in halves of their own; click it and the split opens, at whichever half you clicked. While it's open the tile takes the colour of the half you're in, and so does its hover card; drag it back to the tab list and it's an ordinary split again. Zen can't hold a split among its essentials yet, so Zia keeps the split as two ordinary tabs hidden from the tab list.
 
 <!-- image: a split essential, open -->
 
@@ -145,7 +145,7 @@ Folders get hover boxes, a gentle spring when they open and close, icon or emoji
 
 Spaces with a colour of their own carry it through the whole sidebar. An empty folder shows a dashed *Drag tabs here* slot until its first tab arrives. Plain tab groups, like the ones [Advanced Tab Groups](https://github.com/Vertex-Mods/Advanced-Tab-Groups) makes, get the same folder treatment. Downloads sit next to the space name with a progress ring around them.
 
-Tabs drag the way they do in Dia. The tab itself follows the pointer while the rows it passes slide aside, a folder opens up by a row to make room, and over the essentials a tab turns into the tile it's about to become. Drag an essential back off and it's a tab again. Hovering a tab shows a card with its title, address and a few actions (pin as an essential, split, copy the link); hovering a collapsed folder lists what's inside. A collapsed folder with an open tab shows just that tab, glow and all.
+Tabs drag smoothly: the tab itself follows the pointer while the rows it passes slide aside, a folder opens up by a row to make room, and over the essentials a tab turns into the tile it's about to become. Drag an essential back off and it's a tab again. Hovering a tab shows a card with its title, address and a few actions (pin as an essential, split, copy the link); hovering a collapsed folder lists what's inside. A collapsed folder with an open tab shows just that tab, glow and all.
 
 If you'd like asleep tabs to stand out, they can be dimmed (tabs, essentials, and folders whose tabs are all asleep). Zen's pop-up notices get a close button, so they don't have to be waited out.
 
@@ -237,9 +237,9 @@ Almost every part of Zia can be switched on or off on its own. The settings are 
 | Toolbar takes the colour of the site (off: the theme's colour) | on |
 | Zia's rounded page corners (off: Zen's own) | on |
 | Split view drop cards when dragging a tab onto the page (off: Zen's own) | on |
-| PDFs open in Dia's viewer look (off: Firefox's own) | on |
+| PDFs open in Zia's viewer look (off: Firefox's own) | on |
 | **Address bar** | |
-| Dia-style address bar pop-up (off: Zen's own) | on |
+| Zia's address bar pop-up (off: Zen's own) | on |
 | Address bar pop-up takes the toolbar's colour as it opens (needs the site-coloured toolbar) | off |
 | Address bar pop-up is slightly see-through, with the page blurred behind it | on |
 | Address bar position: top or bottom (not with Zen's single toolbar) | top |
@@ -251,7 +251,7 @@ Almost every part of Zia can be switched on or off on its own. The settings are 
 | **Loading bar** | |
 | Use Zen's accent colour for the loading bar (off: Zia blue) | off |
 | **Picture-in-picture** | |
-| Dia-style picture-in-picture controls (off: Firefox's own) | on |
+| Zia's picture-in-picture controls (off: Firefox's own) | on |
 | Tuck picture-in-picture into the side of the screen | on |
 | Picture-in-picture tucks into (the nearest side, a side, the bottom or a bottom corner) | the nearest side |
 | **Multiview** | |
@@ -288,7 +288,7 @@ Edit the parts, then run `scripts/build.sh` to rebuild both files. `scripts/buil
 
 ## About the name and the look
 
-Zia is an independent, unofficial project. It isn't affiliated with, endorsed by, or connected to Dia or The Browser Company, and it contains none of their code or assets. It's a Zen Browser theme built by eye, taking design inspiration from a browser I liked the look of.
+Zia is an independent, unofficial project. It isn't affiliated with or endorsed by any other browser or its makers, and contains no code or assets from one. It's a Zen Browser theme, designed and built from scratch.
 
 ## Credits
 
