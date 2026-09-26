@@ -106,8 +106,9 @@ html.ziaPdf .ziaPdfSep {
   background: rgba(255, 255, 255, 0.18);
 }
 
-/* round Dia buttons */
-html.ziaPdf #toolbarContainer .toolbarButton {
+/* round toolbar buttons (not the items in the ⋮ menu, which live inside
+   the toolbar too and keep pdf.js's full-width rows) */
+html.ziaPdf #toolbarContainer .toolbarButton:not(#secondaryToolbar *) {
   flex: none;
   width: 30px !important;
   min-width: 30px !important;
@@ -120,11 +121,11 @@ html.ziaPdf #toolbarContainer .toolbarButton {
   outline-offset: -2px;
 }
 
-html.ziaPdf #toolbarContainer .toolbarButton:hover:not(:disabled) {
+html.ziaPdf #toolbarContainer .toolbarButton:not(#secondaryToolbar *):hover:not(:disabled) {
   background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
-html.ziaPdf #toolbarContainer .toolbarButton::before {
+html.ziaPdf #toolbarContainer .toolbarButton:not(#secondaryToolbar *)::before {
   width: 17px !important;
   height: 17px !important;
   mask-size: 17px 17px !important;
@@ -134,7 +135,7 @@ html.ziaPdf #toolbarContainer .toolbarButton::before {
   opacity: 1 !important;
 }
 
-html.ziaPdf #toolbarContainer .toolbarButton:disabled::before {
+html.ziaPdf #toolbarContainer .toolbarButton:not(#secondaryToolbar *):disabled::before {
   opacity: 0.35 !important;
 }
 

@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- The PDF viewer's ⋮ menu shows its items at full width again, instead of
+  squeezing each into a narrow strip with its words wrapped one or two to a
+  line.
+
 ## [2.59.2] — 2026-09-26
 
 ### Fixed
