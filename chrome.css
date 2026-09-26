@@ -3448,6 +3448,17 @@ findbar {
     --zen-toolbar-height: 0px !important;
   }
 
+  /* The toolbar's empty strip still sat, unseen, over the top of each
+     pane's own toolbar, taking its clicks (and dragging the window) */
+  & :is(#zen-appcontent-navbar-wrapper, #zen-appcontent-navbar-container, #nav-bar, #nav-bar-customization-target, #urlbar-container) {
+    pointer-events: none !important;
+    -moz-window-dragging: no-drag !important;
+  }
+
+  & :is(#urlbar[breakout-extend], .titlebar-buttonbox-container) {
+    pointer-events: auto !important;
+  }
+
   & #nav-bar > :not(#nav-bar-customization-target),
   & #nav-bar-customization-target > :not(#urlbar-container) {
     visibility: hidden !important;

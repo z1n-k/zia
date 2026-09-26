@@ -1676,6 +1676,22 @@
           if (!tab.isConnected || tab.hasAttribute("zen-essential")) {
             return;
           }
+          // A split essential: its split goes straight to the spot
+          if (tab.ziaSplit?.id) {
+            splitBackToList(tab, (group, tabs) => {
+              for (const t of tabs) {
+                pinFor(t, !below);
+              }
+              if (first && (below || listRoom.sepTop == null || first.top < listRoom.sepTop)) {
+                placeBefore(group, topLevel(first));
+              } else if (!below && sep) {
+                placeBefore(group, sep);
+              } else {
+                gBrowser.moveTabToEnd?.(group);
+              }
+            });
+            return;
+          }
           pinFor(tab, !below);
           if (first && (below || listRoom.sepTop == null || first.top < listRoom.sepTop)) {
             placeBefore(tab, topLevel(first));
@@ -1825,6 +1841,8 @@
             console.error("[Zia] Could not make a split essential:", err);
           }
           if (essential) {
+            // hidden where it lands until the tile flying to it gets there
+            essential.setAttribute("zia-to-essential", "true");
             landProxy(essential);
           } else {
             hideProxy();

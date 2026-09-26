@@ -351,7 +351,8 @@
     }
   }
 
-  function splitBackToList(essential) {
+  // place(group), if given, puts the split where it was dropped
+  function splitBackToList(essential, place = null) {
     const data = essential.ziaSplit;
     if (!data?.id || essential.closing || !essential.isConnected) {
       return;
@@ -382,7 +383,11 @@
         }
       }
       if (a.group) {
-        gBrowser.moveTabBefore(a.group, essential);
+        if (place) {
+          place(a.group, [a, b]);
+        } else {
+          gBrowser.moveTabBefore(a.group, essential);
+        }
       }
     } catch (err) {
       noteError("split essentials: back to the list", err);
