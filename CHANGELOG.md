@@ -8,9 +8,8 @@ Every release of Zia, newest first. The format follows
 
 ### Added
 
-- Split essentials (experimental, off by default): keep a split of two
-  sites as one essential, as Dia can. Turn on **Split essentials** in
-  Zia's settings, then right-click a tab in a two-site split and choose
+- Split essentials (experimental): keep a split of two sites as one
+  essential, as Dia can. Right-click a tab in a two-site split and choose
   **Add Split to Essentials**, or drag the split onto the essentials. The tile shows both sites side by side;
   clicking it opens the split, at the half you clicked, and while it's open
   the tile glows in both sites' colours, leaning towards the half you're

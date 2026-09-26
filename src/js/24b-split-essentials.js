@@ -24,7 +24,7 @@
   const SPLIT_OF = "zia-split-of";
   const SPLIT_SIDE = "zia-split-side";
 
-  const splitEssentialsOn = () => Services.prefs.getBoolPref(SPLIT_PREF, false);
+  const splitEssentialsOn = () => Services.prefs.getBoolPref(SPLIT_PREF, true);
 
   function sessionValue(tab, key) {
     try {

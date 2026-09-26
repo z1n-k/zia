@@ -4423,7 +4423,7 @@
       noteError("zen defaults: dim asleep", err);
     }
     set("zia.essentials.fill-row", false);
-    set("zia.essentials.split", false);
+    set("zia.essentials.split", true);
     set("zia.pip.dia-style", true);
     set("zia.pip.tuck", true);
     set("zia.multiview", true);
@@ -6699,7 +6699,7 @@
   const SPLIT_OF = "zia-split-of";
   const SPLIT_SIDE = "zia-split-side";
 
-  const splitEssentialsOn = () => Services.prefs.getBoolPref(SPLIT_PREF, false);
+  const splitEssentialsOn = () => Services.prefs.getBoolPref(SPLIT_PREF, true);
 
   function sessionValue(tab, key) {
     try {

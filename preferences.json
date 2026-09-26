@@ -71,7 +71,7 @@
     "type": "checkbox",
     "label": "Split essentials (experimental): drag a two-site split onto the essentials",
     "property": "zia.essentials.split",
-    "defaultValue": false
+    "defaultValue": true
   },
   {
     "type": "checkbox",
