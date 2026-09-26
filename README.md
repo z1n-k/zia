@@ -15,11 +15,12 @@ What's new in each release: [CHANGELOG.md](CHANGELOG.md).
 **At a glance**
 
 - [A site-coloured toolbar](#the-page-and-the-toolbar) in one rounded card with the page, always readable, with Dia's back, forward and reload animations
-- [Dia's address bar pop-up](#the-address-bar), frosted, at the top or the bottom
+- [Dia's address bar pop-up](#the-address-bar), at the top or the bottom
 - [Dia's PDF viewer look](#pdf-view)
 - [Picture-in-picture](#picture-in-picture) with Dia's controls, that you can throw off the edge of the screen to tuck away
 - [Multiview](#multiview): a tab that grids up to four videos and live streams
-- [A redesigned sidebar](#the-sidebar): essential tiles, coloured folders, Dia-style tab dragging, hover cards and 5,166 icons
+- [A redesigned sidebar](#the-sidebar): essential tiles, coloured folders, Dia-style tab dragging, hover cards, Glance and 5,166 icons
+- [Glass](#glass): the compact sidebar, hover cards and address bar pop-up frosted over the page
 - [Split view](#split-view) with drop cards and a toolbar per pane
 - [A music player card](#music) and sound bars on playing tabs
 - [Folders that name themselves](#folder-names-and-icons-from-a-local-model), with a model that runs on your machine
@@ -89,13 +90,13 @@ Back, forward and reload move the way Dia's do. Hovering back or forward squeeze
 
 ### The address bar
 
-The address pop-up follows Dia's shape: short rows with room around them, one size and weight of text throughout, and none of Firefox's chips, row menus or extra engine bars. What you type lines up exactly with the results underneath. It's slightly see-through, with the page blurred behind it, and it can take on the toolbar's colour as it opens so it reads as the same bar growing. As you type an address, the site's own icon takes the place of the magnifying glass. A paperclip beside site settings copies the page's link and pops into a tick. The whole bar can also move to the **bottom**, under the page, with the pop-up opening upwards, in a single page or a split.
+The address pop-up follows Dia's shape: short rows with room around them, one size and weight of text throughout, and none of Firefox's chips, row menus or extra engine bars. What you type lines up exactly with the results underneath. It can take on the toolbar's colour as it opens, so it reads as the same bar growing. As you type an address, the site's own icon takes the place of the magnifying glass. A paperclip beside site settings copies the page's link and pops into a tick. The whole bar can also move to the **bottom**, under the page, with the pop-up opening upwards, in a single page or a split.
 
 ### PDF view
 
 PDFs open in Dia's viewer look: a grey toolbar with the document's name on the left, the page and zoom in the middle beside fit to page, rotate and undo/redo, and download, print and more on the right. The pen opens a second row with Firefox's tools (draw, highlight, text, signature, image and comment). The sidebar is just the pages, the current one framed in blue.
 
-<!-- image: the PDF viewer -->
+![A PDF in Zia's Dia-style viewer](<https://raw.githubusercontent.com/z1n-k/zia/readme-images/pdf-view.webp>)
 
 ### Picture-in-picture
 
@@ -125,9 +126,14 @@ Multiview works with **YouTube, Twitch** (live, videos and clips), **Kick, Vimeo
 
 ### The sidebar
 
-Essentials sit as tiles, four to a row, or six when the sidebar is wide. Glance at a link from an essential (Option/Alt-click) and a small card with the site's icon springs out from behind the essential's own, then gets sucked back in when you close the glance.
+Essentials sit as tiles, four to a row, or six when the sidebar is wide.
 
-<!-- image: glance card springing out of an essential (short GIF or video) -->
+[Glance](https://docs.zen-browser.app/user-manual/glance), Zen's link preview (Alt-click a link, or Option-click on macOS), gets a look of its own. From an essential, a small card with the site's icon springs out from behind the essential's own, and is sucked back in when you close the glance. From a tab, the glanced site sits as a small square tile at the tab's end.
+
+<p>
+  <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/glance-essential.png" alt="A glance card fanned out from an essential" width="360">
+  <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/glance-tab.png" alt="A glance tile at the end of a tab" width="360">
+</p>
 
 Folders get hover boxes, a gentle spring when they open and close, icon or emoji covers, an × to delete them, and a colour of their own from the right-click menu that tints the whole folder:
 
@@ -135,9 +141,9 @@ Folders get hover boxes, a gentle spring when they open and close, icon or emoji
 
 Spaces with a colour of their own carry it through the whole sidebar. An empty folder shows a dashed *Drag tabs here* slot until its first tab arrives. Plain tab groups, like the ones [Advanced Tab Groups](https://github.com/Vertex-Mods/Advanced-Tab-Groups) makes, get the same folder treatment. Downloads sit next to the space name with a progress ring around them.
 
-Tabs drag the way they do in Dia. The tab itself follows the pointer while the rows it passes slide aside, a folder opens up by a row to make room, and over the essentials a tab turns into the tile it's about to become. Drag an essential back off and it's a tab again. Hovering a tab shows a card with its title, address and a few actions (pin as an essential, split, copy the link); hovering a collapsed folder lists what's inside. The cards are slightly see-through, with the page blurred behind them. A collapsed folder with an open tab shows just that tab, glow and all.
+Tabs drag the way they do in Dia. The tab itself follows the pointer while the rows it passes slide aside, a folder opens up by a row to make room, and over the essentials a tab turns into the tile it's about to become. Drag an essential back off and it's a tab again. Hovering a tab shows a card with its title, address and a few actions (pin as an essential, split, copy the link); hovering a collapsed folder lists what's inside. A collapsed folder with an open tab shows just that tab, glow and all.
 
-Compact mode's sidebar is frosted glass too: slightly see-through, with the page blurred behind it as it slides out. If you'd like asleep tabs to stand out, they can be dimmed (tabs, essentials, and folders whose tabs are all asleep). Zen's pop-up notices get a close button, so they don't have to be waited out.
+If you'd like asleep tabs to stand out, they can be dimmed (tabs, essentials, and folders whose tabs are all asleep). Zen's pop-up notices get a close button, so they don't have to be waited out.
 
 Cmd/Ctrl+Z reopens what you just closed for ten seconds afterwards. That includes whole folders, splits and groups of tabs: a split comes back as a split, and a deleted folder comes back with its name.
 
@@ -146,6 +152,22 @@ Cmd/Ctrl+Z reopens what you just closed for ten seconds afterwards. That include
 Covers come from an icon picker Zia adds as a third tab beside Zen's own: 5,166 [Tabler](https://tabler.io/icons) icons, in outline or, for about a thousand of them, solid. Switch between the two at the top of the picker. The search knows each icon's tags as well as its name, so *money* finds cash, coins and wallets. Zen's emojis are still there if you'd rather use one.
 
 <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/icon-picker.png" alt="The icon picker with Tabler icons in solid style" width="474">
+
+### Glass
+
+Three things float over the page, and all three are frosted glass: slightly see-through, with whatever's behind them blurred and its colours showing through. Each can be switched back to solid in the options.
+
+**Compact mode's sidebar**, as it slides out over the page:
+
+![The compact sidebar as frosted glass over a photo](<https://raw.githubusercontent.com/z1n-k/zia/readme-images/glass-compact-sidebar.webp>)
+
+**The tab and folder hover cards:**
+
+<img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/glass-hover-card.png" alt="A tab's hover card as frosted glass" width="520">
+
+**The address bar pop-up:**
+
+![The address bar pop-up as frosted glass over a photo](<https://raw.githubusercontent.com/z1n-k/zia/readme-images/glass-address-pop-up.webp>)
 
 ### Split view
 
