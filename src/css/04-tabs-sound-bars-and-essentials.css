@@ -294,3 +294,10 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
     background-position: 14% 50%, 82% 50% !important;
   }
 }
+
+/* A split dragged over the essentials: they're outlined, ready to take it */
+[zia-split-drop] {
+  outline: 1.5px dashed rgba(255, 255, 255, 0.35) !important;
+  outline-offset: 2px !important;
+  border-radius: var(--zia-essential-radius, 12px) !important;
+}

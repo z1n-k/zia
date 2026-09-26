@@ -193,14 +193,21 @@
     syncSplitSelection();
   }
 
-  // Turns a two-site split into a split essential: the split itself stays
-  // (hidden from the tab list) and becomes the essential's.
-  function addSplitToEssentials(tab) {
+  // A two-site split, not already a split essential's, can become one
+  function canBecomeSplitEssential(tab) {
     const group = tab?.group;
     const tabs = group?.hasAttribute("split-view-group") ? group.tabs.filter((t) => !t.closing) : [];
-    if (tabs.length !== 2 || tabs.some((t) => t.hasAttribute(SPLIT_OF) || t.pinned)) {
+    return splitEssentialsOn() && tabs.length === 2 && !tabs.some((t) => t.hasAttribute(SPLIT_OF) || t.pinned);
+  }
+
+  // Turns a two-site split into a split essential: the split itself stays
+  // (hidden from the tab list) and becomes the essential's. From its tab's
+  // right-click menu, or dragging it onto the essentials.
+  function addSplitToEssentials(tab) {
+    if (!canBecomeSplitEssential(tab)) {
       return;
     }
+    const tabs = tab.group.tabs.filter((t) => !t.closing);
     const [a, b] = tabs;
     const id = `zia-split-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
     const essential = gBrowser.addTab(tabUrl(a) || "about:blank", {
@@ -343,10 +350,7 @@
         if (event.target !== menu) {
           return;
         }
-        const tab = window.TabContextMenu?.contextTab;
-        const group = tab?.group;
-        item.hidden = !splitEssentialsOn() || !group?.hasAttribute("split-view-group") ||
-          group.tabs.length !== 2 || group.tabs.some((t) => t.hasAttribute(SPLIT_OF) || t.pinned);
+        item.hidden = !canBecomeSplitEssential(window.TabContextMenu?.contextTab);
       });
     }
 

@@ -6868,14 +6868,21 @@
     syncSplitSelection();
   }
 
-  // Turns a two-site split into a split essential: the split itself stays
-  // (hidden from the tab list) and becomes the essential's.
-  function addSplitToEssentials(tab) {
+  // A two-site split, not already a split essential's, can become one
+  function canBecomeSplitEssential(tab) {
     const group = tab?.group;
     const tabs = group?.hasAttribute("split-view-group") ? group.tabs.filter((t) => !t.closing) : [];
-    if (tabs.length !== 2 || tabs.some((t) => t.hasAttribute(SPLIT_OF) || t.pinned)) {
+    return splitEssentialsOn() && tabs.length === 2 && !tabs.some((t) => t.hasAttribute(SPLIT_OF) || t.pinned);
+  }
+
+  // Turns a two-site split into a split essential: the split itself stays
+  // (hidden from the tab list) and becomes the essential's. From its tab's
+  // right-click menu, or dragging it onto the essentials.
+  function addSplitToEssentials(tab) {
+    if (!canBecomeSplitEssential(tab)) {
       return;
     }
+    const tabs = tab.group.tabs.filter((t) => !t.closing);
     const [a, b] = tabs;
     const id = `zia-split-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
     const essential = gBrowser.addTab(tabUrl(a) || "about:blank", {
@@ -7018,10 +7025,7 @@
         if (event.target !== menu) {
           return;
         }
-        const tab = window.TabContextMenu?.contextTab;
-        const group = tab?.group;
-        item.hidden = !splitEssentialsOn() || !group?.hasAttribute("split-view-group") ||
-          group.tabs.length !== 2 || group.tabs.some((t) => t.hasAttribute(SPLIT_OF) || t.pinned);
+        item.hidden = !canBecomeSplitEssential(window.TabContextMenu?.contextTab);
       });
     }
 
@@ -9209,6 +9213,10 @@
         drag.hasTiles = hasTiles;
         debugDrag(event, point, sidebar, essentials);
         drag.essentials = !drag.folder && !drag.split && overEssentials && canBeEssential(drag.tab);
+        // A two-site split over the essentials becomes a split essential
+        // (24b-split-essentials.js); the essentials are outlined meanwhile.
+        drag.splitEssential = !!drag.split && overEssentials && canBecomeSplitEssential(drag.tab);
+        essentials?.toggleAttribute("zia-split-drop", drag.splitEssential);
         drag.noTiles = drag.essentials && !hasTiles && !promo;
         makeRoom(drag.noTiles ? document.getElementById("zen-essentials") || grid : null);
         if (drag.essentials) {
@@ -9708,6 +9716,18 @@
       (event) => {
         const tab = drag?.tab;
 
+        if (tab && drag.splitEssential) {
+          event.preventDefault();
+          event.stopPropagation();
+          setTimeout(() => {
+            try {
+              addSplitToEssentials(tab);
+            } catch (err) {
+              console.error("[Zia] Could not make a split essential:", err);
+            }
+          }, 0);
+          return;
+        }
         if (tab && !drag.essentials && !drag.folder && !drag.split) {
           const point = pointerOf(event);
           const over = event.target;
@@ -9847,6 +9867,7 @@
       }
       drag = null;
       pending = null;
+      document.querySelectorAll("[zia-split-drop]").forEach((el) => el.removeAttribute("zia-split-drop"));
       document.documentElement.removeAttribute("zia-dragging-tab");
       muteZenHaptics(false);
       reclip();

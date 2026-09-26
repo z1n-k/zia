@@ -1280,6 +1280,10 @@
         drag.hasTiles = hasTiles;
         debugDrag(event, point, sidebar, essentials);
         drag.essentials = !drag.folder && !drag.split && overEssentials && canBeEssential(drag.tab);
+        // A two-site split over the essentials becomes a split essential
+        // (24b-split-essentials.js); the essentials are outlined meanwhile.
+        drag.splitEssential = !!drag.split && overEssentials && canBecomeSplitEssential(drag.tab);
+        essentials?.toggleAttribute("zia-split-drop", drag.splitEssential);
         drag.noTiles = drag.essentials && !hasTiles && !promo;
         makeRoom(drag.noTiles ? document.getElementById("zen-essentials") || grid : null);
         if (drag.essentials) {
@@ -1779,6 +1783,18 @@
       (event) => {
         const tab = drag?.tab;
 
+        if (tab && drag.splitEssential) {
+          event.preventDefault();
+          event.stopPropagation();
+          setTimeout(() => {
+            try {
+              addSplitToEssentials(tab);
+            } catch (err) {
+              console.error("[Zia] Could not make a split essential:", err);
+            }
+          }, 0);
+          return;
+        }
         if (tab && !drag.essentials && !drag.folder && !drag.split) {
           const point = pointerOf(event);
           const over = event.target;
@@ -1918,6 +1934,7 @@
       }
       drag = null;
       pending = null;
+      document.querySelectorAll("[zia-split-drop]").forEach((el) => el.removeAttribute("zia-split-drop"));
       document.documentElement.removeAttribute("zia-dragging-tab");
       muteZenHaptics(false);
       reclip();
