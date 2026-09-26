@@ -5,12 +5,12 @@
 Zia is a [Sine](https://github.com/CosmoCreeper/Sine) mod that reworks Zen from the frame in. The page sits in a rounded card, the toolbar takes on the colour of whatever site you're on, and the sidebar, address bar, PDFs, media and picture-in-picture are all redesigned to match. It takes its cues from [Dia](https://www.diabrowser.com) and then keeps going: the music player, Multiview and picture-in-picture tucking are Zia's own, and Dia has nothing like them.
 
 ![Status](https://img.shields.io/badge/status-beta-yellow)
-![Platform](https://img.shields.io/badge/tested%20on-macOS%20%C2%B7%20Windows-informational)
+![Platform](https://img.shields.io/badge/tested%20on-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux-informational)
 ![Licence](https://img.shields.io/badge/licence-MIT-blue)
 
 What's new in each release: [CHANGELOG.md](CHANGELOG.md).
 
-> **Beta.** Tested on macOS and Windows in dark mode, with the **Sidebar and Top Toolbar** layout. Linux, light mode and Zen's other layouts get less testing, so if something looks off there, [open an issue](https://github.com/z1n-k/zia/issues) with a screenshot.
+> **Beta.** Tested on macOS, Windows and Linux in dark mode, with the **Sidebar and Top Toolbar** layout. Light mode and Zen's other layouts get less testing, so if something looks off there, [open an issue](https://github.com/z1n-k/zia/issues) with a screenshot.
 
 **At a glance**
 
@@ -272,7 +272,6 @@ Changed at the default level only. If you've set either yourself in `about:confi
 
 ## Known gaps
 
-- Linux gets little testing
 - Light mode and Zen's layouts other than **Sidebar and Top Toolbar** are less polished
 - Split essentials are experimental: Zen doesn't support them itself yet, so Zia works around it
 
