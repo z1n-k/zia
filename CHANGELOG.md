@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.60.0] — 2026-09-26
+
+### Changed
+
+- Compact mode: the top toolbar (address, back, forward, reload and the rest)
+  stays up while the sidebar is out, instead of hiding. It's cut away only
+  where the sidebar covers it, following it as it slides, so the address
+  never shows through the sidebar.
+
 ## [2.59.6] — 2026-09-26
 
 ### Fixed

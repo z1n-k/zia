@@ -15,18 +15,6 @@
   z-index: 100 !important;
 }
 
-:root[zen-compact-mode="true"][zia-panel-open="true"] #zen-appcontent-navbar-container {
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
-
-:root[zen-compact-mode="true"][zia-panel-open="true"] #urlbar:not([breakout-extend]) {
-  opacity: 0 !important;
-  pointer-events: none !important;
-
-  transition: none !important;
-}
-
 /* Windows, compact mode: no window-button box in the sidebar's top row.
    The real minimise, maximise and close stay top right (zia.uc.js leaves
    them there), and a box left in the row pushed the space's name out. */
@@ -34,28 +22,6 @@
   :root[zen-compact-mode="true"] #zen-sidebar-top-buttons .titlebar-buttonbox-container {
     display: none !important;
   }
-}
-
-/* Windows: the window buttons live in that top bar and stay put while the
-   sidebar is out; everything else in it hides as above. */
-@media (-moz-platform: windows) {
-  :root[zen-compact-mode="true"][zia-panel-open="true"] #zen-appcontent-navbar-container {
-    opacity: 1 !important;
-    visibility: hidden !important;
-
-    & .titlebar-buttonbox-container {
-      visibility: visible !important;
-      pointer-events: auto !important;
-    }
-  }
-}
-
-#urlbar {
-  transition: opacity 0.12s ease;
-}
-
-#zen-appcontent-navbar-container {
-  transition: opacity 0.12s ease;
 }
 
 :root[zen-compact-mode="true"] #titlebar > #zen-sidebar-top-buttons {
