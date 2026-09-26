@@ -8430,6 +8430,12 @@
       if (folder && drag.moving.contains?.(folder)) {
         folder = null;
       }
+      // a folder goes past a closed folder, not into it (which caught it on
+      // its way to the top of the list)
+      if (folder && drag.folder && isCollapsed(folder)) {
+        folder = null;
+        atEnd = false;
+      }
 
       const crosses = below === !!drag.tab.pinned;
 
@@ -9352,74 +9358,70 @@
       true
     );
 
-    // An open folder folds shut as it's picked up, over a few frames, after
-    // the drag has begun. Once it has, the list is measured again: until
-    // then every row below was moved by the open folder's height, and would
-    // land on the rows above.
-    const remeasureOnceFolded = (folder) => {
-      let last = null;
-      let still = 0;
-      let frames = 0;
-      const step = () => {
-        if (drag?.folder !== folder || !folder.isConnected) {
-          return;
-        }
-        const height = Math.round(folder.getBoundingClientRect().height);
-        still = height === last ? still + 1 : 0;
-        last = height;
-        if (!((isCollapsed(folder) && still >= 2) || still >= 8 || ++frames > 40)) {
-          requestAnimationFrame(step);
-          return;
-        }
-        // measured where they sit, not partway through sliding back
-        const strip = document.getElementById("tabbrowser-tabs");
-        strip?.setAttribute("zia-measuring", "true");
-        for (const row of drag.rows) {
-          if (row.node !== folder && !folder.contains(row.node)) {
-            place(row.node, 0, false);
-          }
-        }
-        placeSep(0);
-        const kept = folder.style.getPropertyValue("transform");
-        const keptPriority = folder.style.getPropertyPriority("transform");
-        folder.style.removeProperty("transform");
-        // (a real layout read first: the measuring below reads it unflushed)
-        folder.getBoundingClientRect();
-        const rows = measureRows(null);
-        const box = layoutTop(folder);
-        folder.style.setProperty("transform", kept, keptPriority);
-        strip?.removeAttribute("zia-measuring");
-        const mine = rows.find((row) => row.node === folder || folder.contains(row.node));
-        const sep = currentSeparator();
-        drag.rows = rows;
-        drag.origin = box.top;
-        drag.height = box.height;
-        drag.pitch = box.height;
-        drag.index = mine?.index ?? drag.index;
-        drag.shifted = new Set();
-        drag.sepTop = sep ? sep.getBoundingClientRect().top : null;
-        apply(lastDy);
-      };
-      requestAnimationFrame(step);
-    };
-
-    const startOn = (target, event) => {
-      begin(target, event);
-      const folder = drag?.folder;
-      if (folder && !isCollapsed(folder)) {
-        remeasureOnceFolded(folder);
+    // An open folder is shut the moment it starts to be dragged (before the
+    // drag itself begins, and without Zen's folding animation), and is
+    // dragged and dropped as a closed folder. A plain click on it still just
+    // closes it.
+    let snapping = null;
+    window.addEventListener("mousedown", (event) => {
+      snapping = null;
+      if (event.button !== 0 || !featureOn("dia-tab-drag")) {
+        return;
       }
-    };
+      const label = event.target?.closest?.(".tab-group-label-container");
+      const folder = label?.closest?.("zen-folder");
+      if (!folder || label.parentElement !== folder || isCollapsed(folder)) {
+        return;
+      }
+      snapping = { folder, x: event.screenX, y: event.screenY, shut: false };
+    }, true);
+    window.addEventListener("mousemove", (event) => {
+      if (!snapping || snapping.shut) {
+        return;
+      }
+      if (!(event.buttons & 1)) {
+        snapping = null;
+        return;
+      }
+      if (Math.hypot(event.screenX - snapping.x, event.screenY - snapping.y) < 2) {
+        return;
+      }
+      snapping.shut = true;
+      const folders = window.gZenFolders;
+      const was = folders?._dontAnimateFolder;
+      try {
+        if (folders) {
+          folders._dontAnimateFolder = true;
+        }
+        snapping.folder.collapsed = true;
+      } catch (err) {
+        noteError("tab dragging: shut folder", err);
+      }
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (folders) {
+          folders._dontAnimateFolder = was;
+        }
+      }));
+    }, true);
+    // shut already: the click that would have shut it isn't let reopen it
+    window.addEventListener("click", (event) => {
+      const shut = snapping?.shut && snapping.folder.contains(event.target);
+      snapping = null;
+      if (shut) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+    }, true);
 
     const onStart = (event) => {
       const tab = tabFromEvent(event);
       if (tab) {
-        startOn(tab, event);
+        begin(tab, event);
         return;
       }
       const inSidebar = event.target?.closest?.("#navigator-toolbox, #tabbrowser-tabs");
       if (inSidebar && pending?.tab) {
-        startOn(pending.tab, event);
+        begin(pending.tab, event);
       }
     };
     window.addEventListener("dragstart", onStart, true);

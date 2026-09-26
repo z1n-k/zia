@@ -25,8 +25,11 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
-- Dragging an open folder no longer jumbles the rows below it, piling
-  them onto the ones above (even up over the essentials).
+- An open folder shuts the moment you start dragging it, and is dragged
+  and dropped as a closed folder, instead of jumbling the rows below it.
+
+- A folder dragged up the list goes past closed folders rather than into
+  them, so it's easy to take it right to the top.
 
 - A split dragged into or out of a folder narrows and widens to fit, as a
   tab does.
