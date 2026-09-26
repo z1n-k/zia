@@ -260,3 +260,10 @@ zen-split-fake-tab {
 #tabbrowser-tabs[zia-measuring] * {
   transition: none !important;
 }
+
+/* A split's own label stays hidden (Zen hides it), whatever the drag and
+   landing rules above show: it's a blue block Firefox draws for groups */
+#tabbrowser-tabs tab-group[split-view-group] > .tab-group-label-container:not(#zia-a):not(#zia-b) {
+  visibility: hidden !important;
+  opacity: 0 !important;
+}

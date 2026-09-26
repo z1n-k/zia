@@ -8407,7 +8407,9 @@
       };
       let cut = slotTop != null ? slotTop + drag.height / 2 - 2 : null;
       if (prev && same(prev)) {
-        const down = leaveDown(next);
+        // the last folder before the separator has no row after it: its
+        // slot is a whole tab tall, not the sliver down to the separator
+        const down = !same(next) && slotTop != null ? slotTop + drag.height * 1.5 : leaveDown(next);
         if (down != null) {
           cut = (leaveUp(prev) + down) / 2;
         }

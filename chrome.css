@@ -705,6 +705,12 @@
   }
 }
 
+
+/* The "paste the copied link" suggestion: just the link, without the
+   search engine's name in a chip at the far right */
+.urlbarView-row:is([type="clipboard"], :has(.urlbarView-favicon[src*="clipboard"])) :is(.urlbarView-action, .urlbarView-button:not(.urlbarView-button-result-menu)) {
+  display: none !important;
+}
 #zia-workspace-slot {
   display: flex;
 
@@ -1393,6 +1399,13 @@ zen-split-fake-tab {
 #tabbrowser-tabs[zia-measuring],
 #tabbrowser-tabs[zia-measuring] * {
   transition: none !important;
+}
+
+/* A split's own label stays hidden (Zen hides it), whatever the drag and
+   landing rules above show: it's a blue block Firefox draws for groups */
+#tabbrowser-tabs tab-group[split-view-group] > .tab-group-label-container:not(#zia-a):not(#zia-b) {
+  visibility: hidden !important;
+  opacity: 0 !important;
 }
 @property --zia-folder-bottom-extra {
   syntax: "<length>";

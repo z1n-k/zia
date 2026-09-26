@@ -35,7 +35,14 @@ Every release of Zia, newest first. The format follows
 - A split dragged into or out of a folder narrows and widens to fit, as a
   tab does.
 
-- Zen's blue drop-to-split marker no longer flashes as a split is dropped.
+- No blue block flashes on a split as it's dragged or dropped (the split's
+  own label, or Zen's drop-to-split marker).
+
+- A tab dragged into the last folder before the separator lines up with
+  the space opened for it, as it does for the other folders.
+
+- The suggestion to paste a copied link no longer shows the search
+  engine's name in a chip beside it.
 
 - The tab you're dragging keeps its ×.
 

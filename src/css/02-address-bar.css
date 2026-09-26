@@ -498,3 +498,9 @@
   }
 }
 
+
+/* The "paste the copied link" suggestion: just the link, without the
+   search engine's name in a chip at the far right */
+.urlbarView-row:is([type="clipboard"], :has(.urlbarView-favicon[src*="clipboard"])) :is(.urlbarView-action, .urlbarView-button:not(.urlbarView-button-result-menu)) {
+  display: none !important;
+}
