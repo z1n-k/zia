@@ -13,8 +13,10 @@
       icon: "pin",
       label: "Add to Essentials",
 
-      run: (tab) => gZenPinnedTabManager?.addToEssentials(tab),
-      hidden: (tab) => tab.hasAttribute("zen-essential") || tab.pinned,
+      // a split goes in whole, as a split essential: Zen can't make one of
+      // its tabs an essential (it left the other stranded, without a title)
+      run: (tab) => (inSplit(tab) ? addSplitToEssentials(tab) : gZenPinnedTabManager?.addToEssentials(tab)),
+      hidden: (tab) => tab.hasAttribute("zen-essential") || tab.pinned || (inSplit(tab) && !canBecomeSplitEssential(tab)),
     },
     {
       name: "unpin",
@@ -51,6 +53,8 @@
       keepsCard: true,
     },
   ];
+
+  const inSplit = (tab) => !!tab?.group?.hasAttribute?.("split-view-group");
 
   function copyLink(tab) {
     const uri = tab?.linkedBrowser?.currentURI;

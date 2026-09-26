@@ -7355,7 +7355,16 @@
         if (event.target !== menu) {
           return;
         }
-        item.hidden = !canBecomeSplitEssential(window.TabContextMenu?.contextTab);
+        const tab = window.TabContextMenu?.contextTab;
+        item.hidden = !canBecomeSplitEssential(tab);
+        // Zen's own Add to Essentials can't take a tab in a split: it made
+        // the one tab half an essential and stranded the other
+        if (tab?.group?.hasAttribute?.("split-view-group")) {
+          const zens = document.getElementById("context_zen-add-essential");
+          if (zens) {
+            zens.hidden = true;
+          }
+        }
       });
     }
 
@@ -7507,8 +7516,10 @@
       icon: "pin",
       label: "Add to Essentials",
 
-      run: (tab) => gZenPinnedTabManager?.addToEssentials(tab),
-      hidden: (tab) => tab.hasAttribute("zen-essential") || tab.pinned,
+      // a split goes in whole, as a split essential: Zen can't make one of
+      // its tabs an essential (it left the other stranded, without a title)
+      run: (tab) => (inSplit(tab) ? addSplitToEssentials(tab) : gZenPinnedTabManager?.addToEssentials(tab)),
+      hidden: (tab) => tab.hasAttribute("zen-essential") || tab.pinned || (inSplit(tab) && !canBecomeSplitEssential(tab)),
     },
     {
       name: "unpin",
@@ -7545,6 +7556,8 @@
       keepsCard: true,
     },
   ];
+
+  const inSplit = (tab) => !!tab?.group?.hasAttribute?.("split-view-group");
 
   function copyLink(tab) {
     const uri = tab?.linkedBrowser?.currentURI;

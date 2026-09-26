@@ -8,6 +8,11 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- The pin (Add to Essentials) in a tab's hover card turns a split into a
+  split essential, instead of pinning one of its tabs and leaving the other
+  without its title; Zen's own **Add to Essentials** is hidden for tabs in a
+  split, where it did the same.
+
 - An essential dragged back into the tab list lands where it's dropped
   (pinned, if that's above the separator), instead of vanishing for a
   moment and turning up at the end of the list below the separator.
