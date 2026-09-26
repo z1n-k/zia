@@ -1032,9 +1032,22 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   display: none !important;
 }
 
+/* no wider than the other essentials, whatever its halves want */
+.tabbrowser-tab[zen-essential][zia-split-tile] {
+  min-width: 0 !important;
+}
+
+.tabbrowser-tab[zen-essential][zia-split-tile] > .tab-stack {
+  min-width: 0 !important;
+  overflow: hidden;
+}
+
 .tabbrowser-tab[zen-essential][zia-split-tile] > .tab-stack > .tab-content {
   position: relative;
   z-index: 1;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden;
   display: flex !important;
   align-items: stretch !important;
   justify-content: center !important;
@@ -1049,7 +1062,9 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   }
 
   & > .zia-split-half {
-    flex: 0 0 auto !important;
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    max-width: calc(50% - 3px) !important;
     height: 100% !important;
     aspect-ratio: 4 / 5;
     display: grid !important;
@@ -3905,6 +3920,17 @@ tooltip[default="true"] {
 :root[zia-split="true"] .zen-view-splitter-header-container {
   z-index: 5 !important;
   translate: 0 var(--zia-toolbar-height) !important;
+}
+
+/* Only the little move-and-expand pill itself takes the pointer: the
+   invisible box around it sat over the pane's toolbar buttons. */
+.zen-view-splitter-header-container {
+  pointer-events: none !important;
+}
+
+:root:not([inDOMFullscreen="true"]) .browserSidebarContainer:hover .zen-view-splitter-header,
+.zen-view-splitter-header:hover {
+  pointer-events: auto !important;
 }
 
 #urlbar[breakout-extend]:not([zia-classic]) {

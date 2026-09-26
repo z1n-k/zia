@@ -25,6 +25,9 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- A split pane's toolbar buttons can always be clicked; the invisible box
+  around Zen's little move-and-expand handle sometimes sat over them.
+
 - Folder and space icons show again. Since 2.58.0 they could go missing,
   because Zen draws them before Zia had pointed Firefox at its icons.
 

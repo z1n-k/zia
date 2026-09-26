@@ -829,7 +829,10 @@
         sizeProxy(proxy, row.width, row.height);
         host.appendChild(proxy);
         if (drag.split) {
+          // a split starts as the tile itself, not squeezed from its row
           dressSplitProxy(proxy, drag.tab);
+          const tile = tileSize();
+          sizeProxy(proxy, tile.bgWidth || tile.width, tile.bgHeight || tile.height);
         }
         try {
           window.gZenPinnedTabManager?.setEssentialTabIcon?.(proxy);

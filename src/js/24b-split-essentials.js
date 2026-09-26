@@ -173,6 +173,11 @@
     }
     fillSplitHalves(content, [data.a, data.b]);
     copy.setAttribute("zia-split-tile", "true");
+    // the copy's styles were cleared: keep the tile's colour
+    const glow = essential.style.getPropertyValue("--zia-split-glow");
+    if (glow) {
+      copy.style.setProperty("--zia-split-glow", glow);
+    }
   }
 
   // The selected look takes the colour of the half you're in, over the
