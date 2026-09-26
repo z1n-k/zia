@@ -51,6 +51,11 @@
   }
 }
 
+/* Zen's "Clear" beside the separator keeps its down arrow */
+#zen-workspace-close-unpinned-tabs-button > .toolbarbutton-icon {
+  display: flex !important;
+}
+
 .pinned-tabs-container-separator toolbarseparator {
   background: rgba(255, 255, 255, 0.13) !important;
 }
