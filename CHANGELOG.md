@@ -25,6 +25,12 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- A dragged essential glides into its new place when you let go, instead
+  of jumping there.
+
+- A dragged folder glides into place again when you let go, instead of
+  flashing there.
+
 - A split can be dragged across the separator, among the pinned tabs and
   folders, like a single tab.
 

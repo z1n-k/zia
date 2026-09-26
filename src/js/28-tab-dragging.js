@@ -493,7 +493,8 @@
       const visualMid = drag.origin + dy + drag.height / 2;
       place(moving, dy, true);
 
-      if (drag.essentials) {
+      // over the essentials (a tab or a split): the list closes up behind it
+      if (drag.essentials || drag.splitEssential) {
         for (const row of drag.rows) {
           if (notARow(row)) {
             continue;
@@ -1832,11 +1833,41 @@
       essentialDropped = event?.type === "drop" ? state.tab : null;
       setTimeout(sweepLeftovers, 400);
 
-      setTimeout(() => {
+      const copy = state.copy;
+      const reveal = () => {
         state.tab.style.visibility = "";
         state.tab.removeAttribute("zia-essential-dragged");
-        requestAnimationFrame(() => state.copy.remove());
-      }, 0);
+        requestAnimationFrame(() => copy.remove());
+      };
+      // Dropped among the essentials: the tile glides from where it was let
+      // go into its place (once that's settled) before the real one shows
+      const glideHome = () => {
+        if (event?.type !== "drop" || state.asTab || !copy.isConnected || !state.tab.isConnected ||
+            !state.tab.hasAttribute("zen-essential") || matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          reveal();
+          return;
+        }
+        let last = null;
+        let tries = 0;
+        const settleThenGlide = () => {
+          const box = state.tab.getBoundingClientRect();
+          const key = `${Math.round(box.left)},${Math.round(box.top)}`;
+          if (key !== last && tries++ < 8) {
+            last = key;
+            requestAnimationFrame(settleThenGlide);
+            return;
+          }
+          const drawn = state.tab.querySelector(".tab-background")?.getBoundingClientRect() || box;
+          const shift = copy.ziaHostShift || { x: 0, y: 0 };
+          const ms = ESSENTIAL_MS + 60;
+          copy.style.setProperty("transition", `left ${ms}ms cubic-bezier(0.2, 0.8, 0.2, 1), top ${ms}ms cubic-bezier(0.2, 0.8, 0.2, 1)`, "important");
+          copy.style.setProperty("left", `${Math.round(box.left + box.width / 2 - shift.x)}px`, "important");
+          copy.style.setProperty("top", `${Math.round(drawn.top + drawn.height / 2 - shift.y)}px`, "important");
+          setTimeout(reveal, ms + 20);
+        };
+        requestAnimationFrame(settleThenGlide);
+      };
+      setTimeout(glideHome, 0);
     };
 
     window.addEventListener("dragstart", onEssentialStart, true);
@@ -2058,6 +2089,9 @@
         node.setAttribute("zia-landing", "true");
         const held = node.getBoundingClientRect();
         node.style.setProperty("transform", `translate(${landing.left - held.left}px, ${landing.top - held.top}px)`, "important");
+        // Zen moves a dropped folder a frame or two later: until it has,
+        // it's held where it was let go, then glides from there
+        let waits = 0;
         const glideIn = () => {
           if (pendingFinish) {
             requestAnimationFrame(glideIn);
@@ -2067,6 +2101,11 @@
           const to = node.getBoundingClientRect();
           const dy = landing.top - to.top;
           const dx = landing.left - to.left;
+          if (Math.abs(dy) < 2 && Math.abs(dx) < 2 && !gBrowser.isTab(node) && waits++ < 10) {
+            node.style.setProperty("transform", `translate(${dx}px, ${dy}px)`, "important");
+            requestAnimationFrame(glideIn);
+            return;
+          }
           if (!node.isConnected || node.hasAttribute("zen-essential") || (Math.abs(dy) < 2 && Math.abs(dx) < 2) || !to.height) {
             node.removeAttribute("zia-landing");
             return;
