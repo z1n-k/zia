@@ -9085,6 +9085,21 @@
       }
     };
 
+    // A folder's animations straight to their last moment (not past it:
+    // Zen only leaves its end styles once they've finished)
+    const jumpToEnd = (folder) => {
+      for (const anim of folder.getAnimations?.({ subtree: true }) || []) {
+        try {
+          const end = anim.effect?.getComputedTiming?.().endTime;
+          if (anim.id !== "zia-land" && end > 1) {
+            anim.currentTime = end - 1;
+          }
+        } catch (err) {
+          noteError("tab dragging: folder animations", err);
+        }
+      }
+    };
+
     const parkInFolder = (tab, folder) => {
       folder?.removeAttribute("zia-drop-slot");
       if (!tab || !folder) {
@@ -9105,12 +9120,6 @@
           folder.removeAttribute("has-active");
           folder.activeTabs = [];
         }
-        // Already one of the folder's shown tabs: Zen reveals a tab that's
-        // newly active (from see-through, slid down a row), so the tab just
-        // dropped there blinked out and dropped in from above
-        if (tab.selected && folder.hasAttribute("has-active") && !folder.activeTabs?.includes(tab)) {
-          folder.activeTabs = [...(folder.activeTabs || []), tab].sort((x, y) => x.index - y.index);
-        }
       }
       try {
         if (!isCollapsed(folder)) {
@@ -9123,6 +9132,10 @@
       } catch (err) {
         console.error("[Zia] Could not settle the folder:", err);
       }
+      // Zen slides the folder's list down into place (it starts pushed up
+      // out of sight), so the tab just dropped there blinked out and slid
+      // in from above: it's where it landed already
+      jumpToEnd(folder);
     };
 
     let proxy = null;
@@ -9616,16 +9629,7 @@
         noteError("tab dragging: shut folder", err);
         return;
       }
-      for (const anim of folder.getAnimations?.({ subtree: true }) || []) {
-        try {
-          const end = anim.effect?.getComputedTiming?.().endTime;
-          if (end > 1) {
-            anim.currentTime = end - 1;
-          }
-        } catch (err) {
-          noteError("tab dragging: shut folder (2)", err);
-        }
-      }
+      jumpToEnd(folder);
       folder.getBoundingClientRect();
     };
     window.addEventListener("mousedown", (event) => {
@@ -10475,6 +10479,7 @@
       "drop",
       (event) => {
         const tab = drag?.tab;
+        heldFolder = null;
 
         if (tab && drag.splitEssential) {
           event.preventDefault();
@@ -10531,6 +10536,7 @@
           }, 0);
         } else if (tab && !drag.folder && !drag.away && drag.target?.hand) {
           const target = drag.target;
+          heldFolder = target.folder || null;
           pendingFinish = true;
           setTimeout(() => {
             try {
@@ -10659,10 +10665,10 @@
     const holdFolderHover = (folder) => {
       const held = [folder];
       // a tab dropped into a folder: the folder keeps its hover box too
-      const around = gBrowser.isTab(folder) ? folder.closest("zen-folder") : null;
-      if (around) {
-        held.push(around);
+      if (heldFolder?.isConnected && !held.includes(heldFolder)) {
+        held.push(heldFolder);
       }
+      heldFolder = null;
       if (shownAtDrop.row && shownAtDrop.row !== folder && shownAtDrop.row.isConnected) {
         held.push(shownAtDrop.row);
       }
@@ -10697,6 +10703,7 @@
     let droppedFrom = null;
     let isRealDrop = false;
     let pendingFinish = false;
+    let heldFolder = null;
     window.addEventListener("drop", () => (isRealDrop = true), true);
     window.addEventListener("dragstart", () => (isRealDrop = false), true);
 
