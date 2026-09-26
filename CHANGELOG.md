@@ -14,6 +14,9 @@ Every release of Zia, newest first. The format follows
 - Dropping a tab into a collapsed folder no longer makes it blink out and
   drop in from a row above: it stays where it landed, and the folder keeps
   its hover box until the pointer leaves.
+- A dropped tab no longer jolts (down a step, back up, then down again)
+  before gliding into place: Firefox's end of the drag let it go for a
+  frame, and it's now held where it was let go until the glide starts.
 
 ## [2.59.3] — 2026-09-26
 

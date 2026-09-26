@@ -2263,6 +2263,7 @@
           setTimeout(() => {
             try {
               finishDrop(tab, target);
+              repinLanding?.();
             } catch (err) {
               console.error("[Zia] Tab drop failed:", err);
             }
@@ -2426,6 +2427,7 @@
     let isRealDrop = false;
     let pendingFinish = false;
     let heldFolder = null;
+    let repinLanding = null;
     window.addEventListener("drop", () => (isRealDrop = true), true);
     window.addEventListener("dragstart", () => (isRealDrop = false), true);
 
@@ -2491,11 +2493,26 @@
         node.setAttribute("zia-landing", "true");
         const held = node.getBoundingClientRect();
         node.style.setProperty("transform", `translate(${landing.left - held.left}px, ${landing.top - held.top}px)`, "important");
+        // Firefox clears every tab's transform as its drag ends, so the tab
+        // painted a frame at its new spot before the glide pulled it back
+        // to where it was let go: it's pinned there again each frame, and
+        // straight after the drop moves it (into a folder, say)
+        const pin = () => {
+          if (!node.isConnected) {
+            return;
+          }
+          node.style.removeProperty("transform");
+          const at = node.getBoundingClientRect();
+          node.style.setProperty("transform", `translate(${landing.left - at.left}px, ${landing.top - at.top}px)`, "important");
+        };
+        repinLanding = pin;
         const glideIn = () => {
           if (pendingFinish) {
+            pin();
             requestAnimationFrame(glideIn);
             return;
           }
+          repinLanding = null;
           node.style.removeProperty("transform");
           const to = node.getBoundingClientRect();
           const dy = landing.top - to.top;
