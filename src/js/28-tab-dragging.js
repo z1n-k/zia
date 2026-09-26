@@ -825,12 +825,12 @@
         ]) {
           proxy.style.setProperty(name, value, "important");
         }
-        if (drag.split) {
-          dressSplitProxy(proxy, drag.tab);
-        }
         const row = drag.moving.getBoundingClientRect();
         sizeProxy(proxy, row.width, row.height);
         host.appendChild(proxy);
+        if (drag.split) {
+          dressSplitProxy(proxy, drag.tab);
+        }
         try {
           window.gZenPinnedTabManager?.setEssentialTabIcon?.(proxy);
         } catch (err) {
@@ -1515,6 +1515,7 @@
       } catch (err) {
         noteError("tab dragging: onEssentialStart", err);
       }
+      dressSplitCopy(copy, tab);
       tab.setAttribute("zia-essential-dragged", "true");
       noLanding();
 

@@ -18,6 +18,11 @@ Every release of Zia, newest first. The format follows
   can't hold a split among its essentials yet, so the split is kept as two
   ordinary tabs hidden from the tab list.
 
+### Changed
+
+- The × in a split pane's own address bar closes that pane's tab, as in
+  Dia, instead of taking it out of the split into a tab of its own.
+
 ### Fixed
 
 - Folder and space icons show again. Since 2.58.0 they could go missing,

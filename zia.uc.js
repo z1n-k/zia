@@ -3453,8 +3453,13 @@
     );
 
     bar.appendChild(
-      paneButton("close", "Remove from split", (event) => {
-        window.gZenViewSplitter?.removeTabFromSplit?.(event, container);
+      // Closes the pane's tab, as Dia's does (Zen's own only takes it out of
+      // the split, into a tab of its own)
+      paneButton("close", "Close", () => {
+        const tab = tabOf();
+        if (tab && !tab.closing) {
+          gBrowser.removeTab(tab);
+        }
       })
     );
 
@@ -6822,17 +6827,32 @@
     });
   }
 
-  // The tile a split turns into while it's dragged over the essentials
-  // (tab dragging's proxy, cloned from one of the split's tabs)
+  // Tab dragging's stand-ins are copies of a tab, which Firefox fills
+  // afresh once they're in the page, so the halves go in after that.
+  // The tile a split turns into while it's dragged over the essentials:
   function dressSplitProxy(proxy, tab) {
     const tabs = [...(tab?.group?.tabs || [])].filter((t) => !t.closing);
     const content = proxy.querySelector(".tab-content");
     if (tabs.length !== 2 || !content) {
       return;
     }
-    content.querySelectorAll(":scope > .zia-split-half").forEach((half) => half.remove());
+    // not the dragged tab's selected look: a plain tile until it lands
+    proxy.removeAttribute("visuallyselected");
+    proxy.removeAttribute("selected");
+    proxy.style.removeProperty("--zia-split-glow");
     fillSplitHalves(content, tabs.map((t) => ({ icon: tabIcon(t), title: t.label })));
     proxy.setAttribute("zia-split-tile", "true");
+  }
+
+  // ...and a split essential dragged off it, tile then row:
+  function dressSplitCopy(copy, essential) {
+    const data = splitDataOf(essential);
+    const content = copy.querySelector(".tab-content");
+    if (!data || !content) {
+      return;
+    }
+    fillSplitHalves(content, [data.a, data.b]);
+    copy.setAttribute("zia-split-tile", "true");
   }
 
   // The selected look takes the colour of the half you're in, over the
@@ -8888,12 +8908,12 @@
         ]) {
           proxy.style.setProperty(name, value, "important");
         }
-        if (drag.split) {
-          dressSplitProxy(proxy, drag.tab);
-        }
         const row = drag.moving.getBoundingClientRect();
         sizeProxy(proxy, row.width, row.height);
         host.appendChild(proxy);
+        if (drag.split) {
+          dressSplitProxy(proxy, drag.tab);
+        }
         try {
           window.gZenPinnedTabManager?.setEssentialTabIcon?.(proxy);
         } catch (err) {
@@ -9578,6 +9598,7 @@
       } catch (err) {
         noteError("tab dragging: onEssentialStart", err);
       }
+      dressSplitCopy(copy, tab);
       tab.setAttribute("zia-essential-dragged", "true");
       noLanding();
 

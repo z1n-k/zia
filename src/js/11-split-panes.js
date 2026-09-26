@@ -125,8 +125,13 @@
     );
 
     bar.appendChild(
-      paneButton("close", "Remove from split", (event) => {
-        window.gZenViewSplitter?.removeTabFromSplit?.(event, container);
+      // Closes the pane's tab, as Dia's does (Zen's own only takes it out of
+      // the split, into a tab of its own)
+      paneButton("close", "Close", () => {
+        const tab = tabOf();
+        if (tab && !tab.closing) {
+          gBrowser.removeTab(tab);
+        }
       })
     );
 

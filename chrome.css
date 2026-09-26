@@ -1592,7 +1592,8 @@ zen-essentials-promo {
 :root #tabbrowser-tabs:is([zia-settling], [movingtab]) .tabbrowser-tab[zia-to-essential],
 :root #tabbrowser-tabs .tabbrowser-tab[zia-to-essential][zia-dragging],
 .tabbrowser-tab[zia-to-essential],
-tab-group[split-view-group][zia-to-essential] {
+[split-view-group][zia-to-essential],
+[split-view-group][zia-to-essential] .tabbrowser-tab {
   opacity: 0 !important;
 }
 
