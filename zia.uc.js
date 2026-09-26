@@ -10744,6 +10744,9 @@
         }
       };
       const release = () => {
+        if (releaseHeld === release) {
+          releaseHeld = null;
+        }
         refitHeld = null;
         for (const node of held) {
           node.removeAttribute("zia-hover-held");
@@ -10757,6 +10760,8 @@
       };
       window.addEventListener("mousemove", check, true);
       timer = setTimeout(release, 4000);
+      releaseHeld?.();
+      releaseHeld = release;
     };
 
     let droppedFrom = null;
@@ -10767,6 +10772,7 @@
     let refitHeld = null;
     let heldPinned = null;
     let dragGen = 0;
+    let releaseHeld = null;
     window.addEventListener("drop", () => (isRealDrop = true), true);
     window.addEventListener("dragstart", () => (isRealDrop = false), true);
 
@@ -10929,6 +10935,9 @@
     };
     window.addEventListener("drop", settle, true);
     window.addEventListener("dragstart", () => {
+      // (and what the last drop kept showing: dragged straight back into
+      // the essentials, a tab kept its x on the tile)
+      releaseHeld?.();
       dragGen++;
       blockAnimUntil = 0;
     }, true);
