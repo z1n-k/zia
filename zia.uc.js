@@ -8535,7 +8535,7 @@
       if (prev && same(prev)) {
         // the last folder before the separator has no row after it: its
         // slot is a whole tab tall, not the sliver down to the separator
-        const down = !same(next) && slotTop != null ? slotTop + drag.height * 1.5 : leaveDown(next);
+        const down = !same(next) && slotTop != null ? slotTop + drag.height + 10 : leaveDown(next);
         if (down != null) {
           cut = (leaveUp(prev) + down) / 2;
         }
@@ -8870,7 +8870,12 @@
       if (drag.sepTop != null) {
         const startedBelow = drag.origin > drag.sepTop;
         let sepDelta = 0;
-        if (startedBelow && visualMid < drag.sepTop + 2) {
+        // Coming up from below, it's over once it's half a tab past the
+        // separator, and stays over until it's back past where the
+        // separator has moved to: the tab-sized space that opens is the
+        // last folder's end (top half) and the gap after it (bottom half)
+        const upTo = drag.sepDelta ? drag.sepTop + drag.pitch + 2 : drag.sepTop + drag.pitch / 2;
+        if (startedBelow && visualMid < upTo) {
           sepDelta = drag.pitch;
         } else if (!startedBelow && visualMid > drag.sepTop + 2) {
           sepDelta = -drag.pitch;

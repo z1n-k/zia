@@ -49,8 +49,10 @@ Every release of Zia, newest first. The format follows
 - No blue block flashes on a split as it's dragged or dropped (the split's
   own label, or Zen's drop-to-split marker).
 
-- A tab dragged into the last folder before the separator lines up with
-  the space opened for it, as it does for the other folders.
+- A tab dragged up to the last folder before the separator behaves as it
+  does with the other folders: the space opened for it takes it into the
+  folder (its top half) or into the gap after the folder, above the
+  separator (its bottom half).
 
 - The suggestion to paste a copied link no longer shows the search
   engine's name in a chip beside it.
