@@ -9140,7 +9140,12 @@
       const realBox = usable(real);
       if (realBox) {
         const bg = usable(real.querySelector(".tab-background")) || realBox;
-        return { width: realBox.width, height: bg.height, boxHeight: realBox.height };
+        const stack = usable(real.querySelector(".tab-stack")) || realBox;
+        // a split essential's half, if there's one, measured as it is
+        const half = usable(
+          (ownGrid || document).querySelector(".tabbrowser-tab[zen-essential][zia-split-tile]:not([zia-essential-proxy]) .zia-split-half")
+        );
+        return { width: realBox.width, height: bg.height, stackHeight: stack.height, half };
       }
       const box = usable(gBrowser.tabContainer.tabDragAndDrop?._fakeEssentialTab);
       if (box) {
@@ -9152,14 +9157,16 @@
       return { width, height: Math.round(width * 0.75) };
     };
 
-    // A split tile's halves sit 8px in from the essential's box, which is
-    // taller than its background; a stand-in is only the background's size,
-    // so its halves go in by less, to come out the same size and place
-    const fitSplitHalves = (node, boxHeight, bgHeight) => {
-      if (!boxHeight || !bgHeight) {
-        return;
+    // A split tile's halves fill an essential's inner box but 8px all round,
+    // and a stand-in isn't that box's size: its halves are given the real
+    // ones' height (their width follows), centred, to match them exactly
+    const fitSplitHalves = (node, stackHeight, half = null) => {
+      if (half) {
+        node.style.setProperty("--zia-split-half-height", `${half.height}px`);
+        node.style.setProperty("--zia-split-half-width", `${half.width}px`);
+      } else if (stackHeight > 16) {
+        node.style.setProperty("--zia-split-half-height", `${stackHeight - 16}px`);
       }
-      node.style.setProperty("--zia-split-pad-y", `${Math.max(0, 8 - (boxHeight - bgHeight) / 2)}px`);
     };
 
     // sized like the essential copy, and kept that way when Zen clears widths
@@ -9210,7 +9217,7 @@
           dressSplitProxy(proxy, drag.tab);
           const tile = tileSize();
           sizeProxy(proxy, tile.bgWidth || tile.width, tile.bgHeight || tile.height);
-          fitSplitHalves(proxy, tile.boxHeight, tile.height);
+          fitSplitHalves(proxy, tile.stackHeight, tile.half);
         }
         try {
           window.gZenPinnedTabManager?.setEssentialTabIcon?.(proxy);
@@ -10042,7 +10049,7 @@
         copy.style.setProperty(name, value, "important");
       }
       sizeCopy(copy, tile.width, drawn.height);
-      fitSplitHalves(copy, tile.height, drawn.height);
+      fitSplitHalves(copy, 0, tab.querySelector(".zia-split-half")?.getBoundingClientRect() || null);
       const point = pointerOf(event);
       copy.style.setProperty("left", `${Math.round(tile.left + tile.width / 2)}px`, "important");
       copy.style.setProperty("top", `${Math.round(drawn.top + drawn.height / 2)}px`, "important");
