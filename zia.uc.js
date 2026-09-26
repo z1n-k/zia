@@ -6793,23 +6793,46 @@
     if (!content) {
       return;
     }
-    for (const side of ["a", "b"]) {
-      let half = halves.find((el) => el.getAttribute("side") === side);
+    fillSplitHalves(content, [data.a, data.b]);
+    essential.setAttribute("zia-split-tile", "true");
+    paintSplitGlow(essential);
+  }
+
+  // The two halves (icon and title each) inside a tab's content: the tile
+  // shows just the icons; as a row, while dragged off, the titles too
+  function fillSplitHalves(content, sites) {
+    ["a", "b"].forEach((side, i) => {
+      let half = content.querySelector(`:scope > .zia-split-half[side="${side}"]`);
       if (!half) {
         half = document.createXULElement("hbox");
         half.className = "zia-split-half";
         half.setAttribute("side", side);
-        half.append(document.createXULElement("image"));
+        const title = document.createXULElement("label");
+        title.className = "zia-split-title";
+        title.setAttribute("crop", "end");
+        half.append(document.createXULElement("image"), title);
         content.append(half);
       }
-      const icon = data[side]?.icon || DEFAULT_ICON;
-      const image = half.firstElementChild;
+      const icon = sites[i]?.icon || DEFAULT_ICON;
+      const image = half.querySelector("image");
       if (image.getAttribute("src") !== icon) {
         image.setAttribute("src", icon);
       }
+      half.querySelector(".zia-split-title").setAttribute("value", sites[i]?.title || "");
+    });
+  }
+
+  // The tile a split turns into while it's dragged over the essentials
+  // (tab dragging's proxy, cloned from one of the split's tabs)
+  function dressSplitProxy(proxy, tab) {
+    const tabs = [...(tab?.group?.tabs || [])].filter((t) => !t.closing);
+    const content = proxy.querySelector(".tab-content");
+    if (tabs.length !== 2 || !content) {
+      return;
     }
-    essential.setAttribute("zia-split-tile", "true");
-    paintSplitGlow(essential);
+    content.querySelectorAll(":scope > .zia-split-half").forEach((half) => half.remove());
+    fillSplitHalves(content, tabs.map((t) => ({ icon: tabIcon(t), title: t.label })));
+    proxy.setAttribute("zia-split-tile", "true");
   }
 
   // The selected look takes the colour of the half you're in, over the
@@ -6963,6 +6986,7 @@
     tagPairTab(b, id, "b");
     drawSplitTile(essential);
     syncSplitSelection();
+    return essential;
   }
 
   // The split essential is gone (closed, or taken out of the essentials):
@@ -7003,6 +7027,14 @@
       const space = essential.getAttribute("zen-workspace-id") || window.gZenWorkspaces?.activeWorkspace;
       if (space && a.getAttribute("zen-workspace-id") !== space) {
         window.gZenWorkspaces?.moveTabsToWorkspace([a, b], space);
+      }
+      // dropped among the pinned tabs: the split's pinned too
+      if (essential.pinned) {
+        for (const tab of [a, b]) {
+          if (!tab.pinned) {
+            gBrowser.pinTab(tab);
+          }
+        }
       }
       if (a.group) {
         gBrowser.moveTabBefore(a.group, essential);
@@ -7084,11 +7116,12 @@
     });
 
     // Taken out of the essentials (dragged back to the list, or Remove from
-    // Essentials): its split takes its place there, and the essential goes
+    // Essentials): its split takes its place there, and the essential goes.
+    // A drag places the essential first, so this waits a moment for that.
     new MutationObserver((records) => {
       for (const { target } of records) {
         if (target.ziaSplit?.id && !target.hasAttribute("zen-essential")) {
-          setTimeout(() => splitBackToList(target), 0);
+          setTimeout(() => splitBackToList(target), 120);
         }
       }
     }).observe(container, { subtree: true, attributes: true, attributeFilter: ["zen-essential"] });
@@ -8855,6 +8888,9 @@
         ]) {
           proxy.style.setProperty(name, value, "important");
         }
+        if (drag.split) {
+          dressSplitProxy(proxy, drag.tab);
+        }
         const row = drag.moving.getBoundingClientRect();
         sizeProxy(proxy, row.width, row.height);
         host.appendChild(proxy);
@@ -9328,6 +9364,12 @@
         // there'd be no drop at all
         if (drag.splitEssential) {
           acceptSplitDrop(event);
+          if (point.x) {
+            tapOnNewTile(point, null);
+            showProxy(point.x, point.y);
+          }
+        } else if (drag.split) {
+          hideProxy();
         }
         drag.noTiles = drag.essentials && !hasTiles && !promo;
         makeRoom(drag.noTiles ? document.getElementById("zen-essentials") || grid : null);
@@ -9337,7 +9379,7 @@
         if (drag.essentials && point.x) {
           tapOnNewTile(point, null);
           showProxy(point.x, point.y);
-        } else if (!drag.essentials) {
+        } else if (!drag.essentials && !drag.splitEssential) {
           hideProxy();
         }
         apply(dy);
@@ -9835,13 +9877,17 @@
         if (tab && drag.splitEssential) {
           event.preventDefault();
           event.stopPropagation();
-          setTimeout(() => {
-            try {
-              addSplitToEssentials(tab);
-            } catch (err) {
-              console.error("[Zia] Could not make a split essential:", err);
-            }
-          }, 0);
+          let essential = null;
+          try {
+            essential = addSplitToEssentials(tab);
+          } catch (err) {
+            console.error("[Zia] Could not make a split essential:", err);
+          }
+          if (essential) {
+            landProxy(essential);
+          } else {
+            hideProxy();
+          }
           return;
         }
         if (tab && !drag.essentials && !drag.folder && !drag.split) {

@@ -825,6 +825,9 @@
         ]) {
           proxy.style.setProperty(name, value, "important");
         }
+        if (drag.split) {
+          dressSplitProxy(proxy, drag.tab);
+        }
         const row = drag.moving.getBoundingClientRect();
         sizeProxy(proxy, row.width, row.height);
         host.appendChild(proxy);
@@ -1298,6 +1301,12 @@
         // there'd be no drop at all
         if (drag.splitEssential) {
           acceptSplitDrop(event);
+          if (point.x) {
+            tapOnNewTile(point, null);
+            showProxy(point.x, point.y);
+          }
+        } else if (drag.split) {
+          hideProxy();
         }
         drag.noTiles = drag.essentials && !hasTiles && !promo;
         makeRoom(drag.noTiles ? document.getElementById("zen-essentials") || grid : null);
@@ -1307,7 +1316,7 @@
         if (drag.essentials && point.x) {
           tapOnNewTile(point, null);
           showProxy(point.x, point.y);
-        } else if (!drag.essentials) {
+        } else if (!drag.essentials && !drag.splitEssential) {
           hideProxy();
         }
         apply(dy);
@@ -1805,13 +1814,17 @@
         if (tab && drag.splitEssential) {
           event.preventDefault();
           event.stopPropagation();
-          setTimeout(() => {
-            try {
-              addSplitToEssentials(tab);
-            } catch (err) {
-              console.error("[Zia] Could not make a split essential:", err);
-            }
-          }, 0);
+          let essential = null;
+          try {
+            essential = addSplitToEssentials(tab);
+          } catch (err) {
+            console.error("[Zia] Could not make a split essential:", err);
+          }
+          if (essential) {
+            landProxy(essential);
+          } else {
+            hideProxy();
+          }
           return;
         }
         if (tab && !drag.essentials && !drag.folder && !drag.split) {
