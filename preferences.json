@@ -69,7 +69,7 @@
   },
   {
     "type": "checkbox",
-    "label": "Split essentials (experimental): right-click a two-site split and choose Add Split to Essentials",
+    "label": "Split essentials (experimental): drag a two-site split onto the essentials",
     "property": "zia.essentials.split",
     "defaultValue": false
   },
