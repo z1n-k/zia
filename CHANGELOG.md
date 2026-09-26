@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- The music player's picture has rounded corners on Windows too, as on
+  macOS, instead of showing square.
+
 ## [2.61.1] — 2026-09-26
 
 ### Fixed

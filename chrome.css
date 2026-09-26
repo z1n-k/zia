@@ -2707,6 +2707,9 @@ zen-workspace arrowscrollbox::part(scrollbox) {
       min-height: var(--zia-media-art-size) !important;
       padding: 0 !important;
       border-radius: 7px !important;
+      /* (the picture itself too: on Windows it came through square, the
+         rounding only on what's behind it) */
+      clip-path: inset(0 round 7px);
       transition: opacity 0.2s ease, filter 0.2s ease;
     }
 
