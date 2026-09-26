@@ -2,15 +2,28 @@
 
 **Zen Browser, rebuilt with a Dia-inspired finish.**
 
-Zia is a [Sine](https://github.com/CosmoCreeper/Sine) mod that reworks Zen from the frame in. The page sits in a rounded card, the toolbar takes on the colour of whatever site you're on, and the sidebar, address bar, media and picture-in-picture are all redesigned to match. It takes its cues from [Dia](https://www.diabrowser.com) and then keeps going: the music player, Multiview and picture-in-picture tucking are Zia's own, and Dia has nothing like them.
+Zia is a [Sine](https://github.com/CosmoCreeper/Sine) mod that reworks Zen from the frame in. The page sits in a rounded card, the toolbar takes on the colour of whatever site you're on, and the sidebar, address bar, PDFs, media and picture-in-picture are all redesigned to match. It takes its cues from [Dia](https://www.diabrowser.com) and then keeps going: the music player, Multiview and picture-in-picture tucking are Zia's own, and Dia has nothing like them.
 
-![Status](https://img.shields.io/badge/status-alpha-orange)
-![Platform](https://img.shields.io/badge/tested%20on-macOS%20%C2%B7%20dark%20mode-informational)
+![Status](https://img.shields.io/badge/status-beta-yellow)
+![Platform](https://img.shields.io/badge/tested%20on-macOS%20%C2%B7%20Windows-informational)
 ![Licence](https://img.shields.io/badge/licence-MIT-blue)
 
 What's new in each release: [CHANGELOG.md](CHANGELOG.md).
 
-> **Alpha.** Built and tuned on macOS, dark mode, with the **Sidebar and Top Toolbar** layout. Light mode, the other layouts, Windows and Linux haven't been tested yet and will likely need work. Feedback on those is very welcome.
+> **Beta.** Tested on macOS and Windows in dark mode, with the **Sidebar and Top Toolbar** layout. Linux, light mode and Zen's other layouts get less testing, so if something looks off there, [open an issue](https://github.com/z1n-k/zia/issues) with a screenshot.
+
+**At a glance**
+
+- [A site-coloured toolbar](#the-page-and-the-toolbar) in one rounded card with the page, always readable, with Dia's back, forward and reload animations
+- [Dia's address bar pop-up](#the-address-bar), frosted, at the top or the bottom
+- [Dia's PDF viewer look](#pdf-view)
+- [Picture-in-picture](#picture-in-picture) with Dia's controls, that you can throw off the edge of the screen to tuck away
+- [Multiview](#multiview): a tab that grids up to four videos and live streams
+- [A redesigned sidebar](#the-sidebar): essential tiles, coloured folders, Dia-style tab dragging, hover cards and 5,166 icons
+- [Split view](#split-view) with drop cards and a toolbar per pane
+- [A music player card](#music) and sound bars on playing tabs
+- [Folders that name themselves](#folder-names-and-icons-from-a-local-model), with a model that runs on your machine
+- [Nearly everything can be switched off](#options)
 
 ---
 
@@ -52,6 +65,8 @@ Zia is a JavaScript mod, so Sine needs permission to load scripts from outside i
 
 **Set Look and Feel → Sidebar and Top Toolbar**, and use dark mode.
 
+Updates come through Sine like any other mod. The first start after installing takes a moment longer while Zia sets up its icons; after that it's instant.
+
 Other mods may conflict, and Zia won't be adjusted around them. If something looks off, turn your other mods off and add them back one at a time.
 
 ### Workspace icons
@@ -66,15 +81,21 @@ Workspace and folder icons do a lot of the work in the Dia look, so they're wort
 
 ### The page and the toolbar
 
-The page and toolbar sit together in one rounded card. The toolbar picks up the colour of the site underneath and follows it as you scroll, switching to dark text on light sites. Colours are remembered per site, so pages open already in their colour instead of fading into it. Every few seconds Zia checks the colour against the page again, and if the page has changed or the first reading was off, the toolbar corrects itself. While a page loads, a glow runs along the address bar. The address itself reads as `domain / title`, and hovering it shows the full URL.
+The page and toolbar sit together in one rounded card. The toolbar picks up the colour of the site underneath and follows it as you scroll. Its text and buttons always stay readable: dark on light sites, white on dark ones, and full white with nothing left faint on strong colours like a bright red. Colours are remembered per site, so pages open already in their colour instead of fading into it. Every few seconds Zia checks the colour against the page again, and if the page has changed (a header that recolours itself after loading) or the first reading was off, the toolbar corrects itself. While a page loads, a glow runs along the address bar. The address itself reads as `domain / title`, and hovering it shows the full URL.
+
+Back, forward and reload move the way Dia's do. Hovering back or forward squeezes the arrow; click and it slides away while a fresh one slides in. Hover reload and its arrowhead draws back round the circle; start a load and it spins into a stop cross, which turns back into the arrow when the page is done. With nowhere to go, back and forward fade to a dimmed look rather than snapping to it.
+
+<!-- image: back/forward/reload animations (short GIF or video) -->
 
 ### The address bar
 
-The address pop-up follows Dia's shape: short rows with room around them, one size and weight of text throughout, and none of Firefox's chips, row menus or extra engine bars. What you type lines up exactly with the results underneath. As you type an address, the site's own icon takes the place of the magnifying glass. A paperclip beside site settings copies the page's link. The whole bar can also move to the **bottom**, under the page, with the pop-up opening upwards, in a single page or a split.
+The address pop-up follows Dia's shape: short rows with room around them, one size and weight of text throughout, and none of Firefox's chips, row menus or extra engine bars. What you type lines up exactly with the results underneath. It's slightly see-through, with the page blurred behind it, and it can take on the toolbar's colour as it opens so it reads as the same bar growing. As you type an address, the site's own icon takes the place of the magnifying glass. A paperclip beside site settings copies the page's link and pops into a tick. The whole bar can also move to the **bottom**, under the page, with the pop-up opening upwards, in a single page or a split.
 
 ### PDF view
 
 PDFs open in Dia's viewer look: a grey toolbar with the document's name on the left, the page and zoom in the middle beside fit to page, rotate and undo/redo, and download, print and more on the right. The pen opens a second row with Firefox's tools (draw, highlight, text, signature, image and comment). The sidebar is just the pages, the current one framed in blue.
+
+<!-- image: the PDF viewer -->
 
 ### Picture-in-picture
 
@@ -104,13 +125,19 @@ Multiview works with **YouTube, Twitch** (live, videos and clips), **Kick, Vimeo
 
 ### The sidebar
 
-Essentials sit as tiles, four to a row, or six when the sidebar is wide. Folders get hover boxes, a gentle spring when they open and close, icon or emoji covers, an × to delete them, and a colour of their own from the right-click menu that tints the whole folder:
+Essentials sit as tiles, four to a row, or six when the sidebar is wide. Glance at a link from an essential (Option/Alt-click) and a small card with the site's icon springs out from behind the essential's own, then gets sucked back in when you close the glance.
+
+<!-- image: glance card springing out of an essential (short GIF or video) -->
+
+Folders get hover boxes, a gentle spring when they open and close, icon or emoji covers, an × to delete them, and a colour of their own from the right-click menu that tints the whole folder:
 
 ![A tinted empty folder with its Drag tabs here slot](<https://raw.githubusercontent.com/z1n-k/zia/readme-images/folder-empty.png>)
 
 Spaces with a colour of their own carry it through the whole sidebar. An empty folder shows a dashed *Drag tabs here* slot until its first tab arrives. Plain tab groups, like the ones [Advanced Tab Groups](https://github.com/Vertex-Mods/Advanced-Tab-Groups) makes, get the same folder treatment. Downloads sit next to the space name with a progress ring around them.
 
-Tabs drag the way they do in Dia. The tab itself follows the pointer while the rows it passes slide aside, a folder opens up by a row to make room, and over the essentials a tab turns into the tile it's about to become. Drag an essential back off and it's a tab again. Hovering a tab shows a card with its title, address and a few actions; hovering a collapsed folder lists what's inside.
+Tabs drag the way they do in Dia. The tab itself follows the pointer while the rows it passes slide aside, a folder opens up by a row to make room, and over the essentials a tab turns into the tile it's about to become. Drag an essential back off and it's a tab again. Hovering a tab shows a card with its title, address and a few actions (pin as an essential, split, copy the link); hovering a collapsed folder lists what's inside. The cards are slightly see-through, with the page blurred behind them. A collapsed folder with an open tab shows just that tab, glow and all.
+
+Compact mode's sidebar is frosted glass too: slightly see-through, with the page blurred behind it as it slides out. If you'd like asleep tabs to stand out, they can be dimmed (tabs, essentials, and folders whose tabs are all asleep). Zen's pop-up notices get a close button, so they don't have to be waited out.
 
 Cmd/Ctrl+Z reopens what you just closed for ten seconds afterwards. That includes whole folders, splits and groups of tabs: a split comes back as a split, and a deleted folder comes back with its name.
 
@@ -135,7 +162,8 @@ Playing music brings up a card with the track's artwork and a soft glow in its c
 Make a folder and Zia can name it and choose its icon for you, with a model that
 runs on your machine. Three tabs from Levi's, Gucci and Louis Vuitton become a
 folder called **Clothing** with a clothing icon; PayPal, Stripe and Cash App
-become **Financial**. Nothing is sent anywhere.
+become **Financial**. A folder that's mostly one site gets that site's own logo,
+so a folder of YouTube videos gets the YouTube icon. Nothing is sent anywhere.
 
 It's **off by default**, because the first use downloads a model (about 25MB).
 To turn it on:
@@ -217,8 +245,9 @@ Changed at the default level only. If you've set either yourself in `about:confi
 
 ## Known gaps
 
-- Light mode is untested and will very likely need work
-- Other sidebar layouts, Windows and Linux are untested
+- Linux gets little testing
+- Light mode and Zen's layouts other than **Sidebar and Top Toolbar** are less polished
+- Split tabs can't be essentials: Zen keeps a split as a group, and essentials only hold single tabs
 
 ---
 
