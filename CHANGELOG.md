@@ -4,7 +4,7 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.58.0] — 2026-09-26
 
 ### Changed
 
@@ -31,10 +31,6 @@ Every release of Zia, newest first. The format follows
 
 - Windows: the space's name shows again at the top of the sidebar when it
   slides out in compact mode.
-
-## [2.57.1] — 2026-09-26
-
-### Fixed
 
 - On dark sites the toolbar's buttons are white, as in Dia, instead of a
   mid grey, so back and forward are easy to see even when there's nowhere
