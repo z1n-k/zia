@@ -4985,14 +4985,53 @@
     data.addView(view);
   }
 
-  // Zia's icons are Tabler Icons (icons/tabler, made by
-  // scripts/tabler-icons.py), each in an outline and, for about a thousand of
-  // them, a solid style. The search index holds every icon's name, tags and
-  // category, so "money" finds cash, coins and wallet.
+  // Zia's icons are Tabler Icons (made by scripts/tabler-icons.py), each in
+  // an outline and, for about a thousand of them, a solid style. The search
+  // index holds every icon's name, tags and category, so "money" finds cash,
+  // coins and wallet.
+  //
+  // They come as one zip, icons/tabler.zip: Sine unpacks a mod file by file,
+  // and several thousand icons froze Zen for half a minute on some computers.
+  // Zia copies the zip into the profile (once per icon pack, so Zia's own
+  // updates don't redo it) and reads icons straight out of it, the way
+  // Firefox reads its own, at resource://zia-tabler/.
   const ICON_ROOT = "chrome://sine/content/zia/icons";
-  const ICON_DIR = `${ICON_ROOT}/tabler`;
+  const ICON_HOST = "zia-tabler";
+  const ICON_DIR = `resource://${ICON_HOST}`;
   const ICON_STYLE_PREF = "zia.icons.style";
   let iconIndex = null;
+  let iconPackReady = null;
+
+  function setupIconPack() {
+    iconPackReady ??= (async () => {
+      const holder = {};
+      Services.scriptloader.loadSubScript(`${ICON_ROOT}/tabler-pack.js`, holder);
+      const dir = PathUtils.join(PathUtils.profileDir, "zia-icons");
+      const pack = PathUtils.join(dir, `tabler-${holder.ZiaTablerPack}.zip`);
+      if (!(await IOUtils.exists(pack))) {
+        const bytes = new Uint8Array(await (await fetch(`${ICON_ROOT}/tabler.zip`)).arrayBuffer());
+        await IOUtils.makeDirectory(dir, { ignoreExisting: true });
+        // written aside first, so another window never reads half a zip
+        const part = `${pack}.${Math.random().toString(36).slice(2)}.part`;
+        await IOUtils.write(part, bytes);
+        await IOUtils.move(part, pack);
+      }
+      const handler = Services.io.getProtocolHandler("resource").QueryInterface(Ci.nsIResProtocolHandler);
+      const jar = Services.io.newURI(`jar:${PathUtils.toFileURI(pack)}!/`);
+      if (!handler.hasSubstitution(ICON_HOST) || handler.getSubstitution(ICON_HOST).spec !== jar.spec) {
+        handler.setSubstitution(ICON_HOST, jar);
+      }
+      // Older packs go (one still open can't be removed on Windows until
+      // Zen restarts; it goes next time).
+      for (const child of await IOUtils.getChildren(dir)) {
+        if (child !== pack && /tabler-[^/\\]*\.zip(\.[a-z0-9]+\.part)?$/.test(child)) {
+          IOUtils.remove(child).catch(() => {});
+        }
+      }
+    })();
+    iconPackReady.catch((err) => noteError("icon pack", err));
+    return iconPackReady;
+  }
 
   function tablerIcons() {
     if (iconIndex) {
@@ -5054,11 +5093,16 @@
   }
 
   // Folders and spaces that still point at a Phosphor icon (Zia's icons
-  // before 2.42.0) switch to the closest Tabler one.
+  // before 2.42.0) switch to the closest Tabler one, and ones pointing at a
+  // loose Tabler file (before 2.58.0) to the same icon in the pack.
   const OLD_ICON_DIR = `${ICON_ROOT}/phosphor/`;
+  const LOOSE_ICON_DIR = `${ICON_ROOT}/tabler/`;
   let oldIconMap = null;
 
   function tablerFor(url) {
+    if (typeof url === "string" && url.startsWith(LOOSE_ICON_DIR)) {
+      return `${ICON_DIR}/${url.slice(LOOSE_ICON_DIR.length)}`;
+    }
     if (typeof url !== "string" || !url.startsWith(OLD_ICON_DIR)) {
       return null;
     }
@@ -5107,7 +5151,7 @@
         queued = true;
         setTimeout(() => {
           queued = false;
-          moveOffOldIcons();
+          setupIconPack().finally(moveOffOldIcons);
         }, 500);
       }
     };
@@ -5115,6 +5159,21 @@
     window.addEventListener("ZenWorkspacesUIUpdate", queue);
     window.SessionStore?.promiseAllWindowsRestored?.then(queue, queue);
     queue();
+    // Icons asked for before the pack was ready (the first start with it)
+    // are drawn again once it is.
+    setupIconPack().then(() => {
+      for (const folder of document.querySelectorAll("zen-folder")) {
+        const icon = folder.iconURL;
+        if (typeof icon === "string" && icon.startsWith(`${ICON_DIR}/`)) {
+          try {
+            window.gZenFolders?.setFolderUserIcon(folder, icon);
+          } catch (err) {
+            noteError("icon picker: redraw folder icon", err);
+          }
+        }
+      }
+      placeWorkspaceIndicator();
+    }, () => {});
   }
 
   function addIconPicker() {
@@ -6753,8 +6812,8 @@
   // and fades, then the tick springs in, running a touch past full size.
   // After a moment the tick pops back into the paperclip the same way.
   const POP_SPRING = "cubic-bezier(0.3, 1.4, 0.5, 1)";
-  const COPIED_ICON = "chrome://sine/content/zia/icons/tabler/outline/check.svg";
-  const COPY_ICON = "chrome://sine/content/zia/icons/tabler/outline/paperclip.svg";
+  const COPIED_ICON = "chrome://sine/content/zia/icons/ui/check.svg";
+  const COPY_ICON = "chrome://sine/content/zia/icons/ui/paperclip.svg";
 
   function popIcon(icon, toTick, swap) {
     icon?.ziaPop?.cancel();
@@ -6926,7 +6985,7 @@
       button.title = action.label;
 
       const icon = document.createElementNS(XHTML_NS, "img");
-      icon.setAttribute("src", `chrome://sine/content/zia/icons/tabler/outline/${action.icon}.svg`);
+      icon.setAttribute("src", `chrome://sine/content/zia/icons/ui/${action.icon}.svg`);
       icon.setAttribute("alt", "");
       button.appendChild(icon);
       button.addEventListener("click", (event) => {
@@ -7070,7 +7129,7 @@
   function tabButtonIcon(tab, selector, fallback) {
     const button = tab.querySelector(selector);
     const url = button ? getComputedStyle(button).listStyleImage?.match(/^url\("?(.*?)"?\)$/)?.[1] : null;
-    return url || `chrome://sine/content/zia/icons/tabler/outline/${fallback}.svg`;
+    return url || `chrome://sine/content/zia/icons/ui/${fallback}.svg`;
   }
 
   function fillFolderCard(card, folder) {
@@ -7085,7 +7144,7 @@
       if (tab.hasAttribute("soundplaying") || tab.hasAttribute("muted")) {
         const muted = tab.hasAttribute("muted");
         const speaker = folderCardIcon(
-          `chrome://sine/content/zia/icons/tabler/outline/${muted ? "volume-off" : "volume"}.svg`,
+          `chrome://sine/content/zia/icons/ui/${muted ? "volume-off" : "volume"}.svg`,
           "zia-folder-card-sound"
         );
         speaker.classList.add("zia-folder-card-act");
@@ -7142,7 +7201,7 @@
     const shown = button?.querySelector(".toolbarbutton-icon");
     const style = shown ? getComputedStyle(shown) : null;
     const url = style?.listStyleImage?.match(/^url\("?(.*?)"?\)$/)?.[1];
-    const icon = folderCardIcon(url || "chrome://sine/content/zia/icons/tabler/outline/plus.svg", "zia-folder-card-icon");
+    const icon = folderCardIcon(url || "chrome://sine/content/zia/icons/ui/plus.svg", "zia-folder-card-icon");
     icon.setAttribute("zia-plus", "true");
     if (style) {
       const size = (value) => (parseFloat(value) > 0 ? value : "");
@@ -9864,6 +9923,7 @@
     const urlbar = gURLBar.textbox || document.getElementById("urlbar");
 
     safely("applyZenDefaults", applyZenDefaults);
+    safely("setupIconPack", setupIconPack);
     safely("watchOptions", watchOptions);
     safely("watchUrlbarPosition", watchUrlbarPosition);
     safely("watchPipWindows", watchPipWindows);

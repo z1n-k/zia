@@ -528,13 +528,13 @@
 }
 
 #zia-copy-link-button image {
-  list-style-image: url("chrome://sine/content/zia/icons/tabler/outline/paperclip.svg") !important;
+  list-style-image: url("chrome://sine/content/zia/icons/ui/paperclip.svg") !important;
   -moz-context-properties: fill, fill-opacity, stroke, stroke-opacity;
   fill: currentColor;
 }
 
 #zia-copy-link-button[zia-copied] image {
-  list-style-image: url("chrome://sine/content/zia/icons/tabler/outline/check.svg") !important;
+  list-style-image: url("chrome://sine/content/zia/icons/ui/check.svg") !important;
 }
 
 #urlbar :is(#zia-copy-link-button, #zen-site-data-icon-button) {

@@ -63,7 +63,7 @@
       button.title = action.label;
 
       const icon = document.createElementNS(XHTML_NS, "img");
-      icon.setAttribute("src", `chrome://sine/content/zia/icons/tabler/outline/${action.icon}.svg`);
+      icon.setAttribute("src", `chrome://sine/content/zia/icons/ui/${action.icon}.svg`);
       icon.setAttribute("alt", "");
       button.appendChild(icon);
       button.addEventListener("click", (event) => {
@@ -207,7 +207,7 @@
   function tabButtonIcon(tab, selector, fallback) {
     const button = tab.querySelector(selector);
     const url = button ? getComputedStyle(button).listStyleImage?.match(/^url\("?(.*?)"?\)$/)?.[1] : null;
-    return url || `chrome://sine/content/zia/icons/tabler/outline/${fallback}.svg`;
+    return url || `chrome://sine/content/zia/icons/ui/${fallback}.svg`;
   }
 
   function fillFolderCard(card, folder) {
@@ -222,7 +222,7 @@
       if (tab.hasAttribute("soundplaying") || tab.hasAttribute("muted")) {
         const muted = tab.hasAttribute("muted");
         const speaker = folderCardIcon(
-          `chrome://sine/content/zia/icons/tabler/outline/${muted ? "volume-off" : "volume"}.svg`,
+          `chrome://sine/content/zia/icons/ui/${muted ? "volume-off" : "volume"}.svg`,
           "zia-folder-card-sound"
         );
         speaker.classList.add("zia-folder-card-act");
@@ -279,7 +279,7 @@
     const shown = button?.querySelector(".toolbarbutton-icon");
     const style = shown ? getComputedStyle(shown) : null;
     const url = style?.listStyleImage?.match(/^url\("?(.*?)"?\)$/)?.[1];
-    const icon = folderCardIcon(url || "chrome://sine/content/zia/icons/tabler/outline/plus.svg", "zia-folder-card-icon");
+    const icon = folderCardIcon(url || "chrome://sine/content/zia/icons/ui/plus.svg", "zia-folder-card-icon");
     icon.setAttribute("zia-plus", "true");
     if (style) {
       const size = (value) => (parseFloat(value) > 0 ? value : "");

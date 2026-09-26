@@ -73,8 +73,8 @@
   // and fades, then the tick springs in, running a touch past full size.
   // After a moment the tick pops back into the paperclip the same way.
   const POP_SPRING = "cubic-bezier(0.3, 1.4, 0.5, 1)";
-  const COPIED_ICON = "chrome://sine/content/zia/icons/tabler/outline/check.svg";
-  const COPY_ICON = "chrome://sine/content/zia/icons/tabler/outline/paperclip.svg";
+  const COPIED_ICON = "chrome://sine/content/zia/icons/ui/check.svg";
+  const COPY_ICON = "chrome://sine/content/zia/icons/ui/paperclip.svg";
 
   function popIcon(icon, toTick, swap) {
     icon?.ziaPop?.cancel();

@@ -8,6 +8,12 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
+- Installing and updating Zia is quick again: its 6,000-odd icons come as
+  one file instead of thousands, which Sine took up to a minute to unpack
+  on some computers, freezing Zen meanwhile. Zia copies the icon file into
+  your Zen profile the first time and reads icons from it; folders and
+  spaces using one of Zia's icons move over to it by themselves.
+
 - Dimming asleep tabs is off by default (and switched off once for anyone
   who had it on from when it was on by default); turn on **Asleep
   (unloaded) tabs, essentials and folders look dimmed** in Zia's settings.

@@ -228,6 +228,7 @@
     const urlbar = gURLBar.textbox || document.getElementById("urlbar");
 
     safely("applyZenDefaults", applyZenDefaults);
+    safely("setupIconPack", setupIconPack);
     safely("watchOptions", watchOptions);
     safely("watchUrlbarPosition", watchUrlbarPosition);
     safely("watchPipWindows", watchPipWindows);

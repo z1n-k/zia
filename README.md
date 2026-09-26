@@ -237,7 +237,7 @@ Zia is an independent, unofficial project. It isn't affiliated with, endorsed by
 
 ## Credits
 
-Icons are [Tabler Icons](https://tabler.io/icons), MIT licensed; their licence is in `icons/tabler/LICENSE`. They're recoloured to follow Zen's icon colour and otherwise unchanged (`scripts/tabler-icons.py` makes them from the npm package).
+Icons are [Tabler Icons](https://tabler.io/icons), MIT licensed; their licence is in `icons/tabler-LICENSE`. They're recoloured to follow Zen's icon colour and otherwise unchanged (`scripts/tabler-icons.py` makes them from the npm package). They ship as one file, `icons/tabler.zip`, which Zia copies into your Zen profile (`zia-icons`) and reads the icons from, so installing and updating Zia doesn't unpack thousands of files.
 
 The bleeding corners technique was inspired by [Bleeding Corners Fix](https://github.com/rsiebertdev/zen-themes/tree/main/bleeding-corners-fix) by rsiebertdev. Zia uses its own implementation, matched to its card shape.
 
