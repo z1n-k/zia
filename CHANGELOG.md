@@ -11,6 +11,9 @@ Every release of Zia, newest first. The format follows
 - Dragging the open tab back out of a collapsed folder no longer makes it
   vanish as soon as it leaves the folder (it was cut off by the folder's
   own edge), so it's easy to see where it goes.
+- Dropping a tab into a collapsed folder no longer makes it blink out and
+  drop in from a row above: it stays where it landed, and the folder keeps
+  its hover box until the pointer leaves.
 
 ## [2.59.3] — 2026-09-26
 

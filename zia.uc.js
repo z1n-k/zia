@@ -9105,6 +9105,12 @@
           folder.removeAttribute("has-active");
           folder.activeTabs = [];
         }
+        // Already one of the folder's shown tabs: Zen reveals a tab that's
+        // newly active (from see-through, slid down a row), so the tab just
+        // dropped there blinked out and dropped in from above
+        if (tab.selected && folder.hasAttribute("has-active") && !folder.activeTabs?.includes(tab)) {
+          folder.activeTabs = [...(folder.activeTabs || []), tab].sort((x, y) => x.index - y.index);
+        }
       }
       try {
         if (!isCollapsed(folder)) {
@@ -10652,6 +10658,11 @@
 
     const holdFolderHover = (folder) => {
       const held = [folder];
+      // a tab dropped into a folder: the folder keeps its hover box too
+      const around = gBrowser.isTab(folder) ? folder.closest("zen-folder") : null;
+      if (around) {
+        held.push(around);
+      }
       if (shownAtDrop.row && shownAtDrop.row !== folder && shownAtDrop.row.isConnected) {
         held.push(shownAtDrop.row);
       }
