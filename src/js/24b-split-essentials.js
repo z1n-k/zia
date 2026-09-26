@@ -156,10 +156,20 @@
     if (tabs.length !== 2 || !content) {
       return;
     }
-    // not the dragged tab's selected look: a plain tile until it lands
-    proxy.removeAttribute("visuallyselected");
-    proxy.removeAttribute("selected");
-    proxy.style.removeProperty("--zia-split-glow");
+    // looks as it will once it lands: in colour (of the half being dragged)
+    // if the split's the one showing, plain if not
+    if (tabs.some((t) => t.selected)) {
+      proxy.setAttribute("visuallyselected", "true");
+      proxy.setAttribute("selected", "true");
+      const icon = tabIcon(tab) || tabIcon(tabs.find((t) => t.selected));
+      if (icon) {
+        proxy.style.setProperty("--zia-split-glow", cssUrl(icon));
+      }
+    } else {
+      proxy.removeAttribute("visuallyselected");
+      proxy.removeAttribute("selected");
+      proxy.style.removeProperty("--zia-split-glow");
+    }
     fillSplitHalves(content, tabs.map((t) => ({ icon: tabIcon(t), title: t.label })));
     proxy.setAttribute("zia-split-tile", "true");
   }

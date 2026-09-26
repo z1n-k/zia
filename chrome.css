@@ -1368,6 +1368,12 @@ zen-essentials-promo {
   background: var(--zia-tab-hover-bg) !important;
 }
 
+/* ...and its x: Firefox forgets the hover until the pointer next moves,
+   and Zen only shows the x on hover */
+.tabbrowser-tab:not([zen-essential], [pinned])[zia-hover-held] .tab-close-button {
+  display: flex !important;
+}
+
 /* a split essential dragged back to the list, until it's removed */
 .tabbrowser-tab[zia-split-gone] {
   display: none !important;

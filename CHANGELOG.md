@@ -32,7 +32,13 @@ Every release of Zia, newest first. The format follows
   leaves a stray tab behind that can't be closed.
 
 - A dragged essential glides into its new place when you let go, instead
-  of jumping there.
+  of jumping there, following the tiles as they slide into their new order.
+
+- A tab you've just dropped keeps its × until the pointer leaves it,
+  instead of it blinking out.
+
+- A split dragged over the essentials already shows the colour it will
+  have as an essential, instead of looking inactive until it's let go.
 
 - A dragged folder no longer vanishes for a moment as it lands.
 

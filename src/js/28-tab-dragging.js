@@ -1889,30 +1889,38 @@
       // Dropped among the essentials: the tile glides from where it was let
       // go into its place (once that's settled) before the real one shows
       const glideHome = () => {
-        if (event?.type !== "drop" || state.asTab || !copy.isConnected || !state.tab.isConnected ||
+        if (!event || state.asTab || !copy.isConnected || !state.tab.isConnected ||
             !state.tab.hasAttribute("zen-essential") || matchMedia("(prefers-reduced-motion: reduce)").matches) {
           reveal();
           return;
         }
-        let last = null;
-        let tries = 0;
-        const settleThenGlide = () => {
-          const box = state.tab.getBoundingClientRect();
-          const key = `${Math.round(box.left)},${Math.round(box.top)}`;
-          if (key !== last && tries++ < 8) {
-            last = key;
-            requestAnimationFrame(settleThenGlide);
+        // Heads for wherever the tile is on each frame, so it still lands
+        // right while Zen is sliding the tiles into their new order
+        const shift = copy.ziaHostShift || { x: 0, y: 0 };
+        const from = copy.getBoundingClientRect();
+        const start = { x: from.left + from.width / 2, y: from.top + from.height / 2 };
+        const ms = ESSENTIAL_MS + 100;
+        const began = performance.now();
+        copy.style.setProperty("transition", "none", "important");
+        const follow = () => {
+          if (!copy.isConnected || !state.tab.isConnected) {
+            reveal();
             return;
           }
+          const box = state.tab.getBoundingClientRect();
           const drawn = state.tab.querySelector(".tab-background")?.getBoundingClientRect() || box;
-          const shift = copy.ziaHostShift || { x: 0, y: 0 };
-          const ms = ESSENTIAL_MS + 60;
-          copy.style.setProperty("transition", `left ${ms}ms cubic-bezier(0.2, 0.8, 0.2, 1), top ${ms}ms cubic-bezier(0.2, 0.8, 0.2, 1)`, "important");
-          copy.style.setProperty("left", `${Math.round(box.left + box.width / 2 - shift.x)}px`, "important");
-          copy.style.setProperty("top", `${Math.round(drawn.top + drawn.height / 2 - shift.y)}px`, "important");
-          setTimeout(reveal, ms + 20);
+          const to = { x: box.left + box.width / 2, y: drawn.top + drawn.height / 2 };
+          const t = Math.min(1, (performance.now() - began) / ms);
+          const ease = 1 - Math.pow(1 - t, 3);
+          copy.style.setProperty("left", `${Math.round(start.x + (to.x - start.x) * ease - shift.x)}px`, "important");
+          copy.style.setProperty("top", `${Math.round(start.y + (to.y - start.y) * ease - shift.y)}px`, "important");
+          if (t < 1) {
+            requestAnimationFrame(follow);
+          } else {
+            reveal();
+          }
         };
-        requestAnimationFrame(settleThenGlide);
+        requestAnimationFrame(follow);
       };
       setTimeout(glideHome, 0);
     };
