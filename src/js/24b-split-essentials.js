@@ -205,6 +205,7 @@
   // right-click menu, or dragging it onto the essentials.
   function addSplitToEssentials(tab) {
     if (!canBecomeSplitEssential(tab)) {
+      console.warn("[Zia] Split essentials: that isn't a two-site split (or the setting is off)");
       return;
     }
     const tabs = tab.group.tabs.filter((t) => !t.closing);

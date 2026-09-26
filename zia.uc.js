@@ -6880,6 +6880,7 @@
   // right-click menu, or dragging it onto the essentials.
   function addSplitToEssentials(tab) {
     if (!canBecomeSplitEssential(tab)) {
+      console.warn("[Zia] Split essentials: that isn't a two-site split (or the setting is off)");
       return;
     }
     const tabs = tab.group.tabs.filter((t) => !t.closing);
@@ -9129,6 +9130,13 @@
     window.addEventListener("dragstart", onStart, true);
     document.getElementById("tabbrowser-tabs")?.addEventListener("dragstart", onStart, true);
 
+    const acceptSplitDrop = (event) => {
+      event.preventDefault();
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = "move";
+      }
+    };
+
     const pointerOf = (event) => ({
       x: event.clientX || (event.screenX ? event.screenX - window.mozInnerScreenX : 0),
       y: event.clientY || (event.screenY ? event.screenY - window.mozInnerScreenY : 0),
@@ -9217,6 +9225,11 @@
         // (24b-split-essentials.js); the essentials are outlined meanwhile.
         drag.splitEssential = !!drag.split && overEssentials && canBecomeSplitEssential(drag.tab);
         essentials?.toggleAttribute("zia-split-drop", drag.splitEssential);
+        // Zen turns a split down over the essentials, and without a yes
+        // there'd be no drop at all
+        if (drag.splitEssential) {
+          acceptSplitDrop(event);
+        }
         drag.noTiles = drag.essentials && !hasTiles && !promo;
         makeRoom(drag.noTiles ? document.getElementById("zen-essentials") || grid : null);
         if (drag.essentials) {
@@ -9244,6 +9257,10 @@
     const fixDrop = (event) => {
       const tab = drag?.tab;
       const data = tab?._dragData;
+      if (drag?.splitEssential) {
+        acceptSplitDrop(event);
+        return;
+      }
 
       if (data && drag.essentials && drag.noTiles) {
         data.dropElement = tab;
