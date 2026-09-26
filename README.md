@@ -130,6 +130,10 @@ Essentials sit as tiles, four to a row, or six when the sidebar is wide.
 
 [Glance](https://docs.zen-browser.app/user-manual/glance), Zen's link preview (Alt-click a link, or Option-click on macOS), gets a look of its own. From an essential, a small card with the site's icon springs out from behind the essential's own, and is sucked back in when you close the glance. From a tab, the glanced site sits as a small square tile at the tab's end.
 
+**Split essentials** (experimental): keep a split of two sites as one essential, the way Dia can. Drag a two-site split onto the essentials, or right-click one of its tabs and choose **Add Split to Essentials**. The tile shows both sites in halves of their own; click it and the split opens, at whichever half you clicked. While it's open the tile takes the colour of the half you're in, and so does its hover card; drag it back to the tab list and it's an ordinary split again. Zen can't hold a split among its essentials yet, so Zia keeps the split as two ordinary tabs hidden from the tab list.
+
+<!-- image: a split essential, open -->
+
 <p>
   <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/glance-essential.png" alt="A glance card fanned out from an essential" width="360">
   <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/glance-tab.png" alt="A glance tile at the end of a tab" width="360">
@@ -226,6 +230,7 @@ Almost every part of Zia can be switched on or off on its own. The settings are 
 | Sound bars on playing tabs (off: Zen's speaker) | on |
 | Tint the selected tab's glow and the sound bars with the site's colours | off |
 | The last essential stretches across the rest of its row | off |
+| Split essentials (experimental): drag a two-site split onto the essentials | on |
 | Asleep (unloaded) tabs, essentials and folders look dimmed | off |
 | Compact mode's sidebar is slightly see-through, with the page blurred behind it | on |
 | **Page** | |
@@ -269,7 +274,7 @@ Changed at the default level only. If you've set either yourself in `about:confi
 
 - Linux gets little testing
 - Light mode and Zen's layouts other than **Sidebar and Top Toolbar** are less polished
-- Split tabs can't be essentials: Zen keeps a split as a group, and essentials only hold single tabs
+- Split essentials are experimental: Zen doesn't support them itself yet, so Zia works around it
 
 ---
 
@@ -288,7 +293,7 @@ Zia is an independent, unofficial project. It isn't affiliated with, endorsed by
 
 ## Credits
 
-Icons are [Tabler Icons](https://tabler.io/icons), MIT licensed; their licence is in `icons/tabler-LICENSE`. They're recoloured to follow Zen's icon colour and otherwise unchanged (`scripts/tabler-icons.py` makes them from the npm package). They ship as one file, `icons/tabler.zip`, which Zia copies into your Zen profile (`zia-icons`) and reads the icons from, so installing and updating Zia doesn't unpack thousands of files.
+Icons are [Tabler Icons](https://tabler.io/icons), MIT licensed; their licence is in `icons/tabler-LICENSE`. They're recoloured to follow Zen's icon colour and otherwise unchanged (`scripts/tabler-icons.py` makes them from the npm package). They ship as one compact file, `icons/tabler-bundle.js`, from which Zia makes a zip in your Zen profile (`zia-icons`, once per icon update) and reads the icons, so installing and updating Zia doesn't unpack thousands of files and the download stays small.
 
 The bleeding corners technique was inspired by [Bleeding Corners Fix](https://github.com/rsiebertdev/zen-themes/tree/main/bleeding-corners-fix) by rsiebertdev. Zia uses its own implementation, matched to its card shape.
 

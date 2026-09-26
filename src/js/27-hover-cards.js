@@ -78,10 +78,12 @@
   }
 
   function fillTabCard(card, tab) {
-    const isNew = tabCardKind(tab) === "new";
-    card.querySelector(".zia-tab-card-title").textContent = tab.label || "New Tab";
+    // a split essential's card is about the half you're in
+    const shown = splitCardSource(tab) || tab;
+    const isNew = tabCardKind(shown) === "new";
+    card.querySelector(".zia-tab-card-title").textContent = shown.label || "New Tab";
     const sub = card.querySelector(".zia-tab-card-sub");
-    sub.textContent = isNew ? "" : tabCardDomain(tab);
+    sub.textContent = isNew ? "" : tabCardDomain(shown);
     sub.hidden = !sub.textContent;
 
     const row = card.querySelector("#zia-tab-card-actions");

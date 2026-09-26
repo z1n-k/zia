@@ -705,6 +705,12 @@
   }
 }
 
+
+/* The "paste the copied link" suggestion: just the link, without the
+   search engine's name in a chip at the far right */
+.urlbarView-row:is([type="clipboard"], :has(.urlbarView-favicon[src*="clipboard"])) :is(.urlbarView-action, .urlbarView-button:not(.urlbarView-button-result-menu)) {
+  display: none !important;
+}
 #zia-workspace-slot {
   display: flex;
 
@@ -1023,6 +1029,133 @@
     transition: opacity 0.15s ease;
   }
 }
+
+/* Split essentials (zia.uc.js): the tile holds both sites, each in a small
+   half of its own, the half you're in lit; the split it opens is hidden
+   from the tab list. */
+.tabbrowser-tab[zia-split-of],
+tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
+  display: none !important;
+}
+
+/* no wider than the other essentials, whatever its halves want */
+.tabbrowser-tab[zen-essential][zia-split-tile] {
+  min-width: 0 !important;
+}
+
+.tabbrowser-tab[zen-essential][zia-split-tile] > .tab-stack {
+  min-width: 0 !important;
+  overflow: hidden;
+}
+
+.tabbrowser-tab[zen-essential][zia-split-tile] > .tab-stack > .tab-content {
+  position: relative;
+  z-index: 1;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 8px !important;
+  margin: 0 !important;
+
+  & > .tab-icon-stack {
+    display: none !important;
+  }
+
+  & > .zia-split-half {
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    max-width: calc(50% - 3px) !important;
+    height: 100% !important;
+    aspect-ratio: 4 / 5;
+    display: grid !important;
+    place-items: center !important;
+    border-radius: var(--zia-essential-radius, 12px);
+    corner-shape: round;
+    background-color: rgba(0, 0, 0, 0.18);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  & > .zia-split-half > image {
+    width: 16px;
+    height: 16px;
+  }
+
+  & > .zia-split-half > .zia-split-title {
+    display: none;
+  }
+}
+
+/* a stand-in, not an essential's size: halves as tall as the real ones
+   (zia.uc.js), centred */
+.tabbrowser-tab[zen-essential][zia-split-tile][zia-essential-proxy] > .tab-stack > .tab-content {
+  padding-block: 0 !important;
+  align-items: center !important;
+
+  & > .zia-split-half {
+    height: var(--zia-split-half-height, calc(100% - 16px)) !important;
+  }
+}
+
+.tabbrowser-tab[zen-essential][zia-split-tile][zia-essential-proxy][style*="--zia-split-half-width"] > .tab-stack > .tab-content > .zia-split-half {
+  flex: none !important;
+  width: var(--zia-split-half-width) !important;
+  max-width: none !important;
+  aspect-ratio: auto !important;
+}
+
+.tabbrowser-tab[zen-essential][zia-split-tile][zia-split-focus="a"] > .tab-stack > .tab-content > .zia-split-half[side="a"],
+.tabbrowser-tab[zen-essential][zia-split-tile][zia-split-focus="b"] > .tab-stack > .tab-content > .zia-split-half[side="b"] {
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+/* Dragged off the essentials, the tile turns into the split's row: both
+   sites, icon and title, side by side */
+.tabbrowser-tab[zia-split-tile]:not([zen-essential]) > .tab-stack > .tab-content {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+
+  & > :not(.zia-split-half) {
+    display: none !important;
+  }
+
+  & > .zia-split-half {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  & > .zia-split-half > image {
+    width: 16px;
+    height: 16px;
+    flex: none;
+  }
+
+  & > .zia-split-half > .zia-split-title {
+    margin: 0;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: var(--zia-text-size, 13px);
+  }
+}
+
+/* The glow and tint: the half you're in, over the whole tile */
+@media -moz-pref("zen.theme.essentials-favicon-bg") {
+  .tabbrowser-tab[zen-essential][zia-split-tile][visuallyselected] > .tab-stack > .tab-background::after {
+    background-image: var(--zia-split-glow, var(--zen-essential-tab-icon)) !important;
+  }
+}
 .tabbrowser-tab[drag-image] {
   margin: 0 !important;
   translate: none !important;
@@ -1050,6 +1183,13 @@
 
 #tabbrowser-tabs[movingtab] :is(.tabbrowser-tab, .tab-group-label-container, tab-group, zen-folder):is([zia-dragging], [zia-shift]) {
   opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* ...and while it lands (a folder's parts included), whatever Firefox has
+   hidden for its own drop animation */
+#tabbrowser-tabs :is(zen-folder, tab-group)[zia-landing],
+#tabbrowser-tabs :is(zen-folder, tab-group)[zia-landing] > :is(.tab-group-label-container, .tab-group-container) {
   visibility: visible !important;
 }
 
@@ -1202,8 +1342,9 @@ zen-essentials-promo {
   opacity: 1 !important;
 }
 
-:root[zia-dragging-tab] .tabbrowser-tab :is(.tab-close-button, .tab-reset-button),
-#tabbrowser-tabs[zia-settling] .tabbrowser-tab :is(.tab-close-button, .tab-reset-button) {
+/* (not on the row being dragged, which stays under the pointer) */
+:root[zia-dragging-tab] .tabbrowser-tab:not([zia-hover-held], [zia-dragging], [zia-dragging] *) :is(.tab-close-button, .tab-reset-button),
+#tabbrowser-tabs[zia-settling] .tabbrowser-tab:not([zia-hover-held]) :is(.tab-close-button, .tab-reset-button) {
   opacity: 0 !important;
   transition: none !important;
 }
@@ -1245,6 +1386,45 @@ zen-essentials-promo {
   to { scale: 1; filter: blur(0); opacity: 1; }
 }
 
+
+/* A tab just dropped keeps its hover wash until the pointer leaves it
+   (zia-hover-held, zia.uc.js) */
+.tabbrowser-tab:not([zen-essential], [visuallyselected])[zia-hover-held] > .tab-stack > .tab-background {
+  background: var(--zia-tab-hover-bg) !important;
+}
+
+/* ...and its x: Firefox forgets the hover until the pointer next moves,
+   and Zen only shows the x on hover */
+.tabbrowser-tab:not([zen-essential], [pinned])[zia-hover-held] .tab-close-button,
+/* (ids only to outrank Zen's split rule that hides them unless hovered) */
+:is(.tab-close-button, .tab-reset-button)[zia-held-shown]:not(#zia-a):not(#zia-b) {
+  display: flex !important;
+  opacity: 1 !important;
+}
+
+/* a split essential dragged back to the list, until it's removed */
+.tabbrowser-tab[zia-split-gone] {
+  display: none !important;
+}
+
+/* Zen's drop-to-split marker (hold a tab over one side of another tab):
+   gone, it flashed as a split landed */
+zen-split-fake-tab {
+  display: none !important;
+}
+
+/* the list measured again mid-drag (a dragged folder that has just shut) */
+#tabbrowser-tabs[zia-measuring],
+#tabbrowser-tabs[zia-measuring] * {
+  transition: none !important;
+}
+
+/* A split's own label stays hidden (Zen hides it), whatever the drag and
+   landing rules above show: it's a blue block Firefox draws for groups */
+#tabbrowser-tabs tab-group[split-view-group] > .tab-group-label-container:not(#zia-a):not(#zia-b) {
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
 @property --zia-folder-bottom-extra {
   syntax: "<length>";
   inherits: false;
@@ -1497,7 +1677,17 @@ zen-essentials-promo {
 
 :root #tabbrowser-tabs:is([zia-settling], [movingtab]) .tabbrowser-tab[zia-to-essential],
 :root #tabbrowser-tabs .tabbrowser-tab[zia-to-essential][zia-dragging],
-.tabbrowser-tab[zia-to-essential] {
+.tabbrowser-tab[zia-to-essential],
+[split-view-group][zia-to-essential],
+[split-view-group][zia-to-essential] .tabbrowser-tab {
+  opacity: 0 !important;
+}
+
+/* a split's tabs are kept showing while they're dragged (05-tab-dragging),
+   which outranked the fade above as the split turns into a tile */
+:root #tabbrowser-tabs [split-view-group][zia-to-essential],
+:root #tabbrowser-tabs[movingtab] [split-view-group][zia-to-essential] :is(.tabbrowser-tab, .tab-group-label-container, tab-group),
+:root #tabbrowser-tabs[movingtab] [split-view-group][zia-to-essential] :is(.tabbrowser-tab, .tab-group-label-container):is([zia-dragging], [zia-shift]) {
   opacity: 0 !important;
 }
 
@@ -1720,7 +1910,8 @@ zen-folder > .tab-group-label-container > .zia-folder-close {
   margin-inline-start: auto;
 }
 
-zen-folder > .tab-group-label-container:hover > .zia-folder-close {
+zen-folder > .tab-group-label-container:hover > .zia-folder-close,
+zen-folder[zia-hover-held] > .tab-group-label-container > .zia-folder-close {
   display: flex;
 }
 
@@ -1803,6 +1994,22 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
  * hover tint either, which flickered off and on again as the tab dropped. */
 :root[zen-sidebar-expanded="true"] zen-folder[zia-folder-color]:not([zia-folder-color="white"])[zia-drop-slot]::before {
   background-color: color-mix(in srgb, var(--zia-folder-swatch) var(--zia-folder-wash), transparent) !important;
+}
+
+/* A folder just dropped keeps its hover box until the pointer leaves
+   (tab dragging, zia-hover-held) */
+:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group]))[zia-hover-held] {
+  &::before {
+    background-color: var(--zia-folder-hover-bg);
+  }
+
+  &::after {
+    opacity: 1;
+  }
+
+  &:is([zia-folder-color], tab-group)::before {
+    background-color: color-mix(in srgb, var(--zia-folder-swatch) var(--zia-folder-tint), transparent);
+  }
 }
 #zia-tab-card,
 #zia-folder-card {
@@ -3337,6 +3544,17 @@ findbar {
     --zen-toolbar-height: 0px !important;
   }
 
+  /* The toolbar's empty strip still sat, unseen, over the top of each
+     pane's own toolbar, taking its clicks (and dragging the window) */
+  & :is(#zen-appcontent-navbar-wrapper, #zen-appcontent-navbar-container, #nav-bar, #nav-bar-customization-target, #urlbar-container) {
+    pointer-events: none !important;
+    -moz-window-dragging: no-drag !important;
+  }
+
+  & :is(#urlbar[breakout-extend], .titlebar-buttonbox-container) {
+    pointer-events: auto !important;
+  }
+
   & #nav-bar > :not(#nav-bar-customization-target),
   & #nav-bar-customization-target > :not(#urlbar-container) {
     visibility: hidden !important;
@@ -3811,6 +4029,17 @@ tooltip[default="true"] {
   translate: 0 var(--zia-toolbar-height) !important;
 }
 
+/* Only the little move-and-expand pill itself takes the pointer: the
+   invisible box around it sat over the pane's toolbar buttons. */
+.zen-view-splitter-header-container {
+  pointer-events: none !important;
+}
+
+:root:not([inDOMFullscreen="true"]) .browserSidebarContainer:hover .zen-view-splitter-header,
+.zen-view-splitter-header:hover {
+  pointer-events: auto !important;
+}
+
 #urlbar[breakout-extend]:not([zia-classic]) {
   & .urlbar-input-container {
     padding-inline-start: var(--zia-pop-icon-start, 16px) !important;
@@ -4183,6 +4412,16 @@ zen-folder .tab-reset-button {
 }
 
 :root:not(#zia-none) .tabbrowser-tab[zia-morph-done] > .tab-stack > :is(.tab-background, .tab-content) {
+  transition: none !important;
+}
+
+:root:not(#zia-none) tab-group[split-view-group][zia-morph] > .tab-group-container {
+  margin-inline-start: var(--zia-morph-bg-start) !important;
+  margin-inline-end: var(--zia-morph-bg-end) !important;
+  transition: margin-inline-start 120ms ease-out, margin-inline-end 120ms ease-out !important;
+}
+
+:root:not(#zia-none) tab-group[split-view-group][zia-morph-done] > .tab-group-container {
   transition: none !important;
 }
 

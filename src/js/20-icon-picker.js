@@ -3,9 +3,10 @@
   // index holds every icon's name, tags and category, so "money" finds cash,
   // coins and wallet.
   //
-  // They come as one zip, icons/tabler.zip: Sine unpacks a mod file by file,
-  // and several thousand icons froze Zen for half a minute on some computers.
-  // Zia copies the zip into the profile (once per icon pack, so Zia's own
+  // They come as one file, icons/tabler-bundle.js: Sine unpacks a mod file
+  // by file, and several thousand icons froze Zen for half a minute on some
+  // computers (and as one file they compress to a fraction of the size).
+  // Zia makes a zip of them in the profile (once per icon pack, so Zia's own
   // updates don't redo it) and reads icons straight out of it, the way
   // Firefox reads its own, at resource://zia-tabler/.
   const ICON_ROOT = "chrome://sine/content/zia/icons";
@@ -15,25 +16,179 @@
   let iconIndex = null;
   let iconPackReady = null;
 
+  function iconPackPath() {
+    const holder = {};
+    Services.scriptloader.loadSubScript(`${ICON_ROOT}/tabler-pack.js`, holder);
+    return PathUtils.join(PathUtils.profileDir, "zia-icons", `tabler-${holder.ZiaTablerPack}.zip`);
+  }
+
+  function pointAtIconPack(pack) {
+    const handler = Services.io.getProtocolHandler("resource").QueryInterface(Ci.nsIResProtocolHandler);
+    const jar = Services.io.newURI(`jar:${PathUtils.toFileURI(pack)}!/`);
+    if (!handler.hasSubstitution(ICON_HOST) || handler.getSubstitution(ICON_HOST).spec !== jar.spec) {
+      handler.setSubstitution(ICON_HOST, jar);
+    }
+  }
+
+  // Folder and space icons are drawn as Zen restores them, before the rest
+  // of Zia starts, so once the pack is there it's pointed at the moment this
+  // script loads.
+  try {
+    const pack = iconPackPath();
+    const file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
+    file.initWithPath(pack);
+    if (file.exists()) {
+      pointAtIconPack(pack);
+    }
+  } catch (err) {
+    noteError("icon pack: early", err);
+  }
+
+  // Anything that still asked for an icon before the pack was ready (the
+  // first start with it) is drawn again.
+  function redrawPackIcons() {
+    const prefix = `${ICON_DIR}/`;
+    for (const image of document.querySelectorAll("image, img")) {
+      for (const name of ["src", "href"]) {
+        const url = image.getAttribute(name);
+        if (url?.startsWith(prefix)) {
+          image.setAttribute(name, "");
+          image.setAttribute(name, url);
+          if (image.style.opacity === "0") {
+            image.style.opacity = "1";
+          }
+        }
+      }
+    }
+  }
+
+  // The bundle's icons as a zip ({outline,filled}/name.svg and the LICENSE),
+  // stored rather than compressed: it's only ever read from the profile.
+  let crcTable = null;
+  const crc32 = (bytes) => {
+    if (!crcTable) {
+      crcTable = new Uint32Array(256);
+      for (let n = 0; n < 256; n++) {
+        let c = n;
+        for (let k = 0; k < 8; k++) {
+          c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+        }
+        crcTable[n] = c >>> 0;
+      }
+    }
+    let crc = 0xffffffff;
+    for (let i = 0; i < bytes.length; i++) {
+      crc = crcTable[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8);
+    }
+    return (crc ^ 0xffffffff) >>> 0;
+  };
+
+  function zipOf(entries) {
+    const encoder = new TextEncoder();
+    const items = entries.map(([name, text]) => {
+      const nameBytes = encoder.encode(name);
+      const data = encoder.encode(text);
+      return { nameBytes, data, crc: crc32(data) };
+    });
+    let size = 22;
+    for (const item of items) {
+      size += 30 + 46 + 2 * item.nameBytes.length + item.data.length;
+    }
+    const out = new Uint8Array(size);
+    const view = new DataView(out.buffer);
+    let at = 0;
+    const u16 = (v) => {
+      view.setUint16(at, v, true);
+      at += 2;
+    };
+    const u32 = (v) => {
+      view.setUint32(at, v, true);
+      at += 4;
+    };
+    const DATE = 0x21; // 1 January 1980
+    for (const item of items) {
+      item.offset = at;
+      u32(0x04034b50);
+      u16(10);
+      u16(0);
+      u16(0);
+      u16(0);
+      u16(DATE);
+      u32(item.crc);
+      u32(item.data.length);
+      u32(item.data.length);
+      u16(item.nameBytes.length);
+      u16(0);
+      out.set(item.nameBytes, at);
+      at += item.nameBytes.length;
+      out.set(item.data, at);
+      at += item.data.length;
+    }
+    const directory = at;
+    for (const item of items) {
+      u32(0x02014b50);
+      u16(20);
+      u16(10);
+      u16(0);
+      u16(0);
+      u16(0);
+      u16(DATE);
+      u32(item.crc);
+      u32(item.data.length);
+      u32(item.data.length);
+      u16(item.nameBytes.length);
+      u16(0);
+      u16(0);
+      u16(0);
+      u16(0);
+      u32(0o644 << 16);
+      u32(item.offset);
+      out.set(item.nameBytes, at);
+      at += item.nameBytes.length;
+    }
+    const directorySize = at - directory;
+    u32(0x06054b50);
+    u16(0);
+    u16(0);
+    u16(items.length);
+    u16(items.length);
+    u32(directorySize);
+    u32(directory);
+    u16(0);
+    return out;
+  }
+
+  async function packFromBundle() {
+    const holder = {};
+    Services.scriptloader.loadSubScript(`${ICON_ROOT}/tabler-bundle.js`, holder);
+    const { head, icons } = holder.ZiaTablerBundle;
+    const entries = [];
+    for (const style of Object.keys(icons).sort()) {
+      for (const name of Object.keys(icons[style]).sort()) {
+        entries.push([`${style}/${name}.svg`, `${head[style]}${icons[style][name]}</svg>`]);
+      }
+    }
+    try {
+      entries.push(["LICENSE", await (await fetch(`${ICON_ROOT}/tabler-LICENSE`)).text()]);
+    } catch (err) {
+      noteError("icon pack: licence", err);
+    }
+    return zipOf(entries);
+  }
+
   function setupIconPack() {
     iconPackReady ??= (async () => {
-      const holder = {};
-      Services.scriptloader.loadSubScript(`${ICON_ROOT}/tabler-pack.js`, holder);
-      const dir = PathUtils.join(PathUtils.profileDir, "zia-icons");
-      const pack = PathUtils.join(dir, `tabler-${holder.ZiaTablerPack}.zip`);
+      const pack = iconPackPath();
+      const dir = PathUtils.parent(pack);
       if (!(await IOUtils.exists(pack))) {
-        const bytes = new Uint8Array(await (await fetch(`${ICON_ROOT}/tabler.zip`)).arrayBuffer());
+        const bytes = await packFromBundle();
         await IOUtils.makeDirectory(dir, { ignoreExisting: true });
         // written aside first, so another window never reads half a zip
         const part = `${pack}.${Math.random().toString(36).slice(2)}.part`;
         await IOUtils.write(part, bytes);
         await IOUtils.move(part, pack);
       }
-      const handler = Services.io.getProtocolHandler("resource").QueryInterface(Ci.nsIResProtocolHandler);
-      const jar = Services.io.newURI(`jar:${PathUtils.toFileURI(pack)}!/`);
-      if (!handler.hasSubstitution(ICON_HOST) || handler.getSubstitution(ICON_HOST).spec !== jar.spec) {
-        handler.setSubstitution(ICON_HOST, jar);
-      }
+      pointAtIconPack(pack);
       // Older packs go (one still open can't be removed on Windows until
       // Zen restarts; it goes next time).
       for (const child of await IOUtils.getChildren(dir)) {
@@ -172,20 +327,15 @@
     window.addEventListener("ZenWorkspacesUIUpdate", queue);
     window.SessionStore?.promiseAllWindowsRestored?.then(queue, queue);
     queue();
-    // Icons asked for before the pack was ready (the first start with it)
-    // are drawn again once it is.
-    setupIconPack().then(() => {
-      for (const folder of document.querySelectorAll("zen-folder")) {
-        const icon = folder.iconURL;
-        if (typeof icon === "string" && icon.startsWith(`${ICON_DIR}/`)) {
-          try {
-            window.gZenFolders?.setFolderUserIcon(folder, icon);
-          } catch (err) {
-            noteError("icon picker: redraw folder icon", err);
-          }
-        }
-      }
+    // Icons asked for before the pack was ready are drawn again once it is,
+    // including after the session's folders and spaces have come back.
+    const redraw = () => {
+      redrawPackIcons();
       placeWorkspaceIndicator();
+    };
+    setupIconPack().then(() => {
+      redraw();
+      window.SessionStore?.promiseAllWindowsRestored?.then(() => setTimeout(redraw, 300), () => {});
     }, () => {});
   }
 

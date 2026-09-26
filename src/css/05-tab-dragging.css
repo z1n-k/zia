@@ -28,6 +28,13 @@
   visibility: visible !important;
 }
 
+/* ...and while it lands (a folder's parts included), whatever Firefox has
+   hidden for its own drop animation */
+#tabbrowser-tabs :is(zen-folder, tab-group)[zia-landing],
+#tabbrowser-tabs :is(zen-folder, tab-group)[zia-landing] > :is(.tab-group-label-container, .tab-group-container) {
+  visibility: visible !important;
+}
+
 :root[zia-dragging-tab] :is(zen-folder, tab-group:not([split-view-group])):has(.tabbrowser-tab[zia-dragging]) {
   z-index: 41 !important;
 
@@ -177,8 +184,9 @@ zen-essentials-promo {
   opacity: 1 !important;
 }
 
-:root[zia-dragging-tab] .tabbrowser-tab :is(.tab-close-button, .tab-reset-button),
-#tabbrowser-tabs[zia-settling] .tabbrowser-tab :is(.tab-close-button, .tab-reset-button) {
+/* (not on the row being dragged, which stays under the pointer) */
+:root[zia-dragging-tab] .tabbrowser-tab:not([zia-hover-held], [zia-dragging], [zia-dragging] *) :is(.tab-close-button, .tab-reset-button),
+#tabbrowser-tabs[zia-settling] .tabbrowser-tab:not([zia-hover-held]) :is(.tab-close-button, .tab-reset-button) {
   opacity: 0 !important;
   transition: none !important;
 }
@@ -220,3 +228,42 @@ zen-essentials-promo {
   to { scale: 1; filter: blur(0); opacity: 1; }
 }
 
+
+/* A tab just dropped keeps its hover wash until the pointer leaves it
+   (zia-hover-held, zia.uc.js) */
+.tabbrowser-tab:not([zen-essential], [visuallyselected])[zia-hover-held] > .tab-stack > .tab-background {
+  background: var(--zia-tab-hover-bg) !important;
+}
+
+/* ...and its x: Firefox forgets the hover until the pointer next moves,
+   and Zen only shows the x on hover */
+.tabbrowser-tab:not([zen-essential], [pinned])[zia-hover-held] .tab-close-button,
+/* (ids only to outrank Zen's split rule that hides them unless hovered) */
+:is(.tab-close-button, .tab-reset-button)[zia-held-shown]:not(#zia-a):not(#zia-b) {
+  display: flex !important;
+  opacity: 1 !important;
+}
+
+/* a split essential dragged back to the list, until it's removed */
+.tabbrowser-tab[zia-split-gone] {
+  display: none !important;
+}
+
+/* Zen's drop-to-split marker (hold a tab over one side of another tab):
+   gone, it flashed as a split landed */
+zen-split-fake-tab {
+  display: none !important;
+}
+
+/* the list measured again mid-drag (a dragged folder that has just shut) */
+#tabbrowser-tabs[zia-measuring],
+#tabbrowser-tabs[zia-measuring] * {
+  transition: none !important;
+}
+
+/* A split's own label stays hidden (Zen hides it), whatever the drag and
+   landing rules above show: it's a blue block Firefox draws for groups */
+#tabbrowser-tabs tab-group[split-view-group] > .tab-group-label-container:not(#zia-a):not(#zia-b) {
+  visibility: hidden !important;
+  opacity: 0 !important;
+}

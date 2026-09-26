@@ -18,6 +18,17 @@
   translate: 0 var(--zia-toolbar-height) !important;
 }
 
+/* Only the little move-and-expand pill itself takes the pointer: the
+   invisible box around it sat over the pane's toolbar buttons. */
+.zen-view-splitter-header-container {
+  pointer-events: none !important;
+}
+
+:root:not([inDOMFullscreen="true"]) .browserSidebarContainer:hover .zen-view-splitter-header,
+.zen-view-splitter-header:hover {
+  pointer-events: auto !important;
+}
+
 #urlbar[breakout-extend]:not([zia-classic]) {
   & .urlbar-input-container {
     padding-inline-start: var(--zia-pop-icon-start, 16px) !important;

@@ -4,6 +4,91 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.59.0] — 2026-09-26
+
+### Added
+
+- Split essentials (experimental): keep a split of two sites as one
+  essential, as Dia can. Drag a two-site split onto the essentials, or
+  right-click one of its tabs and choose **Add Split to Essentials**. The
+  tile shows both sites in upright halves; clicking it opens the split, at
+  the half you clicked, and while it's open the tile takes the colour of
+  the half you're in, as does its hover card. Drag it back to the tab list
+  (or remove it from the essentials) and it's an ordinary split again. Zen
+  can't hold a split among its essentials yet, so the split is kept as two
+  ordinary tabs hidden from the tab list.
+
+### Changed
+
+- Zia's download is about a third of the size (1.9 MB down to 0.64 MB):
+  the folder icons ship as one compact file, from which Zia makes its icon
+  pack in your profile the first time it starts. Icons you've already
+  picked keep working.
+
+- The × in a split pane's own address bar closes that pane's tab, as in
+  Dia, instead of taking it out of the split into a tab of its own.
+
+### Fixed
+
+- With a split essential kept, tabs can be dragged into closed folders
+  again (the split's hidden tabs got in the way).
+
+- A split's two sites sit in the same boxes while it's dragged onto the
+  essentials as once it lands, instead of snapping into place.
+
+- An open folder shuts the moment you start dragging it, and is dragged
+  and dropped as a closed folder, instead of jumbling the rows below it.
+
+- A dragged folder lands exactly where it's shown, as a row of its own:
+  it no longer drops inside the folder under the pointer, and it's easy to
+  take right to the top of the list.
+
+- A split dragged into or out of a folder narrows and widens to fit, as a
+  tab does.
+
+- No blue block flashes on a split as it's dragged or dropped (the split's
+  own label, or Zen's drop-to-split marker).
+
+- A tab dragged up to the last folder before the separator behaves as it
+  does with the other folders: the space opened for it takes it into the
+  folder (its top half) or into the gap after the folder, above the
+  separator (its bottom half).
+
+- The suggestion to paste a copied link no longer shows the search
+  engine's name in a chip beside it.
+
+- The tab you're dragging keeps its ×.
+
+- A dragged essential no longer stretches into a band across the whole
+  window as it's let go.
+
+- Dragging a split essential back to the tab list no longer sometimes
+  leaves a stray tab behind that can't be closed.
+
+- A dragged essential glides into its new place when you let go, instead
+  of jumping there, following the tiles as they slide into their new order,
+  at the same speed as a dropped tab or folder.
+
+- A tab, split or folder you've just dropped keeps its × and − until the
+  pointer leaves it, instead of them blinking out.
+
+- A split dragged over the essentials already shows the colour it will
+  have as an essential, instead of looking inactive until it's let go.
+
+- A dragged folder no longer vanishes for a moment as it lands.
+
+- A dragged essential stays a tile while it's dragged along the last row
+  of the essentials, instead of flickering into a wide list row.
+
+- A split can be dragged across the separator, among the pinned tabs and
+  folders, like a single tab.
+
+- A split pane's toolbar buttons can always be clicked; the invisible box
+  around Zen's little move-and-expand handle sometimes sat over them.
+
+- Folder and space icons show again. Since 2.58.0 they could go missing,
+  because Zen draws them before Zia had pointed Firefox at its icons.
+
 ## [2.58.1] — 2026-09-26
 
 ### Changed

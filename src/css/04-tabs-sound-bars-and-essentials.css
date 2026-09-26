@@ -233,3 +233,130 @@
     transition: opacity 0.15s ease;
   }
 }
+
+/* Split essentials (zia.uc.js): the tile holds both sites, each in a small
+   half of its own, the half you're in lit; the split it opens is hidden
+   from the tab list. */
+.tabbrowser-tab[zia-split-of],
+tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
+  display: none !important;
+}
+
+/* no wider than the other essentials, whatever its halves want */
+.tabbrowser-tab[zen-essential][zia-split-tile] {
+  min-width: 0 !important;
+}
+
+.tabbrowser-tab[zen-essential][zia-split-tile] > .tab-stack {
+  min-width: 0 !important;
+  overflow: hidden;
+}
+
+.tabbrowser-tab[zen-essential][zia-split-tile] > .tab-stack > .tab-content {
+  position: relative;
+  z-index: 1;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 8px !important;
+  margin: 0 !important;
+
+  & > .tab-icon-stack {
+    display: none !important;
+  }
+
+  & > .zia-split-half {
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    max-width: calc(50% - 3px) !important;
+    height: 100% !important;
+    aspect-ratio: 4 / 5;
+    display: grid !important;
+    place-items: center !important;
+    border-radius: var(--zia-essential-radius, 12px);
+    corner-shape: round;
+    background-color: rgba(0, 0, 0, 0.18);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  & > .zia-split-half > image {
+    width: 16px;
+    height: 16px;
+  }
+
+  & > .zia-split-half > .zia-split-title {
+    display: none;
+  }
+}
+
+/* a stand-in, not an essential's size: halves as tall as the real ones
+   (zia.uc.js), centred */
+.tabbrowser-tab[zen-essential][zia-split-tile][zia-essential-proxy] > .tab-stack > .tab-content {
+  padding-block: 0 !important;
+  align-items: center !important;
+
+  & > .zia-split-half {
+    height: var(--zia-split-half-height, calc(100% - 16px)) !important;
+  }
+}
+
+.tabbrowser-tab[zen-essential][zia-split-tile][zia-essential-proxy][style*="--zia-split-half-width"] > .tab-stack > .tab-content > .zia-split-half {
+  flex: none !important;
+  width: var(--zia-split-half-width) !important;
+  max-width: none !important;
+  aspect-ratio: auto !important;
+}
+
+.tabbrowser-tab[zen-essential][zia-split-tile][zia-split-focus="a"] > .tab-stack > .tab-content > .zia-split-half[side="a"],
+.tabbrowser-tab[zen-essential][zia-split-tile][zia-split-focus="b"] > .tab-stack > .tab-content > .zia-split-half[side="b"] {
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+/* Dragged off the essentials, the tile turns into the split's row: both
+   sites, icon and title, side by side */
+.tabbrowser-tab[zia-split-tile]:not([zen-essential]) > .tab-stack > .tab-content {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+
+  & > :not(.zia-split-half) {
+    display: none !important;
+  }
+
+  & > .zia-split-half {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  & > .zia-split-half > image {
+    width: 16px;
+    height: 16px;
+    flex: none;
+  }
+
+  & > .zia-split-half > .zia-split-title {
+    margin: 0;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: var(--zia-text-size, 13px);
+  }
+}
+
+/* The glow and tint: the half you're in, over the whole tile */
+@media -moz-pref("zen.theme.essentials-favicon-bg") {
+  .tabbrowser-tab[zen-essential][zia-split-tile][visuallyselected] > .tab-stack > .tab-background::after {
+    background-image: var(--zia-split-glow, var(--zen-essential-tab-icon)) !important;
+  }
+}

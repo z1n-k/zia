@@ -250,7 +250,17 @@
 
 :root #tabbrowser-tabs:is([zia-settling], [movingtab]) .tabbrowser-tab[zia-to-essential],
 :root #tabbrowser-tabs .tabbrowser-tab[zia-to-essential][zia-dragging],
-.tabbrowser-tab[zia-to-essential] {
+.tabbrowser-tab[zia-to-essential],
+[split-view-group][zia-to-essential],
+[split-view-group][zia-to-essential] .tabbrowser-tab {
+  opacity: 0 !important;
+}
+
+/* a split's tabs are kept showing while they're dragged (05-tab-dragging),
+   which outranked the fade above as the split turns into a tile */
+:root #tabbrowser-tabs [split-view-group][zia-to-essential],
+:root #tabbrowser-tabs[movingtab] [split-view-group][zia-to-essential] :is(.tabbrowser-tab, .tab-group-label-container, tab-group),
+:root #tabbrowser-tabs[movingtab] [split-view-group][zia-to-essential] :is(.tabbrowser-tab, .tab-group-label-container):is([zia-dragging], [zia-shift]) {
   opacity: 0 !important;
 }
 
@@ -473,7 +483,8 @@ zen-folder > .tab-group-label-container > .zia-folder-close {
   margin-inline-start: auto;
 }
 
-zen-folder > .tab-group-label-container:hover > .zia-folder-close {
+zen-folder > .tab-group-label-container:hover > .zia-folder-close,
+zen-folder[zia-hover-held] > .tab-group-label-container > .zia-folder-close {
   display: flex;
 }
 
@@ -556,4 +567,20 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
  * hover tint either, which flickered off and on again as the tab dropped. */
 :root[zen-sidebar-expanded="true"] zen-folder[zia-folder-color]:not([zia-folder-color="white"])[zia-drop-slot]::before {
   background-color: color-mix(in srgb, var(--zia-folder-swatch) var(--zia-folder-wash), transparent) !important;
+}
+
+/* A folder just dropped keeps its hover box until the pointer leaves
+   (tab dragging, zia-hover-held) */
+:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group]))[zia-hover-held] {
+  &::before {
+    background-color: var(--zia-folder-hover-bg);
+  }
+
+  &::after {
+    opacity: 1;
+  }
+
+  &:is([zia-folder-color], tab-group)::before {
+    background-color: color-mix(in srgb, var(--zia-folder-swatch) var(--zia-folder-tint), transparent);
+  }
 }

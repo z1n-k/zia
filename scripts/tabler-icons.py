@@ -4,22 +4,23 @@
     curl -sSL https://registry.npmjs.org/@tabler/icons/-/icons-<version>.tgz | tar xz
     scripts/tabler-icons.py package
 
-Writes icons/tabler.zip ({outline,filled}/*.svg, recoloured with
-context-fill so Zen can tint them, and the LICENSE), icons/tabler-pack.js
-(the zip's version), icons/tabler-names.js (the picker's search index: each
-icon's name, tags and category) and icons/ui/*.svg, the few icons Zia's own
-buttons use.
+Writes icons/tabler-bundle.js (every icon, recoloured with context-fill so
+Zen can tint them: the <svg> tag each style shares, then each icon's
+drawing), icons/tabler-pack.js (the bundle's version), icons/tabler-names.js
+(the picker's search index: each icon's name, tags and category) and
+icons/ui/*.svg, the few icons Zia's own buttons use.
 
-The icons ship as one zip because Sine unpacks a mod file by file: several
-thousand of them froze Zen for half a minute on some computers. Zia copies
-the zip into the profile and reads icons straight out of it
-(resource://zia-tabler/, zia.uc.js).
+The icons ship as one file because Sine unpacks a mod file by file: several
+thousand of them froze Zen for half a minute on some computers. Being one
+text file, they also compress together (a zip of thousands of tiny files
+barely does). Zia makes a zip of them in the profile, once per version of
+the bundle, and reads icons straight out of it (resource://zia-tabler/,
+zia.uc.js).
 """
 import hashlib
 import json
 import re
 import sys
-import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -54,18 +55,24 @@ def main(package):
     files["LICENSE"] = (package / "LICENSE").read_bytes()
     (ICONS / "tabler-LICENSE").write_bytes(files["LICENSE"])
 
-    # the same bytes every time for the same icons, so the version only
-    # changes when they do
-    pack = ICONS / "tabler.zip"
-    with zipfile.ZipFile(pack, "w") as z:
-        for name in sorted(files):
-            info = zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
-            info.compress_type = zipfile.ZIP_DEFLATED
-            info.external_attr = 0o644 << 16
-            z.writestr(info, files[name], compresslevel=9)
-    version = hashlib.sha256(pack.read_bytes()).hexdigest()[:12]
+    heads = {}
+    icons = {"outline": {}, "filled": {}}
+    for name in sorted(files):
+        if not name.endswith(".svg"):
+            continue
+        style, file = name.split("/")
+        head, drawing = re.match(r"(<svg[^>]*>)(.*)</svg>$", files[name].decode(), re.S).groups()
+        if heads.setdefault(style, head) != head:
+            raise SystemExit(f"{name}: its <svg> tag differs from the rest of {style}")
+        icons[style][file[:-4]] = drawing
+    bundle = json.dumps({"head": heads, "icons": icons}, separators=(",", ":"), sort_keys=True)
+    (ICONS / "tabler-bundle.js").write_text(
+        "// Tabler Icons (MIT, icons/tabler-LICENSE): each style's <svg> tag, then each icon's drawing. Made by scripts/tabler-icons.py\n"
+        f"this.ZiaTablerBundle = {bundle};\n"
+    )
+    version = hashlib.sha256(bundle.encode()).hexdigest()[:12]
     (ICONS / "tabler-pack.js").write_text(
-        "// The Tabler icon pack's version (a hash of icons/tabler.zip). Made by scripts/tabler-icons.py\n"
+        "// The Tabler icon pack's version (a hash of icons/tabler-bundle.js). Made by scripts/tabler-icons.py\n"
         f'this.ZiaTablerPack = "{version}";\n'
     )
 
