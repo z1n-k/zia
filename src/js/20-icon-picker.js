@@ -15,12 +15,56 @@
   let iconIndex = null;
   let iconPackReady = null;
 
+  function iconPackPath() {
+    const holder = {};
+    Services.scriptloader.loadSubScript(`${ICON_ROOT}/tabler-pack.js`, holder);
+    return PathUtils.join(PathUtils.profileDir, "zia-icons", `tabler-${holder.ZiaTablerPack}.zip`);
+  }
+
+  function pointAtIconPack(pack) {
+    const handler = Services.io.getProtocolHandler("resource").QueryInterface(Ci.nsIResProtocolHandler);
+    const jar = Services.io.newURI(`jar:${PathUtils.toFileURI(pack)}!/`);
+    if (!handler.hasSubstitution(ICON_HOST) || handler.getSubstitution(ICON_HOST).spec !== jar.spec) {
+      handler.setSubstitution(ICON_HOST, jar);
+    }
+  }
+
+  // Folder and space icons are drawn as Zen restores them, before the rest
+  // of Zia starts, so once the pack is there it's pointed at the moment this
+  // script loads.
+  try {
+    const pack = iconPackPath();
+    const file = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
+    file.initWithPath(pack);
+    if (file.exists()) {
+      pointAtIconPack(pack);
+    }
+  } catch (err) {
+    noteError("icon pack: early", err);
+  }
+
+  // Anything that still asked for an icon before the pack was ready (the
+  // first start with it) is drawn again.
+  function redrawPackIcons() {
+    const prefix = `${ICON_DIR}/`;
+    for (const image of document.querySelectorAll("image, img")) {
+      for (const name of ["src", "href"]) {
+        const url = image.getAttribute(name);
+        if (url?.startsWith(prefix)) {
+          image.setAttribute(name, "");
+          image.setAttribute(name, url);
+          if (image.style.opacity === "0") {
+            image.style.opacity = "1";
+          }
+        }
+      }
+    }
+  }
+
   function setupIconPack() {
     iconPackReady ??= (async () => {
-      const holder = {};
-      Services.scriptloader.loadSubScript(`${ICON_ROOT}/tabler-pack.js`, holder);
-      const dir = PathUtils.join(PathUtils.profileDir, "zia-icons");
-      const pack = PathUtils.join(dir, `tabler-${holder.ZiaTablerPack}.zip`);
+      const pack = iconPackPath();
+      const dir = PathUtils.parent(pack);
       if (!(await IOUtils.exists(pack))) {
         const bytes = new Uint8Array(await (await fetch(`${ICON_ROOT}/tabler.zip`)).arrayBuffer());
         await IOUtils.makeDirectory(dir, { ignoreExisting: true });
@@ -29,11 +73,7 @@
         await IOUtils.write(part, bytes);
         await IOUtils.move(part, pack);
       }
-      const handler = Services.io.getProtocolHandler("resource").QueryInterface(Ci.nsIResProtocolHandler);
-      const jar = Services.io.newURI(`jar:${PathUtils.toFileURI(pack)}!/`);
-      if (!handler.hasSubstitution(ICON_HOST) || handler.getSubstitution(ICON_HOST).spec !== jar.spec) {
-        handler.setSubstitution(ICON_HOST, jar);
-      }
+      pointAtIconPack(pack);
       // Older packs go (one still open can't be removed on Windows until
       // Zen restarts; it goes next time).
       for (const child of await IOUtils.getChildren(dir)) {
@@ -172,20 +212,15 @@
     window.addEventListener("ZenWorkspacesUIUpdate", queue);
     window.SessionStore?.promiseAllWindowsRestored?.then(queue, queue);
     queue();
-    // Icons asked for before the pack was ready (the first start with it)
-    // are drawn again once it is.
-    setupIconPack().then(() => {
-      for (const folder of document.querySelectorAll("zen-folder")) {
-        const icon = folder.iconURL;
-        if (typeof icon === "string" && icon.startsWith(`${ICON_DIR}/`)) {
-          try {
-            window.gZenFolders?.setFolderUserIcon(folder, icon);
-          } catch (err) {
-            noteError("icon picker: redraw folder icon", err);
-          }
-        }
-      }
+    // Icons asked for before the pack was ready are drawn again once it is,
+    // including after the session's folders and spaces have come back.
+    const redraw = () => {
+      redrawPackIcons();
       placeWorkspaceIndicator();
+    };
+    setupIconPack().then(() => {
+      redraw();
+      window.SessionStore?.promiseAllWindowsRestored?.then(() => setTimeout(redraw, 300), () => {});
     }, () => {});
   }
 

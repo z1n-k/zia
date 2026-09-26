@@ -18,6 +18,11 @@ Every release of Zia, newest first. The format follows
   kept as two ordinary tabs hidden from the tab list; take the essential
   out of the essentials and they're an ordinary split again.
 
+### Fixed
+
+- Folder and space icons show again. Since 2.58.0 they could go missing,
+  because Zen draws them before Zia had pointed Firefox at its icons.
+
 ## [2.58.1] — 2026-09-26
 
 ### Changed

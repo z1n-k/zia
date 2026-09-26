@@ -211,10 +211,19 @@
       title: a.label,
     });
     if (tabIcon(a)) {
-      gBrowser.setIcon(essential, tabIcon(a));
+      try {
+        gBrowser.setIcon(essential, tabIcon(a), null, Services.scriptSecurityManager.getSystemPrincipal());
+      } catch (err) {
+        noteError("split essentials: icon", err);
+      }
     }
-    window.gZenPinnedTabManager?.addToEssentials(essential);
+    try {
+      window.gZenPinnedTabManager?.addToEssentials(essential);
+    } catch (err) {
+      noteError("split essentials: add", err);
+    }
     if (!essential.hasAttribute("zen-essential")) {
+      console.warn("[Zia] Split essentials: Zen didn't take the new essential (the essentials may be full)");
       gBrowser.removeTab(essential, { animate: false });
       return;
     }
