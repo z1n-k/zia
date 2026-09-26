@@ -1897,7 +1897,9 @@
       listRoom.first = undefined;
 
       listRoom.button = newTabButton();
-      listRoom.buttonTop = listRoom.button?.getBoundingClientRect().top ?? null;
+      // (its bottom: over the last row or the button itself the drop still
+      // goes above it, so it makes way; its top left half a gap there)
+      listRoom.buttonBottom = listRoom.button?.getBoundingClientRect().bottom ?? null;
       listRoom.buttonDelta = 0;
 
       unclipAround(listRoom.button || listRoom.rows[listRoom.rows.length - 1]?.node);
@@ -1925,8 +1927,8 @@
           place(listRoom.sep, delta, false);
         }
       }
-      if (listRoom.button && listRoom.buttonTop != null) {
-        const delta = listRoom.buttonTop > y ? listRoom.pitch : 0;
+      if (listRoom.button && listRoom.buttonBottom != null) {
+        const delta = listRoom.buttonBottom > y ? listRoom.pitch : 0;
         if (listRoom.buttonDelta !== delta) {
           listRoom.buttonDelta = delta;
           place(listRoom.button, delta, false);

@@ -14,6 +14,8 @@ Every release of Zia, newest first. The format follows
   on its tile for a moment.
 - An essential dragged down again straight after it was dropped no longer
   gets stuck at the top of the sidebar instead of following the pointer.
+- An essential dragged into the list over its last tab (or the New Tab
+  button) makes a whole tab's room above New Tab, not half.
 
 ## [2.59.4] — 2026-09-26
 
