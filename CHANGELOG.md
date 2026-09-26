@@ -8,6 +8,10 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- An essential dragged back into the tab list lands where it's dropped
+  (pinned, if that's above the separator), instead of vanishing for a
+  moment and turning up at the end of the list below the separator.
+
 - The PDF viewer's ⋮ menu shows its items at full width again, instead of
   squeezing each into a narrow strip with its words wrapped one or two to a
   line.
