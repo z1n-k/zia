@@ -2513,9 +2513,11 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
   padding-bottom: calc(var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)) !important;
 }
 
-:is(.workspace-arrowscrollbox, #tabbrowser-arrowscrollbox)::part(scrollbox) {
+/* ...but the list's inner scroll box ends where the last row does and cuts
+   off anything past it, and it doesn't take padding of its own: the room
+   goes at the end of the tabs inside it, so it grows by that much */
+.zen-workspace-normal-tabs-section {
   padding-bottom: calc(var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)) !important;
-  overflow-clip-margin: calc(var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)) !important;
 }
 
 /* No scrollbars anywhere in the sidebar; it still scrolls */

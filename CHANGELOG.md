@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- The glow of the active tab is no longer cut off when it's the last tab
+  in the list: Firefox's inner scroll box ended at the last row and cut off
+  whatever went past it.
+
 ## [2.59.0] — 2026-09-26
 
 ### Added
