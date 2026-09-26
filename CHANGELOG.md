@@ -28,8 +28,9 @@ Every release of Zia, newest first. The format follows
 - An open folder shuts the moment you start dragging it, and is dragged
   and dropped as a closed folder, instead of jumbling the rows below it.
 
-- A folder dragged up the list goes past closed folders rather than into
-  them, so it's easy to take it right to the top.
+- A dragged folder lands exactly where it's shown, as a row of its own:
+  it no longer drops inside the folder under the pointer, and it's easy to
+  take right to the top of the list.
 
 - A split dragged into or out of a folder narrows and widens to fit, as a
   tab does.

@@ -239,11 +239,6 @@
     };
 
     const updateTarget = (visualMid) => {
-      if (drag.folder) {
-        drag.target = null;
-        setDropSlot(null);
-        return;
-      }
       let prev = null;
       let next = null;
       for (const row of drag.rows) {
@@ -291,9 +286,8 @@
       if (folder && drag.moving.contains?.(folder)) {
         folder = null;
       }
-      // a folder goes past a closed folder, not into it (which caught it on
-      // its way to the top of the list)
-      if (folder && drag.folder && isCollapsed(folder)) {
+      // a folder is only ever moved among the rows, never into a folder
+      if (drag.folder) {
         folder = null;
         atEnd = false;
       }
@@ -301,7 +295,9 @@
       const crosses = below === !!drag.tab.pinned;
 
       // Zen won't take a split across the separator itself, so Zia does
-      const hand = drag.split ? crosses && !folder : !!folder || !!pf || (!!nf && isFolderStart(next, nf)) || crosses;
+      const hand = drag.folder
+        ? true
+        : drag.split ? crosses && !folder : !!folder || !!pf || (!!nf && isFolderStart(next, nf)) || crosses;
       drag.target = { folder, atEnd, prev, next, below, sameNext: same(next), slotTop, hand };
       setDropSlot(folder);
     };
@@ -726,6 +722,41 @@
         const sep = currentSeparator();
         if (sep) {
           placeBefore(tab, sep);
+        }
+      }
+    };
+
+    // Zen drops a folder by what's under the pointer, which with the rows
+    // slid about is often a closed folder it then nests it in. Straight
+    // after, the folder is put where Zia showed it: among the rows, before
+    // the one it was shown above, and never inside another folder.
+    const outermostRow = (node) => {
+      let row = topLevel({ node });
+      for (let up = row.parentElement?.closest?.("zen-folder"); up; up = up.parentElement?.closest?.("zen-folder")) {
+        row = up;
+      }
+      return row;
+    };
+    const finishFolderDrop = (folder, target) => {
+      if (!folder?.isConnected || !target) {
+        return;
+      }
+      const nestedIn = folder.parentElement?.closest?.("zen-folder") || null;
+      const next = target.next && target.sameNext && !target.below ? outermostRow(target.next.node) : null;
+      if (next && next !== folder && !folder.contains(next)) {
+        placeBefore(folder, next);
+      } else if (currentSeparator()) {
+        placeBefore(folder, currentSeparator());
+      }
+      if (folder.parentElement?.closest?.("zen-folder")) {
+        console.warn("[Zia] The dropped folder is still inside another folder");
+      }
+      // a closed folder it was taken back out of fits its new contents
+      if (nestedIn && nestedIn !== folder.parentElement?.closest?.("zen-folder") && isCollapsed(nestedIn)) {
+        try {
+          window.gZenFolders?.on_TabGroupCollapse?.({ target: nestedIn });
+        } catch (err) {
+          noteError("tab dragging: refold folder", err);
         }
       }
     };
@@ -2095,6 +2126,18 @@
             }, 0);
           }
           landProxy(tab);
+        } else if (drag.folder && !drag.away && drag.target) {
+          const folder = drag.folder;
+          const target = drag.target;
+          pendingFinish = true;
+          setTimeout(() => {
+            try {
+              finishFolderDrop(folder, target);
+            } catch (err) {
+              console.error("[Zia] Folder drop failed:", err);
+            }
+            pendingFinish = false;
+          }, 0);
         } else if (tab && !drag.folder && !drag.away && drag.target?.hand) {
           const target = drag.target;
           pendingFinish = true;
