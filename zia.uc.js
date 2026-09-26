@@ -9588,6 +9588,26 @@
       }
     };
 
+    // Everything let go glides into place the same way: tabs, splits,
+    // folders and essentials
+    const LAND_MS = 180;
+    const LAND_EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
+    // that curve, for a glide stepped frame by frame
+    const landEase = (t) => {
+      const bez = (a, b, u) => 3 * a * u * (1 - u) ** 2 + 3 * b * u * u * (1 - u) + u ** 3;
+      let lo = 0;
+      let hi = 1;
+      for (let i = 0; i < 20; i++) {
+        const mid = (lo + hi) / 2;
+        if (bez(0.2, 0.2, mid) < t) {
+          lo = mid;
+        } else {
+          hi = mid;
+        }
+      }
+      return bez(0.8, 1, (lo + hi) / 2);
+    };
+
     let essentialDrag = null;
     let essentialDropped = null;
     const ESSENTIAL_MS = 140;
@@ -10071,10 +10091,8 @@
         const start = Number.isFinite(left) && Number.isFinite(top)
           ? { x: left + shift.x, y: top + shift.y }
           : { x: from.left + from.width / 2, y: from.top + from.height / 2 };
-        // longer the further it has to go, so it drifts home rather than flies
-        const home = state.tab.getBoundingClientRect();
-        const far = Math.hypot(home.left + home.width / 2 - start.x, home.top + home.height / 2 - start.y);
-        const ms = 240 + Math.min(260, far * 0.9);
+        // the same glide as a dropped tab or folder (LAND_MS, LAND_EASE)
+        const ms = LAND_MS;
         const began = performance.now();
         copy.style.setProperty("transition", "none", "important");
         const follow = () => {
@@ -10086,8 +10104,7 @@
           const drawn = state.tab.querySelector(".tab-background")?.getBoundingClientRect() || box;
           const to = { x: box.left + box.width / 2, y: drawn.top + drawn.height / 2 };
           const t = Math.min(1, (performance.now() - began) / ms);
-          // half ease-in-out, half ease-out: an even drift that settles softly
-          const ease = (1 - Math.cos(Math.PI * t)) / 4 + (1 - Math.pow(1 - t, 2)) / 2;
+          const ease = landEase(t);
           copy.style.setProperty("left", `${Math.round(start.x + (to.x - start.x) * ease - shift.x)}px`, "important");
           copy.style.setProperty("top", `${Math.round(start.y + (to.y - start.y) * ease - shift.y)}px`, "important");
           if (t < 1) {
@@ -10399,8 +10416,8 @@
             return;
           }
           const glide = node.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "translate(0, 0)" }], {
-            duration: 180,
-            easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+            duration: LAND_MS,
+            easing: LAND_EASE,
           });
           glide.id = "zia-land";
           const end = () => setTimeout(() => node.removeAttribute("zia-landing"), gBrowser.isTab(node) ? 0 : 250);

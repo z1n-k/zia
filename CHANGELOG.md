@@ -28,8 +28,7 @@ Every release of Zia, newest first. The format follows
 - A split dragged into or out of a folder narrows and widens to fit, as a
   tab does.
 
-- Zen's drop-to-split marker (holding a tab over one side of another) is
-  soft glass instead of a solid blue block.
+- Zen's blue drop-to-split marker no longer flashes as a split is dropped.
 
 - The tab you're dragging keeps its ×.
 
@@ -40,8 +39,8 @@ Every release of Zia, newest first. The format follows
   leaves a stray tab behind that can't be closed.
 
 - A dragged essential glides into its new place when you let go, instead
-  of jumping there, following the tiles as they slide into their new order
-  and taking longer the further it has to go.
+  of jumping there, following the tiles as they slide into their new order,
+  at the same speed as a dropped tab or folder.
 
 - A tab, split or folder you've just dropped keeps its × and − until the
   pointer leaves it, instead of them blinking out.

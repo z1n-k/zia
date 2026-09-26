@@ -1383,13 +1383,10 @@ zen-essentials-promo {
   display: none !important;
 }
 
-/* Zen's drop-to-split marker (hold a tab over one side of another tab) in
-   Zia's glass rather than a solid blue block */
+/* Zen's drop-to-split marker (hold a tab over one side of another tab):
+   gone, it flashed as a split landed */
 zen-split-fake-tab {
-  background-color: var(--zia-tab-hover-bg) !important;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16) !important;
-  border-radius: var(--zia-tab-radius) !important;
-  corner-shape: var(--zia-tab-corner, round) !important;
+  display: none !important;
 }
 @property --zia-folder-bottom-extra {
   syntax: "<length>";
