@@ -4,6 +4,30 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.59.4] — 2026-09-26
+
+### Fixed
+
+- Dragging the open tab back out of a collapsed folder no longer makes it
+  vanish as soon as it leaves the folder (it was cut off by the folder's
+  own edge), so it's easy to see where it goes.
+- Dropping a tab into a collapsed folder no longer makes it blink out and
+  drop in from a row above: it stays where it landed, and the folder keeps
+  its hover box until the pointer leaves.
+- A dropped tab no longer jolts (down a step, back up, then down again)
+  before gliding into place: Firefox's end of the drag let it go for a
+  frame, and it's now held where it was let go until the glide starts.
+- A tab dropped into a folder no longer steps left and slides back as it
+  lands: the narrower look it has over the folder now goes before the
+  glide, which starts from where its background showed.
+- A tab dropped into a folder (or pulled out of one) no longer flashes an
+  × before its − (or the other way round): it swaps the moment it's let go.
+- Dropping an essential no longer throws an error in the Browser Console
+  (and skips the end of the drop's tidy-up).
+- Dragging an essential again straight after dropping one now opens a gap
+  for it among the others: the first drop's tidy-up was still running and
+  kept undoing it.
+
 ## [2.59.3] — 2026-09-26
 
 ### Fixed

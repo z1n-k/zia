@@ -807,6 +807,21 @@
       }
     };
 
+    // A folder's animations straight to their last moment (not past it:
+    // Zen only leaves its end styles once they've finished)
+    const jumpToEnd = (folder) => {
+      for (const anim of folder.getAnimations?.({ subtree: true }) || []) {
+        try {
+          const end = anim.effect?.getComputedTiming?.().endTime;
+          if (anim.id !== "zia-land" && end > 1) {
+            anim.currentTime = end - 1;
+          }
+        } catch (err) {
+          noteError("tab dragging: folder animations", err);
+        }
+      }
+    };
+
     const parkInFolder = (tab, folder) => {
       folder?.removeAttribute("zia-drop-slot");
       if (!tab || !folder) {
@@ -839,6 +854,10 @@
       } catch (err) {
         console.error("[Zia] Could not settle the folder:", err);
       }
+      // Zen slides the folder's list down into place (it starts pushed up
+      // out of sight), so the tab just dropped there blinked out and slid
+      // in from above: it's where it landed already
+      jumpToEnd(folder);
     };
 
     let proxy = null;
@@ -1332,16 +1351,7 @@
         noteError("tab dragging: shut folder", err);
         return;
       }
-      for (const anim of folder.getAnimations?.({ subtree: true }) || []) {
-        try {
-          const end = anim.effect?.getComputedTiming?.().endTime;
-          if (end > 1) {
-            anim.currentTime = end - 1;
-          }
-        } catch (err) {
-          noteError("tab dragging: shut folder (2)", err);
-        }
-      }
+      jumpToEnd(folder);
       folder.getBoundingClientRect();
     };
     window.addEventListener("mousedown", (event) => {
@@ -2191,6 +2201,8 @@
       "drop",
       (event) => {
         const tab = drag?.tab;
+        heldFolder = null;
+        heldPinned = null;
 
         if (tab && drag.splitEssential) {
           event.preventDefault();
@@ -2233,7 +2245,7 @@
             }, 0);
           }
           landProxy(tab);
-        } else if (drag.folder && !drag.away && drag.target) {
+        } else if (drag?.folder && !drag.away && drag.target) {
           const folder = drag.folder;
           const target = drag.target;
           pendingFinish = true;
@@ -2247,10 +2259,14 @@
           }, 0);
         } else if (tab && !drag.folder && !drag.away && drag.target?.hand) {
           const target = drag.target;
+          heldFolder = target.folder || null;
+          heldPinned = !target.below;
           pendingFinish = true;
           setTimeout(() => {
             try {
               finishDrop(tab, target);
+              repinLanding?.();
+              refitHeld?.();
             } catch (err) {
               console.error("[Zia] Tab drop failed:", err);
             }
@@ -2374,17 +2390,56 @@
 
     const holdFolderHover = (folder) => {
       const held = [folder];
+      // a tab dropped into a folder: the folder keeps its hover box too
+      if (heldFolder?.isConnected && !held.includes(heldFolder)) {
+        held.push(heldFolder);
+      }
+      heldFolder = null;
       if (shownAtDrop.row && shownAtDrop.row !== folder && shownAtDrop.row.isConnected) {
         held.push(shownAtDrop.row);
       }
-      const buttons = shownAtDrop.buttons.filter((button) => button.isConnected);
+      let buttons = shownAtDrop.buttons.filter((button) => button.isConnected);
       shownAtDrop = { row: null, buttons: [] };
+      // The dragged tab itself isn't found under the pointer (it lets the
+      // pointer through while it's dragged), so its button wasn't noted:
+      // a tab dropped into a folder showed nothing between losing its x
+      // and the browser finding the pointer on it again for the -
+      if (gBrowser.isTab(folder) && !buttons.some((button) => folder.contains(button))) {
+        const own = folder.querySelector(folder.pinned ? ".tab-reset-button" : ".tab-close-button");
+        if (own) {
+          buttons.push(own);
+        }
+      }
       for (const node of held) {
         node.setAttribute("zia-hover-held", "true");
       }
       for (const button of buttons) {
         button.setAttribute("zia-held-shown", "true");
       }
+      // A tab dropped into a folder is pinned there, and shows a - where it
+      // had an x (and the other way round, pulled out): the x it had was
+      // kept on until the pointer moved, then swapped for the -
+      // (as soon as it's let go: the drop says where it's going, so its x
+      // wasn't left showing until the tab was actually pinned)
+      refitHeld = (pinned) => {
+        buttons = buttons.map((button) => {
+          const tab = button.closest(".tabbrowser-tab");
+          const want = pinned ?? tab?.pinned;
+          tab?.toggleAttribute("zia-held-pinned", !!want && !tab.pinned);
+          const kind = want ? ".tab-reset-button" : ".tab-close-button";
+          const right = tab?.isConnected && !button.matches(kind) ? tab.querySelector(kind) : null;
+          if (!right) {
+            return button;
+          }
+          button.removeAttribute("zia-held-shown");
+          right.setAttribute("zia-held-shown", "true");
+          return right;
+        });
+      };
+      if (heldPinned != null) {
+        refitHeld(heldPinned);
+      }
+      heldPinned = null;
       let timer = 0;
       const check = () => {
         if (!held.some((node) => node.matches(":hover"))) {
@@ -2392,11 +2447,13 @@
         }
       };
       const release = () => {
+        refitHeld = null;
         for (const node of held) {
           node.removeAttribute("zia-hover-held");
         }
         for (const button of buttons) {
           button.removeAttribute("zia-held-shown");
+          button.closest(".tabbrowser-tab")?.removeAttribute("zia-held-pinned");
         }
         window.removeEventListener("mousemove", check, true);
         clearTimeout(timer);
@@ -2408,6 +2465,11 @@
     let droppedFrom = null;
     let isRealDrop = false;
     let pendingFinish = false;
+    let heldFolder = null;
+    let repinLanding = null;
+    let refitHeld = null;
+    let heldPinned = null;
+    let dragGen = 0;
     window.addEventListener("drop", () => (isRealDrop = true), true);
     window.addEventListener("dragstart", () => (isRealDrop = false), true);
 
@@ -2415,7 +2477,10 @@
       const droppedTab = drag?.tab || essentialDropped || null;
       if (drag?.moving && !drag.essentials && !drag.away && droppedFrom === null && isRealDrop) {
         const from = drag.moving.getBoundingClientRect();
-        droppedFrom = { node: drag.moving, top: from.top, left: from.left };
+        // (and where its background showed: a tab over a folder is drawn
+        // narrower, indented like the folder's tabs)
+        const bg = drag.bg?.isConnected ? drag.bg : null;
+        droppedFrom = { node: drag.moving, top: from.top, left: from.left, tab: drag.tab, bg, bgLeft: bg?.getBoundingClientRect().left };
       }
       essentialDropped = null;
       if (drag?.bg) {
@@ -2473,15 +2538,37 @@
         node.setAttribute("zia-landing", "true");
         const held = node.getBoundingClientRect();
         node.style.setProperty("transform", `translate(${landing.left - held.left}px, ${landing.top - held.top}px)`, "important");
-        const glideIn = () => {
-          if (pendingFinish) {
-            requestAnimationFrame(glideIn);
+        // Firefox clears every tab's transform as its drag ends, so the tab
+        // painted a frame at its new spot before the glide pulled it back
+        // to where it was let go: it's pinned there again each frame, and
+        // straight after the drop moves it (into a folder, say)
+        const pin = () => {
+          if (!node.isConnected) {
             return;
           }
           node.style.removeProperty("transform");
+          const at = node.getBoundingClientRect();
+          node.style.setProperty("transform", `translate(${landing.left - at.left}px, ${landing.top - at.top}px)`, "important");
+        };
+        repinLanding = pin;
+        const glideIn = () => {
+          if (pendingFinish) {
+            pin();
+            requestAnimationFrame(glideIn);
+            return;
+          }
+          repinLanding = null;
+          refitHeld?.();
+          node.style.removeProperty("transform");
+          // The narrower look goes before the glide, which then starts the
+          // background where it showed: dropped in a folder, it went a
+          // step left as the glide began and slid back
+          if (landing.bg) {
+            unmorphWidth(landing.tab);
+          }
           const to = node.getBoundingClientRect();
           const dy = landing.top - to.top;
-          const dx = landing.left - to.left;
+          const dx = landing.bg?.isConnected ? landing.bgLeft - landing.bg.getBoundingClientRect().left : landing.left - to.left;
           if (!node.isConnected || node.hasAttribute("zen-essential") || (Math.abs(dy) < 2 && Math.abs(dx) < 2) || !to.height) {
             // kept a moment, past Firefox's own drop animation (see chrome.css)
             setTimeout(() => node.removeAttribute("zia-landing"), gBrowser.isTab(node) ? 0 : 400);
@@ -2497,7 +2584,22 @@
         };
         requestAnimationFrame(glideIn);
       }
+      // A new drag started straight after (within the settling time) is
+      // left alone: the wipe undid the offsets Zen gives the other
+      // essentials to open a gap, so none opened
+      const gen = dragGen;
+      const unlock = () => {
+        strip?.removeAttribute("zia-settling");
+        for (const node of locked) {
+          node.style.removeProperty("top");
+          node.removeAttribute("zia-drop-lock");
+        }
+      };
       const wipe = () => {
+        if (gen !== dragGen) {
+          unlock();
+          return;
+        }
         strip?.querySelectorAll(".tabbrowser-tab, .tab-group-label-container, tab-group, zen-folder").forEach((node) => {
           const appearing = node === droppedTab && !node.group;
           for (const anim of node.getAnimations()) {
@@ -2522,17 +2624,17 @@
         if (Date.now() < blockAnimUntil) {
           requestAnimationFrame(wipe);
         } else {
-          strip?.removeAttribute("zia-settling");
-          for (const node of locked) {
-            node.style.removeProperty("top");
-            node.removeAttribute("zia-drop-lock");
-          }
+          unlock();
         }
       };
       clearTimeout(lockTimer);
       wipe();
     };
     window.addEventListener("drop", settle, true);
+    window.addEventListener("dragstart", () => {
+      dragGen++;
+      blockAnimUntil = 0;
+    }, true);
     window.addEventListener("dragend", () => {
       settle();
       setTimeout(settle, 0);
