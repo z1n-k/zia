@@ -106,8 +106,8 @@
 }
 
 /* Windows: minimise, maximise and close have no coloured block behind them
-   on hover (Windows' red close block among them); the icon just brightens,
-   and close's cross turns red. */
+   on hover (Windows' red close block among them); hovered, the button just
+   dims, and dims a little more while pressed. */
 @media (-moz-platform: windows) {
   .titlebar-button,
   .titlebar-button:hover,
@@ -116,18 +116,16 @@
     background-image: none !important;
   }
 
-  .titlebar-button > .toolbarbutton-icon {
-    opacity: 0.7;
-    transition: opacity 0.15s ease, stroke 0.15s ease, fill 0.15s ease;
-  }
-
-  .titlebar-button:hover > .toolbarbutton-icon {
+  .titlebar-button {
     opacity: 1;
+    transition: opacity 0.15s ease !important;
   }
 
-  .titlebar-close:hover {
-    stroke: rgb(255, 95, 87) !important;
-    fill: rgb(255, 95, 87) !important;
-    color: rgb(255, 95, 87) !important;
+  .titlebar-button:hover {
+    opacity: 0.55 !important;
+  }
+
+  .titlebar-button:hover:active {
+    opacity: 0.4 !important;
   }
 }
