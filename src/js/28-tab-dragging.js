@@ -1244,6 +1244,15 @@
       return box.width > 0 && point.x >= box.left && point.x <= box.right && point.y >= box.top && point.y <= box.bottom;
     };
 
+    const essentialsBottom = () => {
+      let bottom = document.getElementById("zen-essentials")?.getBoundingClientRect().bottom ?? -Infinity;
+      const grid = window.gZenWorkspaces?.getCurrentEssentialsContainer?.() || document.querySelector(".zen-essentials-container");
+      for (const tile of grid?.querySelectorAll(".tabbrowser-tab[zen-essential]:not([zia-essential-proxy])") || []) {
+        bottom = Math.max(bottom, tile.getBoundingClientRect().bottom);
+      }
+      return bottom;
+    };
+
     // Over the essentials' tiles themselves (or just below the last row):
     // the essentials' own box stops a little short of the last row's
     // bottom, so a drag along it kept flipping into a list row.
@@ -1757,7 +1766,9 @@
       tapOnNewTile(point, state.tab);
       const essentials = document.getElementById("zen-essentials");
       const overTiles = !!event.target?.closest?.("#zen-essentials") || inBox(essentials, point) || overAnyTile(point);
-      const asTab = !overTiles && inBox(document.getElementById("navigator-toolbox"), point);
+      // a row only once the pointer is below the essentials altogether, so
+      // a drag along their last row stays a tile
+      const asTab = !overTiles && inBox(document.getElementById("navigator-toolbox"), point) && point.y > essentialsBottom() + 8;
       const copy = state.copy;
       if (asTab !== state.asTab) {
         state.asTab = asTab;
@@ -2106,9 +2117,6 @@
         node.setAttribute("zia-landing", "true");
         const held = node.getBoundingClientRect();
         node.style.setProperty("transform", `translate(${landing.left - held.left}px, ${landing.top - held.top}px)`, "important");
-        // Zen moves a dropped folder a frame or two later: until it has,
-        // it's held where it was let go, then glides from there
-        let waits = 0;
         const glideIn = () => {
           if (pendingFinish) {
             requestAnimationFrame(glideIn);
@@ -2118,11 +2126,6 @@
           const to = node.getBoundingClientRect();
           const dy = landing.top - to.top;
           const dx = landing.left - to.left;
-          if (Math.abs(dy) < 2 && Math.abs(dx) < 2 && !gBrowser.isTab(node) && waits++ < 10) {
-            node.style.setProperty("transform", `translate(${dx}px, ${dy}px)`, "important");
-            requestAnimationFrame(glideIn);
-            return;
-          }
           if (!node.isConnected || node.hasAttribute("zen-essential") || (Math.abs(dy) < 2 && Math.abs(dx) < 2) || !to.height) {
             // kept a moment, past Firefox's own drop animation (see chrome.css)
             setTimeout(() => node.removeAttribute("zia-landing"), gBrowser.isTab(node) ? 0 : 400);

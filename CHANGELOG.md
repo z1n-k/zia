@@ -28,8 +28,10 @@ Every release of Zia, newest first. The format follows
 - A dragged essential glides into its new place when you let go, instead
   of jumping there.
 
-- A dragged folder glides into place again when you let go, instead of
-  flashing there.
+- A dragged folder no longer vanishes for a moment as it lands.
+
+- A dragged essential stays a tile while it's dragged along the last row
+  of the essentials, instead of flickering into a wide list row.
 
 - A split can be dragged across the separator, among the pinned tabs and
   folders, like a single tab.

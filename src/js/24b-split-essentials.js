@@ -409,7 +409,7 @@
       if (event.button !== 0 || !splitEssentialsOn()) {
         return null;
       }
-      const essential = event.target.closest?.(".tabbrowser-tab[zia-split-tile]");
+      const essential = event.target.closest?.(".tabbrowser-tab[zen-essential][zia-split-tile]");
       if (!essential || event.target.closest(".tab-close-button, .tab-reset-button, .tab-icon-overlay, .tab-audio-button")) {
         return null;
       }
@@ -434,6 +434,7 @@
     // shows instead of the essential by itself.
     container.addEventListener("TabSelect", (event) => {
       const tab = event.target;
+      setTimeout(sweepReleased, 0);
       if (splitEssentialsOn() && splitDataOf(tab)) {
         setTimeout(() => {
           if (gBrowser.selectedTab === tab) {
@@ -467,14 +468,24 @@
 
     // Taken out of the essentials (dragged back to the list, or Remove from
     // Essentials): its split takes its place there, and the essential goes.
-    // A drag places the essential first, so this waits a moment for that.
+    // A drag places the essential first, so this waits a moment for that;
+    // and after any drag, or on switching tabs, anything missed is tidied.
+    const sweepReleased = () => {
+      for (const tab of gBrowser.tabs) {
+        if (tab.ziaSplit?.id && !tab.closing && !tab.hasAttribute("zen-essential")) {
+          splitBackToList(tab);
+        }
+      }
+    };
     new MutationObserver((records) => {
       for (const { target } of records) {
         if (target.ziaSplit?.id && !target.hasAttribute("zen-essential")) {
           setTimeout(() => splitBackToList(target), 120);
         }
       }
-    }).observe(container, { subtree: true, attributes: true, attributeFilter: ["zen-essential"] });
+    }).observe(container, { subtree: true, attributes: true, attributeFilter: ["zen-essential", "pinned"] });
+    window.addEventListener("dragend", () => setTimeout(sweepReleased, 400), true);
+    window.addEventListener("drop", () => setTimeout(sweepReleased, 400), true);
 
     // Each half's icon follows its site
     container.addEventListener("TabAttrModified", (event) => {
