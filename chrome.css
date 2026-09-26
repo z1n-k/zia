@@ -1192,8 +1192,11 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
 :root[zia-dragging-tab] :is(zen-folder, tab-group:not([split-view-group])):has(.tabbrowser-tab[zia-dragging]) {
   z-index: 41 !important;
 
+  /* (a collapsed folder's clip too: dragging its open tab out of it, the
+     tab vanished as soon as it left the folder) */
   & > .tab-group-container {
     overflow: visible !important;
+    clip-path: none !important;
   }
 }
 

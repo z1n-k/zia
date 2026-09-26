@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Dragging the open tab back out of a collapsed folder no longer makes it
+  vanish as soon as it leaves the folder (it was cut off by the folder's
+  own edge), so it's easy to see where it goes.
+
 ## [2.59.3] — 2026-09-26
 
 ### Fixed
