@@ -125,9 +125,14 @@ Multiview works with **YouTube, Twitch** (live, videos and clips), **Kick, Vimeo
 
 ### The sidebar
 
-Essentials sit as tiles, four to a row, or six when the sidebar is wide. Glance at a link from an essential (Option/Alt-click) and a small card with the site's icon springs out from behind the essential's own, then gets sucked back in when you close the glance.
+Essentials sit as tiles, four to a row, or six when the sidebar is wide.
 
-<!-- image: glance card springing out of an essential (short GIF or video) -->
+[Glance](https://docs.zen-browser.app/user-manual/glance), Zen's link preview (Alt-click a link, or Option-click on macOS), gets a look of its own. From an essential, a small card with the site's icon springs out from behind the essential's own, and is sucked back in when you close the glance. From a tab, the glanced site sits as a small square tile at the tab's end.
+
+<p>
+  <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/glance-essential.png" alt="A glance card fanned out from an essential" width="360">
+  <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/glance-tab.png" alt="A glance tile at the end of a tab" width="360">
+</p>
 
 Folders get hover boxes, a gentle spring when they open and close, icon or emoji covers, an × to delete them, and a colour of their own from the right-click menu that tints the whole folder:
 
