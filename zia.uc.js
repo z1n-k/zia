@@ -9352,55 +9352,63 @@
       true
     );
 
-    // An open folder folds shut as it's picked up, over a few frames. The
-    // list is measured once it has, or every row below would be moved by
-    // the open folder's height and land on the rows above.
-    let foldingFolder = null;
-    const beginOnceFolded = (folder, event) => {
-      foldingFolder = folder;
-      let point = { clientY: event.clientY, screenY: event.screenY };
-      const track = (over) => {
-        point = { clientY: over.clientY, screenY: over.screenY };
-      };
-      const stop = () => {
-        window.removeEventListener("dragover", track, true);
-        window.removeEventListener("dragend", cancel, true);
-      };
-      const cancel = () => {
-        foldingFolder = null;
-        stop();
-      };
-      window.addEventListener("dragover", track, true);
-      window.addEventListener("dragend", cancel, true);
+    // An open folder folds shut as it's picked up, over a few frames, after
+    // the drag has begun. Once it has, the list is measured again: until
+    // then every row below was moved by the open folder's height, and would
+    // land on the rows above.
+    const remeasureOnceFolded = (folder) => {
       let last = null;
       let still = 0;
       let frames = 0;
       const step = () => {
-        if (foldingFolder !== folder || !folder.isConnected) {
-          stop();
+        if (drag?.folder !== folder || !folder.isConnected) {
           return;
         }
         const height = Math.round(folder.getBoundingClientRect().height);
         still = height === last ? still + 1 : 0;
         last = height;
-        if ((isCollapsed(folder) && still >= 2) || still >= 8 || ++frames > 40) {
-          foldingFolder = null;
-          stop();
-          begin(folder, point);
+        if (!((isCollapsed(folder) && still >= 2) || still >= 8 || ++frames > 40)) {
+          requestAnimationFrame(step);
           return;
         }
-        requestAnimationFrame(step);
+        // measured where they sit, not partway through sliding back
+        const strip = document.getElementById("tabbrowser-tabs");
+        strip?.setAttribute("zia-measuring", "true");
+        for (const row of drag.rows) {
+          if (row.node !== folder && !folder.contains(row.node)) {
+            place(row.node, 0, false);
+          }
+        }
+        placeSep(0);
+        const kept = folder.style.getPropertyValue("transform");
+        const keptPriority = folder.style.getPropertyPriority("transform");
+        folder.style.removeProperty("transform");
+        // (a real layout read first: the measuring below reads it unflushed)
+        folder.getBoundingClientRect();
+        const rows = measureRows(null);
+        const box = layoutTop(folder);
+        folder.style.setProperty("transform", kept, keptPriority);
+        strip?.removeAttribute("zia-measuring");
+        const mine = rows.find((row) => row.node === folder || folder.contains(row.node));
+        const sep = currentSeparator();
+        drag.rows = rows;
+        drag.origin = box.top;
+        drag.height = box.height;
+        drag.pitch = box.height;
+        drag.index = mine?.index ?? drag.index;
+        drag.shifted = new Set();
+        drag.sepTop = sep ? sep.getBoundingClientRect().top : null;
+        apply(lastDy);
       };
       requestAnimationFrame(step);
     };
 
     const startOn = (target, event) => {
-      const folder = target && !target.hasAttribute?.("zen-essential") && (target.localName === "zen-folder" || target.isZenFolder) ? target : null;
-      if (folder && !isCollapsed(folder)) {
-        beginOnceFolded(folder, event);
-        return;
-      }
       begin(target, event);
+      const folder = drag?.folder;
+      if (folder && !isCollapsed(folder)) {
+        remeasureOnceFolded(folder);
+      }
     };
 
     const onStart = (event) => {

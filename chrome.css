@@ -1388,6 +1388,12 @@ zen-essentials-promo {
 zen-split-fake-tab {
   display: none !important;
 }
+
+/* the list measured again mid-drag (an open folder that has folded shut) */
+#tabbrowser-tabs[zia-measuring] *,
+#tabbrowser-tabs[zia-measuring] {
+  transition: none !important;
+}
 @property --zia-folder-bottom-extra {
   syntax: "<length>";
   inherits: false;
