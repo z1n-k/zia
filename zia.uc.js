@@ -4411,6 +4411,17 @@
       set(name, true);
     }
     set("zia.tabs.favicon-glow", false);
+    // Dimming asleep tabs was on by default for a few releases and is now
+    // off: switched off once for anyone who had it from then.
+    set("zia.tabs.dim-asleep", false);
+    try {
+      if (!Services.prefs.getBoolPref("zia.tabs.dim-asleep-reset", false)) {
+        Services.prefs.clearUserPref("zia.tabs.dim-asleep");
+        Services.prefs.setBoolPref("zia.tabs.dim-asleep-reset", true);
+      }
+    } catch (err) {
+      noteError("zen defaults: dim asleep", err);
+    }
     set("zia.essentials.fill-row", false);
     set("zia.pip.dia-style", true);
     set("zia.pip.tuck", true);
@@ -6830,6 +6841,14 @@
       button.hidden = !uri || !/^https?$/.test(uri.scheme);
     };
 
+    // As faint as the site settings icon beside it (a fixed see-through
+    // level); its colour follows the toolbar in CSS.
+    const siteIcon = siteData.querySelector("image");
+    if (siteIcon) {
+      const style = getComputedStyle(siteIcon);
+      icon.style.fillOpacity = style.fillOpacity;
+      icon.style.opacity = style.opacity;
+    }
     gBrowser.tabContainer.addEventListener("TabSelect", update);
     gBrowser.addProgressListener({
       onLocationChange: (progress) => {

@@ -2300,15 +2300,15 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
   overflow-clip-margin: var(--zen-toolbox-padding) !important;
 }
 
-@media (-moz-platform: windows) {
-  :is(.workspace-arrowscrollbox, #tabbrowser-tabs, #tabbrowser-arrowscrollbox) {
-    padding-bottom: calc(var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)) !important;
-  }
+/* Room at the end of the tab list for the last tab's glow, which the list
+   would otherwise cut off */
+:is(.workspace-arrowscrollbox, #tabbrowser-tabs, #tabbrowser-arrowscrollbox) {
+  padding-bottom: calc(var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)) !important;
+}
 
-  :is(.workspace-arrowscrollbox, #tabbrowser-arrowscrollbox)::part(scrollbox) {
-    padding-bottom: calc(var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)) !important;
-    overflow-clip-margin: calc(var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)) !important;
-  }
+:is(.workspace-arrowscrollbox, #tabbrowser-arrowscrollbox)::part(scrollbox) {
+  padding-bottom: calc(var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)) !important;
+  overflow-clip-margin: calc(var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)) !important;
 }
 
 /* No scrollbars anywhere in the sidebar; it still scrolls */
@@ -4031,6 +4031,33 @@ tooltip[default="true"] {
   :root[zen-compact-mode="true"] #tabbrowser-tabpanels .browserSidebarContainer {
     will-change: transform !important;
     backface-visibility: hidden !important;
+  }
+}
+
+/* Windows: minimise, maximise and close have no coloured block behind them
+   on hover (Windows' red close block among them); the icon just brightens,
+   and close's cross turns red. */
+@media (-moz-platform: windows) {
+  .titlebar-button,
+  .titlebar-button:hover,
+  .titlebar-button:hover:active {
+    background-color: transparent !important;
+    background-image: none !important;
+  }
+
+  .titlebar-button > .toolbarbutton-icon {
+    opacity: 0.7;
+    transition: opacity 0.15s ease, stroke 0.15s ease, fill 0.15s ease;
+  }
+
+  .titlebar-button:hover > .toolbarbutton-icon {
+    opacity: 1;
+  }
+
+  .titlebar-close:hover {
+    stroke: rgb(255, 95, 87) !important;
+    fill: rgb(255, 95, 87) !important;
+    color: rgb(255, 95, 87) !important;
   }
 }
 .tabbrowser-tab .tab-reset-button,

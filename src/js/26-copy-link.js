@@ -161,6 +161,14 @@
       button.hidden = !uri || !/^https?$/.test(uri.scheme);
     };
 
+    // As faint as the site settings icon beside it (a fixed see-through
+    // level); its colour follows the toolbar in CSS.
+    const siteIcon = siteData.querySelector("image");
+    if (siteIcon) {
+      const style = getComputedStyle(siteIcon);
+      icon.style.fillOpacity = style.fillOpacity;
+      icon.style.opacity = style.opacity;
+    }
     gBrowser.tabContainer.addEventListener("TabSelect", update);
     gBrowser.addProgressListener({
       onLocationChange: (progress) => {
