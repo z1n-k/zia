@@ -21,8 +21,7 @@ Every release of Zia, newest first. The format follows
   lands: the narrower look it has over the folder now goes before the
   glide, which starts from where its background showed.
 - A tab dropped into a folder (or pulled out of one) no longer flashes an
-  × before its − (or the other way round): the button it will show is the
-  one kept on after the drop.
+  × before its − (or the other way round): it swaps the moment it's let go.
 
 ## [2.59.3] — 2026-09-26
 

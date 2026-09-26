@@ -240,11 +240,14 @@ zen-essentials-promo {
 
 /* ...and its x: Firefox forgets the hover until the pointer next moves,
    and Zen only shows the x on hover */
-.tabbrowser-tab:not([zen-essential], [pinned])[zia-hover-held] .tab-close-button,
+.tabbrowser-tab:not([zen-essential], [pinned], [zia-held-pinned])[zia-hover-held] .tab-close-button,
 /* (ids only to outrank Zen's split rule that hides them unless hovered) */
 :is(.tab-close-button, .tab-reset-button)[zia-held-shown]:not(#zia-a):not(#zia-b) {
   display: flex !important;
   opacity: 1 !important;
+  /* (a tab dropped into a folder swaps its x for a -: straight away, not
+     fading in) */
+  transition: none !important;
 }
 
 /* a split essential dragged back to the list, until it's removed */

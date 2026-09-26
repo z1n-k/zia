@@ -2202,6 +2202,7 @@
       (event) => {
         const tab = drag?.tab;
         heldFolder = null;
+        heldPinned = null;
 
         if (tab && drag.splitEssential) {
           event.preventDefault();
@@ -2259,6 +2260,7 @@
         } else if (tab && !drag.folder && !drag.away && drag.target?.hand) {
           const target = drag.target;
           heldFolder = target.folder || null;
+          heldPinned = !target.below;
           pendingFinish = true;
           setTimeout(() => {
             try {
@@ -2407,10 +2409,14 @@
       // A tab dropped into a folder is pinned there, and shows a - where it
       // had an x (and the other way round, pulled out): the x it had was
       // kept on until the pointer moved, then swapped for the -
-      refitHeld = () => {
+      // (as soon as it's let go: the drop says where it's going, so its x
+      // wasn't left showing until the tab was actually pinned)
+      refitHeld = (pinned) => {
         buttons = buttons.map((button) => {
           const tab = button.closest(".tabbrowser-tab");
-          const kind = tab?.pinned ? ".tab-reset-button" : ".tab-close-button";
+          const want = pinned ?? tab?.pinned;
+          tab?.toggleAttribute("zia-held-pinned", !!want && !tab.pinned);
+          const kind = want ? ".tab-reset-button" : ".tab-close-button";
           const right = tab?.isConnected && !button.matches(kind) ? tab.querySelector(kind) : null;
           if (!right) {
             return button;
@@ -2420,6 +2426,10 @@
           return right;
         });
       };
+      if (heldPinned != null) {
+        refitHeld(heldPinned);
+      }
+      heldPinned = null;
       let timer = 0;
       const check = () => {
         if (!held.some((node) => node.matches(":hover"))) {
@@ -2433,6 +2443,7 @@
         }
         for (const button of buttons) {
           button.removeAttribute("zia-held-shown");
+          button.closest(".tabbrowser-tab")?.removeAttribute("zia-held-pinned");
         }
         window.removeEventListener("mousemove", check, true);
         clearTimeout(timer);
@@ -2447,6 +2458,7 @@
     let heldFolder = null;
     let repinLanding = null;
     let refitHeld = null;
+    let heldPinned = null;
     window.addEventListener("drop", () => (isRealDrop = true), true);
     window.addEventListener("dragstart", () => (isRealDrop = false), true);
 
