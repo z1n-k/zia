@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Windows: minimise, maximise and close dim when hovered, now that they've
+  no coloured block behind them.
+
 ## [2.58.0] — 2026-09-26
 
 ### Changed
