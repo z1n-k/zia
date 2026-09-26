@@ -2400,6 +2400,16 @@
       }
       let buttons = shownAtDrop.buttons.filter((button) => button.isConnected);
       shownAtDrop = { row: null, buttons: [] };
+      // The dragged tab itself isn't found under the pointer (it lets the
+      // pointer through while it's dragged), so its button wasn't noted:
+      // a tab dropped into a folder showed nothing between losing its x
+      // and the browser finding the pointer on it again for the -
+      if (gBrowser.isTab(folder) && !buttons.some((button) => folder.contains(button))) {
+        const own = folder.querySelector(folder.pinned ? ".tab-reset-button" : ".tab-close-button");
+        if (own) {
+          buttons.push(own);
+        }
+      }
       for (const node of held) {
         node.setAttribute("zia-hover-held", "true");
       }
