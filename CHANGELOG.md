@@ -13,6 +13,8 @@ Every release of Zia, newest first. The format follows
 - Folders can be dragged into folders again, landing where the drag shows
   them (as deep as Zen allows); dragged anywhere else, a folder still never
   ends up inside one by accident.
+- A folder dragged over a folder narrows to the width of the folders inside
+  it, as a tab does.
 
 ## [2.61.1] — 2026-09-26
 

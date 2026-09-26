@@ -8756,7 +8756,53 @@
       return anyFolder ? folderBox(anyFolder) : null;
     };
 
+    // A dragged folder narrows the same way over a folder it would go into,
+    // to the width of the folders already inside one (its margins, eased)
+    const morphFolderWidth = (into) => {
+      const moving = drag.folder;
+      const key = into || "plain";
+      if (drag.widthKey === key) {
+        return;
+      }
+      drag.widthKey = key;
+      if (!drag.folderBase) {
+        const style = getComputedStyle(moving);
+        drag.folderBase = {
+          box: folderBox(moving),
+          start: parseFloat(style.marginInlineStart) || 0,
+          end: parseFloat(style.marginInlineEnd) || 0,
+        };
+      }
+      const base = drag.folderBase;
+      // (back among the rows it started in, it's its own width again)
+      const startedIn = moving.parentElement?.closest?.("zen-folder, tab-group:not([split-view-group])") || null;
+      const want = into || startedIn ? widthFor(into) : null;
+      let start = want ? want.left - base.box.left : 0;
+      let end = want ? base.box.right - want.right : 0;
+      if (Math.abs(start) > 60 || Math.abs(end) > 60) {
+        start = 0;
+        end = 0;
+      }
+      moving.style.setProperty("margin-inline-start", `${base.start + start}px`, "important");
+      moving.style.setProperty("margin-inline-end", `${base.end + end}px`, "important");
+      moving.style.setProperty("transition", "margin-inline-start 120ms ease-out, margin-inline-end 120ms ease-out", "important");
+      moving.setAttribute("zia-morph-folder", "true");
+    };
+    const unmorphFolder = (folder) => {
+      if (!folder?.hasAttribute?.("zia-morph-folder")) {
+        return;
+      }
+      folder.removeAttribute("zia-morph-folder");
+      for (const name of ["margin-inline-start", "margin-inline-end", "transition"]) {
+        folder.style.removeProperty(name);
+      }
+    };
+
     const morphWidth = (folder) => {
+      if (drag.folder) {
+        morphFolderWidth(folder);
+        return;
+      }
       const key = folder || "plain";
       if (drag.widthKey === key || !drag.bg) {
         return;
@@ -10931,6 +10977,15 @@
         droppedFrom = { node: drag.moving, top: from.top, left: from.left, tab: drag.tab, bg, bgLeft: bg?.getBoundingClientRect().left };
       }
       essentialDropped = null;
+      if (drag?.folder) {
+        const dropped = drag.folder;
+        // (a landing one goes just before its glide, which measures it)
+        setTimeout(() => {
+          if (!dropped.hasAttribute("zia-landing")) {
+            unmorphFolder(dropped);
+          }
+        }, 0);
+      }
       if (drag?.bg) {
         const { bg, content } = drag;
         setTimeout(() => requestAnimationFrame(() => unmorphWidth(droppedTab, bg, content)), 0);
@@ -11015,6 +11070,7 @@
           if (landing.bg) {
             unmorphWidth(landing.tab);
           }
+          unmorphFolder(node);
           const to = node.getBoundingClientRect();
           const dy = landing.top - to.top;
           const dx = landing.bg?.isConnected ? landing.bgLeft - landing.bg.getBoundingClientRect().left : landing.left - to.left;
