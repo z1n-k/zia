@@ -1783,7 +1783,13 @@
       const drawn = tab.querySelector(".tab-background")?.getBoundingClientRect() || tile;
       const copy = tab.cloneNode(true);
       copy.removeAttribute("id");
-      for (const name of ["dragtarget", "pending-drag", "multiselected", "zen-pinned-changed"]) {
+      // (and what a drop just before left on the tile: a lock that pins
+      // position, so the copy stuck where it started and the drag was
+      // trapped)
+      for (const name of [
+        "dragtarget", "pending-drag", "multiselected", "zen-pinned-changed",
+        "zia-drop-lock", "zia-landing", "zia-hover-held", "zia-held-pinned", "zia-shift", "zia-dragging",
+      ]) {
         copy.removeAttribute(name);
       }
       copy.setAttribute("zia-essential-proxy", "true");
@@ -1891,7 +1897,9 @@
       listRoom.first = undefined;
 
       listRoom.button = newTabButton();
-      listRoom.buttonTop = listRoom.button?.getBoundingClientRect().top ?? null;
+      // (its bottom: over the last row or the button itself the drop still
+      // goes above it, so it makes way; its top left half a gap there)
+      listRoom.buttonBottom = listRoom.button?.getBoundingClientRect().bottom ?? null;
       listRoom.buttonDelta = 0;
 
       unclipAround(listRoom.button || listRoom.rows[listRoom.rows.length - 1]?.node);
@@ -1919,8 +1927,8 @@
           place(listRoom.sep, delta, false);
         }
       }
-      if (listRoom.button && listRoom.buttonTop != null) {
-        const delta = listRoom.buttonTop > y ? listRoom.pitch : 0;
+      if (listRoom.button && listRoom.buttonBottom != null) {
+        const delta = listRoom.buttonBottom > y ? listRoom.pitch : 0;
         if (listRoom.buttonDelta !== delta) {
           listRoom.buttonDelta = delta;
           place(listRoom.button, delta, false);
@@ -1982,10 +1990,29 @@
             }
           }
           place();
+          holdDropped();
           resolve();
         };
         requestAnimationFrame(whenOut);
       });
+
+      // It lands under the pointer, which the browser doesn't see until it
+      // next moves: so its x (or -) is kept on, as for a dropped tab, not
+      // missing until then (nothing under the pointer at the drop counts:
+      // the tab wasn't there yet)
+      function holdDropped() {
+        if (!tab.isConnected || tab.hasAttribute("zen-essential") || tab.group?.hasAttribute("split-view-group")) {
+          return;
+        }
+        try {
+          shownAtDrop = { row: null, buttons: [] };
+          heldFolder = null;
+          heldPinned = null;
+          holdFolderHover(tab);
+        } catch (err) {
+          noteError("tab dragging: hold the dropped essential", err);
+        }
+      }
 
       function place() {
         try {
@@ -2447,6 +2474,9 @@
         }
       };
       const release = () => {
+        if (releaseHeld === release) {
+          releaseHeld = null;
+        }
         refitHeld = null;
         for (const node of held) {
           node.removeAttribute("zia-hover-held");
@@ -2460,6 +2490,8 @@
       };
       window.addEventListener("mousemove", check, true);
       timer = setTimeout(release, 4000);
+      releaseHeld?.();
+      releaseHeld = release;
     };
 
     let droppedFrom = null;
@@ -2470,6 +2502,7 @@
     let refitHeld = null;
     let heldPinned = null;
     let dragGen = 0;
+    let releaseHeld = null;
     window.addEventListener("drop", () => (isRealDrop = true), true);
     window.addEventListener("dragstart", () => (isRealDrop = false), true);
 
@@ -2632,6 +2665,9 @@
     };
     window.addEventListener("drop", settle, true);
     window.addEventListener("dragstart", () => {
+      // (and what the last drop kept showing: dragged straight back into
+      // the essentials, a tab kept its x on the tile)
+      releaseHeld?.();
       dragGen++;
       blockAnimUntil = 0;
     }, true);

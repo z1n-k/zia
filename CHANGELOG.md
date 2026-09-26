@@ -4,6 +4,19 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.59.5] — 2026-09-26
+
+### Fixed
+
+- An essential dragged back into the tab list keeps its × (or −) on as it
+  lands under the pointer, instead of it flashing in once the pointer moves.
+- Dragged straight back up into the essentials, it no longer keeps that ×
+  on its tile for a moment.
+- An essential dragged down again straight after it was dropped no longer
+  gets stuck at the top of the sidebar instead of following the pointer.
+- An essential dragged into the list over its last tab (or the New Tab
+  button) makes a whole tab's room above New Tab, not half.
+
 ## [2.59.4] — 2026-09-26
 
 ### Fixed
