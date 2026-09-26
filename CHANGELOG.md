@@ -20,6 +20,11 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
+- Zia's download is about a third of the size (1.9 MB down to 0.64 MB):
+  the folder icons ship as one compact file, from which Zia makes its icon
+  pack in your profile the first time it starts. Icons you've already
+  picked keep working.
+
 - The × in a split pane's own address bar closes that pane's tab, as in
   Dia, instead of taking it out of the split into a tab of its own.
 
