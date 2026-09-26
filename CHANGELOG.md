@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.61.0] — 2026-09-26
+
+### Added
+
+- A setting to hide compact mode's top toolbar while the sidebar is out, as
+  before 2.60.0 (off by default).
+
 ## [2.60.0] — 2026-09-26
 
 ### Changed
