@@ -11060,6 +11060,34 @@
     return all[0] || null;
   }
 
+  // Zen's "Clear" beside the separator loses its down arrow whenever its
+  // label is translated again (a new tab can switch it to "Clear all"): the
+  // translation keeps only what its text names. The arrow is put back.
+  function watchClearArrow() {
+    const restore = (button) => {
+      if (button.querySelector(":scope > .toolbarbutton-icon")) {
+        return;
+      }
+      const icon = document.createXULElement("image");
+      icon.className = "toolbarbutton-icon";
+      button.prepend(icon);
+    };
+    const watched = new WeakSet();
+    const watch = () => {
+      for (const button of document.querySelectorAll("#zen-workspace-close-unpinned-tabs-button, .pinned-tabs-container-separator toolbarbutton")) {
+        restore(button);
+        if (!watched.has(button)) {
+          watched.add(button);
+          new MutationObserver(() => restore(button)).observe(button, { childList: true });
+        }
+      }
+    };
+    watch();
+    // (a space made later brings its own separator)
+    window.addEventListener("ZenWorkspaceAttached", watch);
+    gBrowser.tabContainer.addEventListener("TabOpen", () => setTimeout(watch, 0));
+  }
+
   function watchEdgeGlow() {
     let pending = 0;
     const update = () => {
@@ -11308,6 +11336,7 @@
     safely("animateNavButtons", animateNavButtons);
     safely("springReloadHover", springReloadHover);
     safely("watchEdgeGlow", watchEdgeGlow);
+    safely("watchClearArrow", watchClearArrow);
     safely("watchColorDrift", watchColorDrift);
     safely("watchPopUpColor", watchPopUpColor);
     safely("quietZenHaptics", quietZenHaptics);
