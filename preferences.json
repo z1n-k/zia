@@ -69,6 +69,12 @@
   },
   {
     "type": "checkbox",
+    "label": "Split essentials (experimental): right-click a two-site split and choose Add Split to Essentials",
+    "property": "zia.essentials.split",
+    "defaultValue": false
+  },
+  {
+    "type": "checkbox",
     "label": "Asleep (unloaded) tabs, essentials and folders look dimmed",
     "property": "zia.tabs.dim-asleep",
     "defaultValue": false

@@ -44,6 +44,7 @@
       noteError("zen defaults: dim asleep", err);
     }
     set("zia.essentials.fill-row", false);
+    set("zia.essentials.split", false);
     set("zia.pip.dia-style", true);
     set("zia.pip.tuck", true);
     set("zia.multiview", true);

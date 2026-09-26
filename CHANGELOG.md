@@ -4,6 +4,20 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Split essentials (experimental, off by default): keep a split of two
+  sites as one essential, as Dia can. Turn on **Split essentials** in
+  Zia's settings, then right-click a tab in a two-site split and choose
+  **Add Split to Essentials**. The tile shows both sites side by side;
+  clicking it opens the split, at the half you clicked, and while it's open
+  the tile glows in both sites' colours, leaning towards the half you're
+  in. Zen can't hold a split among its essentials yet, so the split is
+  kept as two ordinary tabs hidden from the tab list; take the essential
+  out of the essentials and they're an ordinary split again.
+
 ## [2.58.1] — 2026-09-26
 
 ### Changed

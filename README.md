@@ -130,6 +130,10 @@ Essentials sit as tiles, four to a row, or six when the sidebar is wide.
 
 [Glance](https://docs.zen-browser.app/user-manual/glance), Zen's link preview (Alt-click a link, or Option-click on macOS), gets a look of its own. From an essential, a small card with the site's icon springs out from behind the essential's own, and is sucked back in when you close the glance. From a tab, the glanced site sits as a small square tile at the tab's end.
 
+**Split essentials** (experimental, off by default): keep a split of two sites as one essential, the way Dia can. Right-click a tab in a two-site split and choose **Add Split to Essentials**. The tile shows both sites in halves of their own; click it and the split opens, at whichever half you clicked. While it's open the tile glows in both sites' colours, leaning towards the half you're in. Zen can't hold a split among its essentials yet, so Zia keeps the split as two ordinary tabs hidden from the tab list; remove the essential and they come back as an ordinary split.
+
+<!-- image: a split essential, open -->
+
 <p>
   <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/glance-essential.png" alt="A glance card fanned out from an essential" width="360">
   <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/glance-tab.png" alt="A glance tile at the end of a tab" width="360">
@@ -226,6 +230,7 @@ Almost every part of Zia can be switched on or off on its own. The settings are 
 | Sound bars on playing tabs (off: Zen's speaker) | on |
 | Tint the selected tab's glow and the sound bars with the site's colours | off |
 | The last essential stretches across the rest of its row | off |
+| Split essentials (experimental): right-click a two-site split and choose **Add Split to Essentials** | off |
 | Asleep (unloaded) tabs, essentials and folders look dimmed | off |
 | Compact mode's sidebar is slightly see-through, with the page blurred behind it | on |
 | **Page** | |
@@ -269,7 +274,7 @@ Changed at the default level only. If you've set either yourself in `about:confi
 
 - Linux gets little testing
 - Light mode and Zen's layouts other than **Sidebar and Top Toolbar** are less polished
-- Split tabs can't be essentials: Zen keeps a split as a group, and essentials only hold single tabs
+- Split essentials are experimental: Zen doesn't support them itself yet, so Zia works around it, and a split essential can't be dragged to a new spot among the essentials yet
 
 ---
 
