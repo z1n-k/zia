@@ -141,32 +141,33 @@
     return all[0] || null;
   }
 
-  // Zen's "Clear" beside the separator loses its down arrow whenever its
-  // label is translated again (a new tab can switch it to "Clear all"): the
-  // translation keeps only what its text names. The arrow is put back.
+  // Zen's "Clear" beside the separator shows its down arrow only when every
+  // unpinned tab in the space could be closed (none selected, playing sound
+  // or in picture-in-picture). Zen checks that as tabs open and close, but
+  // not reliably as they're selected or start playing, so with Zia's
+  // layout the arrow went stale; Zen is asked to check again then.
   function watchClearArrow() {
-    const restore = (button) => {
-      if (button.querySelector(":scope > .toolbarbutton-icon")) {
-        return;
-      }
-      const icon = document.createXULElement("image");
-      icon.className = "toolbarbutton-icon";
-      button.prepend(icon);
-    };
-    const watched = new WeakSet();
-    const watch = () => {
-      for (const button of document.querySelectorAll("#zen-workspace-close-unpinned-tabs-button, .pinned-tabs-container-separator toolbarbutton")) {
-        restore(button);
-        if (!watched.has(button)) {
-          watched.add(button);
-          new MutationObserver(() => restore(button)).observe(button, { childList: true });
-        }
+    let pending = 0;
+    const recheck = () => {
+      if (!pending) {
+        pending = requestAnimationFrame(() => {
+          pending = 0;
+          try {
+            window.gZenWorkspaces?.updateTabsContainers?.();
+          } catch (err) {
+            noteError("clear arrow", err);
+          }
+        });
       }
     };
-    watch();
-    // (a space made later brings its own separator)
-    window.addEventListener("ZenWorkspaceAttached", watch);
-    gBrowser.tabContainer.addEventListener("TabOpen", () => setTimeout(watch, 0));
+    const container = gBrowser.tabContainer;
+    container.addEventListener("TabSelect", recheck);
+    container.addEventListener("TabAttrModified", (event) => {
+      if (event.detail?.changed?.some((name) => name === "soundplaying" || name === "pictureinpicture")) {
+        recheck();
+      }
+    });
+    container.addEventListener("TabMultiSelect", recheck);
   }
 
   function watchEdgeGlow() {

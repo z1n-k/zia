@@ -12,10 +12,10 @@ Every release of Zia, newest first. The format follows
   in the list: Firefox's inner scroll box ended at the last row and cut off
   whatever went past it.
 
-- Zen's "Clear" button beside the separator shows its down arrow again,
-  with its label, when you hover the sidebar (it no longer goes after a new
-  tab opens), and fades out as soon as you leave the sidebar, as quickly as
-  it fades in.
+- Zen's "Clear" button beside the separator shows its down arrow when it
+  should again (when every unpinned tab in the space can be closed): Zen
+  didn't recheck it as tabs were selected. It also fades out as soon as you
+  leave the sidebar, as quickly as it fades in.
 
 ### Changed
 

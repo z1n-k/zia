@@ -2487,20 +2487,14 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
   }
 }
 
-/* Zen's "Clear" beside the separator keeps its down arrow (put back when a
-   new translation of its label drops it, zia.uc.js), shown with its label */
-#zen-workspace-close-unpinned-tabs-button {
-  /* fades in and out with the pointer on the sidebar, the same speed both
-     ways (Zen keeps its hover a moment after the pointer has gone) */
+/* Zen's "Clear" beside the separator fades in and out with the pointer on
+   the sidebar, the same speed both ways (Zen keeps its hover a moment
+   after the pointer has gone) */
+.zen-workspace-close-unpinned-tabs-button {
   transition: opacity 0.15s ease, visibility 0.15s !important;
 
   #navigator-toolbox:not(:hover) & {
     opacity: 0 !important;
-  }
-
-  & > .toolbarbutton-icon {
-    display: flex !important;
-    visibility: inherit !important;
   }
 }
 
