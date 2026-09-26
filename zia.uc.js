@@ -10737,6 +10737,7 @@
     let repinLanding = null;
     let refitHeld = null;
     let heldPinned = null;
+    let dragGen = 0;
     window.addEventListener("drop", () => (isRealDrop = true), true);
     window.addEventListener("dragstart", () => (isRealDrop = false), true);
 
@@ -10851,7 +10852,22 @@
         };
         requestAnimationFrame(glideIn);
       }
+      // A new drag started straight after (within the settling time) is
+      // left alone: the wipe undid the offsets Zen gives the other
+      // essentials to open a gap, so none opened
+      const gen = dragGen;
+      const unlock = () => {
+        strip?.removeAttribute("zia-settling");
+        for (const node of locked) {
+          node.style.removeProperty("top");
+          node.removeAttribute("zia-drop-lock");
+        }
+      };
       const wipe = () => {
+        if (gen !== dragGen) {
+          unlock();
+          return;
+        }
         strip?.querySelectorAll(".tabbrowser-tab, .tab-group-label-container, tab-group, zen-folder").forEach((node) => {
           const appearing = node === droppedTab && !node.group;
           for (const anim of node.getAnimations()) {
@@ -10876,17 +10892,17 @@
         if (Date.now() < blockAnimUntil) {
           requestAnimationFrame(wipe);
         } else {
-          strip?.removeAttribute("zia-settling");
-          for (const node of locked) {
-            node.style.removeProperty("top");
-            node.removeAttribute("zia-drop-lock");
-          }
+          unlock();
         }
       };
       clearTimeout(lockTimer);
       wipe();
     };
     window.addEventListener("drop", settle, true);
+    window.addEventListener("dragstart", () => {
+      dragGen++;
+      blockAnimUntil = 0;
+    }, true);
     window.addEventListener("dragend", () => {
       settle();
       setTimeout(settle, 0);

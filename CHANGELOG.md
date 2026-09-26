@@ -24,6 +24,9 @@ Every release of Zia, newest first. The format follows
   × before its − (or the other way round): it swaps the moment it's let go.
 - Dropping an essential no longer throws an error in the Browser Console
   (and skips the end of the drop's tidy-up).
+- Dragging an essential again straight after dropping one now opens a gap
+  for it among the others: the first drop's tidy-up was still running and
+  kept undoing it.
 
 ## [2.59.3] — 2026-09-26
 
