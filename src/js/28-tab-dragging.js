@@ -2435,7 +2435,10 @@
       const droppedTab = drag?.tab || essentialDropped || null;
       if (drag?.moving && !drag.essentials && !drag.away && droppedFrom === null && isRealDrop) {
         const from = drag.moving.getBoundingClientRect();
-        droppedFrom = { node: drag.moving, top: from.top, left: from.left };
+        // (and where its background showed: a tab over a folder is drawn
+        // narrower, indented like the folder's tabs)
+        const bg = drag.bg?.isConnected ? drag.bg : null;
+        droppedFrom = { node: drag.moving, top: from.top, left: from.left, tab: drag.tab, bg, bgLeft: bg?.getBoundingClientRect().left };
       }
       essentialDropped = null;
       if (drag?.bg) {
@@ -2514,9 +2517,15 @@
           }
           repinLanding = null;
           node.style.removeProperty("transform");
+          // The narrower look goes before the glide, which then starts the
+          // background where it showed: dropped in a folder, it went a
+          // step left as the glide began and slid back
+          if (landing.bg) {
+            unmorphWidth(landing.tab);
+          }
           const to = node.getBoundingClientRect();
           const dy = landing.top - to.top;
-          const dx = landing.left - to.left;
+          const dx = landing.bg?.isConnected ? landing.bgLeft - landing.bg.getBoundingClientRect().left : landing.left - to.left;
           if (!node.isConnected || node.hasAttribute("zen-essential") || (Math.abs(dy) < 2 && Math.abs(dx) < 2) || !to.height) {
             // kept a moment, past Firefox's own drop animation (see chrome.css)
             setTimeout(() => node.removeAttribute("zia-landing"), gBrowser.isTab(node) ? 0 : 400);

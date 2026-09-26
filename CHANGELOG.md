@@ -17,6 +17,9 @@ Every release of Zia, newest first. The format follows
 - A dropped tab no longer jolts (down a step, back up, then down again)
   before gliding into place: Firefox's end of the drag let it go for a
   frame, and it's now held where it was let go until the glide starts.
+- A tab dropped into a folder no longer steps left and slides back as it
+  lands: the narrower look it has over the folder now goes before the
+  glide, which starts from where its background showed.
 
 ## [2.59.3] — 2026-09-26
 
