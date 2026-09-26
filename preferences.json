@@ -71,7 +71,7 @@
     "type": "checkbox",
     "label": "Asleep (unloaded) tabs, essentials and folders look dimmed",
     "property": "zia.tabs.dim-asleep",
-    "defaultValue": true
+    "defaultValue": false
   },
   {
     "type": "checkbox",

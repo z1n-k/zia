@@ -4,9 +4,33 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.57.1] — 2026-09-26
+## [2.58.0] — 2026-09-26
+
+### Changed
+
+- Installing and updating Zia is quick again: its 6,000-odd icons come as
+  one file instead of thousands, which Sine took up to a minute to unpack
+  on some computers, freezing Zen meanwhile. Zia copies the icon file into
+  your Zen profile the first time and reads icons from it; folders and
+  spaces using one of Zia's icons move over to it by themselves.
+
+- Dimming asleep tabs is off by default (and switched off once for anyone
+  who had it on from when it was on by default); turn on **Asleep
+  (unloaded) tabs, essentials and folders look dimmed** in Zia's settings.
+
+- Windows: minimise, maximise and close have no coloured block behind them
+  on hover; the icon brightens, and close's cross turns red.
 
 ### Fixed
+
+- The address bar's copy link button is as faint as the site settings
+  icon beside it again, still following the toolbar's colour.
+
+- The last tab in the list has its whole glow; it was cut off at the
+  bottom on macOS and Linux.
+
+- Windows: the space's name shows again at the top of the sidebar when it
+  slides out in compact mode.
 
 - On dark sites the toolbar's buttons are white, as in Dia, instead of a
   mid grey, so back and forward are easy to see even when there's nowhere

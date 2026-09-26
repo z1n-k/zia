@@ -176,7 +176,7 @@ Almost every part of Zia can be switched on or off on its own. The settings are 
 | Sound bars on playing tabs (off: Zen's speaker) | on |
 | Tint the selected tab's glow and the sound bars with the site's colours | off |
 | The last essential stretches across the rest of its row | off |
-| Asleep (unloaded) tabs, essentials and folders look dimmed | on |
+| Asleep (unloaded) tabs, essentials and folders look dimmed | off |
 | Compact mode's sidebar is slightly see-through, with the page blurred behind it | on |
 | **Page** | |
 | Toolbar takes the colour of the site (off: the theme's colour) | on |
@@ -237,7 +237,7 @@ Zia is an independent, unofficial project. It isn't affiliated with, endorsed by
 
 ## Credits
 
-Icons are [Tabler Icons](https://tabler.io/icons), MIT licensed; their licence is in `icons/tabler/LICENSE`. They're recoloured to follow Zen's icon colour and otherwise unchanged (`scripts/tabler-icons.py` makes them from the npm package).
+Icons are [Tabler Icons](https://tabler.io/icons), MIT licensed; their licence is in `icons/tabler-LICENSE`. They're recoloured to follow Zen's icon colour and otherwise unchanged (`scripts/tabler-icons.py` makes them from the npm package). They ship as one file, `icons/tabler.zip`, which Zia copies into your Zen profile (`zia-icons`) and reads the icons from, so installing and updating Zia doesn't unpack thousands of files.
 
 The bleeding corners technique was inspired by [Bleeding Corners Fix](https://github.com/rsiebertdev/zen-themes/tree/main/bleeding-corners-fix) by rsiebertdev. Zia uses its own implementation, matched to its card shape.
 

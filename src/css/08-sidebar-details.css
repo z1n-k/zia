@@ -67,15 +67,15 @@
   overflow-clip-margin: var(--zen-toolbox-padding) !important;
 }
 
-@media (-moz-platform: windows) {
-  :is(.workspace-arrowscrollbox, #tabbrowser-tabs, #tabbrowser-arrowscrollbox) {
-    padding-bottom: calc(var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)) !important;
-  }
+/* Room at the end of the tab list for the last tab's glow, which the list
+   would otherwise cut off */
+:is(.workspace-arrowscrollbox, #tabbrowser-tabs, #tabbrowser-arrowscrollbox) {
+  padding-bottom: calc(var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)) !important;
+}
 
-  :is(.workspace-arrowscrollbox, #tabbrowser-arrowscrollbox)::part(scrollbox) {
-    padding-bottom: calc(var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)) !important;
-    overflow-clip-margin: calc(var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)) !important;
-  }
+:is(.workspace-arrowscrollbox, #tabbrowser-arrowscrollbox)::part(scrollbox) {
+  padding-bottom: calc(var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)) !important;
+  overflow-clip-margin: calc(var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)) !important;
 }
 
 /* No scrollbars anywhere in the sidebar; it still scrolls */
