@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- An essential dragged back into the tab list keeps its × (or −) on as it
+  lands under the pointer, instead of it flashing in once the pointer moves.
+
 ## [2.59.4] — 2026-09-26
 
 ### Fixed

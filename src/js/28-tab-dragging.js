@@ -1982,10 +1982,29 @@
             }
           }
           place();
+          holdDropped();
           resolve();
         };
         requestAnimationFrame(whenOut);
       });
+
+      // It lands under the pointer, which the browser doesn't see until it
+      // next moves: so its x (or -) is kept on, as for a dropped tab, not
+      // missing until then (nothing under the pointer at the drop counts:
+      // the tab wasn't there yet)
+      function holdDropped() {
+        if (!tab.isConnected || tab.hasAttribute("zen-essential") || tab.group?.hasAttribute("split-view-group")) {
+          return;
+        }
+        try {
+          shownAtDrop = { row: null, buttons: [] };
+          heldFolder = null;
+          heldPinned = null;
+          holdFolderHover(tab);
+        } catch (err) {
+          noteError("tab dragging: hold the dropped essential", err);
+        }
+      }
 
       function place() {
         try {
