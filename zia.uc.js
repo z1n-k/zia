@@ -6868,22 +6868,38 @@
     syncSplitSelection();
   }
 
-  // A two-site split, not already a split essential's, can become one
-  function canBecomeSplitEssential(tab) {
+  // Why a tab's split can't become a split essential ("" when it can): a
+  // two-site split, not already a split essential's, with the setting on
+  function splitEssentialRefusal(tab) {
+    if (!splitEssentialsOn()) {
+      return "the Split essentials setting is off";
+    }
     const group = tab?.group;
-    const tabs = group?.hasAttribute("split-view-group") ? group.tabs.filter((t) => !t.closing) : [];
-    return splitEssentialsOn() && tabs.length === 2 && !tabs.some((t) => t.hasAttribute(SPLIT_OF) || t.pinned);
+    if (!group?.hasAttribute("split-view-group")) {
+      return "the tab isn't in a split";
+    }
+    const tabs = [...(group.tabs || group.querySelectorAll(".tabbrowser-tab"))].filter((t) => !t.closing);
+    if (tabs.length !== 2) {
+      return `the split has ${tabs.length} tabs, not two`;
+    }
+    if (tabs.some((t) => t.hasAttribute(SPLIT_OF) || t.hasAttribute("zen-essential"))) {
+      return "it's already a split essential's";
+    }
+    return "";
   }
+
+  const canBecomeSplitEssential = (tab) => !splitEssentialRefusal(tab);
 
   // Turns a two-site split into a split essential: the split itself stays
   // (hidden from the tab list) and becomes the essential's. From its tab's
   // right-click menu, or dragging it onto the essentials.
   function addSplitToEssentials(tab) {
-    if (!canBecomeSplitEssential(tab)) {
-      console.warn("[Zia] Split essentials: that isn't a two-site split (or the setting is off)");
+    const refusal = splitEssentialRefusal(tab);
+    if (refusal) {
+      console.warn(`[Zia] Split essentials: can't add that split: ${refusal}`);
       return;
     }
-    const tabs = tab.group.tabs.filter((t) => !t.closing);
+    const tabs = [...(tab.group.tabs || tab.group.querySelectorAll(".tabbrowser-tab"))].filter((t) => !t.closing);
     const [a, b] = tabs;
     const id = `zia-split-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
     const essential = gBrowser.addTab(tabUrl(a) || "about:blank", {
@@ -9224,6 +9240,10 @@
         // A two-site split over the essentials becomes a split essential
         // (24b-split-essentials.js); the essentials are outlined meanwhile.
         drag.splitEssential = !!drag.split && overEssentials && canBecomeSplitEssential(drag.tab);
+        if (drag.split && overEssentials && !drag.splitEssential && !drag.splitRefusalNoted) {
+          drag.splitRefusalNoted = true;
+          console.warn(`[Zia] Split essentials: this split can't go in the essentials: ${splitEssentialRefusal(drag.tab)}`);
+        }
         essentials?.toggleAttribute("zia-split-drop", drag.splitEssential);
         // Zen turns a split down over the essentials, and without a yes
         // there'd be no drop at all
