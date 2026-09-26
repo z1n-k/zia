@@ -1156,6 +1156,10 @@
       }
       const folder = target.localName === "zen-folder" || target.isZenFolder ? target : null;
 
+      // an open folder that the drag caught before it shut: shut now
+      if (folder && !isCollapsed(folder)) {
+        snapShut(folder);
+      }
       const split = !folder && target.group?.hasAttribute?.("split-view-group") ? target.group : null;
       const moving = folder || split || target;
       const rows = measureRows(folder ? null : target);
@@ -1255,6 +1259,27 @@
     // dragged and dropped as a closed folder. A plain click on it still just
     // closes it.
     let snapping = null;
+    // Shut at once: Zen's folding animations jump to their last frame, so
+    // the list has its closed layout straight away
+    const snapShut = (folder) => {
+      try {
+        folder.collapsed = true;
+      } catch (err) {
+        noteError("tab dragging: shut folder", err);
+        return;
+      }
+      for (const anim of folder.getAnimations?.({ subtree: true }) || []) {
+        try {
+          const end = anim.effect?.getComputedTiming?.().endTime;
+          if (end > 1) {
+            anim.currentTime = end - 1;
+          }
+        } catch (err) {
+          noteError("tab dragging: shut folder (2)", err);
+        }
+      }
+      folder.getBoundingClientRect();
+    };
     window.addEventListener("mousedown", (event) => {
       snapping = null;
       if (event.button !== 0 || !featureOn("dia-tab-drag")) {
@@ -1279,21 +1304,7 @@
         return;
       }
       snapping.shut = true;
-      const folders = window.gZenFolders;
-      const was = folders?._dontAnimateFolder;
-      try {
-        if (folders) {
-          folders._dontAnimateFolder = true;
-        }
-        snapping.folder.collapsed = true;
-      } catch (err) {
-        noteError("tab dragging: shut folder", err);
-      }
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        if (folders) {
-          folders._dontAnimateFolder = was;
-        }
-      }));
+      snapShut(snapping.folder);
     }, true);
     // shut already: the click that would have shut it isn't let reopen it
     window.addEventListener("click", (event) => {
