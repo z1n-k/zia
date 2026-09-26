@@ -10061,7 +10061,13 @@
       const drawn = tab.querySelector(".tab-background")?.getBoundingClientRect() || tile;
       const copy = tab.cloneNode(true);
       copy.removeAttribute("id");
-      for (const name of ["dragtarget", "pending-drag", "multiselected", "zen-pinned-changed"]) {
+      // (and what a drop just before left on the tile: a lock that pins
+      // position, so the copy stuck where it started and the drag was
+      // trapped)
+      for (const name of [
+        "dragtarget", "pending-drag", "multiselected", "zen-pinned-changed",
+        "zia-drop-lock", "zia-landing", "zia-hover-held", "zia-held-pinned", "zia-shift", "zia-dragging",
+      ]) {
         copy.removeAttribute(name);
       }
       copy.setAttribute("zia-essential-proxy", "true");

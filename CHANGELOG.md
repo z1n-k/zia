@@ -12,6 +12,8 @@ Every release of Zia, newest first. The format follows
   lands under the pointer, instead of it flashing in once the pointer moves.
 - Dragged straight back up into the essentials, it no longer keeps that ×
   on its tile for a moment.
+- An essential dragged down again straight after it was dropped no longer
+  gets stuck at the top of the sidebar instead of following the pointer.
 
 ## [2.59.4] — 2026-09-26
 
