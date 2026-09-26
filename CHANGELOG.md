@@ -8,9 +8,12 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
-- On Linux, selecting a tab no longer shifts the tabs over against the page
-  and cuts the essentials off at both sides: the tab list, a few pixels
-  wider than the sidebar there, was scrolled sideways to show the tab.
+- Tabs no longer reach out past the sidebar to touch the page (seen on
+  Linux after selecting a tab): Zia lines tabs up with the essentials, and
+  measured other spaces' essentials too, some of them shifted aside.
+
+- The tab list can't be scrolled sideways, which could shift the tabs over
+  against the page and cut the essentials off at both sides.
 
 - The glow of the active tab is no longer cut off when it's the last tab
   in the list: Firefox's inner scroll box ended at the last row and cut off

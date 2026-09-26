@@ -1891,10 +1891,11 @@
     let essentialsRight = null;
     let essentialsLeft = null;
     let essentialTile = null;
-    for (const bg of document.querySelectorAll(
-      "#zen-essentials .tabbrowser-tab[zen-essential] > .tab-stack > .tab-background"
-    )) {
-      const rect = visibleRect(bg);
+    // only the essentials on screen: other spaces' are kept too, some shifted
+    // aside, and measuring those pushed the tabs out past the sidebar's edge
+    const grid = window.gZenWorkspaces?.getCurrentEssentialsContainer?.() || document.getElementById("zen-essentials");
+    for (const bg of grid?.querySelectorAll(".tabbrowser-tab[zen-essential] > .tab-stack > .tab-background") || []) {
+      const rect = bg.checkVisibility?.({ visibilityProperty: true, opacityProperty: true }) === false ? null : visibleRect(bg);
       if (rect) {
         essentialTile ||= bg;
         essentialsRight = Math.max(essentialsRight ?? -Infinity, rect.right);
