@@ -738,6 +738,40 @@
   sliver.addEventListener("pointerup", endDrag);
   sliver.addEventListener("pointercancel", endDrag);
 
+  // A playlist moving on to its next video (or a video changing shape) has
+  // Firefox fit the window to it again. Tucked, the window's middle is off
+  // the screen, so Firefox took it for lost and put it back on screen at
+  // its default size, and that move counted as dragging it out. Tucked, it
+  // keeps its height, takes the new video's shape and stays tucked.
+  const fitToVideo = window.resizeToVideo;
+  if (typeof fitToVideo === "function") {
+    window.resizeToVideo = function (rect) {
+      if (state !== "tucked" || !spot || document.fullscreenElement || !(rect?.width > 0 && rect?.height > 0)) {
+        return fitToVideo.apply(this, arguments);
+      }
+      const height = H();
+      const width = Math.max(136, Math.round((height * rect.width) / rect.height));
+      glideId++;
+      animating = false;
+      settleUntil = Date.now() + 800;
+      window.resizeTo(width, height);
+      const retuck = () => {
+        if (state !== "tucked" || !spot) {
+          return;
+        }
+        const [x, y] = tuckedPos(spot, root.hasAttribute("zia-nudged") ? NUDGE : 0);
+        window.moveTo(x, y);
+        lastX = x;
+        lastY = y;
+      };
+      // (again once the new size has taken: a right or bottom tuck goes by it)
+      retuck();
+      requestAnimationFrame(retuck);
+      setTimeout(retuck, 120);
+      return undefined;
+    };
+  }
+
   setInterval(() => {
     const enabled = pref("zia.pip.tuck", true);
     if (!enabled || document.fullscreenElement) {

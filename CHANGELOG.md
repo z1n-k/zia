@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.61.1] — 2026-09-26
+
+### Fixed
+
+- A tucked picture-in-picture stays tucked when its video changes (the next
+  track in a playlist), keeping its size and taking the new video's shape,
+  instead of popping back out at Firefox's default size.
+- A tab dragged below New Tab no longer shows twice (the tab stopped at the
+  end of the list, its drag picture going on with the pointer): it follows
+  the pointer the whole way.
+
 ## [2.61.0] — 2026-09-26
 
 ### Added
