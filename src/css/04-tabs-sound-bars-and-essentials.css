@@ -62,8 +62,8 @@
     --zia-glow-mix-3: color-mix(in srgb, color-mix(in srgb, var(--zia-glow-3, var(--zia-glow-1)) var(--zia-glow-hint), white) var(--zia-glow-strength), transparent);
 
     box-shadow:
-      calc(-1 * var(--zia-glow-side, 6px)) 0 var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-glow-mix-1),
-      var(--zia-glow-side, 6px) 0 var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-glow-mix-2),
+      -6px 0 var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-glow-mix-1),
+      6px 0 var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-glow-mix-2),
       0 calc(-1 * var(--zia-active-glow-reach)) var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-glow-mix-3),
       0 var(--zia-active-glow-reach) var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-glow-mix-1) !important;
   }

@@ -83,7 +83,10 @@
         return state.position;
       }
     } catch (err) {
-      noteError("multiview: multiviewPosition", err);
+      // (no media playing: Firefox says so by throwing, nothing's wrong)
+      if (err?.result !== Cr.NS_ERROR_NOT_AVAILABLE) {
+        noteError("multiview: multiviewPosition", err);
+      }
     }
     return 0;
   }

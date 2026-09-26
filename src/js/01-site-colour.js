@@ -581,7 +581,6 @@
         // it's safe there; this one's browser side does nothing.
         safeForUntrustedWebProcess: true,
       });
-      console.info("[Zia] PDF view: helper registered");
     } catch (err) {
       if (err?.name !== "NotSupportedError") {
         console.error("[Zia] Could not register the PDF view:", err);

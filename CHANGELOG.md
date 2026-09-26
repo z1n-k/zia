@@ -4,6 +4,30 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.59.1] — 2026-09-26
+
+### Fixed
+
+- Tabs no longer reach out past the sidebar to touch the page (seen on
+  Linux after selecting a tab): Zia lines tabs up with the essentials, and
+  measured other spaces' essentials too, some of them shifted aside.
+
+- The tab list can't be scrolled sideways, which could shift the tabs over
+  against the page and cut the essentials off at both sides.
+
+- The glow of the active tab is no longer cut off when it's the last tab
+  in the list: Firefox's inner scroll box ended at the last row and cut off
+  whatever went past it.
+
+- Zen's "Clear" button beside the separator fades out as soon as you
+  leave the sidebar, as quickly as it fades in, instead of lingering.
+
+### Changed
+
+- Zia no longer writes notes to the Browser Console as it works (only
+  real problems, at the debug level), and some unused code and styles are
+  gone.
+
 ## [2.59.0] — 2026-09-26
 
 ### Added

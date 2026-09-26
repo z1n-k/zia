@@ -293,7 +293,6 @@
     if (!names.length) {
       return null;
     }
-    console.info(`[Zia] Embedding ${names.length} icon names, once.`);
     const all = [];
     let dims = 0;
     for (let i = 0; i < icons.length; i += 64) {
@@ -386,7 +385,6 @@
       return null;
     }
     const { name, score } = nearestIcon(embedded[0], vectors);
-    console.info(`[Zia] Closest icon to "${text.slice(0, 60)}": ${name} (${score.toFixed(3)})`);
 
     return score >= 0.28 ? iconURL(name) : null;
   }
@@ -408,7 +406,6 @@
     ]) {
       try {
         nameEngine = await createEngine(options);
-        console.info(`[Zia] Naming engine: ${options.featureId || options.taskName}`);
         return nameEngine;
       } catch (err) {
         console.warn("[Zia] Naming engine not available:", options, err.message);
@@ -462,7 +459,6 @@
     const prompt = `Give a short two word label for this group of browser tabs:\n${titles}\nLabel:`;
     const result = await engine.run({ args: [prompt], options: { max_new_tokens: 8 } });
     const name = tidyName(readGeneratedText(result), tabs);
-    console.info(`[Zia] Suggested name: ${name || "(nothing usable)"}`);
     return name;
   }
 
@@ -515,7 +511,6 @@
     label?.removeAttribute?.("editing");
     folder.removeAttribute("editing");
     folder.ownerDocument.activeElement?.blur?.();
-    console.info(`[Zia] Renamed the folder to "${name}"${editor ? " (field was open)" : ""}.`);
   }
 
   function showFolderSkeleton(folder) {

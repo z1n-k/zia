@@ -47,7 +47,6 @@
       } catch (err) {
         noteError("new tabs: applyNewTabPage", err);
       }
-      console.info(`[Zia] New tabs open: ${searchHomeUrl}`);
     } catch (err) {
       console.error("[Zia] Could not set the new tab page:", err);
     }
