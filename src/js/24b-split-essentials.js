@@ -393,9 +393,33 @@
       noteError("split essentials: back to the list", err);
     }
     const wasSelected = essential.selected;
-    gBrowser.removeTab(essential, { animate: false });
     if (wasSelected && a && !a.closing) {
       gBrowser.selectedTab = a;
+    }
+    // Not removed mid-drop: Firefox's own drop still moves the dragged tab
+    // afterwards, which would put a removed one back as a dead, unclosable
+    // row. Hidden now, gone once the drop's done.
+    essential.setAttribute("zia-split-gone", "true");
+    goneEssentials.add(essential);
+    setTimeout(() => {
+      if (essential.isConnected && !essential.closing) {
+        gBrowser.removeTab(essential, { animate: false });
+      }
+      setTimeout(clearDeadRows, 0);
+    }, 0);
+  }
+
+  // A removed essential put back as a row (see above) can't be closed: it goes
+  const goneEssentials = new Set();
+  function clearDeadRows() {
+    for (const row of goneEssentials) {
+      // removed without animation, so one still showing after that is dead
+      if (row.closing || !row.isConnected || !gBrowser.tabs.includes(row)) {
+        goneEssentials.delete(row);
+        if (row.isConnected) {
+          row.remove();
+        }
+      }
     }
   }
 
@@ -471,6 +495,7 @@
     // A drag places the essential first, so this waits a moment for that;
     // and after any drag, or on switching tabs, anything missed is tidied.
     const sweepReleased = () => {
+      clearDeadRows();
       for (const tab of gBrowser.tabs) {
         if (tab.ziaSplit?.id && !tab.closing && !tab.hasAttribute("zen-essential")) {
           splitBackToList(tab);

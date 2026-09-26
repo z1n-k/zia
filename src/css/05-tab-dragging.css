@@ -233,3 +233,8 @@ zen-essentials-promo {
 .tabbrowser-tab:not([zen-essential], [visuallyselected])[zia-hover-held] > .tab-stack > .tab-background {
   background: var(--zia-tab-hover-bg) !important;
 }
+
+/* a split essential dragged back to the list, until it's removed */
+.tabbrowser-tab[zia-split-gone] {
+  display: none !important;
+}

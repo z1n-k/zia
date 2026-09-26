@@ -25,6 +25,12 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- A dragged essential no longer stretches into a band across the whole
+  window as it's let go.
+
+- Dragging a split essential back to the tab list no longer sometimes
+  leaves a stray tab behind that can't be closed.
+
 - A dragged essential glides into its new place when you let go, instead
   of jumping there.
 

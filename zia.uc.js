@@ -7073,9 +7073,33 @@
       noteError("split essentials: back to the list", err);
     }
     const wasSelected = essential.selected;
-    gBrowser.removeTab(essential, { animate: false });
     if (wasSelected && a && !a.closing) {
       gBrowser.selectedTab = a;
+    }
+    // Not removed mid-drop: Firefox's own drop still moves the dragged tab
+    // afterwards, which would put a removed one back as a dead, unclosable
+    // row. Hidden now, gone once the drop's done.
+    essential.setAttribute("zia-split-gone", "true");
+    goneEssentials.add(essential);
+    setTimeout(() => {
+      if (essential.isConnected && !essential.closing) {
+        gBrowser.removeTab(essential, { animate: false });
+      }
+      setTimeout(clearDeadRows, 0);
+    }, 0);
+  }
+
+  // A removed essential put back as a row (see above) can't be closed: it goes
+  const goneEssentials = new Set();
+  function clearDeadRows() {
+    for (const row of goneEssentials) {
+      // removed without animation, so one still showing after that is dead
+      if (row.closing || !row.isConnected || !gBrowser.tabs.includes(row)) {
+        goneEssentials.delete(row);
+        if (row.isConnected) {
+          row.remove();
+        }
+      }
     }
   }
 
@@ -7151,6 +7175,7 @@
     // A drag places the essential first, so this waits a moment for that;
     // and after any drag, or on switching tabs, anything missed is tidied.
     const sweepReleased = () => {
+      clearDeadRows();
       for (const tab of gBrowser.tabs) {
         if (tab.ziaSplit?.id && !tab.closing && !tab.hasAttribute("zen-essential")) {
           splitBackToList(tab);
@@ -8911,18 +8936,8 @@
       return { width, height: Math.round(width * 0.75) };
     };
 
-    const sizeProxy = (node, width, height) => {
-      for (const [name, value] of [
-        ["width", width],
-        ["height", height],
-        ["min-width", width],
-        ["max-width", width],
-        ["min-height", height],
-        ["max-height", height],
-      ]) {
-        node.style.setProperty(name, `${Math.round(value)}px`, "important");
-      }
-    };
+    // sized like the essential copy, and kept that way when Zen clears widths
+    const sizeProxy = (node, width, height) => sizeCopy(node, width, height);
 
     const moveProxy = (x, y) => {
       const off = proxy.ziaOffset || { x: 0, y: 0 };
@@ -9565,6 +9580,7 @@
     const ESSENTIAL_MS = 140;
 
     const sizeCopy = (node, width, height) => {
+      node.ziaSize = { width, height };
       for (const [name, value] of [
         ["width", width],
         ["height", height],
@@ -9574,6 +9590,18 @@
         ["max-height", height],
       ]) {
         node.style.setProperty(name, `${Math.round(value)}px`, "important");
+      }
+      // Zen clears the width of every essential when a drop lands, and a
+      // fixed copy with no width stretches across the whole window
+      if (!node.ziaSizeGuard) {
+        node.ziaSizeGuard = new MutationObserver(() => {
+          const { width: w, height: h } = node.ziaSize;
+          const px = `${Math.round(w)}px`;
+          if (node.style.getPropertyValue("width") !== px || node.style.getPropertyValue("max-width") !== px) {
+            sizeCopy(node, w, h);
+          }
+        });
+        node.ziaSizeGuard.observe(node, { attributes: true, attributeFilter: ["style"] });
       }
     };
 

@@ -807,18 +807,8 @@
       return { width, height: Math.round(width * 0.75) };
     };
 
-    const sizeProxy = (node, width, height) => {
-      for (const [name, value] of [
-        ["width", width],
-        ["height", height],
-        ["min-width", width],
-        ["max-width", width],
-        ["min-height", height],
-        ["max-height", height],
-      ]) {
-        node.style.setProperty(name, `${Math.round(value)}px`, "important");
-      }
-    };
+    // sized like the essential copy, and kept that way when Zen clears widths
+    const sizeProxy = (node, width, height) => sizeCopy(node, width, height);
 
     const moveProxy = (x, y) => {
       const off = proxy.ziaOffset || { x: 0, y: 0 };
@@ -1461,6 +1451,7 @@
     const ESSENTIAL_MS = 140;
 
     const sizeCopy = (node, width, height) => {
+      node.ziaSize = { width, height };
       for (const [name, value] of [
         ["width", width],
         ["height", height],
@@ -1470,6 +1461,18 @@
         ["max-height", height],
       ]) {
         node.style.setProperty(name, `${Math.round(value)}px`, "important");
+      }
+      // Zen clears the width of every essential when a drop lands, and a
+      // fixed copy with no width stretches across the whole window
+      if (!node.ziaSizeGuard) {
+        node.ziaSizeGuard = new MutationObserver(() => {
+          const { width: w, height: h } = node.ziaSize;
+          const px = `${Math.round(w)}px`;
+          if (node.style.getPropertyValue("width") !== px || node.style.getPropertyValue("max-width") !== px) {
+            sizeCopy(node, w, h);
+          }
+        });
+        node.ziaSizeGuard.observe(node, { attributes: true, attributeFilter: ["style"] });
       }
     };
 
