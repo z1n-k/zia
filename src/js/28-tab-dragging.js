@@ -288,8 +288,8 @@
       if (folder && drag.moving.contains?.(folder)) {
         folder = null;
       }
-      // a folder is only ever moved among the rows, never into a folder
-      if (drag.folder) {
+      // a folder goes into another only where Zen allows that deep
+      if (drag.folder && folder && !canNest(drag.folder, folder)) {
         folder = null;
         atEnd = false;
       }
@@ -776,6 +776,15 @@
     // slid about is often a closed folder it then nests it in. Straight
     // after, the folder is put where Zia showed it: among the rows, before
     // the one it was shown above, and never inside another folder.
+    // Zen's own limit on how deep folders go
+    const canNest = (folder, into) => {
+      try {
+        const inside = into.querySelector(":scope > .tab-group-container > .tabbrowser-tab") || into.labelElement || into;
+        return window.gZenFolders?.canDropElement?.(folder, inside) ?? true;
+      } catch (err) {
+        return true;
+      }
+    };
     const outermostRow = (node) => {
       let row = topLevel({ node });
       for (let up = row.parentElement?.closest?.("zen-folder"); up; up = up.parentElement?.closest?.("zen-folder")) {
@@ -788,14 +797,45 @@
         return;
       }
       const nestedIn = folder.parentElement?.closest?.("zen-folder") || null;
-      const next = target.next && target.sameNext && !target.below ? outermostRow(target.next.node) : null;
-      if (next && next !== folder && !folder.contains(next)) {
-        placeBefore(folder, next);
-      } else if (currentSeparator()) {
-        placeBefore(folder, currentSeparator());
-      }
-      if (folder.parentElement?.closest?.("zen-folder")) {
-        console.warn("[Zia] The dropped folder is still inside another folder");
+      const into = target.folder?.isConnected && target.folder !== folder && !folder.contains(target.folder) ? target.folder : null;
+      if (into) {
+        // Dropped where Zia showed it inside a folder: there, before the row
+        // it was shown above (at the end, if none or the folder is closed)
+        const box = into.querySelector(":scope > .tab-group-container");
+        let next = !target.atEnd && !isCollapsed(into) && target.next && into.contains(target.next.node) ? target.next.node : null;
+        while (next && next.parentElement !== box) {
+          next = next.parentElement;
+        }
+        if (next && next !== folder) {
+          placeBefore(folder, next);
+        } else if (box) {
+          const last = [...box.children].reverse().find((item) => item !== folder && (gBrowser.isTab(item) || isFolderEl(item)));
+          if (last) {
+            placeAfter(folder, last);
+          }
+          if (folder.parentElement !== box) {
+            box.appendChild(folder);
+          }
+        }
+        // a closed one keeps showing only its open tab
+        if (isCollapsed(into)) {
+          try {
+            window.gZenFolders?.on_TabGroupCollapse?.({ target: into });
+          } catch (err) {
+            noteError("tab dragging: folder into a closed folder", err);
+          }
+          jumpToEnd(into);
+        }
+      } else {
+        const next = target.next && target.sameNext && !target.below ? outermostRow(target.next.node) : null;
+        if (next && next !== folder && !folder.contains(next)) {
+          placeBefore(folder, next);
+        } else if (currentSeparator()) {
+          placeBefore(folder, currentSeparator());
+        }
+        if (folder.parentElement?.closest?.("zen-folder")) {
+          console.warn("[Zia] The dropped folder is still inside another folder");
+        }
       }
       // a closed folder it was taken back out of fits its new contents
       if (nestedIn && nestedIn !== folder.parentElement?.closest?.("zen-folder") && isCollapsed(nestedIn)) {

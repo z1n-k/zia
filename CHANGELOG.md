@@ -10,6 +10,9 @@ Every release of Zia, newest first. The format follows
 
 - The music player's picture has rounded corners on Windows too, as on
   macOS, instead of showing square.
+- Folders can be dragged into folders again, landing where the drag shows
+  them (as deep as Zen allows); dragged anywhere else, a folder still never
+  ends up inside one by accident.
 
 ## [2.61.1] — 2026-09-26
 
