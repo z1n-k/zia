@@ -10585,6 +10585,19 @@
     window.addEventListener("dragover", onOver, true);
     document.getElementById("tabbrowser-tabs")?.addEventListener("dragover", onOver, true);
     window.addEventListener("dragover", fixDrop);
+    // Firefox moves the dragged tab too, after Zia, and stops it at the last
+    // tab: under the list (past New Tab) its move won, so the tab stopped
+    // there while Zen's drag picture of it went on with the pointer, two of
+    // it showing. Zia's move is put back once Firefox has had its go.
+    window.addEventListener("dragover", () => {
+      const moving = drag?.moving;
+      if (!moving?.isConnected || drag.away || drag.essentials || drag.splitEssential) {
+        return;
+      }
+      if (moving.style.getPropertyPriority("transform") !== "important") {
+        place(moving, lastDy, true);
+      }
+    });
 
     window.addEventListener(
       "drop",
