@@ -544,7 +544,6 @@
       button.setAttribute("zia-initial", (host[0] || "♪").toUpperCase());
       button.style.removeProperty("--zia-media-favicon");
       button.style.setProperty("--zia-favicon-tint", "rgb(52, 52, 56)");
-      console.info("[Zia] Player: no site icon found for", host || card.browser?.currentURI?.spec, "- showing a letter tile.");
       return;
     }
     button.removeAttribute("zia-initial");

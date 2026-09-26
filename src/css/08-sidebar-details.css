@@ -51,11 +51,35 @@
   }
 }
 
-/* Zen's "Clear" beside the separator shows its down arrow along with its
-   label, whenever the sidebar shows the button */
-#zen-workspace-close-unpinned-tabs-button > .toolbarbutton-icon {
-  display: flex !important;
-  visibility: inherit !important;
+/* Zen's "Clear" beside the separator keeps its down arrow. Zen's own is
+   thrown away whenever the label is translated again (after a new tab, say),
+   so it's drawn on the button itself, which comes and goes with the label. */
+#zen-workspace-close-unpinned-tabs-button {
+  /* fades in and out with the pointer on the sidebar, the same speed both
+     ways (Zen keeps its hover a moment after the pointer has gone) */
+  transition: opacity 0.15s ease, visibility 0.15s !important;
+
+  #navigator-toolbox:not(:hover) & {
+    opacity: 0 !important;
+  }
+
+  & > .toolbarbutton-icon {
+    display: none !important;
+  }
+
+  &::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    background: url("chrome://browser/skin/zen-icons/dart-down.svg") center / contain no-repeat;
+    -moz-context-properties: fill, fill-opacity;
+    fill: currentColor;
+    transition: translate 0.15s ease-in-out;
+  }
+
+  &:active:hover::before {
+    translate: 0 2px;
+  }
 }
 
 .pinned-tabs-container-separator toolbarseparator {

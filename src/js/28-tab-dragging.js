@@ -151,12 +151,6 @@
       moved.clear();
     };
 
-    const layoutBox = (node) => {
-      const box = window.windowUtils.getBoundsWithoutFlushing(node);
-      const applied = parseFloat(node.style.top) || 0;
-      return { top: box.top - applied, height: box.height };
-    };
-
     const place = (node, y, above) => {
       if (!node) {
         return;

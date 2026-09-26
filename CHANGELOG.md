@@ -13,7 +13,15 @@ Every release of Zia, newest first. The format follows
   whatever went past it.
 
 - Zen's "Clear" button beside the separator shows its down arrow again,
-  with its label, when you hover the sidebar.
+  with its label, when you hover the sidebar (it no longer goes after a new
+  tab opens), and fades out as soon as you leave the sidebar, as quickly as
+  it fades in.
+
+### Changed
+
+- Zia no longer writes notes to the Browser Console as it works (only
+  real problems, at the debug level), and some unused code and styles are
+  gone.
 
 ## [2.59.0] — 2026-09-26
 

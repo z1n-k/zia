@@ -7,8 +7,6 @@
   const ZONE_EDGE = 44;
   const ZONE_ACTIVE_W = 350;
   const ZONE_ACTIVE_H = 580;
-  const ZONE_PAGE_W = 272;
-  const ZONE_PAGE_H = 452;
 
   const splitDrop = {
     overlay: null,

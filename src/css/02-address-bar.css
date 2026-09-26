@@ -250,10 +250,6 @@
   50% { filter: brightness(1.25); }
 }
 
-:root[zia-loader-reset="true"] #urlbar::after {
-  transition: none !important;
-}
-
 #urlbar .urlbar-input-box {
   position: relative;
 }

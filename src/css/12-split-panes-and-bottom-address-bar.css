@@ -90,10 +90,6 @@
     --zia-pane-hover: rgba(0, 0, 0, 0.07);
     border-bottom-color: rgba(0, 0, 0, 0.12);
   }
-
-  &:not([first]) .zia-pane-sidebar {
-    display: none;
-  }
 }
 
 .zia-pane-extensions {
@@ -179,10 +175,6 @@
   &[disabled] img {
     fill-opacity: 0.35;
   }
-}
-
-.zia-pane-sidebar {
-  margin-inline-end: 4px;
 }
 
 .zia-pane-address {

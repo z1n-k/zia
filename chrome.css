@@ -457,10 +457,6 @@
   50% { filter: brightness(1.25); }
 }
 
-:root[zia-loader-reset="true"] #urlbar::after {
-  transition: none !important;
-}
-
 #urlbar .urlbar-input-box {
   position: relative;
 }
@@ -858,8 +854,8 @@
     --zia-glow-mix-3: color-mix(in srgb, color-mix(in srgb, var(--zia-glow-3, var(--zia-glow-1)) var(--zia-glow-hint), white) var(--zia-glow-strength), transparent);
 
     box-shadow:
-      calc(-1 * var(--zia-glow-side, 6px)) 0 var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-glow-mix-1),
-      var(--zia-glow-side, 6px) 0 var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-glow-mix-2),
+      -6px 0 var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-glow-mix-1),
+      6px 0 var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-glow-mix-2),
       0 calc(-1 * var(--zia-active-glow-reach)) var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-glow-mix-3),
       0 var(--zia-active-glow-reach) var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-glow-mix-1) !important;
   }
@@ -2491,11 +2487,35 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
   }
 }
 
-/* Zen's "Clear" beside the separator shows its down arrow along with its
-   label, whenever the sidebar shows the button */
-#zen-workspace-close-unpinned-tabs-button > .toolbarbutton-icon {
-  display: flex !important;
-  visibility: inherit !important;
+/* Zen's "Clear" beside the separator keeps its down arrow. Zen's own is
+   thrown away whenever the label is translated again (after a new tab, say),
+   so it's drawn on the button itself, which comes and goes with the label. */
+#zen-workspace-close-unpinned-tabs-button {
+  /* fades in and out with the pointer on the sidebar, the same speed both
+     ways (Zen keeps its hover a moment after the pointer has gone) */
+  transition: opacity 0.15s ease, visibility 0.15s !important;
+
+  #navigator-toolbox:not(:hover) & {
+    opacity: 0 !important;
+  }
+
+  & > .toolbarbutton-icon {
+    display: none !important;
+  }
+
+  &::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    background: url("chrome://browser/skin/zen-icons/dart-down.svg") center / contain no-repeat;
+    -moz-context-properties: fill, fill-opacity;
+    fill: currentColor;
+    transition: translate 0.15s ease-in-out;
+  }
+
+  &:active:hover::before {
+    translate: 0 2px;
+  }
 }
 
 .pinned-tabs-container-separator toolbarseparator {
@@ -3618,10 +3638,6 @@ findbar {
     --zia-pane-hover: rgba(0, 0, 0, 0.07);
     border-bottom-color: rgba(0, 0, 0, 0.12);
   }
-
-  &:not([first]) .zia-pane-sidebar {
-    display: none;
-  }
 }
 
 .zia-pane-extensions {
@@ -3707,10 +3723,6 @@ findbar {
   &[disabled] img {
     fill-opacity: 0.35;
   }
-}
-
-.zia-pane-sidebar {
-  margin-inline-end: 4px;
 }
 
 .zia-pane-address {

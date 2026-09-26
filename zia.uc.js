@@ -619,7 +619,6 @@
         // it's safe there; this one's browser side does nothing.
         safeForUntrustedWebProcess: true,
       });
-      console.info("[Zia] PDF view: helper registered");
     } catch (err) {
       if (err?.name !== "NotSupportedError") {
         console.error("[Zia] Could not register the PDF view:", err);
@@ -1443,7 +1442,6 @@
       } catch (err) {
         noteError("new tabs: applyNewTabPage", err);
       }
-      console.info(`[Zia] New tabs open: ${searchHomeUrl}`);
     } catch (err) {
       console.error("[Zia] Could not set the new tab page:", err);
     }
@@ -2593,7 +2591,6 @@
       button.setAttribute("zia-initial", (host[0] || "♪").toUpperCase());
       button.style.removeProperty("--zia-media-favicon");
       button.style.setProperty("--zia-favicon-tint", "rgb(52, 52, 56)");
-      console.info("[Zia] Player: no site icon found for", host || card.browser?.currentURI?.spec, "- showing a letter tile.");
       return;
     }
     button.removeAttribute("zia-initial");
@@ -2832,8 +2829,6 @@
   const ZONE_EDGE = 44;
   const ZONE_ACTIVE_W = 350;
   const ZONE_ACTIVE_H = 580;
-  const ZONE_PAGE_W = 272;
-  const ZONE_PAGE_H = 452;
 
   const splitDrop = {
     overlay: null,
@@ -4575,7 +4570,10 @@
         return state.position;
       }
     } catch (err) {
-      noteError("multiview: multiviewPosition", err);
+      // (no media playing: Firefox says so by throwing, nothing's wrong)
+      if (err?.result !== Cr.NS_ERROR_NOT_AVAILABLE) {
+        noteError("multiview: multiviewPosition", err);
+      }
     }
     return 0;
   }
@@ -5945,7 +5943,6 @@
     if (!names.length) {
       return null;
     }
-    console.info(`[Zia] Embedding ${names.length} icon names, once.`);
     const all = [];
     let dims = 0;
     for (let i = 0; i < icons.length; i += 64) {
@@ -6038,7 +6035,6 @@
       return null;
     }
     const { name, score } = nearestIcon(embedded[0], vectors);
-    console.info(`[Zia] Closest icon to "${text.slice(0, 60)}": ${name} (${score.toFixed(3)})`);
 
     return score >= 0.28 ? iconURL(name) : null;
   }
@@ -6060,7 +6056,6 @@
     ]) {
       try {
         nameEngine = await createEngine(options);
-        console.info(`[Zia] Naming engine: ${options.featureId || options.taskName}`);
         return nameEngine;
       } catch (err) {
         console.warn("[Zia] Naming engine not available:", options, err.message);
@@ -6114,7 +6109,6 @@
     const prompt = `Give a short two word label for this group of browser tabs:\n${titles}\nLabel:`;
     const result = await engine.run({ args: [prompt], options: { max_new_tokens: 8 } });
     const name = tidyName(readGeneratedText(result), tabs);
-    console.info(`[Zia] Suggested name: ${name || "(nothing usable)"}`);
     return name;
   }
 
@@ -6167,7 +6161,6 @@
     label?.removeAttribute?.("editing");
     folder.removeAttribute("editing");
     folder.ownerDocument.activeElement?.blur?.();
-    console.info(`[Zia] Renamed the folder to "${name}"${editor ? " (field was open)" : ""}.`);
   }
 
   function showFolderSkeleton(folder) {
@@ -8408,12 +8401,6 @@
         clearNode(node);
       }
       moved.clear();
-    };
-
-    const layoutBox = (node) => {
-      const box = window.windowUtils.getBoundsWithoutFlushing(node);
-      const applied = parseFloat(node.style.top) || 0;
-      return { top: box.top - applied, height: box.height };
     };
 
     const place = (node, y, above) => {
