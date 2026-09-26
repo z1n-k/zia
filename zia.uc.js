@@ -9337,6 +9337,22 @@
       return box.width > 0 && point.x >= box.left && point.x <= box.right && point.y >= box.top && point.y <= box.bottom;
     };
 
+    // Over the essentials' tiles themselves (or just below the last row):
+    // the essentials' own box stops a little short of the last row's
+    // bottom, so a drag along it kept flipping into a list row.
+    const overAnyTile = (point) => {
+      const grid = window.gZenWorkspaces?.getCurrentEssentialsContainer?.() || document.querySelector(".zen-essentials-container");
+      if (!grid) {
+        return false;
+      }
+      const box = grid.getBoundingClientRect();
+      let bottom = box.bottom;
+      for (const tile of grid.querySelectorAll(".tabbrowser-tab[zen-essential]:not([zia-essential-proxy])")) {
+        bottom = Math.max(bottom, tile.getBoundingClientRect().bottom);
+      }
+      return box.width > 0 && point.x >= box.left && point.x <= box.right && point.y >= box.top && point.y <= bottom + 6;
+    };
+
     let debugLast = "";
     const debugDrag = (event, point, sidebar, essentials) => {
       if (!Services.prefs.getBoolPref("zia.debug.drag", false)) {
@@ -9833,7 +9849,7 @@
       }
       tapOnNewTile(point, state.tab);
       const essentials = document.getElementById("zen-essentials");
-      const overTiles = !!event.target?.closest?.("#zen-essentials") || inBox(essentials, point);
+      const overTiles = !!event.target?.closest?.("#zen-essentials") || inBox(essentials, point) || overAnyTile(point);
       const asTab = !overTiles && inBox(document.getElementById("navigator-toolbox"), point);
       const copy = state.copy;
       if (asTab !== state.asTab) {
@@ -9913,7 +9929,8 @@
       if (event?.type === "drop") {
         const point = pointerOf(event);
         const essentials = document.getElementById("zen-essentials");
-        if (inBox(essentials, point) || event.target?.closest?.("#zen-essentials")) {
+        if (inBox(essentials, point) || event.target?.closest?.("#zen-essentials") || overAnyTile(point)) {
+          state.asTab = false;
           dropPastLast(state.tab, point);
         } else if (state.asTab && listRoom.rows) {
           dropIntoListRoom(state.tab, point.y);
@@ -10200,7 +10217,8 @@
             return;
           }
           if (!node.isConnected || node.hasAttribute("zen-essential") || (Math.abs(dy) < 2 && Math.abs(dx) < 2) || !to.height) {
-            node.removeAttribute("zia-landing");
+            // kept a moment, past Firefox's own drop animation (see chrome.css)
+            setTimeout(() => node.removeAttribute("zia-landing"), gBrowser.isTab(node) ? 0 : 400);
             return;
           }
           const glide = node.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "translate(0, 0)" }], {
@@ -10208,7 +10226,7 @@
             easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
           });
           glide.id = "zia-land";
-          const end = () => node.removeAttribute("zia-landing");
+          const end = () => setTimeout(() => node.removeAttribute("zia-landing"), gBrowser.isTab(node) ? 0 : 250);
           glide.finished.then(end, end);
         };
         requestAnimationFrame(glideIn);
@@ -10228,7 +10246,10 @@
             node.style.transform = "";
           }
 
-          if (node.style.visibility === "hidden" && (locked.has(node) || node === droppedTab)) {
+          // Firefox hides what's dragged until its own drop animation ends;
+          // for a folder that's a part inside it, so the whole folder
+          // vanished for a moment after landing
+          if (node.style.visibility === "hidden" && (locked.has(node) || node === droppedTab || droppedTab?.contains?.(node))) {
             node.style.visibility = "";
           }
         });

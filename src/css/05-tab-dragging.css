@@ -28,6 +28,13 @@
   visibility: visible !important;
 }
 
+/* ...and while it lands (a folder's parts included), whatever Firefox has
+   hidden for its own drop animation */
+#tabbrowser-tabs :is(zen-folder, tab-group)[zia-landing],
+#tabbrowser-tabs :is(zen-folder, tab-group)[zia-landing] > :is(.tab-group-label-container, .tab-group-container) {
+  visibility: visible !important;
+}
+
 :root[zia-dragging-tab] :is(zen-folder, tab-group:not([split-view-group])):has(.tabbrowser-tab[zia-dragging]) {
   z-index: 41 !important;
 
