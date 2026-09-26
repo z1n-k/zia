@@ -30,6 +30,12 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- With a split essential kept, tabs can be dragged into closed folders
+  again (the split's hidden tabs got in the way).
+
+- A split's two sites sit in the same boxes while it's dragged onto the
+  essentials as once it lands, instead of snapping into place.
+
 - An open folder shuts the moment you start dragging it, and is dragged
   and dropped as a closed folder, instead of jumbling the rows below it.
 

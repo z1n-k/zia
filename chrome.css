@@ -1091,6 +1091,11 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   }
 }
 
+/* a stand-in, only the background's size (zia.uc.js) */
+.tabbrowser-tab[zen-essential][zia-split-tile][zia-essential-proxy] > .tab-stack > .tab-content {
+  padding-block: var(--zia-split-pad-y, 8px) !important;
+}
+
 .tabbrowser-tab[zen-essential][zia-split-tile][zia-split-focus="a"] > .tab-stack > .tab-content > .zia-split-half[side="a"],
 .tabbrowser-tab[zen-essential][zia-split-tile][zia-split-focus="b"] > .tab-stack > .tab-content > .zia-split-half[side="b"] {
   background-color: rgba(255, 255, 255, 0.1);

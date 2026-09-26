@@ -8342,6 +8342,12 @@
         if (item.hasAttribute?.("zen-essential")) {
           continue;
         }
+        // a split essential's own tabs are kept hidden in the list: not rows
+        // (as rows of no height they came between a folder and the next row,
+        // and no tab could be dropped into the folder)
+        if (item.hasAttribute?.("zia-split-of") || item.group?.querySelector?.(":scope .tabbrowser-tab[zia-split-of]")) {
+          continue;
+        }
         let node = nodeToMove(item);
         const host = node?.closest?.("zen-folder, tab-group:not([split-view-group])");
         if (
@@ -9129,7 +9135,7 @@
       const realBox = usable(real);
       if (realBox) {
         const bg = usable(real.querySelector(".tab-background")) || realBox;
-        return { width: realBox.width, height: bg.height };
+        return { width: realBox.width, height: bg.height, boxHeight: realBox.height };
       }
       const box = usable(gBrowser.tabContainer.tabDragAndDrop?._fakeEssentialTab);
       if (box) {
@@ -9139,6 +9145,16 @@
       const grid = window.gZenWorkspaces?.getCurrentEssentialsContainer?.() || document.getElementById("zen-essentials");
       const width = grid?.clientWidth ? (grid.clientWidth - 3 * 8) / 4 : 56;
       return { width, height: Math.round(width * 0.75) };
+    };
+
+    // A split tile's halves sit 8px in from the essential's box, which is
+    // taller than its background; a stand-in is only the background's size,
+    // so its halves go in by less, to come out the same size and place
+    const fitSplitHalves = (node, boxHeight, bgHeight) => {
+      if (!boxHeight || !bgHeight) {
+        return;
+      }
+      node.style.setProperty("--zia-split-pad-y", `${Math.max(0, 8 - (boxHeight - bgHeight) / 2)}px`);
     };
 
     // sized like the essential copy, and kept that way when Zen clears widths
@@ -9189,6 +9205,7 @@
           dressSplitProxy(proxy, drag.tab);
           const tile = tileSize();
           sizeProxy(proxy, tile.bgWidth || tile.width, tile.bgHeight || tile.height);
+          fitSplitHalves(proxy, tile.boxHeight, tile.height);
         }
         try {
           window.gZenPinnedTabManager?.setEssentialTabIcon?.(proxy);
@@ -10020,6 +10037,7 @@
         copy.style.setProperty(name, value, "important");
       }
       sizeCopy(copy, tile.width, drawn.height);
+      fitSplitHalves(copy, tile.height, drawn.height);
       const point = pointerOf(event);
       copy.style.setProperty("left", `${Math.round(tile.left + tile.width / 2)}px`, "important");
       copy.style.setProperty("top", `${Math.round(drawn.top + drawn.height / 2)}px`, "important");
