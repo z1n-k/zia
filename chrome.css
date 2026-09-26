@@ -1612,6 +1612,14 @@ zen-essentials-promo {
   opacity: 0 !important;
 }
 
+/* a split's tabs are kept showing while they're dragged (05-tab-dragging),
+   which outranked the fade above as the split turns into a tile */
+:root #tabbrowser-tabs [split-view-group][zia-to-essential],
+:root #tabbrowser-tabs[movingtab] [split-view-group][zia-to-essential] :is(.tabbrowser-tab, .tab-group-label-container, tab-group),
+:root #tabbrowser-tabs[movingtab] [split-view-group][zia-to-essential] :is(.tabbrowser-tab, .tab-group-label-container):is([zia-dragging], [zia-shift]) {
+  opacity: 0 !important;
+}
+
 .tabbrowser-tab[zia-essential-proxy] {
   display: flex !important;
   visibility: visible !important;

@@ -25,6 +25,9 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- A split can be dragged across the separator, among the pinned tabs and
+  folders, like a single tab.
+
 - A split pane's toolbar buttons can always be clicked; the invisible box
   around Zen's little move-and-expand handle sometimes sat over them.
 

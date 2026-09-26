@@ -285,7 +285,8 @@
 
       const crosses = below === !!drag.tab.pinned;
 
-      const hand = !drag.split && (!!folder || !!pf || (!!nf && isFolderStart(next, nf)) || crosses);
+      // Zen won't take a split across the separator itself, so Zia does
+      const hand = drag.split ? crosses && !folder : !!folder || !!pf || (!!nf && isFolderStart(next, nf)) || crosses;
       drag.target = { folder, atEnd, prev, next, below, sameNext: same(next), slotTop, hand };
       setDropSlot(folder);
     };
@@ -646,6 +647,27 @@
 
     const finishDrop = (tab, target) => {
       if (!tab?.isConnected) {
+        return;
+      }
+      // A split crossing the separator: both its tabs pinned (or not), then
+      // the split as a whole goes to the spot
+      const split = tab.group?.hasAttribute("split-view-group") ? tab.group : null;
+      if (split) {
+        for (const t of [...split.tabs]) {
+          pinFor(t, !target.below);
+        }
+        const group = tab.group || split;
+        if (target.next && target.sameNext) {
+          placeBefore(group, topLevel(target.next));
+        } else if (!target.below && currentSeparator()) {
+          placeBefore(group, currentSeparator());
+        } else {
+          try {
+            gBrowser.moveTabToEnd?.(group);
+          } catch (err) {
+            noteError("tab dragging: finishDrop (split)", err);
+          }
+        }
         return;
       }
       if (target.below && tab.group && !tab.group.hasAttribute("split-view-group")) {
