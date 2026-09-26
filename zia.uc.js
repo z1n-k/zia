@@ -6718,6 +6718,18 @@
   // columns and sets the span.
   const FILL_ROW_PREF = "zia.essentials.fill-row";
 
+  // The grid's own columns, worked out as the grid does (as many as fit at
+  // the tiles' least width). Its computed column list also holds the extra
+  // columns a span wider than the grid creates; counting those grew the
+  // span, which made more of them, until tiles were squeezed into slivers.
+  function gridColumns(grid) {
+    const style = getComputedStyle(grid);
+    const width = grid.clientWidth - (parseFloat(style.paddingLeft) || 0) - (parseFloat(style.paddingRight) || 0);
+    const gap = parseFloat(style.columnGap) || 0;
+    const least = parseFloat(getComputedStyle(root).getPropertyValue("--zia-essential-min-width")) || 54;
+    return Math.max(1, Math.floor((width + gap) / (least + gap)));
+  }
+
   function fillEssentialRows() {
     const on = Services.prefs.getBoolPref(FILL_ROW_PREF, false) && root.getAttribute("zen-sidebar-expanded") === "true";
     const wanted = new Map();
@@ -6726,7 +6738,7 @@
         const tabs = [...grid.children].filter((tab) =>
           tab.matches?.(".tabbrowser-tab[zen-essential]:not([hidden], [zia-essential-proxy])")
         );
-        const columns = getComputedStyle(grid).gridTemplateColumns.split(" ").filter(Boolean).length;
+        const columns = gridColumns(grid);
         const empty = columns - (tabs.length % columns || columns);
         if (tabs.length && columns > 1 && empty > 0) {
           wanted.set(tabs[tabs.length - 1], empty + 1);

@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- With **Last essential fills its row** on, the essentials no longer squeeze
+  some tiles into slivers on top of each other at some sidebar widths (and
+  the tabs no longer reach out to meet them): Zia counted the columns the
+  stretched tile itself added as real ones, and stretched it further.
+
 ## [2.59.1] — 2026-09-26
 
 ### Fixed
