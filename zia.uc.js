@@ -10542,6 +10542,7 @@
             try {
               finishDrop(tab, target);
               repinLanding?.();
+              refitHeld?.();
             } catch (err) {
               console.error("[Zia] Tab drop failed:", err);
             }
@@ -10673,7 +10674,7 @@
       if (shownAtDrop.row && shownAtDrop.row !== folder && shownAtDrop.row.isConnected) {
         held.push(shownAtDrop.row);
       }
-      const buttons = shownAtDrop.buttons.filter((button) => button.isConnected);
+      let buttons = shownAtDrop.buttons.filter((button) => button.isConnected);
       shownAtDrop = { row: null, buttons: [] };
       for (const node of held) {
         node.setAttribute("zia-hover-held", "true");
@@ -10681,6 +10682,22 @@
       for (const button of buttons) {
         button.setAttribute("zia-held-shown", "true");
       }
+      // A tab dropped into a folder is pinned there, and shows a - where it
+      // had an x (and the other way round, pulled out): the x it had was
+      // kept on until the pointer moved, then swapped for the -
+      refitHeld = () => {
+        buttons = buttons.map((button) => {
+          const tab = button.closest(".tabbrowser-tab");
+          const kind = tab?.pinned ? ".tab-reset-button" : ".tab-close-button";
+          const right = tab?.isConnected && !button.matches(kind) ? tab.querySelector(kind) : null;
+          if (!right) {
+            return button;
+          }
+          button.removeAttribute("zia-held-shown");
+          right.setAttribute("zia-held-shown", "true");
+          return right;
+        });
+      };
       let timer = 0;
       const check = () => {
         if (!held.some((node) => node.matches(":hover"))) {
@@ -10688,6 +10705,7 @@
         }
       };
       const release = () => {
+        refitHeld = null;
         for (const node of held) {
           node.removeAttribute("zia-hover-held");
         }
@@ -10706,6 +10724,7 @@
     let pendingFinish = false;
     let heldFolder = null;
     let repinLanding = null;
+    let refitHeld = null;
     window.addEventListener("drop", () => (isRealDrop = true), true);
     window.addEventListener("dragstart", () => (isRealDrop = false), true);
 
@@ -10794,6 +10813,7 @@
             return;
           }
           repinLanding = null;
+          refitHeld?.();
           node.style.removeProperty("transform");
           // The narrower look goes before the glide, which then starts the
           // background where it showed: dropped in a folder, it went a
