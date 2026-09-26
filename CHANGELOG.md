@@ -25,6 +25,14 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- A split dragged into or out of a folder narrows and widens to fit, as a
+  tab does.
+
+- Zen's drop-to-split marker (holding a tab over one side of another) is
+  soft glass instead of a solid blue block.
+
+- The tab you're dragging keeps its ×.
+
 - A dragged essential no longer stretches into a band across the whole
   window as it's let go.
 

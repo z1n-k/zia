@@ -426,7 +426,7 @@
         end = 0;
       }
 
-      const tab = drag.tab;
+      const tab = drag.split || drag.tab;
       tab.style.setProperty("--zia-morph-bg-start", `${drag.bgBase.start + start}px`);
       tab.style.setProperty("--zia-morph-bg-end", `${drag.bgBase.end + end}px`);
       tab.style.setProperty("--zia-morph-content-start", `${drag.contentBase.start + start}px`);
@@ -435,16 +435,18 @@
     };
 
     const unmorphWidth = (tab) => {
-      if (!tab) {
-        return;
+      for (const node of [tab, tab?.group?.hasAttribute("split-view-group") ? tab.group : null]) {
+        if (!node?.hasAttribute("zia-morph")) {
+          continue;
+        }
+        node.setAttribute("zia-morph-done", "true");
+        node.removeAttribute("zia-morph");
+        for (const name of ["--zia-morph-bg-start", "--zia-morph-bg-end", "--zia-morph-content-start", "--zia-morph-content-end"]) {
+          node.style.removeProperty(name);
+        }
+        node.getBoundingClientRect();
+        node.removeAttribute("zia-morph-done");
       }
-      tab.setAttribute("zia-morph-done", "true");
-      tab.removeAttribute("zia-morph");
-      for (const name of ["--zia-morph-bg-start", "--zia-morph-bg-end", "--zia-morph-content-start", "--zia-morph-content-end"]) {
-        tab.style.removeProperty(name);
-      }
-      tab.getBoundingClientRect();
-      tab.removeAttribute("zia-morph-done");
     };
 
     const newTabButton = () =>
@@ -1159,7 +1161,8 @@
       document.documentElement.setAttribute("zia-dragging-tab", "true");
       muteZenHaptics(true);
 
-      const bg = folder || split ? null : bgOf(target);
+      // a split's row narrows into a folder as a tab does, by its box
+      const bg = folder ? null : split ? split.querySelector(":scope > .tab-group-container") : bgOf(target);
       const content = folder || split ? null : contentOf(target);
       const margins = (node) => {
         const style = node ? getComputedStyle(node) : null;

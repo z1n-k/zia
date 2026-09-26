@@ -70,6 +70,16 @@
   transition: none !important;
 }
 
+:root:not(#zia-none) tab-group[split-view-group][zia-morph] > .tab-group-container {
+  margin-inline-start: var(--zia-morph-bg-start) !important;
+  margin-inline-end: var(--zia-morph-bg-end) !important;
+  transition: margin-inline-start 120ms ease-out, margin-inline-end 120ms ease-out !important;
+}
+
+:root:not(#zia-none) tab-group[split-view-group][zia-morph-done] > .tab-group-container {
+  transition: none !important;
+}
+
 /* The pop-up in the toolbar's colour, copied as it opened (the "Address bar
    pop-up takes the toolbar's colour" option). Its text and rows follow the
    colour, light or dark, whatever the theme. */

@@ -184,7 +184,8 @@ zen-essentials-promo {
   opacity: 1 !important;
 }
 
-:root[zia-dragging-tab] .tabbrowser-tab:not([zia-hover-held]) :is(.tab-close-button, .tab-reset-button),
+/* (not on the row being dragged, which stays under the pointer) */
+:root[zia-dragging-tab] .tabbrowser-tab:not([zia-hover-held], [zia-dragging], [zia-dragging] *) :is(.tab-close-button, .tab-reset-button),
 #tabbrowser-tabs[zia-settling] .tabbrowser-tab:not([zia-hover-held]) :is(.tab-close-button, .tab-reset-button) {
   opacity: 0 !important;
   transition: none !important;
@@ -237,7 +238,8 @@ zen-essentials-promo {
 /* ...and its x: Firefox forgets the hover until the pointer next moves,
    and Zen only shows the x on hover */
 .tabbrowser-tab:not([zen-essential], [pinned])[zia-hover-held] .tab-close-button,
-:is(.tab-close-button, .tab-reset-button)[zia-held-shown] {
+/* (ids only to outrank Zen's split rule that hides them unless hovered) */
+:is(.tab-close-button, .tab-reset-button)[zia-held-shown]:not(#zia-a):not(#zia-b) {
   display: flex !important;
   opacity: 1 !important;
 }
@@ -245,4 +247,13 @@ zen-essentials-promo {
 /* a split essential dragged back to the list, until it's removed */
 .tabbrowser-tab[zia-split-gone] {
   display: none !important;
+}
+
+/* Zen's drop-to-split marker (hold a tab over one side of another tab) in
+   Zia's glass rather than a solid blue block */
+zen-split-fake-tab {
+  background-color: var(--zia-tab-hover-bg) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16) !important;
+  border-radius: var(--zia-tab-radius) !important;
+  corner-shape: var(--zia-tab-corner, round) !important;
 }
