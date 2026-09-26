@@ -4209,6 +4209,36 @@ tooltip[default="true"] {
   height: auto !important;
 }
 
+/* Optionally, the top toolbar hides altogether while the sidebar is out
+   (otherwise it stays, cut away under the sidebar: zia.uc.js). On Windows
+   the window buttons in it stay. */
+@media -moz-pref("zia.compact.hide-toolbar") {
+  :root[zen-compact-mode="true"][zia-panel-open="true"] {
+    & #zen-appcontent-navbar-container,
+    & #urlbar:not([breakout-extend]) {
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+  }
+
+  #urlbar,
+  #zen-appcontent-navbar-container {
+    transition: opacity 0.12s ease;
+  }
+
+  @media (-moz-platform: windows) {
+    :root[zen-compact-mode="true"][zia-panel-open="true"] #zen-appcontent-navbar-container {
+      opacity: 1 !important;
+      visibility: hidden !important;
+
+      & .titlebar-buttonbox-container {
+        visibility: visible !important;
+        pointer-events: auto !important;
+      }
+    }
+  }
+}
+
 #zen-dragover-background {
   display: none !important;
 }

@@ -311,6 +311,7 @@ The first folder takes a little while as the model downloads and the icon names 
 | Split essentials (experimental): drag a two-site split onto the essentials | on |
 | Asleep (unloaded) tabs, essentials and folders look dimmed | off |
 | Compact mode's sidebar is slightly see-through, with the page blurred behind it | on |
+| Compact mode hides the top toolbar while the sidebar is out (off: it stays, cut away under the sidebar) | off |
 | **Page** | |
 | Toolbar takes the colour of the site (off: the theme's colour) | on |
 | Zia's rounded page corners (off: Zen's own) | on |

@@ -86,6 +86,12 @@
     "defaultValue": true
   },
   {
+    "type": "checkbox",
+    "label": "Compact mode hides the top toolbar while the sidebar is out",
+    "property": "zia.compact.hide-toolbar",
+    "defaultValue": false
+  },
+  {
     "type": "separator",
     "label": "Page"
   },
