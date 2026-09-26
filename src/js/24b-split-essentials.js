@@ -554,7 +554,16 @@
         if (event.target !== menu) {
           return;
         }
-        item.hidden = !canBecomeSplitEssential(window.TabContextMenu?.contextTab);
+        const tab = window.TabContextMenu?.contextTab;
+        item.hidden = !canBecomeSplitEssential(tab);
+        // Zen's own Add to Essentials can't take a tab in a split: it made
+        // the one tab half an essential and stranded the other
+        if (tab?.group?.hasAttribute?.("split-view-group")) {
+          const zens = document.getElementById("context_zen-add-essential");
+          if (zens) {
+            zens.hidden = true;
+          }
+        }
       });
     }
 

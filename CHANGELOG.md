@@ -4,6 +4,23 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.59.3] — 2026-09-26
+
+### Fixed
+
+- The pin (Add to Essentials) in a tab's hover card turns a split into a
+  split essential, instead of pinning one of its tabs and leaving the other
+  without its title; Zen's own **Add to Essentials** is hidden for tabs in a
+  split, where it did the same.
+
+- An essential dragged back into the tab list lands where it's dropped
+  (pinned, if that's above the separator), instead of vanishing for a
+  moment and turning up at the end of the list below the separator.
+
+- The PDF viewer's ⋮ menu shows its items at full width again, instead of
+  squeezing each into a narrow strip with its words wrapped one or two to a
+  line.
+
 ## [2.59.2] — 2026-09-26
 
 ### Fixed

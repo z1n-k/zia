@@ -7355,7 +7355,16 @@
         if (event.target !== menu) {
           return;
         }
-        item.hidden = !canBecomeSplitEssential(window.TabContextMenu?.contextTab);
+        const tab = window.TabContextMenu?.contextTab;
+        item.hidden = !canBecomeSplitEssential(tab);
+        // Zen's own Add to Essentials can't take a tab in a split: it made
+        // the one tab half an essential and stranded the other
+        if (tab?.group?.hasAttribute?.("split-view-group")) {
+          const zens = document.getElementById("context_zen-add-essential");
+          if (zens) {
+            zens.hidden = true;
+          }
+        }
       });
     }
 
@@ -7507,8 +7516,10 @@
       icon: "pin",
       label: "Add to Essentials",
 
-      run: (tab) => gZenPinnedTabManager?.addToEssentials(tab),
-      hidden: (tab) => tab.hasAttribute("zen-essential") || tab.pinned,
+      // a split goes in whole, as a split essential: Zen can't make one of
+      // its tabs an essential (it left the other stranded, without a title)
+      run: (tab) => (inSplit(tab) ? addSplitToEssentials(tab) : gZenPinnedTabManager?.addToEssentials(tab)),
+      hidden: (tab) => tab.hasAttribute("zen-essential") || tab.pinned || (inSplit(tab) && !canBecomeSplitEssential(tab)),
     },
     {
       name: "unpin",
@@ -7545,6 +7556,8 @@
       keepsCard: true,
     },
   ];
+
+  const inSplit = (tab) => !!tab?.group?.hasAttribute?.("split-view-group");
 
   function copyLink(tab) {
     const uri = tab?.linkedBrowser?.currentURI;
@@ -10214,10 +10227,35 @@
     const dropIntoListRoom = (tab, y) => {
       const first = listRoom.first || null;
       const sep = listRoom.sep;
-      const below = listRoom.sepTop != null && y > listRoom.sepTop;
+      const sepTop = listRoom.sepTop;
+      const below = sepTop != null && y > sepTop;
       listRoom.rows = null;
       listRoom.first = undefined;
-      setTimeout(() => {
+      // Zen takes the tab out of the essentials in its own time after the
+      // drop: it's placed once that's happened (or Zia does it, if Zen
+      // hasn't within a second), else Zen's own placing (the end of the
+      // list, below the separator) was what stuck
+      return new Promise((resolve) => {
+        let frames = 0;
+        const whenOut = () => {
+          if (tab.isConnected && tab.hasAttribute("zen-essential")) {
+            if (++frames < 60) {
+              requestAnimationFrame(whenOut);
+              return;
+            }
+            try {
+              window.gZenPinnedTabManager?.removeEssentials?.(tab, false);
+            } catch (err) {
+              noteError("tab dragging: out of the essentials", err);
+            }
+          }
+          place();
+          resolve();
+        };
+        requestAnimationFrame(whenOut);
+      });
+
+      function place() {
         try {
           if (!tab.isConnected || tab.hasAttribute("zen-essential")) {
             return;
@@ -10228,7 +10266,7 @@
               for (const t of tabs) {
                 pinFor(t, !below);
               }
-              if (first && (below || listRoom.sepTop == null || first.top < listRoom.sepTop)) {
+              if (first && (below || sepTop == null || first.top < sepTop)) {
                 placeBefore(group, topLevel(first));
               } else if (!below && sep) {
                 placeBefore(group, sep);
@@ -10239,7 +10277,7 @@
             return;
           }
           pinFor(tab, !below);
-          if (first && (below || listRoom.sepTop == null || first.top < listRoom.sepTop)) {
+          if (first && (below || sepTop == null || first.top < sepTop)) {
             placeBefore(tab, topLevel(first));
           } else if (!below && sep) {
             placeBefore(tab, sep);
@@ -10249,7 +10287,7 @@
         } catch (err) {
           console.error("[Zia] Placing the essential in the list failed:", err);
         }
-      }, 0);
+      }
     };
 
     const onEssentialOver = (event) => {
@@ -10350,7 +10388,7 @@
           state.asTab = false;
           dropPastLast(state.tab, point);
         } else if (state.asTab && listRoom.rows) {
-          dropIntoListRoom(state.tab, point.y);
+          state.placing = dropIntoListRoom(state.tab, point.y);
         }
       }
       if (listRoom.rows) {
@@ -10369,6 +10407,12 @@
       // Dropped among the essentials: the tile glides from where it was let
       // go into its place (once that's settled) before the real one shows
       const glideHome = () => {
+        // dropped into the list: it shows once it's in its place, not first
+        // wherever Zen put it
+        if (state.placing) {
+          state.placing.finally(reveal);
+          return;
+        }
         if (!event || state.asTab || !copy.isConnected || !state.tab.isConnected ||
             !state.tab.hasAttribute("zen-essential") || matchMedia("(prefers-reduced-motion: reduce)").matches) {
           reveal();
