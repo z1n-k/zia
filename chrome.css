@@ -1370,8 +1370,10 @@ zen-essentials-promo {
 
 /* ...and its x: Firefox forgets the hover until the pointer next moves,
    and Zen only shows the x on hover */
-.tabbrowser-tab:not([zen-essential], [pinned])[zia-hover-held] .tab-close-button {
+.tabbrowser-tab:not([zen-essential], [pinned])[zia-hover-held] .tab-close-button,
+:is(.tab-close-button, .tab-reset-button)[zia-held-shown] {
   display: flex !important;
+  opacity: 1 !important;
 }
 
 /* a split essential dragged back to the list, until it's removed */

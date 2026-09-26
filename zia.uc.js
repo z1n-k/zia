@@ -10038,7 +10038,10 @@
         const shift = copy.ziaHostShift || { x: 0, y: 0 };
         const from = copy.getBoundingClientRect();
         const start = { x: from.left + from.width / 2, y: from.top + from.height / 2 };
-        const ms = ESSENTIAL_MS + 100;
+        // longer the further it has to go, so it drifts home rather than flies
+        const home = state.tab.getBoundingClientRect();
+        const far = Math.hypot(home.left + home.width / 2 - start.x, home.top + home.height / 2 - start.y);
+        const ms = 240 + Math.min(260, far * 0.9);
         const began = performance.now();
         copy.style.setProperty("transition", "none", "important");
         const follow = () => {
@@ -10050,7 +10053,8 @@
           const drawn = state.tab.querySelector(".tab-background")?.getBoundingClientRect() || box;
           const to = { x: box.left + box.width / 2, y: drawn.top + drawn.height / 2 };
           const t = Math.min(1, (performance.now() - began) / ms);
-          const ease = 1 - Math.pow(1 - t, 3);
+          // half ease-in-out, half ease-out: an even drift that settles softly
+          const ease = (1 - Math.cos(Math.PI * t)) / 4 + (1 - Math.pow(1 - t, 2)) / 2;
           copy.style.setProperty("left", `${Math.round(start.x + (to.x - start.x) * ease - shift.x)}px`, "important");
           copy.style.setProperty("top", `${Math.round(start.y + (to.y - start.y) * ease - shift.y)}px`, "important");
           if (t < 1) {
@@ -10220,16 +10224,55 @@
     // until the pointer really leaves it: the drag's own look ends a frame
     // before the browser sees the pointer is still over it, and the box and
     // × blinked off and on in between.
+    // Firefox forgets what's under the pointer after a drop until it next
+    // moves, and Zen shows a row's x and - only while it's hovered: so the
+    // ones showing as it's let go are noted, and kept on while settling
+    let shownAtDrop = { row: null, buttons: [] };
+    window.addEventListener("drop", (event) => {
+      shownAtDrop = { row: null, buttons: [] };
+      const point = pointerOf(event);
+      const row = document.elementsFromPoint(point.x, point.y)
+        .map((el) => el.closest?.(".tabbrowser-tab:not([zia-essential-proxy]), zen-folder, tab-group"))
+        .find(Boolean);
+      if (!row) {
+        return;
+      }
+      const buttons = [...row.querySelectorAll(".tab-close-button, .tab-reset-button")].filter((button) => {
+        if (button.closest(".tabbrowser-tab, zen-folder, tab-group") !== row) {
+          return false;
+        }
+        const box = button.getBoundingClientRect();
+        return box.width > 0 && getComputedStyle(button).display !== "none";
+      });
+      shownAtDrop = { row: row.closest(".tabbrowser-tab") || null, buttons };
+    }, true);
+
     const holdFolderHover = (folder) => {
-      folder.setAttribute("zia-hover-held", "true");
+      const held = [folder];
+      if (shownAtDrop.row && shownAtDrop.row !== folder && shownAtDrop.row.isConnected) {
+        held.push(shownAtDrop.row);
+      }
+      const buttons = shownAtDrop.buttons.filter((button) => button.isConnected);
+      shownAtDrop = { row: null, buttons: [] };
+      for (const node of held) {
+        node.setAttribute("zia-hover-held", "true");
+      }
+      for (const button of buttons) {
+        button.setAttribute("zia-held-shown", "true");
+      }
       let timer = 0;
       const check = () => {
-        if (!folder.matches(":hover")) {
+        if (!held.some((node) => node.matches(":hover"))) {
           release();
         }
       };
       const release = () => {
-        folder.removeAttribute("zia-hover-held");
+        for (const node of held) {
+          node.removeAttribute("zia-hover-held");
+        }
+        for (const button of buttons) {
+          button.removeAttribute("zia-held-shown");
+        }
         window.removeEventListener("mousemove", check, true);
         clearTimeout(timer);
       };
