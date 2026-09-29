@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.72.2] — 2026-09-29
+
+### Fixed
+
+- A folder opened and shut again quickly shuts properly, instead of its
+  bottom tabs staying on show under it until it was next opened.
+
 ## [2.72.1] — 2026-09-29
 
 ### Fixed
