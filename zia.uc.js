@@ -1711,6 +1711,9 @@
       return null;
     }
     const closing = folder.hasAttribute("collapsed");
+    // (a folder whose one showing tab was just dragged out of it already
+    // looks shut: its room closes, without the bounce, 28-tab-dragging)
+    const lentOut = (folder.ziaLentUntil || 0) > Date.now();
     const zenFrom = parseFloat(keyframes[0]?.marginTop);
     const zenTo = parseFloat(keyframes[1]?.marginTop);
     const shut = -Math.max(
@@ -1728,7 +1731,7 @@
     }
     // Spring off: Zen's own timing, but still the folder opening over its
     // tabs (holdFolderContents); the setting is for the bounce only
-    if (!bounce) {
+    if (!bounce || lentOut) {
       return {
         from,
         to,
@@ -10864,10 +10867,25 @@
       if (!tile) {
         return;
       }
+      // (the tiles slide to their new places, as Zen's do for a tab, and it
+      // taps: they jumped, silently)
+      const tiles = cells.filter((cell) => cell !== splitSlot && cell.classList?.contains("tabbrowser-tab") && !cell.hasAttribute("zia-essential-proxy"));
+      const was = new Map(tiles.map((cell) => [cell, cell.getBoundingClientRect()]));
       if (cells.indexOf(splitSlot) < cells.indexOf(tile)) {
         tile.after(splitSlot);
       } else {
         tile.before(splitSlot);
+      }
+      tap();
+      for (const cell of tiles) {
+        const from = was.get(cell);
+        const to = cell.getBoundingClientRect();
+        const dx = from.left - to.left;
+        const dy = from.top - to.top;
+        if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
+          continue;
+        }
+        cell.animate([{ translate: `${dx}px ${dy}px` }, { translate: "0 0" }], { duration: 180, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
       }
     };
 
@@ -11032,6 +11050,7 @@
     };
     const unlend = () => {
       for (const home of document.querySelectorAll("zen-folder[zia-lent]")) {
+        home.ziaLentUntil = Date.now() + 800;
         home.removeAttribute("zia-lent");
         home.style.removeProperty("--zia-lent-inset");
       }

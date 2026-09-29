@@ -142,6 +142,9 @@
       return null;
     }
     const closing = folder.hasAttribute("collapsed");
+    // (a folder whose one showing tab was just dragged out of it already
+    // looks shut: its room closes, without the bounce, 28-tab-dragging)
+    const lentOut = (folder.ziaLentUntil || 0) > Date.now();
     const zenFrom = parseFloat(keyframes[0]?.marginTop);
     const zenTo = parseFloat(keyframes[1]?.marginTop);
     const shut = -Math.max(
@@ -159,7 +162,7 @@
     }
     // Spring off: Zen's own timing, but still the folder opening over its
     // tabs (holdFolderContents); the setting is for the bounce only
-    if (!bounce) {
+    if (!bounce || lentOut) {
       return {
         from,
         to,
