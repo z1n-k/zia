@@ -4739,6 +4739,12 @@ zen-folder .tab-reset-button {
   transition: none !important;
 }
 
+/* ...and dropped, it eases out to its own width (zia.uc.js) */
+:root:not(#zia-none) .tabbrowser-tab[zia-morph-out] > .tab-stack > :is(.tab-background, .tab-content),
+:root:not(#zia-none) tab-group[split-view-group][zia-morph-out] > .tab-group-container {
+  transition: margin-inline-start 160ms ease-out, margin-inline-end 160ms ease-out !important;
+}
+
 /* The pop-up in the toolbar's colour, copied as it opened (the "Address bar
    pop-up takes the toolbar's colour" option). Its text and rows follow the
    colour, light or dark, whatever the theme. */

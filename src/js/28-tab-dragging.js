@@ -624,31 +624,25 @@
       tab.setAttribute("zia-morph", "true");
     };
 
-    // The narrower look is let go only once the row's own width matches it:
-    // dropped in a closed folder, the folder gives the tab its indent a few
-    // frames after the drop (as Zen settles it), and let go straight away,
-    // it showed full width for a moment in between
-    const settleWidth = (tab, tries = 0) => {
-      const node = [tab, tab?.group?.hasAttribute?.("split-view-group") ? tab.group : null].find((n) => n?.hasAttribute?.("zia-morph"));
-      if (!node) {
-        return;
-      }
-      const box = node.localName === "tab-group" ? node.querySelector(":scope > .tab-group-container") : node.querySelector(".tab-background");
-      if (box && tries < 30) {
-        // (measured with its slide off, so the look doesn't start moving)
-        node.setAttribute("zia-morph-done", "true");
-        const shown = box.getBoundingClientRect();
-        node.removeAttribute("zia-morph");
-        const own = box.getBoundingClientRect();
-        node.setAttribute("zia-morph", "true");
-        box.getBoundingClientRect();
-        node.removeAttribute("zia-morph-done");
-        if (shown.width > 0 && own.width > 0 && (Math.abs(own.left - shown.left) > 1 || Math.abs(own.right - shown.right) > 1)) {
-          requestAnimationFrame(() => settleWidth(tab, tries + 1));
-          return;
+    // The narrower look a dragged row takes over a folder eases out to the
+    // row's own width once it's dropped (both edges): let go at once, a row
+    // whose own place differed from the look (the look is worked out from
+    // the rows around it, and was out by a few pixels in an empty folder)
+    // jumped, and a closed folder that gives the row its indent a moment
+    // later showed it full width in between
+    const easeOutWidth = (tab) => {
+      for (const node of [tab, tab?.group?.hasAttribute?.("split-view-group") ? tab.group : null]) {
+        if (!node?.hasAttribute?.("zia-morph")) {
+          continue;
         }
+        node.setAttribute("zia-morph-out", "true");
+        node.removeAttribute("zia-morph");
+        for (const name of ["--zia-morph-bg-start", "--zia-morph-bg-end", "--zia-morph-content-start", "--zia-morph-content-end"]) {
+          node.style.removeProperty(name);
+        }
+        clearTimeout(node.ziaMorphOutTimer);
+        node.ziaMorphOutTimer = setTimeout(() => node.removeAttribute("zia-morph-out"), 450);
       }
-      unmorphWidth(tab);
     };
 
     const unmorphWidth = (tab) => {
@@ -3122,7 +3116,7 @@
       }
       if (drag?.bg) {
         const { bg, content } = drag;
-        setTimeout(() => requestAnimationFrame(() => settleWidth(droppedTab)), 0);
+        setTimeout(() => requestAnimationFrame(() => easeOutWidth(droppedTab)), 0);
       }
       drag = null;
       pending = null;
@@ -3202,7 +3196,7 @@
           // background where it showed: dropped in a folder, it went a
           // step left as the glide began and slid back
           if (landing.bg) {
-            settleWidth(landing.tab);
+            easeOutWidth(landing.tab);
           }
           unmorphFolder(node);
           const to = node.getBoundingClientRect();
