@@ -78,6 +78,12 @@ zen-folder[collapsed][has-active] .tabbrowser-tab:not([selected], [visuallyselec
   transition: opacity 0.18s ease-in-out;
 }
 
+/* Unloaded (the selection moves out), its tabs stay see-through while Zen
+   shuts it, the one that was showing fading (zia.uc.js) */
+zen-folder[collapsed][zia-was-active] .tabbrowser-tab {
+  opacity: 0 !important;
+  transition: opacity 0.15s ease-in !important;
+}
 
 /* That margin lets the active tab's glow show, but it also left the
    folder's hidden tabs reachable just below it: hovering there brought up

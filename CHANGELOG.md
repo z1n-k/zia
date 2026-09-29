@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.72.3] — 2026-09-29
+
+### Changed
+
+- Folders are back to how they were in 2.71.5: Zen animates them, with
+  Zia's adjustments on top. Zia animating folders itself (2.72.0) is gone,
+  and with it the glitches it brought (nested folders showing a tab
+  flashing and bouncing as they opened or shut, an empty folder snapping
+  open, split tabs no longer dragging into folders). The drag and
+  scrollbar fixes from 2.72.0 and 2.72.1 stay.
+
 ## [2.72.2] — 2026-09-29
 
 ### Fixed
