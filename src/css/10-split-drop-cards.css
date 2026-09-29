@@ -251,6 +251,21 @@ tab-group[split-view-group] .tab-group-container > .tabbrowser-tab::after {
   }
 }
 
+/* In a folder, a split's box ends where a tab's does, the folder's gap in
+   from its edge (it kept Zen's 2px, so it ran further right than the tabs
+   above and below it) */
+:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) tab-group[split-view-group] > .tab-group-container {
+  margin-inline-end: calc(var(--zia-folder-right-fix, 0px) + var(--zia-folder-inner-gap, 5px)) !important;
+}
+
+:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) :is(zen-folder, tab-group:not([split-view-group])) tab-group[split-view-group] > .tab-group-container {
+  margin-inline-end: calc(var(--zia-folder-right-fix, 0px) + 2 * var(--zia-folder-inner-gap, 5px)) !important;
+}
+
+:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) :is(zen-folder, tab-group:not([split-view-group])) :is(zen-folder, tab-group:not([split-view-group])) tab-group[split-view-group] > .tab-group-container {
+  margin-inline-end: calc(var(--zia-folder-right-fix, 0px) + 3 * var(--zia-folder-inner-gap, 5px)) !important;
+}
+
 :root[zen-sidebar-expanded="true"] tab-group[split-view-group]:is([hasactivetab], :has(.tabbrowser-tab[visuallyselected])) .tab-group-container {
   background: var(--zia-active-tab-bg) !important;
   box-shadow: 0 0 var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color) !important;

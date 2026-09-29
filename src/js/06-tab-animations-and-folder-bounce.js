@@ -1,3 +1,21 @@
+  // Closing one of a split's two tabs: Zen breaks the split up, each tab a
+  // row of its own again, so the closing one shrank away as a row with the
+  // one left sliding up from under it, a jump where the split had been. It
+  // goes at once, taking no room, and the one left is where the split was.
+  function closeSplitTabsInPlace() {
+    gBrowser.tabContainer.addEventListener(
+      "TabClose",
+      (event) => {
+        const tab = event.target;
+        const split = tab?.group?.hasAttribute?.("split-view-group") ? tab.group : null;
+        if (split && split.tabs.filter((t) => !t.closing || t === tab).length <= 2) {
+          tab.setAttribute("zia-split-closing", "true");
+        }
+      },
+      true
+    );
+  }
+
   function watchTabAnimations() {
     gBrowser.tabContainer.addEventListener("TabOpen", (event) => {
       const tab = event.target;
@@ -124,6 +142,9 @@
       return null;
     }
     const closing = folder.hasAttribute("collapsed");
+    // (a folder whose one showing tab was just dragged out of it already
+    // looks shut: its room closes, without the bounce, 28-tab-dragging)
+    const lentOut = (folder.ziaLentUntil || 0) > Date.now();
     const zenFrom = parseFloat(keyframes[0]?.marginTop);
     const zenTo = parseFloat(keyframes[1]?.marginTop);
     const shut = -Math.max(
@@ -141,7 +162,7 @@
     }
     // Spring off: Zen's own timing, but still the folder opening over its
     // tabs (holdFolderContents); the setting is for the bounce only
-    if (!bounce) {
+    if (!bounce || lentOut) {
       return {
         from,
         to,

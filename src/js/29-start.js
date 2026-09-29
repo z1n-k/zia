@@ -158,13 +158,17 @@
       if (!gBrowser?.selectedTab) {
         return;
       }
-      for (const tab of document.querySelectorAll(".tabbrowser-tab[zia-no-glow]")) {
-        tab.removeAttribute("zia-no-glow");
+      for (const el of document.querySelectorAll("[zia-no-glow]")) {
+        el.removeAttribute("zia-no-glow");
       }
       const tab = gBrowser.selectedTab;
       if (!tab || tab.hasAttribute("zen-essential")) {
         return;
       }
+      // (a split glows as a whole: at the top, it's the split that goes
+      // without, whichever of its tabs is open)
+      const split = tab.group?.hasAttribute?.("split-view-group") ? tab.group : null;
+      const glowing = split || tab;
 
       const sections = [
         window.gZenWorkspaces?.pinnedTabsContainer,
@@ -182,12 +186,12 @@
             }
           }
         }
-        if (rows[0] === tab) {
-          tab.setAttribute("zia-no-glow", "true");
+        if (rows[0] === tab || (split && split.contains(rows[0]))) {
+          glowing.setAttribute("zia-no-glow", "true");
         }
         return;
       }
-      const mine = tab.getBoundingClientRect();
+      const mine = glowing.getBoundingClientRect();
       if (!mine.height) {
         return;
       }
@@ -196,7 +200,7 @@
       for (const row of document.querySelectorAll(
         "#tabbrowser-tabs .tabbrowser-tab:not([zen-essential], [zen-empty-tab], [hidden]), #tabbrowser-tabs .tab-group-label-container"
       )) {
-        if (row === tab) {
+        if (row === tab || (split && split.contains(row))) {
           continue;
         }
         const box = row.getBoundingClientRect();
@@ -211,7 +215,7 @@
         below ||= box.top >= mine.bottom - 1;
       }
       if (!above) {
-        tab.setAttribute("zia-no-glow", "true");
+        glowing.setAttribute("zia-no-glow", "true");
       }
     };
     const soon = () => {
@@ -246,7 +250,9 @@
     safely("watchNewTabPage", watchNewTabPage);
     safely("createWorkspaceSlot", createWorkspaceSlot);
     safely("watchTabAnimations", watchTabAnimations);
+    safely("closeSplitTabsInPlace", closeSplitTabsInPlace);
     safely("moveTabsLikeDia", moveTabsLikeDia);
+    safely("hideTabListScrollbars", hideTabListScrollbars);
     safely("addFolderBounce", addFolderBounce);
     safely("keepFolderNamesInCollapsedSpaces", keepFolderNamesInCollapsedSpaces);
     safely("keepTabsHiddenAfterActiveLeaves", keepTabsHiddenAfterActiveLeaves);

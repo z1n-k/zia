@@ -4,6 +4,27 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.72.7] — 2026-09-29
+
+### Changed
+
+- Back to the latest: 2.72.6's return to 2.71.5 is undone, and the fixes
+  made since 2.72.5 are in.
+
+### Fixed
+
+- Splits: they go into closed and empty folders, show both halves in a closed
+  folder, stay put dropped at the top, lose their glow at the top like a tab,
+  don't bring up the split cards, morph to and from the essentials, and open
+  a cell among the essentials where the pointer is (the tiles sliding aside).
+- Dropping tabs: no flash, jump or width jolt as a row lands in a folder or
+  out of one; no full-width sliver between folders inside another; a closed
+  folder whose tab is dragged out goes to its closed height, without a bounce.
+- Essentials dragged into the list can go into folders; no phantom copy
+  over the essentials; New Tab closes up with the list.
+- Empty folders slide open; reload eases into its hover look after loading;
+  closing one of a split's tabs doesn't jump.
+
 ## [2.72.6] — 2026-09-29
 
 ### Changed
