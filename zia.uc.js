@@ -2390,15 +2390,31 @@
       }
       const items = pins.allItems || [];
       window.gZenFolders?.styleCleanup?.(items.filter((item) => item.style.height === "0px" || item.style.opacity === "0"));
-      const was = start.style.marginTop;
       start.style.marginTop = "0px";
       const full = box.getBoundingClientRect().height - (sep ? sep.getBoundingClientRect().height : 0);
-      const want = `${-(full + 4)}px`;
-      start.style.marginTop = want;
-      if (sep && Math.abs((parseFloat(was) || 0) - (parseFloat(want) || 0)) > 1) {
-        sep.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 150, easing: "ease-out" });
-      }
+      start.style.marginTop = `${-(full + 4)}px`;
     };
+    // (the moment the list shrinks under it, before it's drawn: put right
+    // later, the separator went and came back, rather than stopping where
+    // it had travelled up to)
+    const watched = new WeakSet();
+    const watch = () => {
+      const pins = window.gZenWorkspaces?.activeWorkspaceElement?.collapsiblePins;
+      const box = pins?.groupContainer;
+      if (!box || watched.has(box)) {
+        return;
+      }
+      watched.add(box);
+      new ResizeObserver(() => {
+        const sep = box.separatorElement || box.querySelector(".pinned-tabs-container-separator");
+        if (sep && sep.getBoundingClientRect().bottom <= box.getBoundingClientRect().top + 1) {
+          fix(pins);
+        }
+      }).observe(box);
+    };
+    watch();
+    window.addEventListener("ZenWorkspacesUIUpdate", watch);
+    gBrowser.tabContainer.addEventListener("TabSelect", watch);
     new MutationObserver((records) => {
       for (const record of records) {
         const pins = record.target;
