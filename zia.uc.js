@@ -11101,7 +11101,12 @@
           if (!home.isConnected) {
             return;
           }
-          const own = home.getBoundingClientRect().height;
+          // (closed and showing no tab, it ends as its name alone: Zen is
+          // still shutting it then, its list with the padding and any folder
+          // in it showing a few pixels more, so it eased open to that and
+          // snapped back once Zen was done)
+          const shut = isCollapsed(home) && !home.hasAttribute("has-active") && !home.querySelector(".tabbrowser-tab[selected]");
+          const own = shut && headerOf(home) ? headerOf(home).getBoundingClientRect().height : home.getBoundingClientRect().height;
           const ownInset = parseFloat(getComputedStyle(home, "::before").bottom) || 0;
           const timing = { duration: 200, easing: "cubic-bezier(0.25, 1, 0.5, 1)" };
           if (Math.abs(own - held) >= 0.5) {
