@@ -762,7 +762,10 @@
       if (!pins?.collapsed || !pins.hasAttribute("has-active") || pins.contains(tab)) {
         return;
       }
-      window.gZenFolders?.animateUnloadAll?.(pins)?.catch?.((err) => noteError("tuck away pins", err));
+      // (shut as its name does, the same speed: Zen's unload was quicker)
+      pins.removeAttribute("has-active");
+      pins.activeTabs = [];
+      window.gZenFolders?.animateCollapse?.(pins)?.catch?.((err) => noteError("tuck away pins", err));
     });
   }
 
