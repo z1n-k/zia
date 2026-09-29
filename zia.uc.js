@@ -9511,11 +9511,13 @@
 
       const crosses = below === !!drag.tab.pinned;
 
-      // Zen won't take a split across the separator itself, so Zia does,
-      // or into a folder (Zen dropped it outside a closed or empty one)
+      // A split is always Zia's to place: Zen won't take one across the
+      // separator, dropped it outside a closed or empty folder, and went by
+      // what's under the pointer (the room made for it), so at the top of
+      // the list it went below the first folder or back where it came from
       const hand = drag.folder
         ? true
-        : drag.split ? crosses || !!folder : !!folder || !!pf || (!!nf && isFolderStart(next, nf)) || crosses;
+        : drag.split ? true : !!folder || !!pf || (!!nf && isFolderStart(next, nf)) || crosses;
       // A tap on going into a folder, open or closed, or out of one (Zen's
       // own taps are muted during a drag). Not for the one it's in as it
       // starts.
@@ -10000,7 +10002,8 @@
       }
       if (tab.nextElementSibling !== before) {
         try {
-          if (tab.group && !before.closest?.("tab-group")) {
+          // (a tab only: a split's own group is the split itself)
+          if (gBrowser.isTab(tab) && tab.group && !before.closest?.("tab-group")) {
             gBrowser.ungroupTab?.(tab);
           }
         } catch (err) {
@@ -12955,13 +12958,17 @@
       if (!gBrowser?.selectedTab) {
         return;
       }
-      for (const tab of document.querySelectorAll(".tabbrowser-tab[zia-no-glow]")) {
-        tab.removeAttribute("zia-no-glow");
+      for (const el of document.querySelectorAll("[zia-no-glow]")) {
+        el.removeAttribute("zia-no-glow");
       }
       const tab = gBrowser.selectedTab;
       if (!tab || tab.hasAttribute("zen-essential")) {
         return;
       }
+      // (a split glows as a whole: at the top, it's the split that goes
+      // without, whichever of its tabs is open)
+      const split = tab.group?.hasAttribute?.("split-view-group") ? tab.group : null;
+      const glowing = split || tab;
 
       const sections = [
         window.gZenWorkspaces?.pinnedTabsContainer,
@@ -12979,12 +12986,12 @@
             }
           }
         }
-        if (rows[0] === tab) {
-          tab.setAttribute("zia-no-glow", "true");
+        if (rows[0] === tab || (split && split.contains(rows[0]))) {
+          glowing.setAttribute("zia-no-glow", "true");
         }
         return;
       }
-      const mine = tab.getBoundingClientRect();
+      const mine = glowing.getBoundingClientRect();
       if (!mine.height) {
         return;
       }
@@ -12993,7 +13000,7 @@
       for (const row of document.querySelectorAll(
         "#tabbrowser-tabs .tabbrowser-tab:not([zen-essential], [zen-empty-tab], [hidden]), #tabbrowser-tabs .tab-group-label-container"
       )) {
-        if (row === tab) {
+        if (row === tab || (split && split.contains(row))) {
           continue;
         }
         const box = row.getBoundingClientRect();
@@ -13008,7 +13015,7 @@
         below ||= box.top >= mine.bottom - 1;
       }
       if (!above) {
-        tab.setAttribute("zia-no-glow", "true");
+        glowing.setAttribute("zia-no-glow", "true");
       }
     };
     const soon = () => {

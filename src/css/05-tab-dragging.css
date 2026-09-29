@@ -71,7 +71,7 @@ zen-folder:has(> .tab-group-container > :is(.tabbrowser-tab, tab-group[split-vie
   overflow-y: clip;
 }
 
-zen-folder[collapsed][has-active] .tabbrowser-tab:not([selected], [visuallyselected], [folder-active="true"], [atg-folder-active], tab-group[split-view-group] > .tabbrowser-tab) {
+zen-folder[collapsed][has-active] .tabbrowser-tab:not([selected], [visuallyselected], [folder-active="true"], [atg-folder-active], tab-group[split-view-group]:has(.tabbrowser-tab:is([selected], [visuallyselected], [folder-active="true"])) .tabbrowser-tab) {
   opacity: 0 !important;
   /* (fading as Zen shrinks them, rather than gone at once, which showed as
      an empty gap closing up) */
@@ -170,7 +170,9 @@ zen-essentials-promo {
 }
 
 .tabbrowser-tab[zia-no-glow],
-.tabbrowser-tab[zia-no-glow] > .tab-stack > .tab-background {
+.tabbrowser-tab[zia-no-glow] > .tab-stack > .tab-background,
+tab-group[split-view-group][zia-no-glow],
+tab-group[split-view-group][zia-no-glow] > .tab-group-container {
   --zia-active-glow-color: transparent !important;
 }
 

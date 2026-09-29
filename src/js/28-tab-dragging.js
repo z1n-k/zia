@@ -388,11 +388,13 @@
 
       const crosses = below === !!drag.tab.pinned;
 
-      // Zen won't take a split across the separator itself, so Zia does,
-      // or into a folder (Zen dropped it outside a closed or empty one)
+      // A split is always Zia's to place: Zen won't take one across the
+      // separator, dropped it outside a closed or empty folder, and went by
+      // what's under the pointer (the room made for it), so at the top of
+      // the list it went below the first folder or back where it came from
       const hand = drag.folder
         ? true
-        : drag.split ? crosses || !!folder : !!folder || !!pf || (!!nf && isFolderStart(next, nf)) || crosses;
+        : drag.split ? true : !!folder || !!pf || (!!nf && isFolderStart(next, nf)) || crosses;
       // A tap on going into a folder, open or closed, or out of one (Zen's
       // own taps are muted during a drag). Not for the one it's in as it
       // starts.
@@ -877,7 +879,8 @@
       }
       if (tab.nextElementSibling !== before) {
         try {
-          if (tab.group && !before.closest?.("tab-group")) {
+          // (a tab only: a split's own group is the split itself)
+          if (gBrowser.isTab(tab) && tab.group && !before.closest?.("tab-group")) {
             gBrowser.ungroupTab?.(tab);
           }
         } catch (err) {
