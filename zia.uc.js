@@ -9383,6 +9383,8 @@
       if (!node) {
         return;
       }
+      // (lifted by a closed folder's room its tab no longer needs: lendOut)
+      y += (!above && drag?.lentLift?.get(node)) || 0;
       node.style.setProperty("--zia-drag-y", `${Math.round(y)}px`);
       slotFolderOf(node)?.style.setProperty("--zia-slot-y", `${Math.round(y)}px`);
       node.style.removeProperty("top");
@@ -10861,8 +10863,15 @@
         return;
       }
       const cells = [...grid.children];
+      // (not one still sliding: it's drawn where it was, under the pointer,
+      // and swapped straight back, over and over)
       const tile = cells.find(
-        (cell) => cell !== splitSlot && cell.classList?.contains("tabbrowser-tab") && !cell.hasAttribute("zia-essential-proxy") && inBox(cell, point)
+        (cell) =>
+          cell !== splitSlot &&
+          cell.classList?.contains("tabbrowser-tab") &&
+          !cell.hasAttribute("zia-essential-proxy") &&
+          !cell.getAnimations().some((a) => a.id === "zia-slot-slide") &&
+          inBox(cell, point)
       );
       if (!tile) {
         return;
@@ -10885,7 +10894,8 @@
         if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
           continue;
         }
-        cell.animate([{ translate: `${dx}px ${dy}px` }, { translate: "0 0" }], { duration: 180, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
+        const slide = cell.animate([{ translate: `${dx}px ${dy}px` }, { translate: "0 0" }], { duration: 180, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
+        slide.id = "zia-slot-slide";
       }
     };
 
@@ -11047,6 +11057,37 @@
       const inset = home.getBoundingClientRect().bottom - label.getBoundingClientRect().bottom + gap - extra;
       home.style.setProperty("--zia-lent-inset", `${Math.round(inset * 2) / 2}px`);
       home.setAttribute("zia-lent", "true");
+      // Its room below its name, less the dragged tab's own slot (which the
+      // rows below fill as it passes them, as for any tab): everything below
+      // is lifted by that for the drag, so no empty band shows under the
+      // folder (and the separator doesn't sit apart from it)
+      const spare = home.getBoundingClientRect().bottom - label.getBoundingClientRect().bottom - (drag?.pitch || 0);
+      if (!drag || !(spare > 0.5) || spare > 60) {
+        return;
+      }
+      const bottom = home.getBoundingClientRect().bottom - 1;
+      const lift = new Map();
+      for (const r of drag.rows) {
+        if (notARow(r) || home.contains(r.node) || r.top < bottom) {
+          continue;
+        }
+        r.top -= spare;
+        r.mid -= spare;
+        lift.set(r.node, -spare);
+      }
+      const sep = currentSeparator();
+      if (sep && drag.sepTop != null && drag.sepTop >= bottom) {
+        drag.sepTop -= spare;
+        lift.set(sep, -spare);
+      }
+      const button = newTabButton();
+      if (button && button.getBoundingClientRect().top >= bottom) {
+        lift.set(button, -spare);
+      }
+      drag.lentLift = lift;
+      for (const node of lift.keys()) {
+        place(node, 0, false);
+      }
     };
     const unlend = () => {
       for (const home of document.querySelectorAll("zen-folder[zia-lent]")) {
