@@ -1447,6 +1447,13 @@ tab-group[split-view-group][zia-no-glow] > .tab-group-container {
   opacity: 1 !important;
 }
 
+/* A row landing is moved by Zia's glide alone: a transition on its own
+   transform (Firefox's or Zen's, which Zen's drop used to switch off) ran
+   under the glide and showed for a frame as it ended, a 7px jump back */
+#tabbrowser-tabs :is(.tabbrowser-tab, tab-group[split-view-group])[zia-landing] {
+  transition: none !important;
+}
+
 /* (not on the row being dragged, which stays under the pointer) */
 :root[zia-dragging-tab] .tabbrowser-tab:not([zia-hover-held], [zia-dragging], [zia-dragging] *) :is(.tab-close-button, .tab-reset-button),
 #tabbrowser-tabs[zia-settling] .tabbrowser-tab:not([zia-hover-held], :hover) :is(.tab-close-button, .tab-reset-button) {
