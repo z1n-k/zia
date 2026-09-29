@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.72.5] — 2026-09-29
+
+### Fixed
+
+- A split dragged over an empty folder now wears the dashed outline, round
+  its box (2.72.4 put it on its tabs, which a split draws no background
+  for, so it never showed).
+
 ## [2.72.4] — 2026-09-29
 
 ### Fixed

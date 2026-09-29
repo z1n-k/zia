@@ -256,13 +256,8 @@
       folder?.setAttribute("zia-drop-slot", "true");
       // Over an empty folder the tab covers its slot, so the tab carries the
       // slot's dashes instead (chrome.css), in the folder's colour.
-      // (a split's tabs too, each wearing them)
-      const tabs =
-        drag.moving === drag.tab
-          ? [drag.tab]
-          : drag.moving?.matches?.("tab-group[split-view-group]")
-            ? [...drag.moving.querySelectorAll(".tabbrowser-tab")]
-            : [];
+      // (a split too: its box, round both its tabs, wears them)
+      const tabs = drag.moving === drag.tab || (drag.split && drag.moving === drag.split) ? [drag.moving] : [];
       const into = !!folder?.hasAttribute("zia-empty");
       const border = into ? getComputedStyle(folder).getPropertyValue("--zia-slot-border") : "";
       for (const tab of tabs) {
