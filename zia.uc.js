@@ -7592,6 +7592,30 @@
       }
     };
     new MutationObserver(schedule).observe(tabs, { childList: true, subtree: true });
+    // An empty folder opens by sliding its slot down into view, as a folder
+    // does its tabs. Emptied (its last tab dragged out) and shut, Zen had
+    // measured it with no slot showing, so it was only 4px up out of view
+    // and opened with a snap. It's put a slot's height up before Zen opens it.
+    window.addEventListener(
+      "TabGroupExpand",
+      (event) => {
+        const folder = event.target;
+        if (folder?.localName !== "zen-folder" || !folder.hasAttribute("zia-empty")) {
+          return;
+        }
+        const start = folder.groupStartElement;
+        if (!start) {
+          return;
+        }
+        const vars = getComputedStyle(document.documentElement);
+        const px = (name, fallback) => parseFloat(vars.getPropertyValue(name)) || fallback;
+        const room = px("--zia-slot-h", 35) + px("--zia-slot-mt", 2) + px("--zia-slot-mb", 2);
+        if ((parseFloat(getComputedStyle(start).marginTop) || 0) > -room) {
+          start.style.marginTop = `${-(room + 4)}px`;
+        }
+      },
+      true
+    );
     for (const type of ["TabGroupCreate", "TabGrouped", "TabUngrouped", "TabClose", "TabMove", "TabGroupExpand"]) {
       gBrowser.tabContainer.addEventListener(type, schedule);
     }
@@ -9534,6 +9558,20 @@
       } else if (nf && !isFolderStart(next, nf)) {
         folder = nf;
       }
+      // Out past the end of a folder inside another that ends there too:
+      // the outer one takes it first, then the list (it went straight to
+      // the list, full width for a moment, though still in the outer one)
+      if (!folder && pf && cut != null && visualMid >= cut) {
+        const outer = pf.parentElement?.closest?.("zen-folder, tab-group:not([split-view-group])");
+        if (outer && !isCollapsed(outer) && outer.contains(prev.node) && !(next && outer.contains(next.node)) && !drag.moving.contains?.(outer)) {
+          const down = same(next) ? leaveDown(next) : null;
+          const outerCut = down != null && down > cut ? (cut + down) / 2 : cut + drag.height / 2;
+          if (visualMid < outerCut) {
+            folder = outer;
+            atEnd = true;
+          }
+        }
+      }
       // Between a closed folder's name and the tab it shows: into it, at
       // the top (a tab only; the one it shows moves down to make room, or
       // the name up)
@@ -10289,7 +10327,9 @@
       }
       if (folder && target.atEnd) {
         const last = target.prev?.item;
-        if (last && gBrowser.isTab(last) && folder.contains(last)) {
+        // (a tab of this folder's own: the row above can be in a folder
+        // inside it, which the tab isn't going into)
+        if (last && gBrowser.isTab(last) && last.group === folder) {
           placeAfter(tab, last);
         } else {
           folder.addTabs?.([tab]);
