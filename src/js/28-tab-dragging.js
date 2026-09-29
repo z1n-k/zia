@@ -1292,6 +1292,20 @@
       proxy.style.setProperty("top", `${Math.round(y - off.y)}px`, "important");
     };
 
+    // A split's stand-in changes shape between its row and its tile: what's
+    // in it is hidden while the box morphs, and shows again once it's the
+    // new shape (squeezed or stretched, both icons slid about in a box of
+    // the wrong shape, which looked broken)
+    const fadeSplitContent = (node, ms) => {
+      if (!node?.hasAttribute?.("zia-split-tile")) {
+        return;
+      }
+      node.querySelector(".tab-content")?.animate(
+        [{ opacity: 0 }, { opacity: 0, offset: 0.6 }, { opacity: 1 }],
+        { duration: Math.round(ms * 1.5), easing: "ease-out" }
+      );
+    };
+
     const showProxy = (x, y) => {
       clearTimeout(proxyLeaveTimer);
       if (!proxy) {
@@ -1327,11 +1341,11 @@
         sizeProxy(proxy, row.width, row.height);
         host.appendChild(proxy);
         if (drag.split) {
-          // a split starts as the tile itself, not squeezed from its row
+          // a split starts as its row (both sites, icon and title), and
+          // morphs into its tile below
           dressSplitProxy(proxy, drag.tab);
-          const tile = tileSize();
-          sizeProxy(proxy, tile.bgWidth || tile.width, tile.bgHeight || tile.height);
-          fitSplitHalves(proxy, tile.stackHeight, tile.half);
+          proxy.removeAttribute("zen-essential");
+          proxy.removeAttribute("pinned");
         }
         try {
           window.gZenPinnedTabManager?.setEssentialTabIcon?.(proxy);
@@ -1352,6 +1366,12 @@
       drag.moving.setAttribute("zia-to-essential", "true");
       const tile = tileSize();
 
+      if (drag.split && !proxy.hasAttribute("zen-essential")) {
+        proxy.setAttribute("zen-essential", "true");
+        proxy.setAttribute("pinned", "true");
+        fitSplitHalves(proxy, tile.stackHeight, tile.half);
+        fadeSplitContent(proxy, PROXY_MS);
+      }
       sizeProxy(proxy, tile.bgWidth || tile.width, tile.bgHeight || tile.height);
       moveProxy(x, y);
     };
@@ -1362,6 +1382,15 @@
       }
       proxy.ziaLeaving = true;
       const row = drag.moving.getBoundingClientRect();
+      // (a split goes back to its row, not a tile stretched to a row's size)
+      if (drag.split && proxy.hasAttribute("zen-essential")) {
+        const current = proxy.getBoundingClientRect();
+        proxy.removeAttribute("zen-essential");
+        proxy.removeAttribute("pinned");
+        sizeProxy(proxy, current.width, current.height);
+        proxy.getBoundingClientRect();
+        fadeSplitContent(proxy, PROXY_MS);
+      }
       proxy.style.setProperty("transition", `all ${PROXY_MS}ms ease-out`, "important");
       sizeProxy(proxy, row.width, row.height);
       moveProxy(row.left + row.width / 2, row.top + row.height / 2);
@@ -2522,6 +2551,7 @@
           copy.getBoundingClientRect();
           copy.removeAttribute("zen-essential");
           copy.removeAttribute("pinned");
+          fadeSplitContent(copy, ESSENTIAL_MS);
           const size = plainTabSize();
           sizeCopy(copy, size.width, size.height);
         } else {
@@ -2531,6 +2561,7 @@
           copy.getBoundingClientRect();
           copy.setAttribute("zen-essential", "true");
           copy.setAttribute("pinned", "true");
+          fadeSplitContent(copy, ESSENTIAL_MS);
           sizeCopy(copy, state.tile.width, state.tile.height);
         }
 
@@ -2980,6 +3011,34 @@
     let dragGen = 0;
     let releaseHeld = null;
     window.addEventListener("drop", () => (isRealDrop = true), true);
+
+    // A split (or a split essential) can't be split again: Zen still
+    // offered to drop one on the page as a new split, which didn't work and
+    // left things broken. Its offer is kept from seeing the drag at all.
+    const draggingSplit = (event) => {
+      let tab = null;
+      try {
+        tab = event.dataTransfer?.mozGetDataAt?.("application/x-moz-tabbrowser-tab", 0) || null;
+      } catch (err) {
+        tab = null;
+      }
+      tab ||= drag?.tab || null;
+      return !!(drag?.split || tab?.splitView || tab?.group?.hasAttribute?.("split-view-group") || tab?.ziaSplit?.id);
+    };
+    for (const type of ["dragover", "dragenter", "drop"]) {
+      window.addEventListener(
+        type,
+        (event) => {
+          if (event.target?.closest?.("#tabbrowser-tabbox") && draggingSplit(event)) {
+            event.stopPropagation();
+            if (type === "drop") {
+              event.preventDefault();
+            }
+          }
+        },
+        true
+      );
+    }
     window.addEventListener("dragstart", () => (isRealDrop = false), true);
 
     const settle = () => {
