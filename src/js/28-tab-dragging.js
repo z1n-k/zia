@@ -634,7 +634,7 @@
             drag.widthGo = true;
             morphWidth(null);
             drag.widthGo = false;
-          }, 90);
+          }, 200);
         }
         return;
       }
@@ -2957,6 +2957,9 @@
           setTimeout(() => {
             try {
               finishDrop(tab, target);
+              // (its width put right as it moves, in the same frame: a frame
+              // later, the row's new width showed first, 14px narrower)
+              refitLanding?.();
               repinLanding?.();
               refitHeld?.();
             } catch (err) {
@@ -3201,6 +3204,7 @@
     let pendingFinish = false;
     let heldFolder = null;
     let repinLanding = null;
+    let refitLanding = null;
     let refitHeld = null;
     let heldPinned = null;
     let dragGen = 0;
@@ -3297,6 +3301,7 @@
           node.style.setProperty("transform", `translate(${landing.left - at.left}px, ${landing.top - at.top}px)`, "important");
         };
         repinLanding = pin;
+        refitLanding = landing.bg ? () => settleDroppedWidth(landing.tab, landing.bgWidth) : null;
         const glideIn = () => {
           if (pendingFinish) {
             pin();
@@ -3304,6 +3309,7 @@
             return;
           }
           repinLanding = null;
+          refitLanding = null;
           refitHeld?.();
           node.style.removeProperty("transform");
           // The narrower look goes before the glide, which then starts the
