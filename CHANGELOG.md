@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Dragging a tab: now and then the folders above it all jumped up out of its
+  way as it was barely moved (the tabs' order was read from a count that
+  can lag a moment behind a move).
+
 ## [2.72.10] — 2026-09-29
 
 ### Fixed

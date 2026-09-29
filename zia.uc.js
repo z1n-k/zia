@@ -9415,7 +9415,7 @@
         rows.push({
           item,
           node,
-          index: item.elementIndex ?? rows.length,
+          index: rows.length,
           top: box.top,
           mid: box.top + box.height / 2,
           height: box.height,
@@ -9423,6 +9423,14 @@
           delta: 0,
         });
       }
+      // Numbered by where they are in the sidebar, not Firefox's count of
+      // tabs: that count can lag a move for a moment, and a tab dragged a
+      // little then counted as above the folders it sat under, which all
+      // moved up out of its way
+      rows.sort((a, b) => (a.node === b.node ? 0 : a.node.compareDocumentPosition(b.node) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
+      rows.forEach((row, i) => {
+        row.index = i;
+      });
       return rows;
     };
 
