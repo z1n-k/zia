@@ -2263,7 +2263,40 @@
       }
     };
 
-    const listRoom = { rows: null, pitch: 0, sep: null, sepTop: null, sepDelta: 0, first: undefined };
+    const listRoom = { rows: null, pitch: 0, sep: null, sepTop: null, sepDelta: 0, first: undefined, folder: null };
+
+    // An essential dragged into the list goes into a folder as a tab does:
+    // over a closed folder (its end), between the tabs of an open one, or
+    // over an open empty one's slot
+    const listRoomFolder = (prev, first, y) => {
+      if (!prev) {
+        return null;
+      }
+      if (isFolderEl(prev.node) && isCollapsed(prev.node)) {
+        return y < prev.top + prev.height ? prev.node : null;
+      }
+      const label = prev.node.classList?.contains("tab-group-label-container");
+      const folder = label ? prev.node.parentElement : prev.node.parentElement?.closest?.("zen-folder, tab-group:not([split-view-group])");
+      if (!folder || !isFolderEl(folder) || isCollapsed(folder)) {
+        return null;
+      }
+      const firstInside = first && folder.contains(first.node) && first.node !== folder.labelContainerElement;
+      if (firstInside) {
+        return folder;
+      }
+      if (label && folder.hasAttribute("zia-empty") && y < prev.top + prev.height * 2) {
+        return folder;
+      }
+      return null;
+    };
+    const markListRoomFolder = (folder) => {
+      if (listRoom.folder === folder) {
+        return;
+      }
+      listRoom.folder?.removeAttribute("zia-drop-slot");
+      listRoom.folder = folder || null;
+      folder?.setAttribute("zia-drop-slot", "true");
+    };
     const openListRoom = () => {
       listRoom.rows = measureRows(null);
       listRoom.sep = currentSeparator();
@@ -2294,10 +2327,14 @@
         openListRoom();
       }
       let first = null;
+      let prev = null;
       for (const row of listRoom.rows) {
         const down = row.mid > y;
         if (down && !first) {
           first = row;
+        }
+        if (!down) {
+          prev = row;
         }
         const delta = down ? listRoom.pitch : 0;
         if (row.delta !== delta) {
@@ -2325,6 +2362,7 @@
         }
         listRoom.first = first;
       }
+      markListRoomFolder(listRoomFolder(prev, first, y));
     };
     const closeListRoom = () => {
       if (!listRoom.rows) {
@@ -2345,6 +2383,7 @@
         place(listRoom.button, 0, false);
       }
       reclip();
+      markListRoomFolder(null);
       listRoom.rows = null;
       listRoom.first = undefined;
     };
@@ -2354,6 +2393,8 @@
       const sep = listRoom.sep;
       const sepTop = listRoom.sepTop;
       const below = sepTop != null && y > sepTop;
+      const folder = listRoom.folder?.isConnected ? listRoom.folder : null;
+      markListRoomFolder(null);
       listRoom.rows = null;
       listRoom.first = undefined;
       // Zen takes the tab out of the essentials in its own time after the
@@ -2410,6 +2451,11 @@
               for (const t of tabs) {
                 pinFor(t, !below);
               }
+              if (folder) {
+                const inside = first && folder.contains(first.node) ? first : null;
+                splitIntoFolder(group, folder, { first: false, atEnd: !inside, next: inside });
+                return;
+              }
               if (first && (below || sepTop == null || first.top < sepTop)) {
                 placeBefore(group, topLevel(first));
               } else if (!below && sep) {
@@ -2421,6 +2467,16 @@
             return;
           }
           pinFor(tab, !below);
+          if (folder) {
+            if (isCollapsed(folder)) {
+              parkInFolder(tab, folder);
+            } else if (first && folder.contains(first.node) && gBrowser.isTab(first.node)) {
+              placeBefore(tab, first.node);
+            } else {
+              folder.addTabs?.([tab]);
+            }
+            return;
+          }
           if (first && (below || sepTop == null || first.top < sepTop)) {
             placeBefore(tab, topLevel(first));
           } else if (!below && sep) {
@@ -2829,10 +2885,15 @@
       // pointer through while it's dragged), so its button wasn't noted:
       // a tab dropped into a folder showed nothing between losing its x
       // and the browser finding the pointer on it again for the -
-      if (gBrowser.isTab(folder) && !buttons.some((button) => folder.contains(button))) {
-        const own = folder.querySelector(folder.pinned ? ".tab-reset-button" : ".tab-close-button");
-        if (own) {
-          buttons.push(own);
+      // (a split's tabs all: it shows the x of both while it's hovered, and
+      // with one held, it flashed on the one and off again)
+      const dropSplit = gBrowser.isTab(folder) && folder.group?.hasAttribute?.("split-view-group") ? folder.group : null;
+      if (gBrowser.isTab(folder) && !buttons.some((button) => (dropSplit || folder).contains(button))) {
+        for (const tab of dropSplit ? [...dropSplit.querySelectorAll(".tabbrowser-tab")] : [folder]) {
+          const own = tab.querySelector(tab.pinned ? ".tab-reset-button" : ".tab-close-button");
+          if (own) {
+            buttons.push(own);
+          }
         }
       }
       for (const node of held) {
@@ -2876,7 +2937,8 @@
         // still held), both tabs showed their -
         buttons = buttons.filter((button) => {
           const tab = button.closest(".tabbrowser-tab");
-          if (tab?.matches(":hover")) {
+          // (a split's x's are held while it's hovered, either tab)
+          if ((tab?.closest("tab-group[split-view-group]") || tab)?.matches(":hover")) {
             return true;
           }
           button.removeAttribute("zia-held-shown");
