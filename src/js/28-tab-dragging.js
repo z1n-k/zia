@@ -465,6 +465,7 @@
         } else {
           let origBottom = -Infinity;
           let shownBottom = -Infinity;
+          let showsTab = false;
           for (const row of drag.rows) {
             if (row.node === f || !f.contains(row.node)) {
               continue;
@@ -477,13 +478,21 @@
             if (!notARow(row)) {
               const intoThisSlot = slot && into && target.folder === row.node.parentElement;
               shownBottom = Math.max(shownBottom, row.top + (row.delta || 0) + row.height + (intoThisSlot ? 0 : slot));
+              showsTab ||= row.node !== headerOf(f);
             }
           }
           if (into && target.slotTop != null) {
             shownBottom = Math.max(shownBottom, target.slotTop + drag.height);
+            showsTab = true;
           }
           if (Number.isFinite(origBottom) && Number.isFinite(shownBottom)) {
             grow = shownBottom - origBottom;
+          }
+          // Closed, its open tab dragged out of it, it loses the padding below
+          // that tab too (chrome.css): the box closed up to the name less
+          // that, and snapped the rest of the way on the drop
+          if (isCollapsed(f) && !showsTab) {
+            grow -= parseFloat(getComputedStyle(f).getPropertyValue("--zia-folder-inner-gap")) || 0;
           }
         }
         f.style.setProperty("--zia-drag-bg-top", `${Math.round(top)}px`);
