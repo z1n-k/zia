@@ -2958,8 +2958,22 @@
       }
       heldPinned = null;
       let timer = 0;
-      const check = () => {
-        if (!held.some((node) => node.matches(":hover"))) {
+      // Over a node by where the pointer is, not by :hover: Zen tidies a
+      // folder a moment after a drop, and Firefox forgets what's hovered
+      // until the pointer next moves, so a move just then let the hold go
+      // and the folder's box (and so the tab over it) flashed darker
+      const over = (node, event) => {
+        if (node.matches(":hover")) {
+          return true;
+        }
+        if (!event?.clientX && !event?.clientY) {
+          return false;
+        }
+        const box = node.getBoundingClientRect();
+        return event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
+      };
+      const check = (event) => {
+        if (!held.some((node) => node.isConnected && over(node, event))) {
           release();
           return;
         }
@@ -2969,7 +2983,8 @@
         buttons = buttons.filter((button) => {
           const tab = button.closest(".tabbrowser-tab");
           // (a split's x's are held while it's hovered, either tab)
-          if ((tab?.closest("tab-group[split-view-group]") || tab)?.matches(":hover")) {
+          const host = tab?.closest("tab-group[split-view-group]") || tab;
+          if (host && over(host, event)) {
             return true;
           }
           button.removeAttribute("zia-held-shown");

@@ -1538,6 +1538,24 @@
     });
   }
 
+  // Closing one of a split's two tabs: Zen breaks the split up, each tab a
+  // row of its own again, so the closing one shrank away as a row with the
+  // one left sliding up from under it, a jump where the split had been. It
+  // goes at once, taking no room, and the one left is where the split was.
+  function closeSplitTabsInPlace() {
+    gBrowser.tabContainer.addEventListener(
+      "TabClose",
+      (event) => {
+        const tab = event.target;
+        const split = tab?.group?.hasAttribute?.("split-view-group") ? tab.group : null;
+        if (split && split.tabs.filter((t) => !t.closing || t === tab).length <= 2) {
+          tab.setAttribute("zia-split-closing", "true");
+        }
+      },
+      true
+    );
+  }
+
   function watchTabAnimations() {
     gBrowser.tabContainer.addEventListener("TabOpen", (event) => {
       const tab = event.target;
@@ -12081,8 +12099,22 @@
       }
       heldPinned = null;
       let timer = 0;
-      const check = () => {
-        if (!held.some((node) => node.matches(":hover"))) {
+      // Over a node by where the pointer is, not by :hover: Zen tidies a
+      // folder a moment after a drop, and Firefox forgets what's hovered
+      // until the pointer next moves, so a move just then let the hold go
+      // and the folder's box (and so the tab over it) flashed darker
+      const over = (node, event) => {
+        if (node.matches(":hover")) {
+          return true;
+        }
+        if (!event?.clientX && !event?.clientY) {
+          return false;
+        }
+        const box = node.getBoundingClientRect();
+        return event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
+      };
+      const check = (event) => {
+        if (!held.some((node) => node.isConnected && over(node, event))) {
           release();
           return;
         }
@@ -12092,7 +12124,8 @@
         buttons = buttons.filter((button) => {
           const tab = button.closest(".tabbrowser-tab");
           // (a split's x's are held while it's hovered, either tab)
-          if ((tab?.closest("tab-group[split-view-group]") || tab)?.matches(":hover")) {
+          const host = tab?.closest("tab-group[split-view-group]") || tab;
+          if (host && over(host, event)) {
             return true;
           }
           button.removeAttribute("zia-held-shown");
@@ -13171,6 +13204,7 @@
     safely("watchNewTabPage", watchNewTabPage);
     safely("createWorkspaceSlot", createWorkspaceSlot);
     safely("watchTabAnimations", watchTabAnimations);
+    safely("closeSplitTabsInPlace", closeSplitTabsInPlace);
     safely("moveTabsLikeDia", moveTabsLikeDia);
     safely("hideTabListScrollbars", hideTabListScrollbars);
     safely("addFolderBounce", addFolderBounce);

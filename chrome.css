@@ -1529,6 +1529,19 @@ zen-split-fake-tab {
   visibility: hidden !important;
   opacity: 0 !important;
 }
+
+/* One of a split's two tabs closing goes at once, taking no room, so the
+   one left stays where the split was (zia.uc.js) */
+.tabbrowser-tab[zia-split-closing] {
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  margin-block: 0 !important;
+  padding-block: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
 @property --zia-folder-bottom-extra {
   syntax: "<length>";
   inherits: false;
@@ -4923,8 +4936,21 @@ zen-folder .tab-reset-button {
   opacity: var(--zia-nav-rest);
 }
 
-:is(#back-button, #forward-button, #stop-button) > .toolbarbutton-icon {
+:is(#back-button, #forward-button, #reload-button, #stop-button) > .toolbarbutton-icon {
   transition: background-color 0.2s ease !important;
+}
+
+/* Reload and stop are two buttons, one swapped for the other as a page
+   starts and stops loading: the one swapped in isn't hovered until the
+   pointer next moves, so the hover square went and snapped back with no
+   fade (and reload, disabled for a moment after each load, lost it too).
+   It's drawn for the pair instead, which stays hovered throughout. */
+#stop-reload-button:hover > :is(#reload-button, #stop-button) > .toolbarbutton-icon {
+  background-color: var(--toolbarbutton-hover-background) !important;
+}
+
+#stop-reload-button:hover > :is(#reload-button, #stop-button):hover:active > .toolbarbutton-icon {
+  background-color: var(--toolbarbutton-active-background, var(--toolbarbutton-hover-background)) !important;
 }
 
 #back-button::before {

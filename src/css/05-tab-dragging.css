@@ -308,3 +308,16 @@ zen-split-fake-tab {
   visibility: hidden !important;
   opacity: 0 !important;
 }
+
+/* One of a split's two tabs closing goes at once, taking no room, so the
+   one left stays where the split was (zia.uc.js) */
+.tabbrowser-tab[zia-split-closing] {
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  margin-block: 0 !important;
+  padding-block: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}

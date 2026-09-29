@@ -250,6 +250,7 @@
     safely("watchNewTabPage", watchNewTabPage);
     safely("createWorkspaceSlot", createWorkspaceSlot);
     safely("watchTabAnimations", watchTabAnimations);
+    safely("closeSplitTabsInPlace", closeSplitTabsInPlace);
     safely("moveTabsLikeDia", moveTabsLikeDia);
     safely("hideTabListScrollbars", hideTabListScrollbars);
     safely("addFolderBounce", addFolderBounce);
