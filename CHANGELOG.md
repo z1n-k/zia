@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Folders: tucking the workspace's folders away (clicking its name) leaves no
+  gaps above or below the one still showing.
+
 ## [2.72.9] — 2026-09-29
 
 ### Fixed

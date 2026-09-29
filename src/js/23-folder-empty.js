@@ -56,7 +56,8 @@
       const inner = container.getBoundingClientRect();
       const boxRight = folderBox.right - (parseFloat(box.right) || 0);
       const boxBottom = folderBox.bottom - (parseFloat(box.bottom) || 0);
-      const gap = boxBottom - (inner.bottom - bottom);
+      // (the list's own padding below the slot is part of that gap)
+      const gap = boxBottom - (inner.bottom - (parseFloat(getComputedStyle(container).paddingBottom) || 0) - bottom);
       if (gap > 0 && gap < 20) {
         end = inner.right - (boxRight - gap);
       }

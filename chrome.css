@@ -1696,24 +1696,24 @@ zen-split-fake-tab {
    * the inner gap closer to the folder's name (the room under the name was
    * more than above it), so the padding fits in the height a tab dragged in
    * is given. Open or closed alike: switched off as a folder closed, its
-   * tabs dropped that gap before closing */
+   * tabs dropped that gap before closing. The padding is the list's, not
+   * the folder's: Zen hides a folder by taking its height away (the
+   * workspace's folders tucked away), and a folder's own padding stayed,
+   * leaving a sliver for each. */
   &:not(:has(> .tab-group-container[hidden])) {
     --zia-folder-box-bottom: var(--tab-margin-block);
-    padding-bottom: var(--zia-folder-inner-gap) !important;
   }
 
   & > .tab-group-container:not([hidden]) {
+    box-sizing: border-box;
     margin-top: calc(-1 * var(--zia-folder-inner-gap)) !important;
+    padding-bottom: var(--zia-folder-inner-gap) !important;
   }
 
   & :is(zen-folder, tab-group:not([split-view-group])) {
     --zia-folder-box-left: 0px;
     --zia-folder-box-right: calc(var(--zia-folder-right-fix, 0px) + var(--zia-folder-inner-gap));
     --zia-folder-box-bottom: var(--tab-margin-block);
-
-    &:not(:has(> .tab-group-container[hidden])) {
-      padding-bottom: var(--zia-folder-inner-gap) !important;
-    }
   }
 
   & :is(zen-folder, tab-group:not([split-view-group])) :is(zen-folder, tab-group:not([split-view-group])) {
