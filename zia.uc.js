@@ -2320,22 +2320,74 @@
 
   // A space's pinned tabs tucked away (its name clicked) keep showing the
   // tab that was open among them, as a closed folder does. Once a tab
-  // outside them is chosen, none of them is open: they all go.
+  // outside them is chosen, none of them is open: they all go, shut as the
+  // name shuts them (the same speed), and the folders among them that were
+  // showing that tab are closed properly once out of sight (left as they
+  // were, one opened again showing the tab, at the tucked-away indent)
   function tuckAwayUnopenedPins() {
-    gBrowser.tabContainer.addEventListener("TabSelect", (event) => {
+    gBrowser.tabContainer.addEventListener("TabSelect", async (event) => {
       const tab = event.target;
       if (!tab || (tab.pinned && !tab.hasAttribute("zen-essential"))) {
         return;
       }
       const pins = window.gZenWorkspaces?.activeWorkspaceElement?.collapsiblePins;
-      if (!pins?.collapsed || !pins.hasAttribute("has-active") || pins.contains(tab)) {
+      const zen = window.gZenFolders;
+      if (!zen || !pins?.collapsed || !pins.hasAttribute("has-active") || pins.contains(tab)) {
         return;
       }
-      // (shut as its name does, the same speed: Zen's unload was quicker)
-      pins.removeAttribute("has-active");
-      pins.activeTabs = [];
-      window.gZenFolders?.animateCollapse?.(pins)?.catch?.((err) => noteError("tuck away pins", err));
+      try {
+        const folders = pins.childActiveGroups || [];
+        pins.removeAttribute("has-active");
+        pins.activeTabs = [];
+        await zen.animateCollapse(pins);
+        if (!pins.collapsed || pins.hasAttribute("has-active")) {
+          return;
+        }
+        for (const folder of folders) {
+          if (!folder.isConnected || !folder.hasAttribute("has-active")) {
+            continue;
+          }
+          folder.removeAttribute("has-active");
+          folder.activeTabs = [];
+          for (const shown of folder.querySelectorAll("[folder-active]")) {
+            shown.removeAttribute("folder-active");
+            (shown.group?.hasAttribute("split-view-group") ? shown.group : shown).style.removeProperty("--zen-folder-indent");
+          }
+          zen.styleCleanup(folder.allItemsRecursive || folder.allItems || []);
+          if (folder.collapsed) {
+            folder.groupContainer?.setAttribute("hidden", "true");
+            if (folder.groupStartElement) {
+              folder.groupStartElement.style.marginTop = "-4px";
+            }
+          }
+        }
+      } catch (err) {
+        noteError("tuck away pins", err);
+      }
     });
+  }
+
+  // A folder opening round an open folder inside it: that folder's tabs,
+  // hidden while the outer one showed just its open tab, come in with the
+  // outer one (Zen reveals only the outer folder's own rows, so they stayed
+  // hidden until something tidied them, and snapped in)
+  function revealOpenSubfolders() {
+    window.addEventListener(
+      "TabGroupExpand",
+      (event) => {
+        const folder = event.target;
+        if (folder?.localName !== "zen-folder") {
+          return;
+        }
+        for (const inner of folder.querySelectorAll("zen-folder:not([collapsed]):not([has-active])")) {
+          const hidden = (inner.allItems || []).filter((item) => item.style.height === "0px" || item.style.opacity === "0");
+          if (hidden.length) {
+            window.gZenFolders?.styleCleanup?.(hidden);
+          }
+        }
+      },
+      true
+    );
   }
 
   function keepFolderNamesInCollapsedSpaces() {
@@ -13738,6 +13790,7 @@
     safely("addFolderBounce", addFolderBounce);
     safely("keepFolderNamesInCollapsedSpaces", keepFolderNamesInCollapsedSpaces);
     safely("tuckAwayUnopenedPins", tuckAwayUnopenedPins);
+    safely("revealOpenSubfolders", revealOpenSubfolders);
     safely("keepTabsHiddenAfterActiveLeaves", keepTabsHiddenAfterActiveLeaves);
     safely("openKeptFolderNames", openKeptFolderNames);
     safely("allowEmojiFolderIcons", allowEmojiFolderIcons);

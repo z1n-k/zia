@@ -12,6 +12,8 @@ Every release of Zia, newest first. The format follows
   gaps above or below the one still showing.
 - Spaces: with the pinned tabs tucked away, choosing a tab outside them
   tucks away the one that was open among them too (it stayed showing).
+- Folders: a folder inside another that's open opens along with it, its tabs
+  sliding in, not snapping in afterwards.
 
 ## [2.72.9] — 2026-09-29
 
