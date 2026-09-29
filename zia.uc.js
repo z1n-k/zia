@@ -1700,6 +1700,28 @@
     return rows;
   }
 
+  // Zen works out how far up a shut folder's contents go from the folder's
+  // height as it is then: shut while Zia still held it part way open (open
+  // and shut again quickly), that was the part-way height, and the bottom
+  // tabs stayed showing under the shut folder. Measured again here, with
+  // nothing of Zia's holding it.
+  function settleShutFolder(folder, container, start) {
+    if (!folder.collapsed || folder.hasAttribute("has-active") || !container.isConnected) {
+      return;
+    }
+    const wasHidden = container.hasAttribute("hidden");
+    container.removeAttribute("hidden");
+    start.style.marginTop = "0px";
+    let height = container.getBoundingClientRect().height;
+    if (container.separatorElement) {
+      height -= container.separatorElement.getBoundingClientRect().height;
+    }
+    start.style.marginTop = `${-(height + 4)}px`;
+    if (wasHidden) {
+      container.setAttribute("hidden", "true");
+    }
+  }
+
   function stopFolderAnimation(container) {
     const running = folderAnims.get(container);
     if (!running) {
@@ -1748,7 +1770,11 @@
   function playFolder(scene) {
     const { folder, container, start } = scene;
     releaseFolder(scene);
-    if (!container.isConnected || folderSkip.has(folder)) {
+    if (!container.isConnected) {
+      return;
+    }
+    settleShutFolder(folder, container, start);
+    if (folderSkip.has(folder)) {
       return;
     }
     const hidden = container.hasAttribute("hidden");
@@ -1834,6 +1860,8 @@
       over = true;
       container.removeAttribute("zia-folder-holding");
       container.style.removeProperty("display");
+      // (and after Zen's own second look, taken while this was running)
+      settleShutFolder(folder, container, start);
     };
     const running = { anims, cleanup };
     folderAnims.set(container, running);
