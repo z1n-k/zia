@@ -2101,7 +2101,8 @@
     }
     // (only with folders squashed from showing one tab: tucked away with
     // none showing, Zen's push is right)
-    if (!(pins.allItems || []).some((item) => item.style.height === "0px")) {
+    // (held there by Zen's finished animations, not a style of their own)
+    if (!(pins.allItems || []).some((item) => item.getBoundingClientRect().height < 1)) {
       return keyframes;
     }
     const px = (v) => parseFloat(v);
