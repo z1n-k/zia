@@ -427,6 +427,18 @@
       }
       showingStop = now;
       replayAttribute(container, "zia-morph", 450, now ? "to-stop" : "to-reload");
+      // Reload's hover look (its arrowhead drawn back) isn't kept while
+      // stop's showing: coming back, reload grew in whole and then snapped
+      // to that look. It springs into it once it's in, if still hovered.
+      if (now) {
+        reload.ziaReloadCut?.(0, true);
+      } else {
+        setTimeout(() => {
+          if (!reload.hasAttribute("displaystop") && container.matches(":hover")) {
+            reload.ziaReloadCut?.(RELOAD_HOVER_CUT);
+          }
+        }, 330);
+      }
     }).observe(reload, { attributes: true, attributeFilter: ["displaystop"] });
   }
 
@@ -463,6 +475,20 @@
       };
       frame = requestAnimationFrame(step);
     };
-    button.addEventListener("mouseenter", () => go(RELOAD_HOVER_CUT));
+    button.addEventListener("mouseenter", () => {
+      // (not while it's coming back in from stop: that springs it after)
+      if (!button.parentElement?.hasAttribute("zia-morph")) {
+        go(RELOAD_HOVER_CUT);
+      }
+    });
     button.addEventListener("mouseleave", () => go(0));
+    button.ziaReloadCut = (target, instant = false) => {
+      if (instant) {
+        cancelAnimationFrame(frame);
+        cut = target;
+        button.style.setProperty("--zia-reload-cut", `${cut}deg`);
+        return;
+      }
+      go(target);
+    };
   }

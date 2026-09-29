@@ -1943,6 +1943,24 @@
         } else if (drag.split) {
           hideProxy();
         }
+        // (window.ziaDragDebug: how a dragged split looks, for a bug report)
+        if (drag.split && Array.isArray(window.ziaDragDebug)) {
+          const m = drag.moving;
+          const look = (el) => {
+            if (!el) {
+              return "-";
+            }
+            const cs = getComputedStyle(el);
+            const b = el.getBoundingClientRect();
+            return `op=${cs.opacity} vis=${cs.visibility} disp=${cs.display} ${Math.round(b.left)},${Math.round(b.top)} ${Math.round(b.width)}x${Math.round(b.height)}`;
+          };
+          const attrs = (el) => [...(el?.attributes || [])].map((a) => a.name).filter((n) => n.startsWith("zia") || ["movingtab", "dragtarget", "hidden", "collapsed"].includes(n)).join(",");
+          const half = m?.querySelector?.(".tabbrowser-tab");
+          const line = `split over=${overEssentials} splitEss=${drag.splitEssential} proxy=${proxy ? (proxy.ziaLeaving ? "leaving" : "on") : "none"} | group[${attrs(m)}] ${look(m)} | box ${look(m?.querySelector?.(":scope > .tab-group-container"))} | tab[${attrs(half)}] ${look(half)}`;
+          if (window.ziaDragDebug.at(-1) !== line) {
+            window.ziaDragDebug.push(line);
+          }
+        }
         drag.noTiles = drag.essentials && !hasTiles && !promo;
         makeRoom(drag.noTiles ? document.getElementById("zen-essentials") || grid : null);
         if (drag.essentials) {
@@ -3026,34 +3044,6 @@
     let dragGen = 0;
     let releaseHeld = null;
     window.addEventListener("drop", () => (isRealDrop = true), true);
-
-    // A split (or a split essential) can't be split again: Zen still
-    // offered to drop one on the page as a new split, which didn't work and
-    // left things broken. Its offer is kept from seeing the drag at all.
-    const draggingSplit = (event) => {
-      let tab = null;
-      try {
-        tab = event.dataTransfer?.mozGetDataAt?.("application/x-moz-tabbrowser-tab", 0) || null;
-      } catch (err) {
-        tab = null;
-      }
-      tab ||= drag?.tab || null;
-      return !!(drag?.split || tab?.splitView || tab?.group?.hasAttribute?.("split-view-group") || tab?.ziaSplit?.id);
-    };
-    for (const type of ["dragover", "dragenter", "drop"]) {
-      window.addEventListener(
-        type,
-        (event) => {
-          if (event.target?.closest?.("#tabbrowser-tabbox") && draggingSplit(event)) {
-            event.stopPropagation();
-            if (type === "drop") {
-              event.preventDefault();
-            }
-          }
-        },
-        true
-      );
-    }
     window.addEventListener("dragstart", () => (isRealDrop = false), true);
 
     const settle = () => {
