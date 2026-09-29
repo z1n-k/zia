@@ -2102,7 +2102,10 @@
     // (only with folders squashed from showing one tab: tucked away with
     // none showing, Zen's push is right)
     // (held there by Zen's finished animations, not a style of their own)
-    if (!(pins.allItems || []).some((item) => item.getBoundingClientRect().height < 1)) {
+    // (Zen's hidden placeholder tab and any row not shown are always
+    // nothing high: not a sign of it)
+    const rows = (pins.allItems || []).filter((item) => !item.hasAttribute("zen-empty-tab") && !item.hidden && getComputedStyle(item).display !== "none");
+    if (!rows.some((item) => item.getBoundingClientRect().height < 1)) {
       return keyframes;
     }
     const px = (v) => parseFloat(v);
