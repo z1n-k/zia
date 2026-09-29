@@ -624,6 +624,33 @@
       tab.setAttribute("zia-morph", "true");
     };
 
+    // The narrower look is let go only once the row's own width matches it:
+    // dropped in a closed folder, the folder gives the tab its indent a few
+    // frames after the drop (as Zen settles it), and let go straight away,
+    // it showed full width for a moment in between
+    const settleWidth = (tab, tries = 0) => {
+      const node = [tab, tab?.group?.hasAttribute?.("split-view-group") ? tab.group : null].find((n) => n?.hasAttribute?.("zia-morph"));
+      if (!node) {
+        return;
+      }
+      const box = node.localName === "tab-group" ? node.querySelector(":scope > .tab-group-container") : node.querySelector(".tab-background");
+      if (box && tries < 30) {
+        // (measured with its slide off, so the look doesn't start moving)
+        node.setAttribute("zia-morph-done", "true");
+        const shown = box.getBoundingClientRect();
+        node.removeAttribute("zia-morph");
+        const own = box.getBoundingClientRect();
+        node.setAttribute("zia-morph", "true");
+        box.getBoundingClientRect();
+        node.removeAttribute("zia-morph-done");
+        if (shown.width > 0 && own.width > 0 && (Math.abs(own.left - shown.left) > 1 || Math.abs(own.right - shown.right) > 1)) {
+          requestAnimationFrame(() => settleWidth(tab, tries + 1));
+          return;
+        }
+      }
+      unmorphWidth(tab);
+    };
+
     const unmorphWidth = (tab) => {
       for (const node of [tab, tab?.group?.hasAttribute("split-view-group") ? tab.group : null]) {
         if (!node?.hasAttribute("zia-morph")) {
@@ -2140,10 +2167,17 @@
     };
 
     const plainTabSize = () => {
+      // (a tab on its own in the list: half of a split, or a tab in a
+      // folder, is narrower, and an essential dragged off came out that size)
       const sample = [...gBrowser.visibleTabs].find(
-        (tab) => !tab.hasAttribute("zen-essential") && !tab.hasAttribute("zen-empty-tab") && tab.getBoundingClientRect().height > 8
+        (tab) => !tab.hasAttribute("zen-essential") && !tab.hasAttribute("zen-empty-tab") && !tab.group && tab.getBoundingClientRect().height > 8
       );
-      const bg = sample?.querySelector(".tab-background")?.getBoundingClientRect();
+      const splitBox = sample
+        ? null
+        : [...document.querySelectorAll("#tabbrowser-tabs tab-group[split-view-group] > .tab-group-container")].find(
+            (box) => !box.closest("zen-folder, tab-group:not([split-view-group])") && box.getBoundingClientRect().height > 8
+          );
+      const bg = (sample?.querySelector(".tab-background") || splitBox)?.getBoundingClientRect();
       if (bg?.width) {
         return { width: bg.width, height: bg.height };
       }
@@ -3067,7 +3101,7 @@
       }
       if (drag?.bg) {
         const { bg, content } = drag;
-        setTimeout(() => requestAnimationFrame(() => unmorphWidth(droppedTab, bg, content)), 0);
+        setTimeout(() => requestAnimationFrame(() => settleWidth(droppedTab)), 0);
       }
       drag = null;
       pending = null;
@@ -3147,7 +3181,7 @@
           // background where it showed: dropped in a folder, it went a
           // step left as the glide began and slid back
           if (landing.bg) {
-            unmorphWidth(landing.tab);
+            settleWidth(landing.tab);
           }
           unmorphFolder(node);
           const to = node.getBoundingClientRect();
