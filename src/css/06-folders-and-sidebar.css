@@ -122,10 +122,11 @@
     padding-bottom: var(--zia-folder-inner-gap) !important;
   }
 
-  /* Closed and showing its open tab, that tab sits the inner gap closer to
-   * the folder's name (the room under the name was more than above it), so
-   * the padding below fits in the height a tab dragged in is given */
-  &[collapsed]:is([has-active], :has(tab[selected], tab[atg-folder-active])) > .tab-group-container {
+  /* Open, or closed and showing its open tab, the tabs sit the inner gap
+   * closer to the folder's name (the room under the name was more than
+   * above it), so the padding below fits in the height a tab dragged in is
+   * given */
+  &:is(:not([collapsed]), [collapsed]:is([has-active], :has(tab[selected], tab[atg-folder-active]))) > .tab-group-container {
     margin-top: calc(-1 * var(--zia-folder-inner-gap)) !important;
   }
 

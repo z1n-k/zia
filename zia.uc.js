@@ -9644,6 +9644,17 @@
       }
     };
 
+    // A closed folder not yet showing a tab, given the open tab, shows it
+    // the inner gap closer to its name (chrome.css): the room made for it
+    // is that much less, as the folder's box on the drop
+    const closerTab = (folder) => {
+      if (folder.hasAttribute("has-active") || folder.hasAttribute("zia-empty") || folder.querySelector(".tabbrowser-tab[selected]")) {
+        return 0;
+      }
+      const opens = drag.tab?.selected || !!drag.split?.querySelector?.(".tabbrowser-tab[selected]");
+      return opens ? parseFloat(getComputedStyle(folder).getPropertyValue("--zia-folder-inner-gap")) || 0 : 0;
+    };
+
     const paintedFolders = new Set();
     const paintFolders = () => {
       const target = drag.target;
@@ -9661,7 +9672,7 @@
         let top = 0;
         let grow = 0;
         if (isCollapsed(f) && !f.contains(drag.moving)) {
-          grow = into ? drag.pitch : 0;
+          grow = into ? drag.pitch - (target.folder === f ? closerTab(f) : 0) : 0;
           if (into && topRoom?.folder === f && topRoom.key === "up") {
             top = -drag.pitch;
             grow = 0;
@@ -10158,10 +10169,12 @@
 
     // Dropping into an open empty folder uses its slot as the tab's room, so
     // everything after the folder moves up by the slot's height on top of the
-    // usual shift, and the slot itself fades (chrome.css).
+    // usual shift, and the slot itself fades (chrome.css). Into a closed
+    // folder whose tab will sit the inner gap closer to its name, everything
+    // after it moves up that gap, as it will on the drop.
     const takeEmptySlot = () => {
       const folder = drag.target?.folder;
-      const pitch = slotPitchOf(folder);
+      const pitch = slotPitchOf(folder) || (folder && isCollapsed(folder) && !folder.contains(drag.moving) ? closerTab(folder) : 0);
       const headerRow = pitch ? drag.rows.find((row) => row.node === headerOf(folder)) : null;
       const after = (row) => !!headerRow && row.index > headerRow.index && !folder.contains(row.node);
       for (const row of drag.rows) {

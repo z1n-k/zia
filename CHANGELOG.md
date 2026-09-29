@@ -9,7 +9,8 @@ Every release of Zia, newest first. The format follows
 ### Fixed
 
 - Folders: a closed folder showing its open tab keeps its padding below the
-  tab again; the extra room under the folder's name goes instead.
+  tab again; the extra room under the folder's name goes instead, and the
+  room made while dragging a tab into it matches.
 - Dragging a tab out of a folder: it widens back to a full tab at once, as
   it narrowed going in.
 - Essentials: a row of fewer than would fit fills the sidebar, and the tiles
