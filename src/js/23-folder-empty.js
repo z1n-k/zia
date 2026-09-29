@@ -9,7 +9,11 @@
       return false;
     }
     return ![...container.children].some(
-      (child) => child.localName === "zen-folder" || (child.classList.contains("tabbrowser-tab") && !child.hasAttribute("zen-empty-tab"))
+      (child) =>
+        child.localName === "zen-folder" ||
+        // (a split in it too: it kept its slot, showing under the split)
+        child.localName === "tab-group" ||
+        (child.classList.contains("tabbrowser-tab") && !child.hasAttribute("zen-empty-tab"))
     );
   }
 

@@ -215,3 +215,32 @@
     setTimeout(scheduleEdgeAlign, 2000);
   }
 
+  // No scrollbar down the tab list: Zen gives each space's list its own
+  // (shown once it overflows), inside its scroll box, where the stylesheet's
+  // "no scrollbars" didn't reach. Set on the scroll box itself, for every
+  // space, including ones made later.
+  function hideTabListScrollbars() {
+    const toolbox = document.getElementById("navigator-toolbox");
+    if (!toolbox) {
+      return;
+    }
+    const apply = () => {
+      for (const box of document.querySelectorAll("zen-workspace arrowscrollbox, #tabbrowser-arrowscrollbox")) {
+        const inner = box.scrollbox || box.shadowRoot?.querySelector('[part~="scrollbox"]');
+        if (inner && inner.style.getPropertyValue("scrollbar-width") !== "none") {
+          inner.style.setProperty("scrollbar-width", "none", "important");
+        }
+      }
+    };
+    let frame = null;
+    new MutationObserver(() => {
+      if (!frame) {
+        frame = requestAnimationFrame(() => {
+          frame = null;
+          apply();
+        });
+      }
+    }).observe(toolbox, { childList: true, subtree: true });
+    apply();
+  }
+

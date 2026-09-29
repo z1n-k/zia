@@ -4,15 +4,6 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.72.6] — 2026-09-29
-
-### Changed
-
-- Back to 2.71.5, which was all working: everything since (Zia animating
-  folders itself and its undoing, the separator and gap changes to tab
-  dragging, the split outline over empty folders, and the tab list's
-  scrollbar fix) is taken out.
-
 ## [2.72.5] — 2026-09-29
 
 ### Fixed
