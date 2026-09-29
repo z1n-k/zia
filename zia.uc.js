@@ -2318,6 +2318,23 @@
     );
   }
 
+  // A space's pinned tabs tucked away (its name clicked) keep showing the
+  // tab that was open among them, as a closed folder does. Once a tab
+  // outside them is chosen, none of them is open: they all go.
+  function tuckAwayUnopenedPins() {
+    gBrowser.tabContainer.addEventListener("TabSelect", (event) => {
+      const tab = event.target;
+      if (!tab || (tab.pinned && !tab.hasAttribute("zen-essential"))) {
+        return;
+      }
+      const pins = window.gZenWorkspaces?.activeWorkspaceElement?.collapsiblePins;
+      if (!pins?.collapsed || !pins.hasAttribute("has-active") || pins.contains(tab)) {
+        return;
+      }
+      window.gZenFolders?.animateUnloadAll?.(pins)?.catch?.((err) => noteError("tuck away pins", err));
+    });
+  }
+
   function keepFolderNamesInCollapsedSpaces() {
     const timers = new WeakMap();
     const update = (space) => {
@@ -13717,6 +13734,7 @@
     safely("hideTabListScrollbars", hideTabListScrollbars);
     safely("addFolderBounce", addFolderBounce);
     safely("keepFolderNamesInCollapsedSpaces", keepFolderNamesInCollapsedSpaces);
+    safely("tuckAwayUnopenedPins", tuckAwayUnopenedPins);
     safely("keepTabsHiddenAfterActiveLeaves", keepTabsHiddenAfterActiveLeaves);
     safely("openKeptFolderNames", openKeptFolderNames);
     safely("allowEmojiFolderIcons", allowEmojiFolderIcons);

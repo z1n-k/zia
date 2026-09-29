@@ -255,6 +255,7 @@
     safely("hideTabListScrollbars", hideTabListScrollbars);
     safely("addFolderBounce", addFolderBounce);
     safely("keepFolderNamesInCollapsedSpaces", keepFolderNamesInCollapsedSpaces);
+    safely("tuckAwayUnopenedPins", tuckAwayUnopenedPins);
     safely("keepTabsHiddenAfterActiveLeaves", keepTabsHiddenAfterActiveLeaves);
     safely("openKeptFolderNames", openKeptFolderNames);
     safely("allowEmojiFolderIcons", allowEmojiFolderIcons);

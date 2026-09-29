@@ -10,6 +10,8 @@ Every release of Zia, newest first. The format follows
 
 - Folders: tucking the workspace's folders away (clicking its name) leaves no
   gaps above or below the one still showing.
+- Spaces: with the pinned tabs tucked away, choosing a tab outside them
+  tucks away the one that was open among them too (it stayed showing).
 
 ## [2.72.9] — 2026-09-29
 
