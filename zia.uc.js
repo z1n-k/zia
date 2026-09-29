@@ -12166,11 +12166,15 @@
           heldFolder = target.folder || null;
           heldPinned = !target.below;
           pendingFinish = true;
-          setTimeout(() => {
+          // Put in place as the drop settles, in the same step (see settle):
+          // left for a moment after, the room made for it in a folder had
+          // closed and it showed outside the folder, full width, for a frame
+          // or two (it waited for Zen's drop, which doesn't run for these)
+          const run = () => {
             try {
               finishDrop(tab, target);
-              // (its width put right as it moves, in the same frame: a frame
-              // later, the row's new width showed first, 14px narrower)
+              // (its width put right as it moves: the row's new width showed
+              // first otherwise, 14px narrower)
               refitLanding?.();
               repinLanding?.();
               refitHeld?.();
@@ -12178,6 +12182,13 @@
               console.error("[Zia] Tab drop failed:", err);
             }
             pendingFinish = false;
+          };
+          finishNow = run;
+          setTimeout(() => {
+            if (finishNow === run) {
+              finishNow = null;
+              run();
+            }
           }, 0);
         }
         const dnd = gBrowser.tabContainer.tabDragAndDrop;
@@ -12417,6 +12428,7 @@
     let heldFolder = null;
     let repinLanding = null;
     let refitLanding = null;
+    let finishNow = null;
     let refitHeld = null;
     let heldPinned = null;
     let dragGen = 0;
@@ -12594,6 +12606,12 @@
       };
       clearTimeout(lockTimer);
       wipe();
+      // the drop's own placing, now its landing is set up
+      if (finishNow) {
+        const run = finishNow;
+        finishNow = null;
+        run();
+      }
     };
     window.addEventListener("drop", settle, true);
     window.addEventListener("dragstart", () => {
