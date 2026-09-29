@@ -155,7 +155,12 @@
       if (style.visibility === "hidden" || parseFloat(style.opacity) < 0.05) {
         continue;
       }
-      rows.set(el, rect.top);
+      rows.set(el, {
+        top: rect.top,
+        height: rect.height,
+        mt: parseFloat(style.marginTop) || 0,
+        mb: parseFloat(style.marginBottom) || 0,
+      });
     }
     return rows;
   }
@@ -207,6 +212,7 @@
       container,
       start,
       height: shown,
+      top: container.getBoundingClientRect().top,
       margin: parseFloat(getComputedStyle(start).marginTop) || 0,
       display: getComputedStyle(container).display,
       rows: folderRows(container),
@@ -225,6 +231,66 @@
     scene.container.style.removeProperty("--zia-freeze-h");
     scene.container.style.removeProperty("--zia-freeze-m");
   }
+
+  // The rows a folder shows both before and after (a closed folder's open
+  // tab, and the name of a folder it sits in) ride the folder's bottom edge
+  // as it opens or shuts: the rows coming in are uncovered from under them,
+  // or the ones going are covered, instead of the kept rows gliding through
+  // them. `heights` are the container's keyframes, `layout` where each row
+  // sits while it plays, `from` and `to` where each is seen at the start
+  // and end (all from the container's top).
+  function rideFolderEdge(kept, heights, layout, from, to) {
+    const h = heights.map((frame) => parseFloat(frame.height) || 0);
+    const h0 = h[0];
+    const hN = h.at(-1);
+    const span = hN - h0 || 1;
+    const scale = window.devicePixelRatio || 1;
+    const anims = [];
+    kept.forEach((row, i) => {
+      // (kept rows under this one ride along below it)
+      let below = 0;
+      for (const other of kept.slice(i + 1)) {
+        below += layout.get(other).height;
+      }
+      const bottom = layout.get(row).top + layout.get(row).height;
+      const raw = h.map((value) => Math.min(0, value - bottom - below));
+      const start = from.get(row).top - layout.get(row).top;
+      const end = to.get(row).top - layout.get(row).top;
+      const frames = heights.map((frame, k) => {
+        const p = (h[k] - h0) / span;
+        const value = raw[k] + (start - raw[0]) * (1 - p) + (end - raw.at(-1)) * p;
+        const step = { translate: `0 ${Math.round(value * scale) / scale}px`, offset: frame.offset };
+        if (frame.easing) {
+          step.easing = frame.easing;
+        }
+        return step;
+      });
+      if (frames.every((frame) => frame.translate === "0 0px")) {
+        return;
+      }
+      anims.push({ row, frames });
+    });
+    return anims;
+  }
+
+  // Rows a folder lets go of while it shuts keep their room until it has
+  // (chrome.css), so the kept rows can cover them as they fade
+  function holdRow(row, place) {
+    row.style.setProperty("--zia-held-h", `${place.height}px`);
+    row.style.setProperty("--zia-held-mt", `${place.mt}px`);
+    row.style.setProperty("--zia-held-mb", `${place.mb}px`);
+    row.setAttribute("zia-held-row", "true");
+  }
+
+  function letGoOfRow(row) {
+    row.removeAttribute("zia-held-row");
+    row.style.removeProperty("--zia-held-h");
+    row.style.removeProperty("--zia-held-mt");
+    row.style.removeProperty("--zia-held-mb");
+  }
+
+  // Positions from the container's top
+  const fromTop = (rows, top) => new Map([...rows].map(([row, place]) => [row, { ...place, top: place.top - top }]));
 
   // After Zen's change: from what was on screen to the new layout
   function playFolder(scene) {
@@ -248,6 +314,7 @@
     const spring = bounceOn();
     const duration = spring ? FOLDER_SPRING_MS : 180;
     const anims = [];
+    const held = [];
 
     // shown while it closes, though Zen has already hidden it
     if (hidden) {
@@ -266,13 +333,13 @@
           duration,
           toHeight
         )
-      : [{ height: `${fromHeight}px` }, { height: `${toHeight}px` }];
-    const grow = container.animate(heights, { duration, easing: spring ? "linear" : "ease-in-out" });
+      : pixelSteps("height", [[0, fromHeight, EASE_IN_OUT], [1, toHeight]], duration, toHeight);
+    const grow = container.animate(heights, { duration, easing: "linear" });
     anims.push(grow);
 
-    // Closing on its contents: they stay where they were, and fade
     const moved = Math.abs(toMargin - scene.margin) >= 0.5;
     if (closing && moved) {
+      // Closing on its contents: they stay where they were, and fade
       anims.push(
         start.animate(
           [{ marginTop: `${scene.margin}px` }, { marginTop: `${scene.margin}px`, offset: 0.999 }, { marginTop: `${toMargin}px` }],
@@ -295,19 +362,51 @@
         );
       }
     } else if (!moved) {
-      // The tabs that stay glide to their new place; ones that appear fade in
-      const after = folderRows(container);
-      for (const [row, top] of after) {
-        const was = scene.rows.get(row);
-        if (was === undefined) {
+      const before = fromTop(scene.rows, scene.top);
+      const top = container.getBoundingClientRect().top;
+      const after = fromTop(folderRows(container), top);
+      const kept = [...after.keys()].filter((row) => before.has(row));
+      const going = [...before.keys()].filter((row) => !after.has(row) && row.isConnected && container.contains(row));
+      const coming = [...after.keys()].filter((row) => !before.has(row));
+
+      if (closing && going.length) {
+        // Shutting down to the rows it keeps: the others keep their room
+        // and fade, and the kept rows rise over them with the edge
+        for (const row of going) {
+          holdRow(row, before.get(row));
+          held.push(row);
+          for (const part of row.children) {
+            anims.push(part.animate([{ opacity: 1 }, { opacity: 0 }], { duration: Math.min(220, duration), easing: "ease-in", fill: "forwards" }));
+          }
+        }
+        const layout = fromTop(folderRows(container), top);
+        for (const { row, frames } of rideFolderEdge(kept, heights, layout, before, after)) {
+          anims.push(row.animate(frames, { duration, easing: "linear" }));
+        }
+      } else if (!closing && coming.length && kept.length) {
+        // Opening from the rows it kept: they go down with the edge, and the
+        // rest are uncovered from under them
+        for (const { row, frames } of rideFolderEdge(kept, heights, after, before, after)) {
+          anims.push(row.animate(frames, { duration, easing: "linear" }));
+        }
+        for (const row of coming) {
           anims.push(row.animate([{ opacity: 0 }, { opacity: 1 }], { duration: Math.min(240, duration), easing: "ease-out" }));
-        } else if (Math.abs(was - top) >= 0.5) {
-          anims.push(
-            row.animate([{ translate: `0 ${was - top}px` }, { translate: "0 0" }], {
-              duration,
-              easing: spring ? "cubic-bezier(0.25, 1, 0.5, 1)" : "ease-in-out",
-            })
-          );
+        }
+      } else {
+        // The tabs that stay glide to their new place; ones that appear fade in
+        for (const row of coming) {
+          anims.push(row.animate([{ opacity: 0 }, { opacity: 1 }], { duration: Math.min(240, duration), easing: "ease-out" }));
+        }
+        for (const row of kept) {
+          const shift = before.get(row).top - after.get(row).top;
+          if (Math.abs(shift) >= 0.5) {
+            anims.push(
+              row.animate([{ translate: `0 ${shift}px` }, { translate: "0 0" }], {
+                duration,
+                easing: spring ? "cubic-bezier(0.25, 1, 0.5, 1)" : "ease-in-out",
+              })
+            );
+          }
         }
       }
     }
@@ -318,6 +417,9 @@
         return;
       }
       over = true;
+      for (const row of held) {
+        letGoOfRow(row);
+      }
       container.removeAttribute("zia-folder-holding");
       container.style.removeProperty("display");
       // (and after Zen's own second look, taken while this was running)

@@ -2086,9 +2086,10 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
     white-space: nowrap;
     translate: 0 var(--zia-slot-y, 0px);
     pointer-events: none;
-    transition:
-      opacity 180ms ease-in-out,
-      translate 100ms ease-out;
+    /* (there at once as the folder opens, uncovered by its edge like a
+       tab: faded in, it showed only once the folder had opened, which
+       looked like a snap) */
+    transition: translate 100ms ease-out;
   }
 
   /* Like a tab, it stays where it sits while the folder opens over it or
@@ -2187,6 +2188,21 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
   --zia-glow-room: calc(-1 * (var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)));
   overflow: visible !important;
   clip-path: inset(var(--zia-glow-room) var(--zia-glow-room) 0 var(--zia-glow-room)) !important;
+}
+
+/* ...and a folder shutting down to the tab it keeps showing leaves the
+   rows it lets go of in their places until it has shut: they fade (their
+   insides, zia.uc.js) as the kept rows rise over them. Zen had already
+   taken their room, so the kept rows showed under an empty gap. (Ids only
+   to outrank the rules that shrink them in a closed folder.) */
+:is(.tabbrowser-tab, .tab-group-label-container)[zia-held-row]:not(#zia-a):not(#zia-b) {
+  height: var(--zia-held-h) !important;
+  min-height: var(--zia-held-h) !important;
+  max-height: none !important;
+  margin-block: var(--zia-held-mt) var(--zia-held-mb) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: none !important;
 }
 
 /* A space collapsed (its name clicked) with a tab open in one of its
