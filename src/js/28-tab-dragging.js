@@ -359,6 +359,19 @@
       } else if (nf && !isFolderStart(next, nf)) {
         folder = nf;
       }
+      // Between two rows inside the same open folder (past a folder inside
+      // it, before the next one's name, say): that folder, not the list
+      // (it went full width, though it was still inside the folder)
+      if (!folder && prev && next && same(prev) && same(next)) {
+        const holder = (node) => node?.parentElement?.closest?.("zen-folder, tab-group:not([split-view-group])") || null;
+        let common = holder(prev.node);
+        while (common && !common.contains(next.node)) {
+          common = holder(common);
+        }
+        if (common && !isCollapsed(common) && !drag.moving.contains?.(common) && !(drag.folder && !canNest(drag.folder, common))) {
+          folder = common;
+        }
+      }
       // Out past the end of a folder inside another that ends there too:
       // the outer one takes it first, then the list (it went straight to
       // the list, full width for a moment, though still in the outer one)
