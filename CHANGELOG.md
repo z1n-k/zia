@@ -11,9 +11,9 @@ Every release of Zia, newest first. The format follows
 - Folders: a closed folder showing its open tab keeps its padding below the
   tab again; the extra room under the folder's name goes instead. Open
   folders get the same tighter gap under their name.
-- Dragging the open tab into or out of a closed folder: the room made or
-  closed while dragging takes in the folder's padding below that tab, so
-  nothing below snaps down or up on the drop.
+- Dragging a tab out of a folder: everything moves by a whole tab's height
+  (it was measured from the folder's name, now a little closer), so nothing
+  below snaps down on the drop.
 - Dragging a tab out of a folder: it widens back to a full tab at once, as
   it narrowed going in.
 - Essentials: a row of fewer than would fit fills the sidebar, and the tiles

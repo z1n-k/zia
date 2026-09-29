@@ -9644,17 +9644,6 @@
       }
     };
 
-    // A closed folder not yet showing a tab, given the open tab, gains the
-    // inner gap below it too (its padding, chrome.css): the room made for
-    // it is that much more, as the folder's box on the drop
-    const gainsGap = (folder) => {
-      if (folder.hasAttribute("has-active") || folder.hasAttribute("zia-empty") || folder.querySelector(".tabbrowser-tab[selected]")) {
-        return 0;
-      }
-      const opens = drag.tab?.selected || !!drag.split?.querySelector?.(".tabbrowser-tab[selected]");
-      return opens ? parseFloat(getComputedStyle(folder).getPropertyValue("--zia-folder-inner-gap")) || 0 : 0;
-    };
-
     const paintedFolders = new Set();
     const paintFolders = () => {
       const target = drag.target;
@@ -9672,7 +9661,7 @@
         let top = 0;
         let grow = 0;
         if (isCollapsed(f) && !f.contains(drag.moving)) {
-          grow = into ? drag.pitch + (target.folder === f ? gainsGap(f) : 0) : 0;
+          grow = into ? drag.pitch : 0;
           if (into && topRoom?.folder === f && topRoom.key === "up") {
             top = -drag.pitch;
             grow = 0;
@@ -10169,46 +10158,17 @@
 
     // Dropping into an open empty folder uses its slot as the tab's room, so
     // everything after the folder moves up by the slot's height on top of the
-    // usual shift, and the slot itself fades (chrome.css). Into a closed
-    // folder that gains its padding below the open tab, everything after it
-    // moves down that gap too, as it will on the drop; out of a closed
-    // folder the open tab was the one it showed, the folder loses that
-    // padding, and everything after it moves up it.
-    const leavesGap = (home) => {
-      if (!home || !isCollapsed(home) || home.hasAttribute("zia-empty")) {
-        return 0;
-      }
-      const target = drag.target?.folder;
-      if (target && (target === home || home.contains(target))) {
-        return 0;
-      }
-      const opens = drag.tab?.selected || !!drag.split?.querySelector?.(".tabbrowser-tab[selected]");
-      const others = [...home.querySelectorAll(".tabbrowser-tab[selected], .tabbrowser-tab[atg-folder-active]")].some((tab) => !drag.moving?.contains?.(tab) && tab !== drag.moving);
-      return opens && !others ? parseFloat(getComputedStyle(home).getPropertyValue("--zia-folder-inner-gap")) || 0 : 0;
-    };
-
+    // usual shift, and the slot itself fades (chrome.css).
     const takeEmptySlot = () => {
-      const rooms = [];
       const folder = drag.target?.folder;
-      const pitch = slotPitchOf(folder) || (folder && isCollapsed(folder) && !folder.contains(drag.moving) ? -gainsGap(folder) : 0);
-      if (pitch) {
-        rooms.push({ folder, pitch });
-      }
-      const home = drag.moving?.group;
-      const lost = drag.folder ? 0 : leavesGap(home);
-      if (lost) {
-        rooms.push({ folder: home, pitch: lost });
-      }
-      for (const room of rooms) {
-        room.header = drag.rows.find((row) => row.node === headerOf(room.folder));
-      }
-      const lift = (row) =>
-        rooms.reduce((sum, room) => sum + (room.header && row.index > room.header.index && !room.folder.contains(row.node) ? room.pitch : 0), 0);
+      const pitch = slotPitchOf(folder);
+      const headerRow = pitch ? drag.rows.find((row) => row.node === headerOf(folder)) : null;
+      const after = (row) => !!headerRow && row.index > headerRow.index && !folder.contains(row.node);
       for (const row of drag.rows) {
         if (notARow(row)) {
           continue;
         }
-        const want = (row.delta || 0) - lift(row);
+        const want = (row.delta || 0) + (after(row) ? -pitch : 0);
         if ((row.shownY ?? row.delta ?? 0) !== want) {
           place(row.node, want, false);
         }
@@ -10216,8 +10176,8 @@
       }
       const sep = currentSeparator();
       if (sep && drag.sepTop != null) {
-        const sepLift = rooms.reduce((sum, room) => sum + (room.header && drag.sepTop > room.header.top ? room.pitch : 0), 0);
-        const want = (drag.sepDelta || 0) - sepLift;
+        const sepAfter = !!headerRow && drag.sepTop > headerRow.top;
+        const want = (drag.sepDelta || 0) + (sepAfter ? -pitch : 0);
         if ((drag.sepShownY ?? drag.sepDelta ?? 0) !== want) {
           place(sep, want, false);
           const button = Services.prefs.getBoolPref("zen.view.show-newtab-button-top", false) ? newTabButton() : null;
@@ -11200,9 +11160,13 @@
 
       if (!folder && mine) {
         const fits = (gap) => gap > 8 && gap < box.height * 1.6;
+        // (not from a folder's name: its tabs sit the inner gap closer to it
+        // than to each other, so the step came out that much short, and
+        // everything below snapped the rest of the way on the drop)
+        const head = (row) => !!row.node?.classList?.contains("tab-group-label-container");
         let best = Infinity;
         for (const row of rows) {
-          if (Math.abs(row.index - mine.index) !== 1 || side(row.top) !== side(mine.top)) {
+          if (Math.abs(row.index - mine.index) !== 1 || side(row.top) !== side(mine.top) || head(row)) {
             continue;
           }
           const gap = Math.abs(row.top - mine.top);
@@ -11213,6 +11177,9 @@
         if (best === Infinity) {
           const sorted = [...rows].sort((a, b) => a.top - b.top);
           for (let i = 1; i < sorted.length; i++) {
+            if (head(sorted[i - 1])) {
+              continue;
+            }
             const gap = sorted[i].top - sorted[i - 1].top;
             if (side(sorted[i].top) === side(sorted[i - 1].top) && fits(gap) && gap < best) {
               best = gap;
