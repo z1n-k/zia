@@ -603,6 +603,27 @@
         return;
       }
       const key = folder || "plain";
+      // (out of a folder into no folder waits a moment: passing from a
+      // folder inside another to the outer one, it counted as in none for
+      // a sliver of the way and went full width in between)
+      if (key !== "plain" || drag.widthKey === "plain") {
+        clearTimeout(drag.widthTimer);
+        drag.widthTimer = 0;
+      } else if (!drag.widthGo && drag.widthKey && drag.widthKey !== "plain") {
+        if (!drag.widthTimer) {
+          const current = drag;
+          drag.widthTimer = setTimeout(() => {
+            if (drag !== current) {
+              return;
+            }
+            drag.widthTimer = 0;
+            drag.widthGo = true;
+            morphWidth(null);
+            drag.widthGo = false;
+          }, 90);
+        }
+        return;
+      }
       if (drag.widthKey === key || !drag.bg) {
         return;
       }
@@ -2703,7 +2724,10 @@
         : point.x - state.offset.x;
       const shift = copy.ziaHostShift || { x: 0, y: 0 };
       copy.style.setProperty("left", `${Math.round(x - shift.x)}px`, "important");
-      copy.style.setProperty("top", `${Math.round(point.y - (asTab ? 0 : state.offset.y) - shift.y)}px`, "important");
+      // (as a row, never over the essentials: turned into a row just below
+      // them, it's centred on the pointer, and its top half showed over them)
+      const y = asTab ? Math.max(point.y, essentialsBottom() + plainTabSize().height / 2 + 2) : point.y - state.offset.y;
+      copy.style.setProperty("top", `${Math.round(y - shift.y)}px`, "important");
     };
 
     const dropPastLast = (tab, point) => {
@@ -2897,6 +2921,14 @@
           }, 0);
         } else if (tab && !drag.folder && !drag.away && drag.target?.hand) {
           const target = drag.target;
+          // Zia places it, so Zen's own drop doesn't run: told to drop it
+          // where it already was, Zen still took a tab in a closed folder
+          // out of it, and it showed in the list for a frame before Zia put
+          // it back (the favicon flashing left of where it lands)
+          if (!tab.multiselected) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
           heldFolder = target.folder || null;
           heldPinned = !target.below;
           pendingFinish = true;
