@@ -630,6 +630,31 @@
     // the rows around it, and was out by a few pixels in an empty folder)
     // jumped, and a closed folder that gives the row its indent a moment
     // later showed it full width in between
+    // Its narrower look is margins inside its row, and the row itself
+    // changes width as it goes into a folder or out of one (the folder's
+    // indent): the same margins then drew it 14px narrower or wider for a
+    // frame. They're refitted to the width it was let go at, and it eases
+    // out to its own from there.
+    const keepDroppedWidth = (tab, width) => {
+      const node = [tab, tab?.group?.hasAttribute?.("split-view-group") ? tab.group : null].find((n) => n?.hasAttribute?.("zia-morph"));
+      const box = node && (node.localName === "tab-group" ? node.querySelector(":scope > .tab-group-container") : node.querySelector(".tab-background"));
+      if (!box || !(width > 0)) {
+        return;
+      }
+      const now = box.getBoundingClientRect().width;
+      const off = now - width;
+      if (!now || Math.abs(off) < 0.5 || Math.abs(off) > 60) {
+        return;
+      }
+      node.setAttribute("zia-morph-done", "true");
+      for (const name of ["--zia-morph-bg-end", "--zia-morph-content-end"]) {
+        const value = parseFloat(node.style.getPropertyValue(name)) || 0;
+        node.style.setProperty(name, `${value + off}px`);
+      }
+      box.getBoundingClientRect();
+      node.removeAttribute("zia-morph-done");
+    };
+
     const easeOutWidth = (tab) => {
       for (const node of [tab, tab?.group?.hasAttribute?.("split-view-group") ? tab.group : null]) {
         if (!node?.hasAttribute?.("zia-morph")) {
@@ -3121,7 +3146,8 @@
         // (and where its background showed: a tab over a folder is drawn
         // narrower, indented like the folder's tabs)
         const bg = drag.bg?.isConnected ? drag.bg : null;
-        droppedFrom = { node: drag.moving, top: from.top, left: from.left, tab: drag.tab, bg, bgLeft: bg?.getBoundingClientRect().left };
+        const bgBox = bg?.getBoundingClientRect();
+        droppedFrom = { node: drag.moving, top: from.top, left: from.left, tab: drag.tab, bg, bgLeft: bgBox?.left, bgWidth: bgBox?.width };
       }
       essentialDropped = null;
       if (drag?.folder) {
@@ -3215,6 +3241,7 @@
           // background where it showed: dropped in a folder, it went a
           // step left as the glide began and slid back
           if (landing.bg) {
+            keepDroppedWidth(landing.tab, landing.bgWidth);
             easeOutWidth(landing.tab);
           }
           unmorphFolder(node);
