@@ -9507,10 +9507,11 @@
 
       const crosses = below === !!drag.tab.pinned;
 
-      // Zen won't take a split across the separator itself, so Zia does
+      // Zen won't take a split across the separator itself, so Zia does,
+      // or into a folder (Zen dropped it outside a closed or empty one)
       const hand = drag.folder
         ? true
-        : drag.split ? crosses && !folder : !!folder || !!pf || (!!nf && isFolderStart(next, nf)) || crosses;
+        : drag.split ? crosses || !!folder : !!folder || !!pf || (!!nf && isFolderStart(next, nf)) || crosses;
       // A tap on going into a folder, open or closed, or out of one (Zen's
       // own taps are muted during a drag). Not for the one it's in as it
       // starts.
@@ -10016,6 +10017,48 @@
       }
     };
 
+    // A split let go in a folder: where it was shown (first, before the row
+    // it was shown above, or last; beside the hidden tab Zen keeps in an
+    // empty one), and a closed folder shuts on it again
+    const splitIntoFolder = (split, folder, target) => {
+      folder.removeAttribute("zia-drop-slot");
+      const box = folder.querySelector(":scope > .tab-group-container");
+      if (!box) {
+        return;
+      }
+      const items = [...box.children].filter(
+        (item) => item !== split && ((gBrowser.isTab(item) && !item.hasAttribute("zen-empty-tab")) || isFolderEl(item) || item.localName === "tab-group")
+      );
+      let next = !target.atEnd && !isCollapsed(folder) && target.next && folder.contains(target.next.node) ? target.next.node : null;
+      while (next && next.parentElement !== box) {
+        next = next.parentElement;
+      }
+      if (target.first && items.length) {
+        next = items[0];
+      }
+      if (next && next !== split) {
+        placeBefore(split, next);
+      } else if (items.length) {
+        placeAfter(split, items.at(-1));
+      } else {
+        const empty = box.querySelector(":scope > .tabbrowser-tab[zen-empty-tab]");
+        if (empty) {
+          placeAfter(split, empty);
+        }
+      }
+      if (split.parentElement !== box) {
+        box.appendChild(split);
+      }
+      if (isCollapsed(folder)) {
+        try {
+          window.gZenFolders?.on_TabGroupCollapse?.({ target: folder });
+        } catch (err) {
+          noteError("tab dragging: split into a closed folder", err);
+        }
+        jumpToEnd(folder);
+      }
+    };
+
     const finishDrop = (tab, target) => {
       if (!tab?.isConnected) {
         return;
@@ -10028,6 +10071,11 @@
           pinFor(t, !target.below);
         }
         const group = tab.group || split;
+        const folder = target.folder?.isConnected && !split.contains(target.folder) ? target.folder : null;
+        if (folder) {
+          splitIntoFolder(split, folder, target);
+          return;
+        }
         if (target.next && target.sameNext) {
           placeBefore(group, topLevel(target.next));
         } else if (!target.below && currentSeparator()) {
@@ -10980,43 +11028,6 @@
         });
       }
     };
-    // The tab a split is dropped next to, to go into the folder it's over:
-    // before the tab it's shown above, first or last as shown, or beside
-    // the hidden tab Zen keeps in an empty folder
-    const splitSpotIn = (target) => {
-      const container = target.folder.querySelector(":scope > .tab-group-container");
-      if (!container) {
-        return null;
-      }
-      const items = [...container.children].filter(
-        (child) =>
-          child !== drag.split &&
-          ((child.classList.contains("tabbrowser-tab") && !child.hasAttribute("zen-empty-tab")) ||
-            child.matches?.("tab-group, zen-folder"))
-      );
-      if (!items.length) {
-        const empty = container.querySelector(":scope > .tabbrowser-tab[zen-empty-tab]");
-        return empty ? { el: empty, before: false } : null;
-      }
-      const tabIn = (item, last) => {
-        if (item.classList.contains("tabbrowser-tab")) {
-          return item;
-        }
-        const tabs = [...item.querySelectorAll(".tabbrowser-tab:not([zen-empty-tab])")];
-        return last ? tabs.at(-1) : tabs[0];
-      };
-      const next = target.next?.item;
-      let spot = null;
-      if (target.first) {
-        spot = { el: tabIn(items[0], false), before: true };
-      } else if (!target.atEnd && next?.parentElement === container && next.classList?.contains("tabbrowser-tab") && !next.hasAttribute("zen-empty-tab")) {
-        spot = { el: next, before: true };
-      } else {
-        spot = { el: tabIn(items.at(-1), true), before: false };
-      }
-      return spot?.el ? spot : null;
-    };
-
     const fixDrop = (event) => {
       const tab = drag?.tab;
       const data = tab?._dragData;
@@ -11039,19 +11050,6 @@
         data.dropBefore = true;
         if (typeof tab.elementIndex === "number") {
           data.animDropElementIndex = tab.elementIndex;
-        }
-        return;
-      }
-      // A split going into a folder goes where it's shown going, not where
-      // the pointer is: the room made for it is under the pointer (and over
-      // an empty folder there's only the slot), so no tab was found there
-      // and Zen dropped it outside the folder.
-      const spot = drag.split && drag.target?.folder ? splitSpotIn(drag.target) : null;
-      if (spot) {
-        data.dropElement = spot.el;
-        data.dropBefore = spot.before;
-        if (typeof spot.el.elementIndex === "number") {
-          data.animDropElementIndex = spot.el.elementIndex;
         }
         return;
       }
