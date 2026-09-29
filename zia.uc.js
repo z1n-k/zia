@@ -9458,6 +9458,12 @@
       drag.slot?.removeAttribute("zia-drop-slot");
       drag.slot = folder || null;
       folder?.setAttribute("zia-drop-slot", "true");
+      // The folder it came from loses its highlight as soon as it's dragged
+      // out (Firefox keeps it hovered until the mouse next moves, so it
+      // lingered after the drop), and gets it back dragged into it again
+      for (let home = drag.moving?.parentElement?.closest?.("zen-folder, tab-group:not([split-view-group])"); home; home = home.parentElement?.closest?.("zen-folder, tab-group:not([split-view-group])")) {
+        home.toggleAttribute("zia-left", !folder || (folder !== home && !home.contains(folder)));
+      }
       // Over an empty folder the tab covers its slot, so the tab carries the
       // slot's dashes instead (chrome.css), in the folder's colour.
       // (a split too: its box, round both its tabs, wears them)
@@ -12667,6 +12673,10 @@
       muteZenHaptics(false);
       reclip();
       document.querySelectorAll("[zia-drop-slot]").forEach((folder) => folder.removeAttribute("zia-drop-slot"));
+      if (document.querySelector("[zia-left]")) {
+        // (until the mouse moves, when Firefox works out what's hovered)
+        window.addEventListener("mousemove", () => document.querySelectorAll("[zia-left]").forEach((folder) => folder.removeAttribute("zia-left")), { once: true, capture: true });
+      }
       unlend();
       document.querySelectorAll("[zia-into-empty]").forEach((tab) => {
         tab.removeAttribute("zia-into-empty");

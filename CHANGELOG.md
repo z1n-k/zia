@@ -11,6 +11,10 @@ Every release of Zia, newest first. The format follows
 - Folders: a closed folder showing its open tab keeps its padding below the
   tab again; the extra room under the folder's name goes instead. Open
   folders get the same tighter gap under their name.
+- Folders: the tabs in one no longer drop a few pixels as it closes.
+- Dragging a tab out of a folder: the folder loses its highlight at once
+  (it lingered after the drop), and its box closes all the way as the tab
+  leaves.
 - Dragging a tab out of a folder: everything moves by a whole tab's height
   (it was measured from the folder's name, now a little closer), so nothing
   below snaps down on the drop.

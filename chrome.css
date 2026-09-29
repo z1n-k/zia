@@ -1691,18 +1691,18 @@ zen-split-fake-tab {
     rotate: -90deg;
   }
 
-  /* Open, the box stops a tab gap above whatever's below, the same gap as
-   * between two tabs, and the padding inside makes up for it. */
-  &:is(:not([collapsed]), [collapsed]:is([has-active], :has(tab[selected], tab[atg-folder-active]))) {
+  /* The box stops a tab gap above whatever's below, the same gap as
+   * between two tabs, and the padding inside makes up for it. The tabs sit
+   * the inner gap closer to the folder's name (the room under the name was
+   * more than above it), so the padding fits in the height a tab dragged in
+   * is given. Open or closed alike: switched off as a folder closed, its
+   * tabs dropped that gap before closing */
+  &:not(:has(> .tab-group-container[hidden])) {
     --zia-folder-box-bottom: var(--tab-margin-block);
     padding-bottom: var(--zia-folder-inner-gap) !important;
   }
 
-  /* Open, or closed and showing its open tab, the tabs sit the inner gap
-   * closer to the folder's name (the room under the name was more than
-   * above it), so the padding below fits in the height a tab dragged in is
-   * given */
-  &:is(:not([collapsed]), [collapsed]:is([has-active], :has(tab[selected], tab[atg-folder-active]))) > .tab-group-container {
+  & > .tab-group-container:not([hidden]) {
     margin-top: calc(-1 * var(--zia-folder-inner-gap)) !important;
   }
 
@@ -1711,7 +1711,7 @@ zen-split-fake-tab {
     --zia-folder-box-right: calc(var(--zia-folder-right-fix, 0px) + var(--zia-folder-inner-gap));
     --zia-folder-box-bottom: var(--tab-margin-block);
 
-    &:is(:not([collapsed]), [collapsed]:is([has-active], :has(tab[selected], tab[atg-folder-active]))) {
+    &:not(:has(> .tab-group-container[hidden])) {
       padding-bottom: var(--zia-folder-inner-gap) !important;
     }
   }
@@ -1785,6 +1785,18 @@ zen-split-fake-tab {
 
 :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group]))[zia-drop-slot]::after {
   opacity: 1 !important;
+}
+
+/* The folder a tab was dragged out of isn't highlighted, though Firefox
+   keeps it hovered until the mouse next moves (tab dragging) */
+:root[zen-sidebar-expanded="true"]:not(#zia-none) :is(zen-folder, tab-group:not([split-view-group]))[zia-left]:not([zia-drop-slot]) {
+  &::before {
+    background-color: transparent !important;
+  }
+
+  &::after {
+    opacity: 0 !important;
+  }
 }
 
 :root #tabbrowser-tabs:is([zia-settling], [movingtab]) .tabbrowser-tab[zia-drag-away],
