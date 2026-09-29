@@ -2306,9 +2306,10 @@
           fitZenSlot();
         }
         if (drag.essentials && point.x) {
-          tapOnNewTile(point, null);
+          tapOnTileShift();
           showProxy(point.x, point.y);
         } else if (!drag.essentials && !drag.splitEssential) {
+          drag.tileShifts = null;
           hideProxy();
         }
         apply(dy);
@@ -2620,6 +2621,27 @@
         }
       }
       return null;
+    };
+
+    // A tab over the essentials taps as Zen moves the tiles aside for it,
+    // as a split does when its cell moves: by the tile under the pointer
+    // it tapped crossing tiles that didn't move, and missed some that did
+    const tapOnTileShift = () => {
+      setTimeout(() => {
+        if (!drag?.essentials) {
+          if (drag) {
+            drag.tileShifts = null;
+          }
+          return;
+        }
+        const grid = window.gZenWorkspaces?.getCurrentEssentialsContainer?.();
+        const tiles = grid ? [...grid.children].filter((cell) => cell.classList?.contains("tabbrowser-tab") && !cell.hasAttribute("zia-essential-proxy") && cell !== drag.tab) : [];
+        const shifts = tiles.map((cell) => `${cell.style.transform}${cell.style.translate}`).join("|");
+        if (drag.tileShifts != null && shifts !== drag.tileShifts) {
+          tap();
+        }
+        drag.tileShifts = shifts;
+      }, 0);
     };
 
     const OVER_GAP = {};
