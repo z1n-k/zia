@@ -11005,6 +11005,38 @@
       dnd._landDragImageOnElements = quiet;
     };
 
+    // A closed folder whose one showing tab is dragged out of it goes to its
+    // closed height as the drag starts: it kept the room below its name it
+    // has for the open tab's glow until the drop, settling at its name and a
+    // bit more part way through the drag. Its box is drawn that height (its
+    // room stays till the drop, as the dragged tab's own spot does).
+    const lendOut = (row) => {
+      const home = row?.parentElement?.closest?.("zen-folder");
+      if (!home || !isCollapsed(home) || !home.hasAttribute("has-active")) {
+        return;
+      }
+      const showing = (home.activeTabs || []).filter((t) => t?.isConnected);
+      if (showing.some((t) => t !== row && !row.contains?.(t))) {
+        return;
+      }
+      const label = home.querySelector(":scope > .tab-group-label-container");
+      if (!label) {
+        return;
+      }
+      const style = getComputedStyle(home);
+      const gap = parseFloat(style.getPropertyValue("--tab-margin-block")) || 0;
+      const extra = parseFloat(style.getPropertyValue("--zia-folder-bottom-extra")) || 0;
+      const inset = home.getBoundingClientRect().bottom - label.getBoundingClientRect().bottom + gap - extra;
+      home.style.setProperty("--zia-lent-inset", `${Math.round(inset * 2) / 2}px`);
+      home.setAttribute("zia-lent", "true");
+    };
+    const unlend = () => {
+      for (const home of document.querySelectorAll("zen-folder[zia-lent]")) {
+        home.removeAttribute("zia-lent");
+        home.style.removeProperty("--zia-lent-inset");
+      }
+    };
+
     const begin = (target, event) => {
       if (!target || target.hasAttribute?.("zen-essential")) {
         return;
@@ -11089,6 +11121,7 @@
         screenY: event.screenY || pending?.screenY || 0,
       };
       lastDy = 0;
+      lendOut(split || (folder ? null : target));
       for (const row of rows) {
         if (row.node === moving || (folder && folder.contains(row.node))) {
           continue;
@@ -12489,6 +12522,7 @@
       muteZenHaptics(false);
       reclip();
       document.querySelectorAll("[zia-drop-slot]").forEach((folder) => folder.removeAttribute("zia-drop-slot"));
+      unlend();
       document.querySelectorAll("[zia-into-empty]").forEach((tab) => {
         tab.removeAttribute("zia-into-empty");
         tab.style.removeProperty("--zia-slot-border");
