@@ -1533,10 +1533,13 @@
       drag.moving.setAttribute("zia-to-essential", "true");
       const tile = tileSize();
 
-      if (drag.split && !proxy.hasAttribute("zen-essential")) {
+      // (and back into a tile, headed back over the essentials)
+      if (!proxy.hasAttribute("zen-essential")) {
         proxy.setAttribute("zen-essential", "true");
         proxy.setAttribute("pinned", "true");
-        fitSplitHalves(proxy, tile.stackHeight, tile.half);
+        if (drag.split) {
+          fitSplitHalves(proxy, tile.stackHeight, tile.half);
+        }
         fadeSplitContent(proxy, PROXY_MS);
       }
       sizeProxy(proxy, tile.bgWidth || tile.width, tile.bgHeight || tile.height);
@@ -1549,8 +1552,9 @@
       }
       proxy.ziaLeaving = true;
       const row = drag.moving.getBoundingClientRect();
-      // (a split goes back to its row, not a tile stretched to a row's size)
-      if (drag.split && proxy.hasAttribute("zen-essential")) {
+      // (it goes back to its row, not a tile stretched to a row's size:
+      // a tab as a split does)
+      if (proxy.hasAttribute("zen-essential")) {
         const current = proxy.getBoundingClientRect();
         proxy.removeAttribute("zen-essential");
         proxy.removeAttribute("pinned");

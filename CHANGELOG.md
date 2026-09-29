@@ -14,6 +14,8 @@ Every release of Zia, newest first. The format follows
 - Folders: the tabs in one no longer drop a few pixels as it closes.
 - Dragging a tab over the essentials: it taps as the tiles move aside for
   it, as a split does, not for every tile crossed.
+- Dragging a tab back out of the essentials: it turns back into its row as
+  it grows, as a split does, not a tile stretched to a row's width first.
 - Dragging a tab out of a folder: the folder loses its highlight at once
   (it lingered after the drop), and its box closes all the way as the tab
   leaves.
