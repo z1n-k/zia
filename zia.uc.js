@@ -11160,13 +11160,16 @@
 
       if (!folder && mine) {
         const fits = (gap) => gap > 8 && gap < box.height * 1.6;
-        // (not from a folder's name: its tabs sit the inner gap closer to it
-        // than to each other, so the step came out that much short, and
-        // everything below snapped the rest of the way on the drop)
+        // (only between two rows side by side in the same list: a folder's
+        // tabs sit the inner gap closer to its name than to each other, and
+        // its padding lies between its last tab and whatever's below, so
+        // either gap made the step short or long, and everything below
+        // snapped the rest of the way on the drop)
         const head = (row) => !!row.node?.classList?.contains("tab-group-label-container");
+        const pair = (a, b) => !head(a) && !head(b) && a.node?.parentElement === b.node?.parentElement && side(a.top) === side(b.top);
         let best = Infinity;
         for (const row of rows) {
-          if (Math.abs(row.index - mine.index) !== 1 || side(row.top) !== side(mine.top) || head(row)) {
+          if (Math.abs(row.index - mine.index) !== 1 || !pair(row, mine)) {
             continue;
           }
           const gap = Math.abs(row.top - mine.top);
@@ -11177,11 +11180,11 @@
         if (best === Infinity) {
           const sorted = [...rows].sort((a, b) => a.top - b.top);
           for (let i = 1; i < sorted.length; i++) {
-            if (head(sorted[i - 1])) {
+            if (!pair(sorted[i - 1], sorted[i])) {
               continue;
             }
             const gap = sorted[i].top - sorted[i - 1].top;
-            if (side(sorted[i].top) === side(sorted[i - 1].top) && fits(gap) && gap < best) {
+            if (fits(gap) && gap < best) {
               best = gap;
             }
           }
