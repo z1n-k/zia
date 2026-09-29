@@ -1638,20 +1638,38 @@
     // the last is full), but turns a split down there, so a split essential
     // on its way in had no room made for it: Zia opens the same cell
     let splitSlot = null;
-    const holdSplitSlot = (on) => {
+    // (where the pointer is, as Zen's is: it was always at the end, so the
+    // other tiles never moved aside. Over a tile, the cell goes to that
+    // tile's side it's coming from, so it swaps places with it.)
+    const holdSplitSlot = (on, point = null) => {
       const grid = on ? window.gZenWorkspaces?.getCurrentEssentialsContainer?.() : null;
-      if (splitSlot && splitSlot.parentElement === grid) {
-        return;
-      }
-      splitSlot?.remove();
-      splitSlot = null;
       if (!grid) {
+        splitSlot?.remove();
+        splitSlot = null;
         return;
       }
-      splitSlot = document.createXULElement("vbox");
-      splitSlot.setAttribute("zia-split-slot", "true");
-      grid.appendChild(splitSlot);
-      fitSlot(splitSlot);
+      if (!splitSlot || splitSlot.parentElement !== grid) {
+        splitSlot?.remove();
+        splitSlot = document.createXULElement("vbox");
+        splitSlot.setAttribute("zia-split-slot", "true");
+        grid.appendChild(splitSlot);
+        fitSlot(splitSlot);
+      }
+      if (!point?.x && !point?.y) {
+        return;
+      }
+      const cells = [...grid.children];
+      const tile = cells.find(
+        (cell) => cell !== splitSlot && cell.classList?.contains("tabbrowser-tab") && !cell.hasAttribute("zia-essential-proxy") && inBox(cell, point)
+      );
+      if (!tile) {
+        return;
+      }
+      if (cells.indexOf(splitSlot) < cells.indexOf(tile)) {
+        tile.after(splitSlot);
+      } else {
+        tile.before(splitSlot);
+      }
     };
 
     const dropProxy = () => {
@@ -2084,7 +2102,7 @@
         }
         // Zen turns a split down over the essentials, and without a yes
         // there'd be no drop at all
-        holdSplitSlot(drag.splitEssential);
+        holdSplitSlot(drag.splitEssential, point);
         if (drag.splitEssential) {
           acceptSplitDrop(event);
           if (point.x) {
@@ -2905,8 +2923,13 @@
           event.preventDefault();
           event.stopPropagation();
           let essential = null;
+          // (it goes where the cell was opened for it)
+          const before = splitSlot?.isConnected ? splitSlot.nextElementSibling : null;
           try {
             essential = addSplitToEssentials(tab);
+            if (essential && before?.hasAttribute?.("zen-essential") && before !== essential) {
+              gBrowser.moveTabBefore(essential, before);
+            }
           } catch (err) {
             console.error("[Zia] Could not make a split essential:", err);
           }
