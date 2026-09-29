@@ -335,3 +335,11 @@ zen-split-fake-tab {
   opacity: 0 !important;
   visibility: hidden !important;
 }
+
+/* The copy a dragged essential (or a tab going into the essentials) is drawn
+   as sits among the real tabs, and Firefox clears every tab's offset as a
+   drag ends: its centring went, and it showed shifted half its size (over
+   the essentials) until it was gone */
+.tabbrowser-tab[zia-essential-proxy] {
+  translate: -50% -50% !important;
+}

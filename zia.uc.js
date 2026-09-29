@@ -11955,10 +11955,16 @@
       setTimeout(sweepLeftovers, 400);
 
       const copy = state.copy;
-      const reveal = () => {
+      const reveal = (now = false) => {
         state.tab.style.visibility = "";
         state.tab.removeAttribute("zia-essential-dragged");
-        requestAnimationFrame(() => copy.remove());
+        // (dropped into the list, the tab's already showing in its place:
+        // the copy goes with it, not a frame later)
+        if (now === true) {
+          copy.remove();
+        } else {
+          requestAnimationFrame(() => copy.remove());
+        }
       };
       // Dropped among the essentials: the tile glides from where it was let
       // go into its place (once that's settled) before the real one shows
@@ -11966,7 +11972,7 @@
         // dropped into the list: it shows once it's in its place, not first
         // wherever Zen put it
         if (state.placing) {
-          state.placing.finally(reveal);
+          state.placing.finally(() => reveal(true));
           return;
         }
         if (!event || state.asTab || !copy.isConnected || !state.tab.isConnected ||
