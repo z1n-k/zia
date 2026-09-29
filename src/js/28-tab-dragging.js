@@ -1905,7 +1905,22 @@
           const own = shut && headerOf(home) ? headerOf(home).getBoundingClientRect().height : home.getBoundingClientRect().height;
           const ownInset = parseFloat(getComputedStyle(home, "::before").bottom) || 0;
           const timing = { duration: 200, easing: "cubic-bezier(0.25, 1, 0.5, 1)" };
-          if (Math.abs(own - held) >= 0.5) {
+          if (shut) {
+            // ...and it's held at that until Zen has shut its list (let go
+            // sooner, it showed Zen's list part shut, a few pixels taller)
+            const easing = home.animate([{ height: `${held}px` }, { height: `${own}px` }], { ...timing, fill: "forwards" });
+            const until = performance.now() + 1000;
+            const release = () => {
+              const list = home.querySelector(":scope > .tab-group-container");
+              const busy = home.getAnimations({ subtree: true }).some((a) => a !== easing && a.playState === "running");
+              if (home.isConnected && performance.now() < until && (busy || (list && !list.hidden) || easing.playState === "running")) {
+                requestAnimationFrame(release);
+                return;
+              }
+              easing.cancel();
+            };
+            requestAnimationFrame(release);
+          } else if (Math.abs(own - held) >= 0.5) {
             home.animate([{ height: `${held}px` }, { height: `${own}px` }], timing);
           }
           if (Math.abs(ownInset - inset) >= 0.5) {
