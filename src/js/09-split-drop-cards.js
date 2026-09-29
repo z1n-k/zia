@@ -57,11 +57,6 @@
     if (tab.hasAttribute("zen-live-folder-item-id")) {
       return false;
     }
-    // A tab that's already in a split (or a split essential) can't be split
-    // again: the cards came up for one, and dropping it there broke things
-    if (tab.splitView || tab.group?.hasAttribute?.("split-view-group") || tab.ziaSplit?.id || tab.hasAttribute("zia-split-tile")) {
-      return false;
-    }
 
     if (tab === current && current.splitView) {
       return false;
