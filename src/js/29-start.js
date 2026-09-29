@@ -257,6 +257,7 @@
     safely("keepFolderNamesInCollapsedSpaces", keepFolderNamesInCollapsedSpaces);
     safely("tuckAwayUnopenedPins", tuckAwayUnopenedPins);
     safely("revealOpenSubfolders", revealOpenSubfolders);
+    safely("keepSeparatorWhenPinsTuck", keepSeparatorWhenPinsTuck);
     safely("keepTabsHiddenAfterActiveLeaves", keepTabsHiddenAfterActiveLeaves);
     safely("openKeptFolderNames", openKeptFolderNames);
     safely("allowEmojiFolderIcons", allowEmojiFolderIcons);

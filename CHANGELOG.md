@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Spaces: with the pinned tabs tucked away, the separator stays once the tab
+  shown among them is unloaded or another tab is chosen (it went up out of
+  sight with them).
+
 ## [2.72.11] — 2026-09-29
 
 ### Fixed

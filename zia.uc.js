@@ -2367,6 +2367,53 @@
     });
   }
 
+  // A space's pinned tabs tucked away, once none of them is shown any more
+  // (its tab unloaded with "-", or another tab chosen): Zen measures how far
+  // to push them up while the folders among them are still squashed to
+  // nothing from showing just that tab, so it pushed them up too little and
+  // the separator went up out of sight with them. Once Zen is done, they're
+  // pushed up their whole height, the separator staying where it shows.
+  function keepSeparatorWhenPinsTuck() {
+    const fix = (pins) => {
+      if (!pins?.isConnected || !pins.collapsed || pins.hasAttribute("has-active")) {
+        return;
+      }
+      const start = pins.groupStartElement;
+      const box = pins.groupContainer;
+      const sep = box?.separatorElement || box?.querySelector?.(".pinned-tabs-container-separator");
+      if (!start || !box || box.hasAttribute("hidden")) {
+        return;
+      }
+      if (start.getAnimations().some((a) => a.playState === "running")) {
+        requestAnimationFrame(() => fix(pins));
+        return;
+      }
+      const items = pins.allItems || [];
+      window.gZenFolders?.styleCleanup?.(items.filter((item) => item.style.height === "0px" || item.style.opacity === "0"));
+      const was = start.style.marginTop;
+      start.style.marginTop = "0px";
+      const full = box.getBoundingClientRect().height - (sep ? sep.getBoundingClientRect().height : 0);
+      const want = `${-(full + 4)}px`;
+      start.style.marginTop = want;
+      if (sep && Math.abs((parseFloat(was) || 0) - (parseFloat(want) || 0)) > 1) {
+        sep.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 150, easing: "ease-out" });
+      }
+    };
+    new MutationObserver((records) => {
+      for (const record of records) {
+        const pins = record.target;
+        if (pins === window.gZenWorkspaces?.activeWorkspaceElement?.collapsiblePins && record.oldValue !== null && !pins.hasAttribute("has-active")) {
+          requestAnimationFrame(() => fix(pins));
+        }
+      }
+    }).observe(document.documentElement, {
+      subtree: true,
+      attributes: true,
+      attributeOldValue: true,
+      attributeFilter: ["has-active"],
+    });
+  }
+
   // A folder opening round an open folder inside it: that folder's tabs,
   // hidden while the outer one showed just its open tab, come in with the
   // outer one (Zen reveals only the outer folder's own rows, so they stayed
@@ -13799,6 +13846,7 @@
     safely("keepFolderNamesInCollapsedSpaces", keepFolderNamesInCollapsedSpaces);
     safely("tuckAwayUnopenedPins", tuckAwayUnopenedPins);
     safely("revealOpenSubfolders", revealOpenSubfolders);
+    safely("keepSeparatorWhenPinsTuck", keepSeparatorWhenPinsTuck);
     safely("keepTabsHiddenAfterActiveLeaves", keepTabsHiddenAfterActiveLeaves);
     safely("openKeptFolderNames", openKeptFolderNames);
     safely("allowEmojiFolderIcons", allowEmojiFolderIcons);
