@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Folders: an empty folder's drop box shows at once as it opens and fades as
+  it closes, as its tabs would (it was the wrong way round).
+
 ## [2.72.8] — 2026-09-29
 
 ### Fixed
