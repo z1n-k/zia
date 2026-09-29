@@ -9375,12 +9375,21 @@
       folder?.setAttribute("zia-drop-slot", "true");
       // Over an empty folder the tab covers its slot, so the tab carries the
       // slot's dashes instead (chrome.css), in the folder's colour.
-      const tab = drag.moving === drag.tab ? drag.tab : null;
-      const into = !!tab && !!folder?.hasAttribute("zia-empty");
-      if (into) {
-        tab.style.setProperty("--zia-slot-border", getComputedStyle(folder).getPropertyValue("--zia-slot-border"));
+      // (a split's tabs too, each wearing them)
+      const tabs =
+        drag.moving === drag.tab
+          ? [drag.tab]
+          : drag.moving?.matches?.("tab-group[split-view-group]")
+            ? [...drag.moving.querySelectorAll(".tabbrowser-tab")]
+            : [];
+      const into = !!folder?.hasAttribute("zia-empty");
+      const border = into ? getComputedStyle(folder).getPropertyValue("--zia-slot-border") : "";
+      for (const tab of tabs) {
+        if (into) {
+          tab.style.setProperty("--zia-slot-border", border);
+        }
+        tab.toggleAttribute("zia-into-empty", into);
       }
-      tab?.toggleAttribute("zia-into-empty", into);
     };
 
     // The room for a tab going in at the top of a closed folder showing its
