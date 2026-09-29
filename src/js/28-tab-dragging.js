@@ -1861,6 +1861,43 @@
         });
       }
     };
+    // The tab a split is dropped next to, to go into the folder it's over:
+    // before the tab it's shown above, first or last as shown, or beside
+    // the hidden tab Zen keeps in an empty folder
+    const splitSpotIn = (target) => {
+      const container = target.folder.querySelector(":scope > .tab-group-container");
+      if (!container) {
+        return null;
+      }
+      const items = [...container.children].filter(
+        (child) =>
+          child !== drag.split &&
+          ((child.classList.contains("tabbrowser-tab") && !child.hasAttribute("zen-empty-tab")) ||
+            child.matches?.("tab-group, zen-folder"))
+      );
+      if (!items.length) {
+        const empty = container.querySelector(":scope > .tabbrowser-tab[zen-empty-tab]");
+        return empty ? { el: empty, before: false } : null;
+      }
+      const tabIn = (item, last) => {
+        if (item.classList.contains("tabbrowser-tab")) {
+          return item;
+        }
+        const tabs = [...item.querySelectorAll(".tabbrowser-tab:not([zen-empty-tab])")];
+        return last ? tabs.at(-1) : tabs[0];
+      };
+      const next = target.next?.item;
+      let spot = null;
+      if (target.first) {
+        spot = { el: tabIn(items[0], false), before: true };
+      } else if (!target.atEnd && next?.parentElement === container && next.classList?.contains("tabbrowser-tab") && !next.hasAttribute("zen-empty-tab")) {
+        spot = { el: next, before: true };
+      } else {
+        spot = { el: tabIn(items.at(-1), true), before: false };
+      }
+      return spot?.el ? spot : null;
+    };
+
     const fixDrop = (event) => {
       const tab = drag?.tab;
       const data = tab?._dragData;
@@ -1883,6 +1920,19 @@
         data.dropBefore = true;
         if (typeof tab.elementIndex === "number") {
           data.animDropElementIndex = tab.elementIndex;
+        }
+        return;
+      }
+      // A split going into a folder goes where it's shown going, not where
+      // the pointer is: the room made for it is under the pointer (and over
+      // an empty folder there's only the slot), so no tab was found there
+      // and Zen dropped it outside the folder.
+      const spot = drag.split && drag.target?.folder ? splitSpotIn(drag.target) : null;
+      if (spot) {
+        data.dropElement = spot.el;
+        data.dropBefore = spot.before;
+        if (typeof spot.el.elementIndex === "number") {
+          data.animDropElementIndex = spot.el.elementIndex;
         }
         return;
       }
