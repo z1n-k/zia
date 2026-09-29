@@ -1249,6 +1249,13 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   visibility: visible !important;
 }
 
+/* ...a split's tabs too, which a closed folder it's dragged out of had
+   hidden (it's the split that's dragged, not its tabs) */
+#tabbrowser-tabs[movingtab] tab-group[split-view-group]:is([zia-dragging], [zia-shift]):not([zia-to-essential]) .tabbrowser-tab {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
 /* ...and while it lands (a folder's parts included), whatever Firefox has
    hidden for its own drop animation */
 #tabbrowser-tabs :is(zen-folder, tab-group)[zia-landing],
@@ -1256,7 +1263,7 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   visibility: visible !important;
 }
 
-:root[zia-dragging-tab] :is(zen-folder, tab-group:not([split-view-group])):has(.tabbrowser-tab[zia-dragging]) {
+:root[zia-dragging-tab] :is(zen-folder, tab-group:not([split-view-group])):has(:is(.tabbrowser-tab, tab-group[split-view-group])[zia-dragging]) {
   z-index: 41 !important;
 
   /* (a collapsed folder's clip too: dragging its open tab out of it, the

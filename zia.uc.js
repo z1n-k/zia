@@ -1187,11 +1187,14 @@
       if (now) {
         reload.ziaReloadCut?.(0, true);
       } else {
+        // (once the grow-in has let go of it: its animation holds the
+        // arrowhead's turn until then, and eased in under it, it jumped
+        // to wherever the ease had got to as the animation ended)
         setTimeout(() => {
-          if (!reload.hasAttribute("displaystop") && container.matches(":hover")) {
+          if (!reload.hasAttribute("displaystop") && !container.hasAttribute("zia-morph") && container.matches(":hover")) {
             reload.ziaReloadCut?.(RELOAD_HOVER_CUT);
           }
-        }, 330);
+        }, 470);
       }
     }).observe(reload, { attributes: true, attributeFilter: ["displaystop"] });
   }
