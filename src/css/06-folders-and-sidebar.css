@@ -116,15 +116,17 @@
   }
 
   /* Open, the box stops a tab gap above whatever's below, the same gap as
-   * between two tabs, and the padding inside makes up for it. Closed and
-   * showing its open tab, it has no padding: the box ends with that tab, as
-   * the room made for a tab dragged in shows it (with it, the folder grew
-   * a few pixels on the drop) */
+   * between two tabs, and the padding inside makes up for it. */
   &:is(:not([collapsed]), [collapsed]:is([has-active], :has(tab[selected], tab[atg-folder-active]))) {
     --zia-folder-box-bottom: var(--tab-margin-block);
-  }
-  &:not([collapsed]) {
     padding-bottom: var(--zia-folder-inner-gap) !important;
+  }
+
+  /* Closed and showing its open tab, that tab sits the inner gap closer to
+   * the folder's name (the room under the name was more than above it), so
+   * the padding below fits in the height a tab dragged in is given */
+  &[collapsed]:is([has-active], :has(tab[selected], tab[atg-folder-active])) > .tab-group-container {
+    margin-top: calc(-1 * var(--zia-folder-inner-gap)) !important;
   }
 
   & :is(zen-folder, tab-group:not([split-view-group])) {
@@ -132,7 +134,7 @@
     --zia-folder-box-right: calc(var(--zia-folder-right-fix, 0px) + var(--zia-folder-inner-gap));
     --zia-folder-box-bottom: var(--tab-margin-block);
 
-    &:not([collapsed]) {
+    &:is(:not([collapsed]), [collapsed]:is([has-active], :has(tab[selected], tab[atg-folder-active]))) {
       padding-bottom: var(--zia-folder-inner-gap) !important;
     }
   }

@@ -132,12 +132,17 @@
   :root[zen-sidebar-expanded="true"] .zen-essentials-container {
     &,
     &[data-hack-type] {
-      grid-template-columns: repeat(auto-fill, minmax(var(--zia-essential-min-width), 1fr)) !important;
+      /* (auto-fit: a row of fewer essentials than would fit still spans the
+         sidebar, the columns left over folded away, and no column comes and
+         goes under them as the sidebar widens) */
+      grid-template-columns: repeat(auto-fit, minmax(var(--zia-essential-min-width), 1fr)) !important;
     }
 
+    /* (no widest: a full row's columns are never wider than two of the
+       narrowest anyway, and a short row's essentials fill it) */
     & > .tabbrowser-tab[zen-essential] {
       min-width: 0 !important;
-      max-width: var(--zia-essential-max-width) !important;
+      max-width: none !important;
       width: 100% !important;
     }
   }

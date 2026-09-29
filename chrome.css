@@ -996,12 +996,17 @@
   :root[zen-sidebar-expanded="true"] .zen-essentials-container {
     &,
     &[data-hack-type] {
-      grid-template-columns: repeat(auto-fill, minmax(var(--zia-essential-min-width), 1fr)) !important;
+      /* (auto-fit: a row of fewer essentials than would fit still spans the
+         sidebar, the columns left over folded away, and no column comes and
+         goes under them as the sidebar widens) */
+      grid-template-columns: repeat(auto-fit, minmax(var(--zia-essential-min-width), 1fr)) !important;
     }
 
+    /* (no widest: a full row's columns are never wider than two of the
+       narrowest anyway, and a short row's essentials fill it) */
     & > .tabbrowser-tab[zen-essential] {
       min-width: 0 !important;
-      max-width: var(--zia-essential-max-width) !important;
+      max-width: none !important;
       width: 100% !important;
     }
   }
@@ -1687,15 +1692,17 @@ zen-split-fake-tab {
   }
 
   /* Open, the box stops a tab gap above whatever's below, the same gap as
-   * between two tabs, and the padding inside makes up for it. Closed and
-   * showing its open tab, it has no padding: the box ends with that tab, as
-   * the room made for a tab dragged in shows it (with it, the folder grew
-   * a few pixels on the drop) */
+   * between two tabs, and the padding inside makes up for it. */
   &:is(:not([collapsed]), [collapsed]:is([has-active], :has(tab[selected], tab[atg-folder-active]))) {
     --zia-folder-box-bottom: var(--tab-margin-block);
-  }
-  &:not([collapsed]) {
     padding-bottom: var(--zia-folder-inner-gap) !important;
+  }
+
+  /* Closed and showing its open tab, that tab sits the inner gap closer to
+   * the folder's name (the room under the name was more than above it), so
+   * the padding below fits in the height a tab dragged in is given */
+  &[collapsed]:is([has-active], :has(tab[selected], tab[atg-folder-active])) > .tab-group-container {
+    margin-top: calc(-1 * var(--zia-folder-inner-gap)) !important;
   }
 
   & :is(zen-folder, tab-group:not([split-view-group])) {
@@ -1703,7 +1710,7 @@ zen-split-fake-tab {
     --zia-folder-box-right: calc(var(--zia-folder-right-fix, 0px) + var(--zia-folder-inner-gap));
     --zia-folder-box-bottom: var(--tab-margin-block);
 
-    &:not([collapsed]) {
+    &:is(:not([collapsed]), [collapsed]:is([has-active], :has(tab[selected], tab[atg-folder-active]))) {
       padding-bottom: var(--zia-folder-inner-gap) !important;
     }
   }

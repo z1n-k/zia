@@ -7659,8 +7659,10 @@
           tab.matches?.(".tabbrowser-tab[zen-essential]:not([hidden], [zia-essential-proxy])")
         );
         const columns = gridColumns(grid);
+        // (a single row already spans the sidebar: the grid folds away the
+        // columns it doesn't need)
         const empty = columns - (tabs.length % columns || columns);
-        if (tabs.length && columns > 1 && empty > 0) {
+        if (tabs.length > columns && empty > 0) {
           wanted.set(tabs[tabs.length - 1], empty + 1);
         }
       }
@@ -9832,13 +9834,14 @@
         return;
       }
       const key = folder || "plain";
-      // (out of a folder into no folder waits a moment: passing from a
-      // folder inside another to the outer one, it counted as in none for
-      // a sliver of the way and went full width in between)
+      // (out of a folder inside another into no folder waits a moment:
+      // passing to the outer one, it counted as in none for a sliver of the
+      // way and went full width in between. Out of any other folder it goes
+      // at once, as it narrowed going in)
       if (key !== "plain" || drag.widthKey === "plain") {
         clearTimeout(drag.widthTimer);
         drag.widthTimer = 0;
-      } else if (!drag.widthGo && drag.widthKey && drag.widthKey !== "plain") {
+      } else if (!drag.widthGo && drag.widthKey && drag.widthKey !== "plain" && drag.widthKey.parentElement?.closest?.("zen-folder, tab-group:not([split-view-group])")) {
         if (!drag.widthTimer) {
           const current = drag;
           drag.widthTimer = setTimeout(() => {

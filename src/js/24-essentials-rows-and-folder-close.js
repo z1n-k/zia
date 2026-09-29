@@ -29,8 +29,10 @@
           tab.matches?.(".tabbrowser-tab[zen-essential]:not([hidden], [zia-essential-proxy])")
         );
         const columns = gridColumns(grid);
+        // (a single row already spans the sidebar: the grid folds away the
+        // columns it doesn't need)
         const empty = columns - (tabs.length % columns || columns);
-        if (tabs.length && columns > 1 && empty > 0) {
+        if (tabs.length > columns && empty > 0) {
           wanted.set(tabs[tabs.length - 1], empty + 1);
         }
       }
