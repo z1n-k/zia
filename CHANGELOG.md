@@ -4,7 +4,7 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.72.8] — 2026-09-29
 
 ### Fixed
 
@@ -26,6 +26,10 @@ Every release of Zia, newest first. The format follows
   it narrowed going in.
 - Essentials: a row of fewer than would fit fills the sidebar, and the tiles
   no longer jump as the sidebar widens.
+- Essentials: they close up behind one dragged out, and a tab dragged over
+  them no longer flips between a tile and a row.
+- Dragging a tab out of a folder: the folder eases shut to its closed height,
+  without opening a little first or the folders below snapping.
 
 ## [2.72.7] — 2026-09-29
 
