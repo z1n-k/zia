@@ -28,13 +28,6 @@
   visibility: visible !important;
 }
 
-/* ...a split's tabs too, which a closed folder it's dragged out of had
-   hidden (it's the split that's dragged, not its tabs) */
-#tabbrowser-tabs[movingtab] tab-group[split-view-group]:is([zia-dragging], [zia-shift]):not([zia-to-essential]) .tabbrowser-tab {
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
 /* ...and while it lands (a folder's parts included), whatever Firefox has
    hidden for its own drop animation */
 #tabbrowser-tabs :is(zen-folder, tab-group)[zia-landing],
@@ -42,7 +35,7 @@
   visibility: visible !important;
 }
 
-:root[zia-dragging-tab] :is(zen-folder, tab-group:not([split-view-group])):has(:is(.tabbrowser-tab, tab-group[split-view-group])[zia-dragging]) {
+:root[zia-dragging-tab] :is(zen-folder, tab-group:not([split-view-group])):has(.tabbrowser-tab[zia-dragging]) {
   z-index: 41 !important;
 
   /* (a collapsed folder's clip too: dragging its open tab out of it, the
@@ -78,7 +71,7 @@ zen-folder:has(> .tab-group-container > :is(.tabbrowser-tab, tab-group[split-vie
   overflow-y: clip;
 }
 
-zen-folder[collapsed][has-active] .tabbrowser-tab:not([selected], [visuallyselected], [folder-active="true"], [atg-folder-active], tab-group[split-view-group]:has(.tabbrowser-tab:is([selected], [visuallyselected], [folder-active="true"])) .tabbrowser-tab) {
+zen-folder[collapsed][has-active] .tabbrowser-tab:not([selected], [visuallyselected], [folder-active="true"], [atg-folder-active], tab-group[split-view-group] > .tabbrowser-tab) {
   opacity: 0 !important;
   /* (fading as Zen shrinks them, rather than gone at once, which showed as
      an empty gap closing up) */
@@ -177,9 +170,7 @@ zen-essentials-promo {
 }
 
 .tabbrowser-tab[zia-no-glow],
-.tabbrowser-tab[zia-no-glow] > .tab-stack > .tab-background,
-tab-group[split-view-group][zia-no-glow],
-tab-group[split-view-group][zia-no-glow] > .tab-group-container {
+.tabbrowser-tab[zia-no-glow] > .tab-stack > .tab-background {
   --zia-active-glow-color: transparent !important;
 }
 
@@ -224,13 +215,6 @@ tab-group[split-view-group][zia-no-glow] > .tab-group-container {
 [zia-drop-lock] {
   visibility: visible !important;
   opacity: 1 !important;
-}
-
-/* A row landing is moved by Zia's glide alone: a transition on its own
-   transform (Firefox's or Zen's, which Zen's drop used to switch off) ran
-   under the glide and showed for a frame as it ended, a 7px jump back */
-#tabbrowser-tabs :is(.tabbrowser-tab, tab-group[split-view-group])[zia-landing] {
-  transition: none !important;
 }
 
 /* (not on the row being dragged, which stays under the pointer) */
@@ -321,25 +305,4 @@ zen-split-fake-tab {
 #tabbrowser-tabs tab-group[split-view-group] > .tab-group-label-container:not(#zia-a):not(#zia-b) {
   visibility: hidden !important;
   opacity: 0 !important;
-}
-
-/* One of a split's two tabs closing goes at once, taking no room, so the
-   one left stays where the split was (zia.uc.js) */
-.tabbrowser-tab[zia-split-closing] {
-  height: 0 !important;
-  min-height: 0 !important;
-  max-height: 0 !important;
-  margin-block: 0 !important;
-  padding-block: 0 !important;
-  overflow: hidden !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-}
-
-/* The copy a dragged essential (or a tab going into the essentials) is drawn
-   as sits among the real tabs, and Firefox clears every tab's offset as a
-   drag ends: its centring went, and it showed shifted half its size (over
-   the essentials) until it was gone */
-.tabbrowser-tab[zia-essential-proxy] {
-  translate: -50% -50% !important;
 }

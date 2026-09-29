@@ -9,11 +9,7 @@
       return false;
     }
     return ![...container.children].some(
-      (child) =>
-        child.localName === "zen-folder" ||
-        // (a split in it too: it kept its slot, showing under the split)
-        child.localName === "tab-group" ||
-        (child.classList.contains("tabbrowser-tab") && !child.hasAttribute("zen-empty-tab"))
+      (child) => child.localName === "zen-folder" || (child.classList.contains("tabbrowser-tab") && !child.hasAttribute("zen-empty-tab"))
     );
   }
 
@@ -111,30 +107,6 @@
       }
     };
     new MutationObserver(schedule).observe(tabs, { childList: true, subtree: true });
-    // An empty folder opens by sliding its slot down into view, as a folder
-    // does its tabs. Emptied (its last tab dragged out) and shut, Zen had
-    // measured it with no slot showing, so it was only 4px up out of view
-    // and opened with a snap. It's put a slot's height up before Zen opens it.
-    window.addEventListener(
-      "TabGroupExpand",
-      (event) => {
-        const folder = event.target;
-        if (folder?.localName !== "zen-folder" || !folder.hasAttribute("zia-empty")) {
-          return;
-        }
-        const start = folder.groupStartElement;
-        if (!start) {
-          return;
-        }
-        const vars = getComputedStyle(document.documentElement);
-        const px = (name, fallback) => parseFloat(vars.getPropertyValue(name)) || fallback;
-        const room = px("--zia-slot-h", 35) + px("--zia-slot-mt", 2) + px("--zia-slot-mb", 2);
-        if ((parseFloat(getComputedStyle(start).marginTop) || 0) > -room) {
-          start.style.marginTop = `${-(room + 4)}px`;
-        }
-      },
-      true
-    );
     for (const type of ["TabGroupCreate", "TabGrouped", "TabUngrouped", "TabClose", "TabMove", "TabGroupExpand"]) {
       gBrowser.tabContainer.addEventListener(type, schedule);
     }

@@ -54,21 +54,8 @@
   opacity: var(--zia-nav-rest);
 }
 
-:is(#back-button, #forward-button, #reload-button, #stop-button) > .toolbarbutton-icon {
+:is(#back-button, #forward-button, #stop-button) > .toolbarbutton-icon {
   transition: background-color 0.2s ease !important;
-}
-
-/* Reload and stop are two buttons, one swapped for the other as a page
-   starts and stops loading: the one swapped in isn't hovered until the
-   pointer next moves, so the hover square went and snapped back with no
-   fade (and reload, disabled for a moment after each load, lost it too).
-   It's drawn for the pair instead, which stays hovered throughout. */
-#stop-reload-button:hover > :is(#reload-button, #stop-button) > .toolbarbutton-icon {
-  background-color: var(--toolbarbutton-hover-background) !important;
-}
-
-#stop-reload-button:hover > :is(#reload-button, #stop-button):hover:active > .toolbarbutton-icon {
-  background-color: var(--toolbarbutton-active-background, var(--toolbarbutton-hover-background)) !important;
 }
 
 #back-button::before {

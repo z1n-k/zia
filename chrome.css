@@ -1249,13 +1249,6 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   visibility: visible !important;
 }
 
-/* ...a split's tabs too, which a closed folder it's dragged out of had
-   hidden (it's the split that's dragged, not its tabs) */
-#tabbrowser-tabs[movingtab] tab-group[split-view-group]:is([zia-dragging], [zia-shift]):not([zia-to-essential]) .tabbrowser-tab {
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
 /* ...and while it lands (a folder's parts included), whatever Firefox has
    hidden for its own drop animation */
 #tabbrowser-tabs :is(zen-folder, tab-group)[zia-landing],
@@ -1263,7 +1256,7 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   visibility: visible !important;
 }
 
-:root[zia-dragging-tab] :is(zen-folder, tab-group:not([split-view-group])):has(:is(.tabbrowser-tab, tab-group[split-view-group])[zia-dragging]) {
+:root[zia-dragging-tab] :is(zen-folder, tab-group:not([split-view-group])):has(.tabbrowser-tab[zia-dragging]) {
   z-index: 41 !important;
 
   /* (a collapsed folder's clip too: dragging its open tab out of it, the
@@ -1299,7 +1292,7 @@ zen-folder:has(> .tab-group-container > :is(.tabbrowser-tab, tab-group[split-vie
   overflow-y: clip;
 }
 
-zen-folder[collapsed][has-active] .tabbrowser-tab:not([selected], [visuallyselected], [folder-active="true"], [atg-folder-active], tab-group[split-view-group]:has(.tabbrowser-tab:is([selected], [visuallyselected], [folder-active="true"])) .tabbrowser-tab) {
+zen-folder[collapsed][has-active] .tabbrowser-tab:not([selected], [visuallyselected], [folder-active="true"], [atg-folder-active], tab-group[split-view-group] > .tabbrowser-tab) {
   opacity: 0 !important;
   /* (fading as Zen shrinks them, rather than gone at once, which showed as
      an empty gap closing up) */
@@ -1398,9 +1391,7 @@ zen-essentials-promo {
 }
 
 .tabbrowser-tab[zia-no-glow],
-.tabbrowser-tab[zia-no-glow] > .tab-stack > .tab-background,
-tab-group[split-view-group][zia-no-glow],
-tab-group[split-view-group][zia-no-glow] > .tab-group-container {
+.tabbrowser-tab[zia-no-glow] > .tab-stack > .tab-background {
   --zia-active-glow-color: transparent !important;
 }
 
@@ -1445,13 +1436,6 @@ tab-group[split-view-group][zia-no-glow] > .tab-group-container {
 [zia-drop-lock] {
   visibility: visible !important;
   opacity: 1 !important;
-}
-
-/* A row landing is moved by Zia's glide alone: a transition on its own
-   transform (Firefox's or Zen's, which Zen's drop used to switch off) ran
-   under the glide and showed for a frame as it ended, a 7px jump back */
-#tabbrowser-tabs :is(.tabbrowser-tab, tab-group[split-view-group])[zia-landing] {
-  transition: none !important;
 }
 
 /* (not on the row being dragged, which stays under the pointer) */
@@ -1542,27 +1526,6 @@ zen-split-fake-tab {
 #tabbrowser-tabs tab-group[split-view-group] > .tab-group-label-container:not(#zia-a):not(#zia-b) {
   visibility: hidden !important;
   opacity: 0 !important;
-}
-
-/* One of a split's two tabs closing goes at once, taking no room, so the
-   one left stays where the split was (zia.uc.js) */
-.tabbrowser-tab[zia-split-closing] {
-  height: 0 !important;
-  min-height: 0 !important;
-  max-height: 0 !important;
-  margin-block: 0 !important;
-  padding-block: 0 !important;
-  overflow: hidden !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-}
-
-/* The copy a dragged essential (or a tab going into the essentials) is drawn
-   as sits among the real tabs, and Firefox clears every tab's offset as a
-   drag ends: its centring went, and it showed shifted half its size (over
-   the essentials) until it was gone */
-.tabbrowser-tab[zia-essential-proxy] {
-  translate: -50% -50% !important;
 }
 @property --zia-folder-bottom-extra {
   syntax: "<length>";
@@ -2186,8 +2149,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
 
 /* A tab dragged into an empty folder, open or collapsed, wears the slot's
  * dashes, so the drop spot stays marked while the tab is over it. */
-:root[zen-sidebar-expanded="true"] .tabbrowser-tab[zia-dragging][zia-into-empty] > .tab-stack > .tab-background,
-:root[zen-sidebar-expanded="true"] tab-group[split-view-group][zia-dragging][zia-into-empty] > .tab-group-container {
+:root[zen-sidebar-expanded="true"] .tabbrowser-tab[zia-dragging][zia-into-empty] > .tab-stack > .tab-background {
   outline: var(--zia-slot-border) !important;
   outline-offset: -1.5px !important;
 }
@@ -2260,7 +2222,7 @@ zen-workspace[zia-keep-folder-names] .tab-group-container > :is(.tabbrowser-tab[
    only shrinks the closed folder's own), see-through, so the inner folder's
    box stretched far below the tab shown. They shrink away with the rest:
    no height, so their minimum height, which can be animated, sets it. */
-:root:not(#zia-none) zen-folder[collapsed]:is([has-active], [zia-was-active]) :is(zen-folder, tab-group:not([split-view-group])) .tabbrowser-tab:not([selected], [visuallyselected], [folder-active="true"], [zia-kept-tab], [atg-folder-active], tab-group[split-view-group]:has(.tabbrowser-tab:is([selected], [visuallyselected], [folder-active="true"])) .tabbrowser-tab) {
+:root:not(#zia-none) zen-folder[collapsed]:is([has-active], [zia-was-active]) :is(zen-folder, tab-group:not([split-view-group])) .tabbrowser-tab:not([selected], [visuallyselected], [folder-active="true"], [zia-kept-tab], [atg-folder-active], tab-group[split-view-group] > .tabbrowser-tab) {
   height: 0 !important;
   min-height: 0 !important;
   margin-block: 0 !important;
@@ -2302,15 +2264,6 @@ zen-folder[collapsed][zia-was-active] > .tab-group-container > .zen-tab-group-st
 zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-group])):not(:has(.tabbrowser-tab[selected]))::before,
 zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-group])):not(:has(.tabbrowser-tab[selected]))::after {
   opacity: 0 !important;
-}
-
-/* A closed folder whose one showing tab is being dragged out of it is drawn
-   at its closed height, not with the room it keeps below its name for that
-   tab's glow (zia.uc.js) */
-:root[zen-sidebar-expanded="true"] zen-folder[collapsed][zia-lent]::before,
-:root[zen-sidebar-expanded="true"] zen-folder[collapsed][zia-lent]::after {
-  bottom: var(--zia-lent-inset) !important;
-  transition: bottom 120ms ease-out !important;
 }
 #zia-tab-card,
 #zia-folder-card {
@@ -3657,21 +3610,6 @@ tab-group[split-view-group] .tab-group-container > .tabbrowser-tab::after {
   }
 }
 
-/* In a folder, a split's box ends where a tab's does, the folder's gap in
-   from its edge (it kept Zen's 2px, so it ran further right than the tabs
-   above and below it) */
-:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) tab-group[split-view-group] > .tab-group-container {
-  margin-inline-end: calc(var(--zia-folder-right-fix, 0px) + var(--zia-folder-inner-gap, 5px)) !important;
-}
-
-:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) :is(zen-folder, tab-group:not([split-view-group])) tab-group[split-view-group] > .tab-group-container {
-  margin-inline-end: calc(var(--zia-folder-right-fix, 0px) + 2 * var(--zia-folder-inner-gap, 5px)) !important;
-}
-
-:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) :is(zen-folder, tab-group:not([split-view-group])) :is(zen-folder, tab-group:not([split-view-group])) tab-group[split-view-group] > .tab-group-container {
-  margin-inline-end: calc(var(--zia-folder-right-fix, 0px) + 3 * var(--zia-folder-inner-gap, 5px)) !important;
-}
-
 :root[zen-sidebar-expanded="true"] tab-group[split-view-group]:is([hasactivetab], :has(.tabbrowser-tab[visuallyselected])) .tab-group-container {
   background: var(--zia-active-tab-bg) !important;
   box-shadow: 0 0 var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color) !important;
@@ -4763,12 +4701,6 @@ zen-folder .tab-reset-button {
   transition: none !important;
 }
 
-/* ...and dropped, it eases out to its own width (zia.uc.js) */
-:root:not(#zia-none) .tabbrowser-tab[zia-morph-out] > .tab-stack > :is(.tab-background, .tab-content),
-:root:not(#zia-none) tab-group[split-view-group][zia-morph-out] > .tab-group-container {
-  transition: margin-inline-start 160ms ease-out, margin-inline-end 160ms ease-out !important;
-}
-
 /* The pop-up in the toolbar's colour, copied as it opened (the "Address bar
    pop-up takes the toolbar's colour" option). Its text and rows follow the
    colour, light or dark, whatever the theme. */
@@ -4973,21 +4905,8 @@ zen-folder .tab-reset-button {
   opacity: var(--zia-nav-rest);
 }
 
-:is(#back-button, #forward-button, #reload-button, #stop-button) > .toolbarbutton-icon {
+:is(#back-button, #forward-button, #stop-button) > .toolbarbutton-icon {
   transition: background-color 0.2s ease !important;
-}
-
-/* Reload and stop are two buttons, one swapped for the other as a page
-   starts and stops loading: the one swapped in isn't hovered until the
-   pointer next moves, so the hover square went and snapped back with no
-   fade (and reload, disabled for a moment after each load, lost it too).
-   It's drawn for the pair instead, which stays hovered throughout. */
-#stop-reload-button:hover > :is(#reload-button, #stop-button) > .toolbarbutton-icon {
-  background-color: var(--toolbarbutton-hover-background) !important;
-}
-
-#stop-reload-button:hover > :is(#reload-button, #stop-button):hover:active > .toolbarbutton-icon {
-  background-color: var(--toolbarbutton-active-background, var(--toolbarbutton-hover-background)) !important;
 }
 
 #back-button::before {
