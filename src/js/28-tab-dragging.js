@@ -910,6 +910,15 @@
       const items = [...box.children].filter(
         (item) => item !== split && ((gBrowser.isTab(item) && !item.hasAttribute("zen-empty-tab")) || isFolderEl(item) || item.localName === "tab-group")
       );
+      // (a closed folder is marked as showing a tab before the split goes in,
+      // as for a tab: with the open tab in the split, Zen opened the folder)
+      const shut = isCollapsed(folder);
+      const selected = [...split.tabs].some((t) => t.selected);
+      const hadActive = folder.hasAttribute("has-active");
+      if (shut && !hadActive) {
+        folder.setAttribute("has-active", "true");
+        folder.activeTabs = [];
+      }
       let next = !target.atEnd && !isCollapsed(folder) && target.next && folder.contains(target.next.node) ? target.next.node : null;
       while (next && next.parentElement !== box) {
         next = next.parentElement;
@@ -930,14 +939,31 @@
       if (split.parentElement !== box) {
         box.appendChild(split);
       }
-      if (isCollapsed(folder)) {
-        try {
-          window.gZenFolders?.on_TabGroupCollapse?.({ target: folder });
-        } catch (err) {
-          noteError("tab dragging: split into a closed folder", err);
-        }
-        jumpToEnd(folder);
+      if (!shut) {
+        return;
       }
+      if (!hadActive && !selected) {
+        folder.removeAttribute("has-active");
+        folder.activeTabs = [];
+      }
+      try {
+        if (!isCollapsed(folder)) {
+          folder.collapsed = true;
+        } else if (selected) {
+          // (Zen opens a folder to show the open tab: kept shut, showing
+          // the split, as a tab dropped into a closed folder is)
+          Promise.resolve(window.gZenFolders?.animateSelect?.(folder)).then(() => {
+            if (folder.isConnected && !isCollapsed(folder) && folder.contains(split)) {
+              folder.collapsed = true;
+            }
+          });
+        } else {
+          window.gZenFolders?.on_TabGroupCollapse?.({ target: folder });
+        }
+      } catch (err) {
+        noteError("tab dragging: split into a closed folder", err);
+      }
+      jumpToEnd(folder);
     };
 
     const finishDrop = (tab, target) => {
