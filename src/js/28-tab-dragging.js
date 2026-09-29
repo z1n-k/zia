@@ -994,6 +994,11 @@
       try {
         if (!isCollapsed(folder)) {
           folder.collapsed = true;
+        } else if (selected) {
+          const open = [...split.tabs].filter((t) => t.selected);
+          if (!showOpenTabShut(folder, open)) {
+            window.gZenFolders?.animateSelect?.(folder);
+          }
         } else {
           window.gZenFolders?.on_TabGroupCollapse?.({ target: folder });
         }
@@ -1165,6 +1170,33 @@
       }
     };
 
+    // A closed folder showing the open tab that's just gone in. Zen shows it
+    // itself (animateSelect), except when every tab in the folder is the
+    // open one: then it opens the folder, which flashed open and shut again.
+    // Just then it's laid out as Zen lays out a closed folder showing its
+    // open tab. Returns false when Zen's own way is fine.
+    const showOpenTabShut = (folder, open) => {
+      const zen = window.gZenFolders;
+      const others = (folder.tabs || []).filter(
+        (t) => !t.hasAttribute("zen-empty-tab") && !open.includes(t) && !(t.group?.hasAttribute?.("split-view-group") && open.some((o) => o.group === t.group))
+      );
+      if (others.length || !zen?.setFolderIndentation || folder.group) {
+        return false;
+      }
+      folder.setAttribute("has-active", "true");
+      folder.activeTabs = open;
+      const container = folder.groupContainer || folder.querySelector(":scope > .tab-group-container");
+      container?.removeAttribute("hidden");
+      const start = folder.groupStartElement;
+      if (start) {
+        start.style.marginTop = "0px";
+      }
+      for (const tab of open) {
+        zen.setFolderIndentation([tab], folder, true, false);
+      }
+      return true;
+    };
+
     const parkInFolder = (tab, folder, first = false) => {
       folder?.removeAttribute("zia-drop-slot");
       if (!tab || !folder) {
@@ -1199,11 +1231,11 @@
       try {
         if (!isCollapsed(folder)) {
           folder.collapsed = true;
+        } else if (tab.selected) {
+          if (!showOpenTabShut(folder, [tab])) {
+            window.gZenFolders?.animateSelect?.(folder);
+          }
         } else {
-          // (the open tab too: Zen's own way of showing it in a closed
-          // folder opens the folder when it's the only tab there, which
-          // flashed open and shut again; laid out as closed, the folder
-          // shows its open tab)
           window.gZenFolders?.on_TabGroupCollapse?.({ target: folder });
         }
       } catch (err) {
