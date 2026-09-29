@@ -994,14 +994,6 @@
       try {
         if (!isCollapsed(folder)) {
           folder.collapsed = true;
-        } else if (selected) {
-          // (Zen opens a folder to show the open tab: kept shut, showing
-          // the split, as a tab dropped into a closed folder is)
-          Promise.resolve(window.gZenFolders?.animateSelect?.(folder)).then(() => {
-            if (folder.isConnected && !isCollapsed(folder) && folder.contains(split)) {
-              folder.collapsed = true;
-            }
-          });
         } else {
           window.gZenFolders?.on_TabGroupCollapse?.({ target: folder });
         }
@@ -1207,16 +1199,11 @@
       try {
         if (!isCollapsed(folder)) {
           folder.collapsed = true;
-        } else if (tab.selected) {
-          // (the only tab in it, Zen opens the folder instead: it's kept
-          // shut, showing the tab, as a drop into any closed folder is. It
-          // flashed open, and shut again with the next drag.)
-          Promise.resolve(window.gZenFolders?.animateSelect?.(folder)).then(() => {
-            if (folder.isConnected && !isCollapsed(folder) && folder.contains(tab)) {
-              folder.collapsed = true;
-            }
-          });
         } else {
+          // (the open tab too: Zen's own way of showing it in a closed
+          // folder opens the folder when it's the only tab there, which
+          // flashed open and shut again; laid out as closed, the folder
+          // shows its open tab)
           window.gZenFolders?.on_TabGroupCollapse?.({ target: folder });
         }
       } catch (err) {
@@ -1334,12 +1321,12 @@
       proxy.style.setProperty("top", `${Math.round(y - off.y)}px`, "important");
     };
 
-    // A split's stand-in changes shape between its row and its tile: what's
-    // in it is hidden while the box morphs, and shows again once it's the
-    // new shape (squeezed or stretched, both icons slid about in a box of
-    // the wrong shape, which looked broken)
+    // A stand-in changing shape between a row and a tile (a split's, or any
+    // essential's): what's in it is hidden while the box morphs, and shows
+    // again once it's the new shape (an essential's icon stretched across a
+    // row's width, or a split's icons slid about, looked broken)
     const fadeSplitContent = (node, ms) => {
-      if (!node?.hasAttribute?.("zia-split-tile")) {
+      if (!node) {
         return;
       }
       node.querySelector(".tab-content")?.animate(
