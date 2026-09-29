@@ -9935,6 +9935,23 @@
       const visualMid = drag.origin + dy + drag.height / 2;
       place(moving, dy, true);
 
+      // New Tab at the foot of the list, when the list closes up (only if the
+      // row taken out was above it)
+      const shiftNewTab = (by) => {
+        if (Services.prefs.getBoolPref("zen.view.show-newtab-button-top", false)) {
+          return;
+        }
+        const button = newTabButton();
+        if (!button) {
+          return;
+        }
+        drag.newTabTop ??= button.getBoundingClientRect().top;
+        const want = by && drag.origin < drag.newTabTop ? by : 0;
+        if ((drag.newTabShift || 0) !== want) {
+          drag.newTabShift = want;
+          place(button, want, false);
+        }
+      };
       // over the essentials (a tab or a split): the list closes up behind it
       if (drag.essentials || drag.splitEssential) {
         for (const row of drag.rows) {
@@ -9957,6 +9974,9 @@
         if (drag.sepTop != null) {
           placeSep(drag.origin > drag.sepTop ? 0 : -drag.pitch);
         }
+        // (New Tab under the list too: it stayed, leaving a gap above it
+        // until the drop)
+        shiftNewTab(-drag.pitch);
         drag.target = null;
         setDropSlot(null);
         takeEmptySlot();
@@ -9964,6 +9984,7 @@
         return;
       }
 
+      shiftNewTab(0);
       let rowsMoved = false;
       for (const row of drag.rows) {
         if (notARow(row)) {
