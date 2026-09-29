@@ -814,6 +814,18 @@
         return;
       }
       try {
+        // As its "-" does (the tab left open): the tab shown goes, its folder
+        // and the pinned tabs shutting round it together
+        const shown = [...(pins.groupContainer?.querySelectorAll?.(".tabbrowser-tab[folder-active]") || [])];
+        if (shown.length && zen.animateUnload) {
+          await Promise.all(
+            shown.map((one) => {
+              const folder = one.group?.hasAttribute("split-view-group") ? one.group.group : one.group;
+              return zen.animateUnload(folder || pins, one);
+            })
+          );
+          return;
+        }
         const folders = pins.childActiveGroups || [];
         pins.removeAttribute("has-active");
         pins.activeTabs = [];
