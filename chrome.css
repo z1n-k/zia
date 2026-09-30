@@ -5380,6 +5380,36 @@ zen-folder .tab-reset-button {
   display: none !important;
 }
 
+/* The welcome tour (zia.uc.js, welcome/index.html): the window behind it
+   dims and blurs to grey, and the tour's card sits in the middle */
+#zia-welcome {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px) saturate(0);
+  opacity: 0;
+  transition: opacity 0.26s cubic-bezier(0.2, 0.9, 0.3, 1);
+
+  &[shown] {
+    opacity: 1;
+  }
+
+  &[closing] {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  & > iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: transparent;
+    color-scheme: normal;
+  }
+}
+
 /* Zen's glance buttons in Zia's look: one dark card, like the hover cards,
    the buttons inside it the shape of Zia's close buttons, Zia's icons */
 .zen-glance-sidebar-container {

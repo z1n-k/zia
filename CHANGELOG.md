@@ -6,6 +6,12 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- A welcome tour: a short card with moving pictures of what Zia does, shown
+  once when you first install it, and after updates that bring something
+  worth showing. Skip it, step through it, or see it again from settings.
+
 ### Changed
 
 - Tab hover card: the pin and paperclip icons are the same size, as in Dia

@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome to Zia</title>
+<!-- Zia's welcome tour, shown over the browser (zia.uc.js, welcome). Every
+     picture is drawn here in CSS; the icons are Tabler's (MIT). -->
+<style>
+
+  :root {
+    --bg: #0e0e10;
+    --text: rgba(255, 255, 255, 0.92);
+    --dim: rgba(255, 255, 255, 0.56);
+    --blue: #5ab9f5;
+    --edge: linear-gradient(to bottom right, rgba(255,255,255,.28), rgba(255,255,255,.12) 30%, rgba(255,255,255,.08) 50%, rgba(255,255,255,.12) 70%, rgba(255,255,255,.24));
+    --ease: cubic-bezier(0.2, 0.9, 0.3, 1);
+    --spring: cubic-bezier(0.34, 1.4, 0.5, 1);
+    --img: "https://raw.githubusercontent.com/z1n-k/zia/readme-images/";
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 13px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- the page: see-through, the card in the middle ---------- */
+  html, body { height: 100%; background: transparent !important; overflow: hidden; }
+  /* dark only on the card, so nothing paints the page behind it */
+  :root { color-scheme: normal !important; }
+  .tour { color-scheme: dark; }
+  .scrim { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; }
+
+  /* ---------- glass ---------- */
+  .glass {
+    position: relative; border-radius: 18px;
+    background: rgba(14, 14, 15, 0.74);
+    backdrop-filter: blur(30px) saturate(0); -webkit-backdrop-filter: blur(30px) saturate(0);
+    box-shadow: 0 24px 60px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.25);
+  }
+  .glass::after {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; padding: .5px; pointer-events: none;
+    background: var(--edge); mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  }
+
+  /* ---------- the tour card ---------- */
+  .tour { width: min(520px, 100%); overflow: hidden; animation: in .5s var(--ease) both; }
+  @keyframes in { from { opacity: 0; transform: translateY(12px) scale(.97); } }
+  .track { display: flex; transition: transform .5s var(--ease); }
+  .slide { flex: 0 0 100%; min-width: 0; }
+  .visual { margin: 10px 10px 0; border-radius: 12px; overflow: hidden; }
+  .copy { padding: 14px 20px 2px; min-height: 92px; }
+  .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--blue); }
+  .title { font-size: 18px; font-weight: 650; letter-spacing: -.01em; margin: 2px 0 4px; }
+  .desc { color: var(--dim); margin: 0; }
+  .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px 16px 20px; }
+  .count { font: 500 11.5px/1 ui-monospace, "SF Mono", Menlo, monospace; color: rgba(255,255,255,.4); letter-spacing: .02em; }
+  .count .at { color: rgba(255,255,255,.85); }
+  .btns { display: flex; gap: 8px; flex: none; }
+  .btn { appearance: none; border: 0; cursor: pointer; font: 500 12.5px/1 inherit; font-family: inherit; padding: 8px 13px; border-radius: 9px; color: #fff; background: rgba(255,255,255,.1); }
+  .btn:hover { background: rgba(255,255,255,.16); }
+  .btn.primary { background: #fff; color: #111; }
+  .btn.primary:hover { background: rgba(255,255,255,.88); }
+  .btn[hidden] { display: none; }
+  kbd {
+    display: inline-grid; place-items: center; box-sizing: border-box;
+    height: 1.55em; min-width: 1.55em; padding: 0 .3em; border-radius: .38em;
+    background: rgba(255,255,255,.12); box-shadow: inset 0 -1px 0 rgba(0,0,0,.25), inset 0 .5px 0 rgba(255,255,255,.1);
+    font: 500 .8em/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; color: #fff;
+    vertical-align: .08em;
+  }
+  kbd + kbd { margin-left: .22em; }
+
+
+  /* ---------- a visual: a stage 16:10 ---------- */
+  .stage {
+    position: relative; aspect-ratio: 16 / 10; overflow: hidden;
+    background: radial-gradient(90% 120% at 50% 0%, rgba(255,255,255,.05), transparent 70%), #161618;
+    container-type: inline-size;
+  }
+  .stage.photo { background: #111113; display: grid; place-items: center; }
+  .stage.photo img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+  .stage.photo.contain img { object-fit: contain; padding: 6%; }
+  .stage * { position: absolute; }
+  .stage.photo * { position: static; }
+
+  /* wireframe parts, sized by the stage's width (cqw) */
+  .w-side { left: 6cqw; top: 8cqw; width: 34cqw; }
+  .w-row { position: relative; height: 6.6cqw; margin-bottom: 1.2cqw; border-radius: 1.8cqw; background: rgba(255,255,255,.06); display: flex; align-items: center; }
+  .w-row > * { position: static; }
+  .w-ico { width: 2.6cqw; height: 2.6cqw; border-radius: .7cqw; margin-left: 2cqw; background: var(--c, #888); flex: none; }
+  .w-line { height: 1.2cqw; margin: 0 2cqw; flex: 1; border-radius: 1cqw; background: rgba(255,255,255,.2); }
+  .w-key {
+    display: grid; place-items: center; box-sizing: border-box;
+    margin-right: 1.4cqw; min-width: 3.6cqw; height: 3.6cqw; padding: 0 .8cqw; border-radius: 1cqw; background: rgba(255,255,255,.12);
+    font: 500 2.1cqw/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; font-variant-numeric: tabular-nums; color: #fff; flex: none;
+  }
+  .w-page { left: 44cqw; top: 8cqw; right: 6cqw; bottom: 8cqw; border-radius: 2cqw; background: rgba(255,255,255,.05); overflow: hidden; }
+  .w-sel { left: 6cqw; width: 34cqw; height: 6.6cqw; border-radius: 1.8cqw; background: rgba(0,0,0,.35); box-shadow: inset 0 0 0 .25cqw rgba(255,255,255,.16); }
+
+  /* 1 · numbered tabs, and 2 · undo: stepped by script (wireLoops) */
+  .seq .w-key { opacity: 0; transform: translateX(1cqw); transition: opacity .2s var(--ease), transform .25s var(--ease), background-color .15s, color .15s; }
+  .seq.held .w-key { opacity: 1; transform: none; }
+  .seq .w-row.lit .w-key { background: var(--blue); color: #08182a; }
+  .seq .w-sel { top: 8cqw; transition: transform .45s var(--ease), opacity .2s; }
+  .seq .w-page { transition: background-color .45s var(--ease); display: grid; place-items: center; }
+  .seq .w-page::before { content: ""; position: absolute; left: 5cqw; right: 5cqw; top: 5cqw; height: 3cqw; border-radius: 1cqw; background: rgba(255,255,255,.28); }
+  .seq .w-page::after { content: ""; position: absolute; left: 5cqw; right: 16cqw; top: 11cqw; height: 12cqw; border-radius: 1.6cqw; background: rgba(255,255,255,.14); }
+  .seq .say {
+    position: relative; z-index: 1; display: flex; gap: 1cqw; align-items: center;
+    padding: 1.6cqw 2.4cqw; border-radius: 2cqw; background: rgba(20,20,24,.55); backdrop-filter: blur(2cqw);
+    font: 600 3cqw/1 -apple-system, system-ui, sans-serif; color: #fff; white-space: nowrap;
+    opacity: 0; transform: translateY(1.5cqw) scale(.96); transition: opacity .2s var(--ease), transform .3s var(--ease);
+  }
+  .seq .say.on { opacity: 1; transform: none; }
+  .seq .say kbd { position: static; font-size: 2.6cqw; height: 4.4cqw; min-width: 4.4cqw; line-height: 1; border-radius: 1cqw; }
+  .undo .w-row { transition: height .35s var(--ease), margin-bottom .35s var(--ease), opacity .25s, transform .35s var(--ease); }
+  .undo .w-row.closed { height: 0; margin-bottom: 0; opacity: 0; transform: translateX(-4cqw); }
+
+  /* 3 · split by dragging */
+  .split .ghost { left: 8cqw; top: 17.8cqw; width: 30cqw; height: 6.6cqw; border-radius: 1.8cqw; background: rgba(90,185,245,.25); box-shadow: 0 1.5cqw 4cqw rgba(0,0,0,.4); animation: drag 5s var(--ease) infinite; opacity: 0; }
+  .split .drop { top: 12cqw; bottom: 12cqw; width: calc((50cqw - 12cqw) / 2); border-radius: 1.6cqw; border: .3cqw dashed rgba(255,255,255,.35); animation: drop 5s var(--ease) infinite; opacity: 0; }
+  .split .drop.l { left: 48cqw; } .split .drop.r { right: 10cqw; }
+  .split .pane { top: 8cqw; bottom: 8cqw; border-radius: 2cqw; animation: pane 5s var(--ease) infinite; opacity: 0; }
+  .split .pane.l { left: 44cqw; width: calc((50cqw - 1cqw) / 2); background: rgba(255,255,255,.08); }
+  .split .pane.r { right: 6cqw; width: calc((50cqw - 1cqw) / 2); background: rgba(90,185,245,.18); }
+  @keyframes drag { 0%, 8% { opacity: 0; transform: none; } 14% { opacity: 1; transform: none; } 42% { opacity: 1; transform: translate(52cqw, 8cqw) scale(.8); } 50%, 100% { opacity: 0; transform: translate(52cqw, 8cqw) scale(.8); } }
+  @keyframes drop { 0%, 18% { opacity: 0; } 26%, 46% { opacity: 1; } 52%, 100% { opacity: 0; } }
+  @keyframes pane { 0%, 46% { opacity: 0; transform: scale(.96); } 54%, 88% { opacity: 1; transform: none; } 96%, 100% { opacity: 0; } }
+
+  /* 4 · the toolbar takes the site's colour */
+  .color .bar { left: 44cqw; right: 6cqw; top: 8cqw; height: 7cqw; border-radius: 2cqw 2cqw 0 0; animation: bar 6s var(--ease) infinite; display: flex; align-items: center; }
+  .color .bar > * { position: static; }
+  .color .url { margin-left: 3cqw; width: 22cqw; height: 1.4cqw; border-radius: 1cqw; animation: url 6s var(--ease) infinite; }
+  .color .body { left: 44cqw; right: 6cqw; top: 15cqw; bottom: 8cqw; border-radius: 0 0 2cqw 2cqw; animation: body 6s var(--ease) infinite; }
+  .color .head { left: 48cqw; top: 20cqw; width: 26cqw; height: 3cqw; border-radius: 1cqw; background: rgba(255,255,255,.35); }
+  @keyframes bar { 0%, 28% { background: #3a4452; } 36%, 62% { background: #0d0f12; } 70%, 92% { background: #ececef; } 100% { background: #3a4452; } }
+  @keyframes body { 0%, 26% { background: linear-gradient(#3a4452, #2a313b); } 34%, 60% { background: linear-gradient(#0d0f12, #16181c); } 68%, 90% { background: linear-gradient(#ececef, #d6d6da); } 100% { background: linear-gradient(#3a4452, #2a313b); } }
+  @keyframes url { 0%, 62% { background: rgba(255,255,255,.75); } 70%, 92% { background: rgba(0,0,0,.55); } 100% { background: rgba(255,255,255,.75); } }
+
+  /* 5 · folders */
+  .folders .box { left: 6cqw; top: 8cqw; width: 34cqw; border-radius: 2cqw; background: rgba(90,185,245,.14); box-shadow: inset 0 0 0 .25cqw rgba(90,185,245,.3); animation: box 4.5s var(--spring) infinite; }
+  .folders .fhead { left: 2cqw; top: 2cqw; right: 2cqw; height: 4cqw; display: flex; align-items: center; gap: 1.6cqw; font: 600 2.6cqw/1 -apple-system, system-ui, sans-serif; color: var(--blue); }
+  .folders .fhead > * { position: static; }
+  .folders .fico { width: 2.8cqw; height: 2.8cqw; border-radius: .7cqw; background: var(--blue); }
+  .folders .kids { left: 2cqw; right: 2cqw; top: 8cqw; }
+  .folders .kids .w-row { background: rgba(255,255,255,.07); animation: kid 4.5s var(--spring) infinite; }
+  .folders .kids .w-row:nth-child(2) { animation-delay: .05s; } .folders .kids .w-row:nth-child(3) { animation-delay: .1s; }
+  .folders .after { left: 6cqw; width: 34cqw; animation: after 4.5s var(--spring) infinite; }
+  @keyframes box { 0%, 12% { height: 8cqw; } 26%, 70% { height: 32cqw; } 84%, 100% { height: 8cqw; } }
+  @keyframes kid { 0%, 14% { opacity: 0; transform: translateY(-2cqw); } 28%, 66% { opacity: 1; transform: none; } 78%, 100% { opacity: 0; } }
+  @keyframes after { 0%, 12% { top: 18cqw; } 26%, 70% { top: 42cqw; } 84%, 100% { top: 18cqw; } }
+
+  /* 6 · the music player */
+  .music .glow { left: 22cqw; top: 14cqw; width: 30cqw; height: 30cqw; border-radius: 50%; background: radial-gradient(rgba(90,185,245,.55), rgba(120,130,150,.35) 55%, transparent 70%); filter: blur(5cqw); animation: glow 3s ease-in-out infinite alternate; }
+  .music .card { left: 14cqw; right: 14cqw; top: 18cqw; height: 24cqw; border-radius: 3cqw; background: rgba(40,40,46,.72); backdrop-filter: blur(3cqw); box-shadow: inset 0 0 0 .25cqw rgba(255,255,255,.1); }
+  .music .art { left: 17.5cqw; top: 21.5cqw; width: 17cqw; height: 17cqw; border-radius: 2cqw; background: linear-gradient(135deg, #4a5566, #1f242c); box-shadow: inset 0 0 0 .25cqw rgba(255,255,255,.1); }
+  .music .t1 { left: 38cqw; top: 24cqw; width: 26cqw; height: 2.2cqw; border-radius: 1cqw; background: rgba(255,255,255,.8); }
+  .music .t2 { left: 38cqw; top: 28.5cqw; width: 18cqw; height: 1.8cqw; border-radius: 1cqw; background: rgba(255,255,255,.35); }
+  .music .track { left: 38cqw; right: 18cqw; top: 35cqw; height: .8cqw; border-radius: 1cqw; background: rgba(255,255,255,.15); overflow: hidden; }
+  .music .track::after { content: ""; position: absolute; inset: 0; background: #fff; transform-origin: left; animation: play 6s linear infinite; }
+  .music .bars { right: 18cqw; top: 23cqw; display: flex; gap: .8cqw; align-items: end; height: 4cqw; }
+  .music .bars i { position: static; width: 1cqw; border-radius: .5cqw; background: #fff; animation: bar1 .9s ease-in-out infinite alternate; }
+  .music .bars i:nth-child(2) { animation-delay: -.3s; } .music .bars i:nth-child(3) { animation-delay: -.6s; }
+  @keyframes glow { from { transform: scale(.9); opacity: .7; } to { transform: scale(1.15); opacity: 1; } }
+  @keyframes play { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes bar1 { from { height: 1.2cqw; } to { height: 4cqw; } }
+
+  /* 7 · Glance */
+  .glance .link { left: 50cqw; top: 22cqw; width: 18cqw; height: 1.6cqw; border-radius: 1cqw; background: var(--blue); opacity: .8; }
+  .glance .peek { left: 52cqw; top: 14cqw; width: 36cqw; height: 34cqw; border-radius: 2.4cqw; background: rgba(46,46,52,.9); box-shadow: 0 2cqw 6cqw rgba(0,0,0,.5), inset 0 0 0 .25cqw rgba(255,255,255,.12); transform-origin: 8cqw 9cqw; animation: peek 4.5s var(--spring) infinite; }
+  .glance .peek::before { content: ""; position: absolute; left: 3cqw; right: 3cqw; top: 4cqw; height: 3cqw; border-radius: 1cqw; background: rgba(255,255,255,.3); }
+  .glance .peek::after { content: ""; position: absolute; left: 3cqw; right: 12cqw; top: 10cqw; bottom: 4cqw; border-radius: 1.4cqw; background: rgba(255,255,255,.08); }
+  @keyframes peek { 0%, 18% { opacity: 0; transform: scale(.3); } 32%, 78% { opacity: 1; transform: none; } 90%, 100% { opacity: 0; transform: scale(.9); } }
+
+  /* 8 · picture-in-picture tucks away */
+  .pip .player { top: 18cqw; width: 30cqw; height: 17cqw; border-radius: 2cqw; background: linear-gradient(135deg, #3d4757, #262b33); box-shadow: 0 2cqw 5cqw rgba(0,0,0,.45), inset 0 0 0 .25cqw rgba(255,255,255,.1); animation: tuck 5s var(--ease) infinite; }
+  .pip .player::after { content: ""; position: absolute; left: 13cqw; top: 6.2cqw; border: 2.2cqw solid transparent; border-left: 3.4cqw solid rgba(255,255,255,.9); border-right: 0; }
+  @keyframes tuck { 0%, 18% { left: 56cqw; } 40%, 70% { left: 92.5cqw; } 88%, 100% { left: 56cqw; } }
+
+  /* hover cards */
+  .cards .cur { left: 30cqw; top: 22cqw; width: 2.4cqw; height: 3.4cqw; background: #fff; clip-path: polygon(0 0, 100% 62%, 45% 62%, 30% 100%); animation: cur 5s var(--ease) infinite; z-index: 3; }
+  .cards .hc { left: 42cqw; width: 36cqw; padding: 2.4cqw; border-radius: 2.4cqw; background: rgba(46,46,52,.92); box-shadow: 0 2cqw 5cqw rgba(0,0,0,.45), inset 0 0 0 .25cqw rgba(255,255,255,.12); animation: hc 5s var(--ease) infinite; opacity: 0; z-index: 2; }
+  .cards .hc > * { position: relative; }
+  .cards .hc .t { height: 2.4cqw; width: 70%; border-radius: 1cqw; background: rgba(255,255,255,.85); }
+  .cards .hc .u { height: 1.8cqw; width: 45%; margin-top: 1.6cqw; border-radius: 1cqw; background: rgba(255,255,255,.35); }
+  .cards .hc .a { display: flex; gap: 2cqw; margin-top: 3cqw; }
+  .cards .hc .a i { position: relative; width: 4cqw; height: 4cqw; border-radius: 1.2cqw; background: rgba(255,255,255,.1); }
+  .cards .hc .a i::after { content: ""; position: absolute; inset: 1.1cqw; border-radius: .5cqw; border: .3cqw solid rgba(255,255,255,.7); }
+  @keyframes cur { 0%, 10% { transform: translate(0, 0); } 22%, 45% { transform: translate(0, 7.8cqw); } 57%, 85% { transform: translate(0, 23.4cqw); } 100% { transform: translate(0, 0); } }
+  @keyframes hc { 0%, 24% { opacity: 0; top: 13cqw; transform: translateY(1cqw); } 28%, 45% { opacity: 1; top: 13cqw; transform: none; } 50%, 58% { opacity: 0; top: 28.6cqw; transform: translateY(1cqw); } 62%, 85% { opacity: 1; top: 28.6cqw; transform: none; } 92%, 100% { opacity: 0; top: 28.6cqw; } }
+
+  /* the address bar */
+  .address .bar { left: 44cqw; right: 6cqw; top: 8cqw; height: 6cqw; border-radius: 1.8cqw; background: rgba(255,255,255,.1); display: flex; align-items: center; z-index: 2; animation: abar 5s var(--ease) infinite; }
+  .address .bar > * { position: static; }
+  .address .bar .q { margin-left: 2.4cqw; height: 1.6cqw; width: 18cqw; border-radius: 1cqw; background: rgba(255,255,255,.55); }
+  .address .bar .caret { width: .35cqw; height: 3cqw; margin-left: .6cqw; background: var(--blue); animation: caret 1s steps(1) infinite; }
+  .address .pop { left: 44cqw; right: 6cqw; top: 8cqw; padding: 8cqw 2cqw 2cqw; border-radius: 2.2cqw; background: rgba(46,46,52,.82); backdrop-filter: blur(2cqw); box-shadow: 0 2cqw 5cqw rgba(0,0,0,.45), inset 0 0 0 .25cqw rgba(255,255,255,.12); transform-origin: top; animation: pop 5s var(--ease) infinite; opacity: 0; z-index: 1; }
+  .address .pop > * { position: relative; }
+  .address .pop .r { display: flex; align-items: center; gap: 2cqw; height: 5.4cqw; padding: 0 2cqw; border-radius: 1.4cqw; }
+  .address .pop .r > * { position: static; }
+  .address .pop .r i { width: 2.4cqw; height: 2.4cqw; border-radius: .7cqw; background: var(--c); }
+  .address .pop .r u { height: 1.4cqw; border-radius: 1cqw; background: rgba(255,255,255,.4); text-decoration: none; }
+  .address .pop .r.sel { background: rgba(255,255,255,.1); }
+  .address .w-page { top: 16cqw; }
+  @keyframes abar { 0%, 15% { background: rgba(255,255,255,.1); } 20%, 80% { background: transparent; } 88%, 100% { background: rgba(255,255,255,.1); } }
+  @keyframes pop { 0%, 15% { opacity: 0; transform: scaleY(.6); } 24%, 80% { opacity: 1; transform: none; } 88%, 100% { opacity: 0; transform: scaleY(.9); } }
+  @keyframes caret { 50% { opacity: 0; } }
+
+  /* multiview */
+  .multiview .w-page { display: grid; gap: 1cqw; padding: 1cqw; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+  .multiview .v { position: relative; border-radius: 1.4cqw; background: var(--c); animation: v 6s var(--ease) infinite; }
+  .multiview .v::after { content: ""; position: absolute; left: 50%; top: 50%; translate: -35% -50%; border: 1.6cqw solid transparent; border-left: 2.6cqw solid rgba(255,255,255,.85); border-right: 0; }
+  .multiview .v:nth-child(1) { grid-area: 1 / 1 / 3 / 3; animation-name: v1; }
+  .multiview .v:nth-child(2) { animation-name: v2; } .multiview .v:nth-child(3) { animation-name: v3; } .multiview .v:nth-child(4) { animation-name: v4; }
+  @keyframes v1 { 0%, 18% { grid-area: 1 / 1 / 3 / 3; } 22%, 45% { grid-area: 1 / 1 / 3 / 2; } 50%, 90% { grid-area: 1 / 1 / 2 / 2; } 100% { grid-area: 1 / 1 / 3 / 3; } }
+  @keyframes v2 { 0%, 18% { opacity: 0; grid-area: 1 / 2 / 3 / 3; } 22%, 45% { opacity: 1; grid-area: 1 / 2 / 3 / 3; } 50%, 90% { opacity: 1; grid-area: 1 / 2 / 2 / 3; } 100% { opacity: 0; } }
+  @keyframes v3 { 0%, 45% { opacity: 0; transform: scale(.9); } 52%, 90% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+  @keyframes v4 { 0%, 50% { opacity: 0; transform: scale(.9); } 57%, 90% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+
+  /* the PDF viewer */
+  .pdf .tb { left: 44cqw; right: 6cqw; top: 8cqw; height: 5cqw; border-radius: 2cqw 2cqw 0 0; background: rgba(255,255,255,.08); display: flex; align-items: center; gap: 1.6cqw; padding: 0 2cqw; }
+  .pdf .tb > * { position: static; width: 3cqw; height: 1.8cqw; border-radius: .7cqw; background: rgba(255,255,255,.3); }
+  .pdf .tb i:nth-child(3) { margin-left: auto; width: 8cqw; }
+  .pdf .thumbs { left: 45.5cqw; top: 15cqw; width: 7cqw; display: grid; gap: 1.4cqw; }
+  .pdf .thumbs i { position: relative; height: 8.5cqw; border-radius: .6cqw; background: rgba(255,255,255,.7); box-shadow: 0 0 0 .3cqw transparent; animation: th 6s steps(1) infinite; }
+  .pdf .thumbs i:nth-child(2) { animation-delay: -4s; } .pdf .thumbs i:nth-child(3) { animation-delay: -2s; }
+  .pdf .sheet { left: 58cqw; right: 12cqw; top: 15cqw; bottom: 10cqw; border-radius: .8cqw; background: #f4f4f5; overflow: hidden; }
+  .pdf .lines { left: 4cqw; right: 4cqw; top: 4cqw; height: 60cqw; background: repeating-linear-gradient(rgba(0,0,0,.28) 0 .9cqw, transparent .9cqw 2.6cqw); animation: scroll 6s steps(1) infinite; }
+  .pdf .lines::before { content: ""; position: absolute; left: 0; top: -2cqw; width: 50%; height: 1.6cqw; background: rgba(0,0,0,.6); border-radius: .5cqw; }
+  @keyframes th { 0%, 33% { box-shadow: 0 0 0 .4cqw var(--blue); } 33.4%, 100% { box-shadow: 0 0 0 .4cqw transparent; } }
+  @keyframes scroll { 0%, 33% { transform: translateY(0); } 33.4%, 66% { transform: translateY(-8cqw); } 66.4%, 100% { transform: translateY(-16cqw); } }
+
+  /* icons: real ones from Zia's pack */
+  .icons .ti { position: relative; display: block; width: 100%; height: 100%; }
+  .icons .ti svg { position: static; width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; display: block; }
+  .icons .folders { left: 6cqw; top: 8cqw; width: 34cqw; }
+  .icons .fr { position: relative; height: 6.6cqw; margin-bottom: 1.2cqw; border-radius: 1.8cqw; display: flex; align-items: center; gap: 2cqw; padding: 0 2cqw; color: rgba(255,255,255,.75); transition: background-color .3s var(--ease), box-shadow .3s var(--ease); }
+  .icons .fr > * { position: relative; }
+  .icons .fr.on { background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 .25cqw rgba(255,255,255,.14); color: #fff; }
+  .icons .fr .fi { width: 3cqw; height: 3cqw; flex: none; }
+  .icons .fr .fi .ti { position: absolute; inset: 0; transition: opacity .3s var(--ease), transform .4s var(--spring); }
+  .icons .fr .fi .ti.new { opacity: 0; transform: scale(.4); }
+  .icons .fr.set .fi .ti.old { opacity: 0; transform: scale(.4); }
+  .icons .fr.set .fi .ti.new { opacity: 1; transform: none; }
+  .icons .fr .nm { font: 600 2.7cqw/1 -apple-system, system-ui, sans-serif; }
+  .icons .search { left: 44cqw; right: 6cqw; top: 8cqw; height: 5.4cqw; border-radius: 1.6cqw; background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 .25cqw rgba(255,255,255,.1); display: flex; align-items: center; padding: 0 2cqw; font: 500 2.4cqw/1 -apple-system, system-ui, sans-serif; color: rgba(255,255,255,.75); }
+  .icons .search > * { position: static; }
+  .icons .search .caret { width: .3cqw; height: 2.6cqw; margin-left: .3cqw; background: var(--blue); animation: caret 1s steps(1) infinite; }
+  .icons .ig { left: 44cqw; right: 6cqw; top: 16cqw; display: grid; grid-template-columns: repeat(6, 1fr); gap: 1.4cqw; }
+  .icons .ig i { position: relative; aspect-ratio: 1; border-radius: 1.4cqw; background: rgba(255,255,255,.05); color: rgba(255,255,255,.75); padding: 22%; transition: background-color .25s, color .25s; }
+  .icons .ig i.hit { background: rgba(90,185,245,.3); color: #fff; }
+
+  /* the opening card: what Zia is */
+  .intro { display: grid; place-items: center; background: #0f0f10; }
+  .intro .light { left: 50%; top: -34cqw; width: 96cqw; height: 74cqw; translate: -50% 0; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255,255,255,.13), rgba(255,255,255,.1) 20%, rgba(255,255,255,.065) 40%, rgba(255,255,255,.035) 60%, rgba(255,255,255,.012) 80%, transparent);
+    filter: blur(3cqw); }
+  .intro .lockup { position: relative; display: grid; justify-items: center; gap: 2.6cqw; }
+  .intro .lockup > * { position: relative; }
+  .intro .mark { font: 650 13cqw/1 -apple-system, "SF Pro Display", system-ui, sans-serif; letter-spacing: -.05em; color: #f2f2f3; animation: mark 1.2s var(--ease) both; }
+  @keyframes mark { from { opacity: 0; transform: translateY(1.2cqw); } }
+
+  /* very fine grain over every picture */
+  .stage::after {
+    content: ""; position: absolute; inset: 0; z-index: 10; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 120px 120px;
+    opacity: .07;
+  }
+  .stage.intro::after { opacity: .11; }
+
+
+  /* a soft, rounded pointer */
+  .cursor { width: 4.4cqw; height: 4.4cqw; z-index: 6; filter: drop-shadow(0 .4cqw .8cqw rgba(0,0,0,.45)); }
+  .cursor path { fill: #fff; stroke: rgba(0,0,0,.28); stroke-width: .9; stroke-linejoin: round; }
+  .cards .cursor { left: 30cqw; top: 21cqw; animation: cur 5s var(--ease) infinite; }
+  .cards .hc .a i { display: grid; place-items: center; color: rgba(255,255,255,.8); }
+  .cards .hc .a i::after { content: none; }
+  .cards .hc .a .ci { position: static; width: 60%; height: 60%; }
+
+  /* split: Zia's drop cards come in at the page's edges */
+  .split .zone { top: 13cqw; bottom: 13cqw; width: 12cqw; border-radius: 1.8cqw; background: #1f1f1f; box-shadow: 0 1.4cqw 3.6cqw rgba(0,0,0,.5), inset 0 0 0 .2cqw rgba(255,255,255,.07);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.2cqw; opacity: 0; scale: .94; transition: opacity .2s, scale .25s var(--ease), width .45s var(--spring), background-color .2s; }
+  .split .zone > * { position: static; }
+  .split .zone.l { left: 47cqw; } .split .zone.r { right: 9cqw; }
+  .split .zone .ci { width: 3.4cqw; height: 3.4cqw; color: rgba(255,255,255,.7); }
+  .split .zone b { font: 500 1.7cqw/1.2 -apple-system, system-ui, sans-serif; color: rgba(255,255,255,.6); text-align: center; max-width: 10cqw; }
+  .split.drag .zone { opacity: 1; scale: 1; }
+  .split.over .zone.l { width: 19cqw; background: #262a30; }
+  .split .ghost2 { left: 8cqw; top: 17.8cqw; width: 26cqw; height: 6.6cqw; border-radius: 1.8cqw; background: rgba(255,255,255,.12); box-shadow: 0 1.5cqw 4cqw rgba(0,0,0,.45);
+    display: flex; align-items: center; gap: 1.6cqw; padding: 0 2cqw; opacity: 0; transition: transform .9s var(--ease), opacity .25s; z-index: 5; }
+  .split .ghost2 > * { position: static; }
+  .split .ghost2 i { width: 2.6cqw; height: 2.6cqw; border-radius: .7cqw; background: #c9c9ce; }
+  .split .ghost2 u { height: 1.2cqw; width: 14cqw; border-radius: 1cqw; background: rgba(255,255,255,.35); }
+  .split .cursor { left: 20cqw; top: 20cqw; transition: transform .9s var(--ease), opacity .25s; }
+  .split .half { top: 8cqw; bottom: 8cqw; border-radius: 2cqw; opacity: 0; transition: opacity .35s var(--ease), transform .45s var(--spring); transform: scale(.97); }
+  .split .half.l { left: 44cqw; width: calc((50cqw - 1cqw) / 2); background: #26303b; }
+  .split .half.r { right: 6cqw; width: calc((50cqw - 1cqw) / 2); background: rgba(255,255,255,.07); }
+  .split .half.l::before { content: ""; position: absolute; left: 2.4cqw; right: 2.4cqw; top: 2.4cqw; height: 2.2cqw; border-radius: 1cqw; background: rgba(255,255,255,.28); }
+  .split.done .half { opacity: 1; transform: none; }
+  .split.done .w-page { opacity: 0; }
+  .split .w-page { transition: opacity .3s; }
+
+  /* keys: centre the glyphs on their own height, not the line's (digits sat high) */
+  kbd > span, .w-key > span { position: static; display: block; text-box: trim-both cap alphabetic; }
+</style>
+</head>
+<body>
+<div class="scrim"><div class="glass tour" id="tour" role="dialog" aria-label="Welcome to Zia"></div></div>
+<script>
+
+  const IMG = "https://raw.githubusercontent.com/z1n-k/zia/readme-images/";
+  const rows = (n, colors = ["#ececef", "#9d9da3", "#c9c9ce", "#7f7f86", "#b4b4ba"], extra = () => "") =>
+    Array.from({ length: n }, (_, i) => `<div class="w-row ${extra(i)}"><span class="w-ico" style="--c:${colors[i % colors.length]}"></span><span class="w-line"></span>${i < 9 ? `<span class="w-key">${i + 1}</span>` : ""}</div>`).join("");
+
+  const WIRES = {
+    intro: () => `<div class="stage intro"><div class="light"></div><div class="lockup"><div class="mark">Zia</div></div></div>`,
+    numbers: () => `<div class="stage seq numbers"><div class="w-sel"></div><div class="w-side">${rows(5)}</div>
+      <div class="w-page"><div class="say"><kbd>⌘</kbd><kbd class="d">3</kbd></div></div></div>`,
+    undo: () => `<div class="stage seq undo"><div class="w-sel"></div><div class="w-side">${rows(5).replace(/<span class="w-key">\d<\/span>/g, "")}</div>
+      <div class="w-page"><div class="say"><kbd>⌘</kbd><kbd>Z</kbd> Reopened</div></div></div>`,
+    split: () => `<div class="stage split"><div class="w-side">${rows(4).replace(/<span class="w-key">\d<\/span>/g, "")}</div><div class="w-page"></div>
+      <div class="half l"></div><div class="half r"></div>
+      <div class="zone l"><svg class="ci" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.75 7.75a2.5 2.5 0 0 1 2.5 -2.5h13.5a2.5 2.5 0 0 1 2.5 2.5v8.5a2.5 2.5 0 0 1 -2.5 2.5h-13.5a2.5 2.5 0 0 1 -2.5 -2.5z"/><path d="M12 5.25v13.5"/></svg><b>Add left split</b></div><div class="zone r"><svg class="ci" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.75 7.75a2.5 2.5 0 0 1 2.5 -2.5h13.5a2.5 2.5 0 0 1 2.5 2.5v8.5a2.5 2.5 0 0 1 -2.5 2.5h-13.5a2.5 2.5 0 0 1 -2.5 -2.5z"/><path d="M12 5.25v13.5"/></svg><b>Add right split</b></div>
+      <div class="ghost2"><i></i><u></u></div><svg class="cursor" viewBox="0 0 24 24"><path d="M5.2 3.6c-.7-.3-1.4.4-1.1 1.1l6.9 15.6c.3.8 1.5.7 1.7-.1l1.8-5.6c.1-.3.3-.5.6-.6l5.6-1.8c.8-.2.9-1.4.1-1.7z"/></svg></div>`,
+    color: () => `<div class="stage color"><div class="w-side">${rows(4).replace(/<span class="w-key">\d<\/span>/g, "")}</div>
+      <div class="body"></div><div class="bar"><span class="url"></span></div><div class="head"></div></div>`,
+    folders: () => `<div class="stage folders"><div class="w-page"></div><div class="box"><div class="fhead"><span class="fico"></span>Self Hosting</div><div class="kids">${rows(3, ["#c9c9ce", "#9d9da3", "#ececef"]).replace(/<span class="w-key">\d<\/span>/g, "")}</div></div>
+      <div class="w-side after">${rows(2, ["#9d9da3", "#c9c9ce"]).replace(/<span class="w-key">\d<\/span>/g, "")}</div></div>`,
+    music: () => `<div class="stage music"><div class="glow"></div><div class="card"></div><div class="art"></div><div class="t1"></div><div class="t2"></div><div class="track"></div><div class="bars"><i></i><i></i><i></i></div></div>`,
+    glance: () => `<div class="stage glance"><div class="w-side">${rows(4).replace(/<span class="w-key">\d<\/span>/g, "")}</div><div class="w-page"></div><div class="link"></div><div class="peek"></div></div>`,
+    pip: () => `<div class="stage pip"><div class="w-side">${rows(4).replace(/<span class="w-key">\d<\/span>/g, "")}</div><div class="w-page"></div><div class="player"></div></div>`,
+    cards: () => `<div class="stage cards"><div class="w-side">${rows(5).replace(/<span class="w-key">\d<\/span>/g, "")}</div><svg class="cursor" viewBox="0 0 24 24"><path d="M5.2 3.6c-.7-.3-1.4.4-1.1 1.1l6.9 15.6c.3.8 1.5.7 1.7-.1l1.8-5.6c.1-.3.3-.5.6-.6l5.6-1.8c.8-.2.9-1.4.1-1.7z"/></svg>
+      <div class="hc"><div class="t"></div><div class="u"></div><div class="a"><i><svg class="ci" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(12 12) scale(1.0645) translate(-12.250 -11.750)" stroke-width="1.4091"><path d="M15 4.5l-4 4l-4 1.5l-1.5 1.5l7 7l1.5 -1.5l1.5 -4l4 -4"/><path d="M9 15l-4.5 4.5"/><path d="M14.5 4l5.5 5.5"/></g></svg></i><i><svg class="ci" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.75 7.75a2.5 2.5 0 0 1 2.5 -2.5h13.5a2.5 2.5 0 0 1 2.5 2.5v8.5a2.5 2.5 0 0 1 -2.5 2.5h-13.5a2.5 2.5 0 0 1 -2.5 -2.5z"/><path d="M12 5.25v13.5"/></svg></i><i><svg class="ci" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(12 12) scale(0.8871) translate(-12.320 -12.060)" stroke-width="1.6909"><path d="M15 7l-6.5 6.5a1.5 1.5 0 0 0 3 3l6.5 -6.5a3 3 0 0 0 -6 -6l-6.5 6.5a4.5 4.5 0 0 0 9 9l6.5 -6.5"/></g></svg></i></div></div></div>`,
+    address: () => `<div class="stage address"><div class="w-side">${rows(4).replace(/<span class="w-key">\d<\/span>/g, "")}</div><div class="w-page"></div>
+      <div class="pop">${["#5ab9f5", "#ececef", "#9d9da3", "#c9c9ce"].map((c, i) => `<div class="r ${i === 0 ? "sel" : ""}"><i style="--c:${c}"></i><u style="width:${[26, 20, 24, 16][i]}cqw"></u></div>`).join("")}</div>
+      <div class="bar"><span class="q"></span><span class="caret"></span></div></div>`,
+    multiview: () => `<div class="stage multiview"><div class="w-side">${rows(4).replace(/<span class="w-key">\d<\/span>/g, "")}</div>
+      <div class="w-page"><div class="v" style="--c:#2c3542"></div><div class="v" style="--c:#35353a"></div><div class="v" style="--c:#2b2b30"></div><div class="v" style="--c:#3a3a40"></div></div></div>`,
+    pdf: () => `<div class="stage pdf"><div class="w-side">${rows(4).replace(/<span class="w-key">\d<\/span>/g, "")}</div><div class="w-page"></div>
+      <div class="tb"><i></i><i></i><i></i><i></i></div><div class="thumbs"><i></i><i></i><i></i></div><div class="sheet"><div class="lines"></div></div></div>`,
+    icons: () => `<div class="stage icons"><div class="folders"><div class="fr" data-icon="briefcase"><span class="fi"><span class="ti old"><svg viewBox="0 0 24 24"><path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2"/></svg></span><span class="ti new"><svg viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2l0 -9"/><path d="M8 7v-2a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v2"/><path d="M12 12l0 .01"/><path d="M3 13a20 20 0 0 0 18 0"/></svg></span></span><span class="nm">Work</span></div><div class="fr" data-icon="plane"><span class="fi"><span class="ti old"><svg viewBox="0 0 24 24"><path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2"/></svg></span><span class="ti new"><svg viewBox="0 0 24 24"><path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2 -7h-4l-2 2h-3l2 -4l-2 -4h3l2 2h4l-2 -7h3l4 7"/></svg></span></span><span class="nm">Travel</span></div><div class="fr" data-icon="music"><span class="fi"><span class="ti old"><svg viewBox="0 0 24 24"><path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2"/></svg></span><span class="ti new"><svg viewBox="0 0 24 24"><path d="M3 17a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M13 17a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M9 17v-13h10v13"/><path d="M9 8h10"/></svg></span></span><span class="nm">Music</span></div><div class="fr" data-icon="wallet"><span class="fi"><span class="ti old"><svg viewBox="0 0 24 24"><path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2"/></svg></span><span class="ti new"><svg viewBox="0 0 24 24"><path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12"/><path d="M20 12v4h-4a2 2 0 0 1 0 -4h4"/></svg></span></span><span class="nm">Finance</span></div></div><div class="search"><span class="q"></span><span class="caret"></span></div><div class="ig"><i data-icon="home"><span class="ti"><svg viewBox="0 0 24 24"><path d="M5 12l-2 0l9 -9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"/><path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/></svg></span></i><i data-icon="briefcase"><span class="ti"><svg viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2l0 -9"/><path d="M8 7v-2a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v2"/><path d="M12 12l0 .01"/><path d="M3 13a20 20 0 0 0 18 0"/></svg></span></i><i data-icon="code"><span class="ti"><svg viewBox="0 0 24 24"><path d="M7 8l-4 4l4 4"/><path d="M17 8l4 4l-4 4"/><path d="M14 4l-4 16"/></svg></span></i><i data-icon="camera"><span class="ti"><svg viewBox="0 0 24 24"><path d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2"/><path d="M9 13a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/></svg></span></i><i data-icon="plane"><span class="ti"><svg viewBox="0 0 24 24"><path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2 -7h-4l-2 2h-3l2 -4l-2 -4h3l2 2h4l-2 -7h3l4 7"/></svg></span></i><i data-icon="book"><span class="ti"><svg viewBox="0 0 24 24"><path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6l0 13"/><path d="M12 6l0 13"/><path d="M21 6l0 13"/></svg></span></i><i data-icon="shopping-cart"><span class="ti"><svg viewBox="0 0 24 24"><path d="M4 19a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M15 19a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 17h-11v-14h-2"/><path d="M6 5l14 1l-1 7h-13"/></svg></span></i><i data-icon="heart"><span class="ti"><svg viewBox="0 0 24 24"><path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"/></svg></span></i><i data-icon="music"><span class="ti"><svg viewBox="0 0 24 24"><path d="M3 17a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M13 17a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M9 17v-13h10v13"/><path d="M9 8h10"/></svg></span></i><i data-icon="star"><span class="ti"><svg viewBox="0 0 24 24"><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873l-6.158 -3.245"/></svg></span></i><i data-icon="cloud"><span class="ti"><svg viewBox="0 0 24 24"><path d="M6.657 18c-2.572 0 -4.657 -2.007 -4.657 -4.483c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773c1.88 -.572 3.956 -.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99c1.913 0 3.464 1.56 3.464 3.486c0 1.927 -1.551 3.487 -3.465 3.487h-11.878"/></svg></span></i><i data-icon="device-gamepad-2"><span class="ti"><svg viewBox="0 0 24 24"><path d="M12 5h3.5a5 5 0 0 1 0 10h-5.5l-4.015 4.227a2.3 2.3 0 0 1 -3.923 -2.035l1.634 -8.173a5 5 0 0 1 4.904 -4.019h3.4"/><path d="M14 15l4.07 4.284a2.3 2.3 0 0 0 3.925 -2.023l-1.6 -8.232"/><path d="M8 9v2"/><path d="M7 10h2"/><path d="M14 10h2"/></svg></span></i><i data-icon="palette"><span class="ti"><svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 0 1 0 -18c4.97 0 9 3.582 9 8c0 1.06 -.474 2.078 -1.318 2.828c-.844 .75 -1.989 1.172 -3.182 1.172h-2.5a2 2 0 0 0 -1 3.75a1.3 1.3 0 0 1 -1 2.25"/><path d="M7.5 10.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M11.5 7.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M15.5 10.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/></svg></span></i><i data-icon="wallet"><span class="ti"><svg viewBox="0 0 24 24"><path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12"/><path d="M20 12v4h-4a2 2 0 0 1 0 -4h4"/></svg></span></i><i data-icon="chart-bar"><span class="ti"><svg viewBox="0 0 24 24"><path d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -6"/><path d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -10"/><path d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -14"/><path d="M4 20h14"/></svg></span></i><i data-icon="coffee"><span class="ti"><svg viewBox="0 0 24 24"><path d="M3 14c.83 .642 2.077 1.017 3.5 1c1.423 .017 2.67 -.358 3.5 -1c.83 -.642 2.077 -1.017 3.5 -1c1.423 -.017 2.67 .358 3.5 1"/><path d="M8 3a2.4 2.4 0 0 0 -1 2a2.4 2.4 0 0 0 1 2"/><path d="M12 3a2.4 2.4 0 0 0 -1 2a2.4 2.4 0 0 0 1 2"/><path d="M3 10h14v5a6 6 0 0 1 -6 6h-2a6 6 0 0 1 -6 -6v-5"/><path d="M16.746 16.726a3 3 0 1 0 .252 -5.555"/></svg></span></i><i data-icon="map-pin"><span class="ti"><svg viewBox="0 0 24 24"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0"/></svg></span></i><i data-icon="school"><span class="ti"><svg viewBox="0 0 24 24"><path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"/><path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4"/></svg></span></i></div></div>`,
+  };
+
+  const FEATURES = {
+    intro: { v: WIRES.intro, t: "Welcome to Zia", d: "Dia's look, rebuilt for Zen, with things neither of them do: tabs you jump to by number, a toolbar that takes each site's colour, four streams in one tab, a player for whatever's making sound, and folders that name themselves. Plus plenty of small touches you'll find as you go." },
+    numbers: { v: WIRES.numbers, t: "Numbered tabs", d: "Hold <kbd>⌘</kbd> and every tab shows its number. Type it and let go. Past nine, keep typing: 1 then 2 is tab twelve." },
+    undo: { v: WIRES.undo, t: "<kbd>⌘</kbd><kbd>Z</kbd> to undo a close", d: "Works on folders and splits too. They come back where they were, for ten seconds after you close them." },
+    split: { v: WIRES.split, t: "Drop cards for splits", d: "Drag a tab over the page and cards show exactly where it'll land. Keep a split you use a lot as a single essential." },
+    color: { v: WIRES.color, t: "A toolbar that matches the page", d: "It takes the colour at the top of each site and keeps its text readable on it." },
+    folders: { v: WIRES.folders, t: "Folders", d: "Give one a colour or an icon. Hover a closed folder to see what's in it." },
+    cards: { v: WIRES.cards, t: "Hover cards", d: "Title, address, and a row of shortcuts: pin, split, copy the link." },
+    music: { v: WIRES.music, t: "Now playing", d: "Whatever's making sound gets a small player, lit by its artwork." },
+    address: { v: WIRES.address, t: "The address bar", d: "Fewer, clearer results. Keep it at the top of the window or move it to the bottom." },
+    multiview: { v: WIRES.multiview, t: "Multiview", d: "Up to four videos or streams, side by side in one tab." },
+    pip: { v: WIRES.pip, t: "Picture-in-picture", d: "Throw the player off the edge of the screen. It waits there until you pull it back." },
+    pdf: { v: WIRES.pdf, t: "PDFs", d: "A quieter toolbar and a page sidebar that fit with the rest of Zia." },
+    icons: { v: WIRES.icons, t: "5,166 icons, or your own", d: "Search Tabler's set by what you mean, not what it's called. Or right-click a folder and choose an SVG." },
+  };
+
+  const TOURS = {
+    install: { eyebrow: "Welcome to Zia", list: ["intro", "numbers", "undo", "split", "color", "folders", "cards", "music", "address", "multiview", "pip", "pdf", "icons"] },
+    update: { eyebrow: "New in Zia", list: ["numbers", "icons", "cards"] },
+  };
+
+  // Numbered tabs and undo step through a little story, over and over
+  const PAGE_COLORS = ["#2a2a2e", "#36363b", "#26303b", "#303035", "#3b3b40"];
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const ROW = 7.8; // row pitch in cqw
+
+  function selectRow(stage, i, rowsList = [...stage.querySelectorAll(".w-side .w-row")]) {
+    const shown = rowsList.filter((r) => !r.classList.contains("closed"));
+    const pos = shown.indexOf(rowsList[i]);
+    stage.querySelector(".w-sel").style.transform = `translateY(${pos * ROW}cqw)`;
+    stage.querySelector(".w-page").style.backgroundColor = PAGE_COLORS[i];
+  }
+
+  async function numbersLoop(stage) {
+    const rowsList = [...stage.querySelectorAll(".w-side .w-row")];
+    const say = stage.querySelector(".say");
+    const digit = say.querySelector(".d");
+    selectRow(stage, 0, rowsList);
+    let n = 0;
+    const targets = [2, 0, 4, 1];
+    while (stage.isConnected) {
+      const t = targets[n++ % targets.length];
+      await wait(900);
+      stage.classList.add("held");
+      await wait(500);
+      (digit.firstElementChild || digit).textContent = t + 1;
+      say.classList.add("on");
+      rowsList[t].classList.add("lit");
+      await wait(900);
+      stage.classList.remove("held");
+      say.classList.remove("on");
+      rowsList[t].classList.remove("lit");
+      selectRow(stage, t, rowsList);
+      await wait(700);
+    }
+  }
+
+  async function undoLoop(stage) {
+    const rowsList = [...stage.querySelectorAll(".w-side .w-row")];
+    const say = stage.querySelector(".say");
+    let n = 0;
+    const closes = [1, 3];
+    while (stage.isConnected) {
+      const c = closes[n++ % closes.length];
+      selectRow(stage, c, rowsList);
+      await wait(1200);
+      rowsList[c].classList.add("closed");
+      selectRow(stage, c + 1, rowsList);
+      await wait(1300);
+      say.classList.add("on");
+      await wait(150);
+      rowsList[c].classList.remove("closed");
+      selectRow(stage, c, rowsList);
+      await wait(1100);
+      say.classList.remove("on");
+      await wait(500);
+    }
+  }
+
+  async function iconsLoop(stage) {
+    const folders = [...stage.querySelectorAll(".fr")];
+    const cells = [...stage.querySelectorAll(".ig i")];
+    const q = stage.querySelector(".search .q");
+    while (stage.isConnected) {
+      folders.forEach((f) => f.classList.remove("set", "on"));
+      await wait(900);
+      for (const f of folders) {
+        const name = f.dataset.icon;
+        f.classList.add("on");
+        for (let i = 1; i <= Math.min(name.length, 6); i++) {
+          q.textContent = name.slice(0, i).replace(/-/g, " ");
+          await wait(90);
+        }
+        const cell = cells.find((c) => c.dataset.icon === name);
+        cell?.classList.add("hit");
+        await wait(500);
+        f.classList.add("set");
+        await wait(650);
+        cell?.classList.remove("hit");
+        f.classList.remove("on");
+        q.textContent = "";
+        await wait(250);
+      }
+      await wait(1600);
+    }
+  }
+
+  async function splitLoop(stage) {
+    const ghost = stage.querySelector(".ghost2");
+    const cursor = stage.querySelector(".cursor");
+    while (stage.isConnected) {
+      // back to the start without being seen travelling there
+      cursor.style.opacity = "0";
+      await wait(250);
+      ghost.style.transition = cursor.style.transition = "none";
+      ghost.style.transform = cursor.style.transform = "";
+      ghost.style.opacity = "0";
+      stage.classList.remove("drag", "over", "done");
+      void stage.offsetWidth;
+      ghost.style.transition = cursor.style.transition = "";
+      await wait(650);
+      cursor.style.opacity = "1";
+      ghost.style.opacity = "1";
+      await wait(250);
+      ghost.style.transform = "translate(22cqw, 6cqw) scale(.9)";
+      cursor.style.transform = "translate(22cqw, 6cqw)";
+      stage.classList.add("drag");
+      await wait(1000);
+      ghost.style.transform = "translate(31cqw, 8cqw) scale(.85)";
+      cursor.style.transform = "translate(31cqw, 8cqw)";
+      await wait(500);
+      stage.classList.add("over");
+      await wait(900);
+      ghost.style.opacity = "0";
+      stage.classList.remove("drag", "over");
+      stage.classList.add("done");
+      await wait(2200);
+    }
+  }
+
+  function trimKeys(root) {
+    root.querySelectorAll("kbd, .w-key").forEach((k) => {
+      if (!k.firstElementChild) {
+        const span = document.createElement("span");
+        span.textContent = k.textContent;
+        k.replaceChildren(span);
+      }
+    });
+  }
+
+  function startWires(root) {
+    trimKeys(root);
+    root.querySelectorAll(".stage.numbers").forEach(numbersLoop);
+    root.querySelectorAll(".stage.undo").forEach(undoLoop);
+    root.querySelectorAll(".stage.icons").forEach(iconsLoop);
+    root.querySelectorAll(".stage.split").forEach(splitLoop);
+  }
+
+  // #install on a first install, #update after a release that asks for it
+  let mode = location.hash === "#update" ? "update" : "install";
+  let at = 0;
+
+  function renderTour() {
+    const tour = TOURS[mode];
+    const el = document.getElementById("tour");
+    el.innerHTML = `
+      <div class="track">${tour.list.map((key) => {
+        const f = FEATURES[key];
+        return `<section class="slide"><div class="visual">${f.v()}</div>
+          <div class="copy"><div class="title">${f.t}</div><p class="desc">${f.d}</p></div></section>`;
+      }).join("")}</div>
+      <div class="foot">
+        <div class="count"><span class="at">1</span> / ${tour.list.length}</div>
+        <div class="btns"><button class="btn skip">Skip</button><button class="btn back">Back</button><button class="btn primary next">Next</button></div>
+      </div>`;
+    el.style.animation = "none"; void el.offsetWidth; el.style.animation = "";
+    const track = el.querySelector(".track");
+    const count = tour.list.length;
+    const atEl = el.querySelector(".count .at");
+    const back = el.querySelector(".back");
+    const skip = el.querySelector(".skip");
+    const next = el.querySelector(".next");
+    const go = (n) => {
+      at = Math.max(0, Math.min(n, count - 1));
+      track.style.transform = `translateX(${-100 * at}%)`;
+      atEl.textContent = at + 1;
+      back.hidden = at === 0;
+      skip.hidden = at !== 0;
+      next.textContent = at === count - 1 ? "Start browsing" : "Next";
+    };
+    back.addEventListener("click", () => go(at - 1));
+    next.addEventListener("click", () => (at === count - 1 ? done() : go(at + 1)));
+    skip.addEventListener("click", done);
+    el.goTo = go;
+    go(0);
+    startWires(el);
+  }
+
+
+  // Zia sets window.ziaWelcomeDone to take the card away
+  function done() {
+    window.ziaWelcomeDone?.();
+  }
+  document.querySelector(".scrim").addEventListener("mousedown", (e) => {
+    if (!e.target.closest("#tour")) done();
+  });
+  window.addEventListener("keydown", (e) => {
+    const el = document.getElementById("tour");
+    if (e.key === "Escape") done();
+    if (e.key === "ArrowRight") el.goTo(at + 1);
+    if (e.key === "ArrowLeft") el.goTo(at - 1);
+  });
+
+
+  renderTour();
+  trimKeys(document.body);
+</script>
+</body>
+</html>

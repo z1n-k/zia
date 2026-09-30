@@ -69,6 +69,18 @@
   },
   {
     "type": "checkbox",
+    "label": "Show the welcome tour after updates that bring something new",
+    "property": "zia.welcome.show",
+    "defaultValue": true
+  },
+  {
+    "type": "checkbox",
+    "label": "Show the welcome tour again (turns itself back off)",
+    "property": "zia.welcome.again",
+    "defaultValue": false
+  },
+  {
+    "type": "checkbox",
     "label": "Tab and folder hover cards",
     "property": "zia.features.tab-hover-cards",
     "defaultValue": true
