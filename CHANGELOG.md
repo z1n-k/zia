@@ -4,6 +4,12 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Tabs, folders and the rows in folder cards are 1px shorter (34px), as in Dia.
+
 ## [2.72.22] — 2026-09-30
 
 ### Changed
