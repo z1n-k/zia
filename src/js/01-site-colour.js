@@ -17,6 +17,10 @@
 
   let appliedColorKey = null;
 
+  // a reading unlike the site's remembered colour, waiting on a second
+  const UNSURE_RECHECK = 200;
+  let unsureColor = null;
+
   // Off leaves the toolbar in the theme's own colour instead of the site's.
   const siteColorOn = () => Services.prefs.getBoolPref("zia.toolbar.site-color", true);
 
@@ -269,6 +273,23 @@
     const known = colorCache.has(browser);
     const current = colorCache.get(browser) ?? null;
     let rgb = reading?.rgb ?? null;
+
+    // A reading that disagrees with the site's remembered colour is often a
+    // passing splash (Discord is white for a moment before its dark page),
+    // and by the time it arrived the page had moved on, so the toolbar
+    // flashed. It's only believed when a second reading a moment later
+    // agrees, which a site that really has changed colour still gives.
+    if (!fromScroll && rgb) {
+      const remembered = rememberedSiteColor(browser);
+      if (remembered && colorDistance(rgb, remembered) > CHECK_DISTANCE) {
+        if (unsureColor?.browser !== browser || colorDistance(rgb, unsureColor.rgb) > CHECK_DISTANCE) {
+          unsureColor = { browser, rgb };
+          setTimeout(() => updateColor(false, isLoading(browser)), UNSURE_RECHECK);
+          return;
+        }
+      }
+    }
+    unsureColor = null;
 
     if (known && fromScroll) {
       if (reading && reading.share < MIN_COLOR_SHARE) {
