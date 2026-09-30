@@ -14156,7 +14156,7 @@
     const overlay = document.createElementNS(HTML_NS, "div");
     overlay.id = "zia-welcome";
     const frame = document.createElementNS(HTML_NS, "iframe");
-    frame.setAttribute("src", `${WELCOME_URL}#${mode}`);
+    frame.setAttribute("src", `${WELCOME_URL}#${mode === "update" ? `update-${WELCOME_VERSION}` : mode}`);
     frame.setAttribute("title", "Welcome to Zia");
     overlay.append(frame);
 
@@ -14171,6 +14171,17 @@
     frame.addEventListener("load", () => {
       try {
         frame.contentWindow.ziaWelcomeDone = close;
+        // Star on GitHub: in a new tab, and the tour steps aside
+        frame.contentWindow.ziaOpenLink = (url) => {
+          if (/^https:\/\/github\.com\//.test(url)) {
+            if (typeof window.openTrustedLinkIn === "function") {
+              window.openTrustedLinkIn(url, "tab");
+            } else {
+              gBrowser.selectedTab = gBrowser.addTrustedTab(url);
+            }
+            close();
+          }
+        };
         frame.contentWindow.focus();
       } catch (err) {
         noteError("welcome: hook", err);

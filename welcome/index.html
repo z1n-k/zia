@@ -30,7 +30,7 @@
   html, body { height: 100%; background: transparent !important; overflow: hidden; }
   /* dark only on the card, so nothing paints the page behind it */
   :root { color-scheme: normal !important; }
-  .tour { color-scheme: dark; }
+  .deck { color-scheme: dark; }
   .scrim { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; }
 
   /* ---------- glass ---------- */
@@ -46,12 +46,27 @@
   }
 
   /* ---------- the tour card ---------- */
-  .tour { width: min(520px, 100%); overflow: hidden; animation: in .5s var(--ease) both; }
+  .tour { width: 100%; overflow: hidden; animation: in .5s var(--ease) both; }
   @keyframes in { from { opacity: 0; transform: translateY(12px) scale(.97); } }
-  .track { display: flex; transition: transform .5s var(--ease); }
-  .slide { flex: 0 0 100%; min-width: 0; }
+  /* steps as a deck: they share one place, the one leaving tilts back and
+     lifts away, the next rises from underneath */
+  .track { display: grid; perspective: 1100px; perspective-origin: 50% 0%; }
+  .slide { grid-area: 1 / 1; min-width: 0; transform-origin: 50% 100%; backface-visibility: hidden;
+    transition: transform .6s var(--ease), opacity .45s var(--ease), filter .45s var(--ease); }
+  .slide:not(.cur) { pointer-events: none; }
+  .slide.after { opacity: 0; transform: translateY(7%) translateZ(-40px) rotateX(-10deg) scale(.96); filter: blur(6px); }
+  .slide.before { opacity: 0; transform: translateY(-9%) translateZ(-120px) rotateX(16deg) scale(.9); filter: blur(8px); }
+  .slide.cur { opacity: 1; transform: none; filter: none; }
+
+  /* the deck's edge: two cards peeking out underneath */
+  .deck { position: relative; width: min(520px, 100%); }
+  .deck .sheet { position: absolute; left: 50%; bottom: 0; height: 40px; border-radius: 18px; translate: -50% 0;
+    background: rgba(24, 24, 26, .9); box-shadow: inset 0 0 0 .5px rgba(255,255,255,.09), 0 10px 30px rgba(0,0,0,.35); }
+  .deck .sheet.s1 { width: 92%; transform: translateY(9px); }
+  .deck .sheet.s2 { width: 84%; transform: translateY(17px); opacity: .7; }
+  .deck .tour { position: relative; }
   .visual { margin: 10px 10px 0; border-radius: 12px; overflow: hidden; }
-  .copy { padding: 14px 20px 2px; min-height: 92px; }
+  .copy { padding: 14px 20px 2px; min-height: 104px; box-sizing: border-box; }
   .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--blue); }
   .title { font-size: 18px; font-weight: 650; letter-spacing: -.01em; margin: 2px 0 4px; }
   .desc { color: var(--dim); margin: 0; }
@@ -68,7 +83,7 @@
     display: inline-grid; place-items: center; box-sizing: border-box;
     height: 1.55em; min-width: 1.55em; padding: 0 .3em; border-radius: .38em;
     background: rgba(255,255,255,.12); box-shadow: inset 0 -1px 0 rgba(0,0,0,.25), inset 0 .5px 0 rgba(255,255,255,.1);
-    font: 500 .8em/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; color: #fff;
+    font: 500 .68em/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; color: #fff;
     vertical-align: .08em;
   }
   kbd + kbd { margin-left: .22em; }
@@ -305,10 +320,50 @@
 
   /* keys: centre the glyphs on their own height, not the line's (digits sat high) */
   kbd > span, .w-key > span { position: static; display: block; text-box: trim-both cap alphabetic; }
+
+  /* what's new: the wordmark with the version beside it */
+  .whatsnew .lockup { display: grid; justify-items: center; gap: 2.2cqw; }
+  .whatsnew .ver { position: relative; font: 500 2.3cqw/1 ui-monospace, "SF Mono", Menlo, monospace; letter-spacing: .08em; color: rgba(255,255,255,.45); animation: mark 1.2s .35s var(--ease) both; }
+
+  /* a star on GitHub */
+  .star { display: grid; place-items: center; background: #0f0f10; }
+  .star .light { left: 50%; top: -34cqw; width: 96cqw; height: 74cqw; translate: -50% 0; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255,255,255,.1), rgba(255,255,255,.06) 30%, rgba(255,255,255,.025) 60%, transparent); filter: blur(3cqw); }
+  .star .btn2 { position: relative; display: flex; align-items: stretch; height: 7.4cqw; border-radius: 1.8cqw; overflow: visible;
+    background: rgba(255,255,255,.07); box-shadow: inset 0 0 0 .22cqw rgba(255,255,255,.14), 0 1.2cqw 3cqw rgba(0,0,0,.35);
+    font: 600 2.6cqw/1 -apple-system, system-ui, sans-serif; color: rgba(255,255,255,.9); transition: transform .12s var(--ease), background-color .2s; }
+  .star .btn2 > * { position: relative; }
+  .star .btn2.press { transform: scale(.95); background: rgba(255,255,255,.12); }
+  .star .l { display: flex; align-items: center; gap: 1.4cqw; padding: 0 2.6cqw 0 2.2cqw; }
+  .star .l > * { position: relative; }
+  .star .si { width: 3.2cqw; height: 3.2cqw; }
+  .star .si svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .star .si .o { fill: none; stroke: rgba(255,255,255,.85); stroke-width: 1.8; stroke-linejoin: round; transition: opacity .2s; }
+  .star .si .f { fill: #e9c46a; opacity: 0; transform: scale(.3); transition: opacity .15s, transform .45s var(--spring); }
+  .star.on .si .f { opacity: 1; transform: none; }
+  .star.on .si .o { opacity: 0; }
+  .star .word { display: grid; }
+  .star .word span { position: relative; grid-area: 1 / 1; transition: opacity .2s, transform .3s var(--ease); }
+  .star .word .b { opacity: 0; transform: translateY(1cqw); }
+  .star.on .word .a { opacity: 0; transform: translateY(-1cqw); }
+  .star.on .word .b { opacity: 1; transform: none; }
+  .star .n { display: flex; align-items: center; padding: 0 2.4cqw; border-left: .22cqw solid rgba(255,255,255,.12); font-variant-numeric: tabular-nums; overflow: hidden; }
+  .star .n .roll { position: relative; display: grid; height: 3cqw; overflow: hidden; }
+  .star .n .roll span { position: relative; grid-area: 1 / 1; line-height: 3cqw; transition: transform .45s var(--ease), opacity .3s; }
+  .star .n .roll .b { transform: translateY(100%); opacity: 0; }
+  .star.on .n .roll .a { transform: translateY(-100%); opacity: 0; }
+  .star.on .n .roll .b { transform: none; opacity: 1; }
+  .star .si .spark { position: absolute; left: 50%; top: 50%; width: .9cqw; height: .9cqw; margin: -.45cqw; border-radius: 50%; background: #e9c46a; opacity: 0; }
+  .star.burst .si .spark { animation: spark .7s var(--ease) both; }
+  @keyframes spark { 0% { opacity: 1; transform: rotate(var(--a)) translateY(0) scale(1); } 100% { opacity: 0; transform: rotate(var(--a)) translateY(-5.5cqw) scale(.3); } }
+  .star .cursor { left: 72cqw; top: 44cqw; transition: transform .8s var(--ease), opacity .25s; }
+  .btn.gh { display: inline-flex; align-items: center; gap: 6px; }
+  .btn.gh[hidden] { display: none; }
+  .gh svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 </style>
 </head>
 <body>
-<div class="scrim"><div class="glass tour" id="tour" role="dialog" aria-label="Welcome to Zia"></div></div>
+<div class="scrim"><div class="deck"><div class="sheet s2"></div><div class="sheet s1"></div><div class="glass tour" id="tour" role="dialog" aria-label="Welcome to Zia"></div></div></div>
 <script>
 
   const IMG = "https://raw.githubusercontent.com/z1n-k/zia/readme-images/";
@@ -317,6 +372,10 @@
 
   const WIRES = {
     intro: () => `<div class="stage intro"><div class="light"></div><div class="lockup"><div class="mark">Zia</div></div></div>`,
+    whatsnew: () => `<div class="stage intro whatsnew"><div class="light"></div><div class="lockup"><div class="mark">Zia</div><div class="ver">${version}</div></div></div>`,
+    star: () => `<div class="stage star"><div class="light"></div>
+      <div class="btn2"><div class="l"><span class="si"><i class="spark" style="--a:0deg"></i><i class="spark" style="--a:45deg"></i><i class="spark" style="--a:90deg"></i><i class="spark" style="--a:135deg"></i><i class="spark" style="--a:180deg"></i><i class="spark" style="--a:225deg"></i><i class="spark" style="--a:270deg"></i><i class="spark" style="--a:315deg"></i><svg viewBox="0 0 24 24" class="o"><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873l-6.158 -3.245"/></svg><svg viewBox="0 0 24 24" class="f"><path d="M8.243 7.34l-6.38 .925l-.113 .023a1 1 0 0 0 -.44 1.684l4.622 4.499l-1.09 6.355l-.013 .11a1 1 0 0 0 1.464 .944l5.706 -3l5.693 3l.1 .046a1 1 0 0 0 1.352 -1.1l-1.091 -6.355l4.624 -4.5l.078 -.085a1 1 0 0 0 -.633 -1.62l-6.38 -.926l-2.852 -5.78a1 1 0 0 0 -1.794 0l-2.853 5.78z"/></svg></span><span class="word"><span class="a">Star</span><span class="b">Starred</span></span></div>
+      <div class="n"><span class="roll"><span class="a">248</span><span class="b">249</span></span></div></div><svg class="cursor" viewBox="0 0 24 24"><path d="M5.2 3.6c-.7-.3-1.4.4-1.1 1.1l6.9 15.6c.3.8 1.5.7 1.7-.1l1.8-5.6c.1-.3.3-.5.6-.6l5.6-1.8c.8-.2.9-1.4.1-1.7z"/></svg></div>`,
     numbers: () => `<div class="stage seq numbers"><div class="w-sel"></div><div class="w-side">${rows(5)}</div>
       <div class="w-page"><div class="say"><kbd>⌘</kbd><kbd class="d">3</kbd></div></div></div>`,
     undo: () => `<div class="stage seq undo"><div class="w-sel"></div><div class="w-side">${rows(5).replace(/<span class="w-key">\d<\/span>/g, "")}</div>
@@ -345,7 +404,9 @@
   };
 
   const FEATURES = {
-    intro: { v: WIRES.intro, t: "Welcome to Zia", d: "Dia's look, rebuilt for Zen, with things neither of them do: tabs you jump to by number, a toolbar that takes each site's colour, four streams in one tab, a player for whatever's making sound, and folders that name themselves. Plus plenty of small touches you'll find as you go." },
+    intro: { v: WIRES.intro, t: "Welcome to Zia", d: "Dia's look, rebuilt for Zen, plus things neither of them do: tabs you reach by number, a toolbar in each site's colours, four streams in one tab, and a player for whatever's playing." },
+    whatsnew: { v: WIRES.whatsnew, t: "What's new in Zia ${version}", d: "You're up to date. Here's what changed since you last looked." },
+    star: { v: WIRES.star, t: "Enjoying Zia?", d: "I don't ask for tips or money. If Zia has earned a place in your browser, a star on GitHub is all I'd ask for. It helps other people find it.", gh: true },
     numbers: { v: WIRES.numbers, t: "Numbered tabs", d: "Hold <kbd>⌘</kbd> and every tab shows its number. Type it and let go. Past nine, keep typing: 1 then 2 is tab twelve." },
     undo: { v: WIRES.undo, t: "<kbd>⌘</kbd><kbd>Z</kbd> to undo a close", d: "Works on folders and splits too. They come back where they were, for ten seconds after you close them." },
     split: { v: WIRES.split, t: "Drop cards for splits", d: "Drag a tab over the page and cards show exactly where it'll land. Keep a split you use a lot as a single essential." },
@@ -361,8 +422,8 @@
   };
 
   const TOURS = {
-    install: { eyebrow: "Welcome to Zia", list: ["intro", "numbers", "undo", "split", "color", "folders", "cards", "music", "address", "multiview", "pip", "pdf", "icons"] },
-    update: { eyebrow: "New in Zia", list: ["numbers", "icons", "cards"] },
+    install: { eyebrow: "Welcome to Zia", list: ["intro", "numbers", "undo", "split", "color", "folders", "cards", "music", "address", "multiview", "pip", "pdf", "icons", "star"] },
+    update: { eyebrow: "New in Zia", list: ["whatsnew", "numbers", "icons", "cards", "star"] },
   };
 
   // Numbered tabs and undo step through a little story, over and over
@@ -484,6 +545,33 @@
     }
   }
 
+  async function starLoop(stage) {
+    const btn = stage.querySelector(".btn2");
+    const cursor = stage.querySelector(".cursor");
+    while (stage.isConnected) {
+      cursor.style.transition = "none";
+      cursor.style.transform = "";
+      cursor.style.opacity = "0";
+      stage.classList.remove("on", "burst");
+      void stage.offsetWidth;
+      cursor.style.transition = "";
+      await wait(500);
+      cursor.style.opacity = "1";
+      const b = btn.getBoundingClientRect(), s0 = stage.getBoundingClientRect(), c = cursor.getBoundingClientRect();
+      const toX = b.left + b.width * 0.13 - c.left, toY = b.top + b.height * 0.72 - c.top;
+      await wait(300);
+      cursor.style.transform = `translate(${toX}px, ${toY}px)`;
+      await wait(950);
+      btn.classList.add("press");
+      await wait(130);
+      btn.classList.remove("press");
+      stage.classList.add("on", "burst");
+      await wait(2200);
+      cursor.style.opacity = "0";
+      await wait(700);
+    }
+  }
+
   function trimKeys(root) {
     root.querySelectorAll("kbd, .w-key").forEach((k) => {
       if (!k.firstElementChild) {
@@ -500,10 +588,19 @@
     root.querySelectorAll(".stage.undo").forEach(undoLoop);
     root.querySelectorAll(".stage.icons").forEach(iconsLoop);
     root.querySelectorAll(".stage.split").forEach(splitLoop);
+    root.querySelectorAll(".stage.star").forEach(starLoop);
   }
 
-  // #install on a first install, #update after a release that asks for it
-  let mode = location.hash === "#update" ? "update" : "install";
+  // #install on a first install; #update-2.76.0 after a release that asks
+  const hash = location.hash.slice(1);
+  let mode = hash.startsWith("update") ? "update" : "install";
+  // the version the update tour is for, shown as 2.76
+  let version = (hash.split("-")[1] || "").split(".").slice(0, 2).join(".") || "";
+  const GITHUB = "https://github.com/z1n-k/zia";
+  function openGitHub() {
+    if (window.ziaOpenLink) window.ziaOpenLink(GITHUB);
+    else window.open(GITHUB, "_blank", "noopener");
+  }
   let at = 0;
 
   function renderTour() {
@@ -513,11 +610,11 @@
       <div class="track">${tour.list.map((key) => {
         const f = FEATURES[key];
         return `<section class="slide"><div class="visual">${f.v()}</div>
-          <div class="copy"><div class="title">${f.t}</div><p class="desc">${f.d}</p></div></section>`;
+          <div class="copy"><div class="title">${f.t.replace("${version}", version)}</div><p class="desc">${f.d}</p></div></section>`;
       }).join("")}</div>
       <div class="foot">
         <div class="count"><span class="at">1</span> / ${tour.list.length}</div>
-        <div class="btns"><button class="btn skip">Skip</button><button class="btn back">Back</button><button class="btn primary next">Next</button></div>
+        <div class="btns"><button class="btn skip">Skip</button><button class="btn back">Back</button><button class="btn gh" hidden><svg viewBox="0 0 24 24"><path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"/></svg>Star on GitHub</button><button class="btn primary next">Next</button></div>
       </div>`;
     el.style.animation = "none"; void el.offsetWidth; el.style.animation = "";
     const track = el.querySelector(".track");
@@ -525,13 +622,22 @@
     const atEl = el.querySelector(".count .at");
     const back = el.querySelector(".back");
     const skip = el.querySelector(".skip");
+    const gh = el.querySelector(".gh");
+    gh.addEventListener("click", openGitHub);
     const next = el.querySelector(".next");
+    const slides = [...track.children];
     const go = (n) => {
       at = Math.max(0, Math.min(n, count - 1));
-      track.style.transform = `translateX(${-100 * at}%)`;
+      slides.forEach((sl, i) => {
+        sl.classList.toggle("cur", i === at);
+        sl.classList.toggle("before", i < at);
+        sl.classList.toggle("after", i > at);
+      });
+
       atEl.textContent = at + 1;
       back.hidden = at === 0;
       skip.hidden = at !== 0;
+      gh.hidden = !FEATURES[tour.list[at]].gh;
       next.textContent = at === count - 1 ? "Start browsing" : "Next";
     };
     back.addEventListener("click", () => go(at - 1));
@@ -548,7 +654,7 @@
     window.ziaWelcomeDone?.();
   }
   document.querySelector(".scrim").addEventListener("mousedown", (e) => {
-    if (!e.target.closest("#tour")) done();
+    if (!e.target.closest(".deck")) done();
   });
   window.addEventListener("keydown", (e) => {
     const el = document.getElementById("tour");
