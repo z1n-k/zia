@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Tab hover card: the pin and paperclip icons are the same size, as in Dia
+  (the paperclip was drawn larger than the pin).
+
 ## [2.75.0] — 2026-09-30
 
 ### Changed
