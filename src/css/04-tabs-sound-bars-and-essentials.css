@@ -417,6 +417,19 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   }
 }
 
+/* The number being typed: its key lights up, in Zia blue or the space's
+   colour, until the key is let go and the tab chosen */
+.tabbrowser-tab > .tab-stack > .tab-content > .zia-tab-number[zia-target] {
+  background-color: #5ab9f5 !important;
+  box-shadow: none;
+  color: rgb(8, 24, 38);
+}
+
+:root[zia-tab-number-color="space"][zia-space-colored="true"] .tabbrowser-tab > .tab-stack > .tab-content > .zia-tab-number[zia-target] {
+  background-color: color-mix(in srgb, var(--zen-primary-color) 80%, black) !important;
+  color: rgb(255, 255, 255);
+}
+
 @keyframes zia-tab-number-in {
   from {
     opacity: 0;

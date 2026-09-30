@@ -13949,13 +13949,14 @@
   // at the end of each tab, and in the corner of each essential. Every tab
   // you can see has one, essentials first, and Zia takes over Cmd/Ctrl+
   // digit so each is reachable: Firefox's own shortcuts stop at 8 (9 is the
-  // last tab). Each digit goes straight to its tab; past nine tabs, a
-  // second digit pressed soon after carries on from the first (1 then 2
-  // for the twelfth). The keys show the moment it goes down and stay until
+  // last tab). Typing a number lights its key up (in Zia blue or the
+  // space's colour) and the tab is only chosen when the key is let go, so
+  // nothing loads by accident; past nine, type the digits in turn (1 then 2
+  // for the twelfth). Another key, or letting go with nothing typed,
+  // changes nothing. The keys show the moment it goes down and stay until
   // it's let go or the window is left. Optionally they show all the time.
   const TAB_NUMBERS_ALWAYS_PREF = "zia.tab-numbers.always";
-  // how soon a second digit must follow to carry on from the first
-  const TAB_NUMBER_FOLLOW = 1000;
+  const TAB_NUMBERS_COLOR_PREF = "zia.tab-numbers.color";
 
   // The tabs the keys go to, in order: what's on screen, in the tab strip's
   // order (a tab inside a closed folder is skipped)
@@ -14004,8 +14005,12 @@
 
     let tabs = [];
     let typed = "";
-    let typedAt = 0;
     let lastDigit = null;
+
+    // The key of the tab typed so far lights up
+    const markTarget = () => {
+      tabs.forEach((tab, i) => keyOf(tab)?.toggleAttribute("zia-target", !!typed && Number(typed) === i + 1));
+    };
 
     const show = () => {
       tabs = numberTabs();
@@ -14013,7 +14018,16 @@
     };
     const hide = () => {
       typed = "";
+      markTarget();
       setFlag("zia-tab-numbers", false);
+    };
+    // Letting go: the tab typed, if any
+    const commit = () => {
+      const tab = typed ? tabs[Number(typed) - 1] : null;
+      hide();
+      if (tab?.isConnected) {
+        gBrowser.selectedTab = tab;
+      }
     };
     const startsANumber = (prefix) => {
       for (let n = 1; n <= tabs.length; n++) {
@@ -14028,20 +14042,11 @@
       if (!root.hasAttribute("zia-tab-numbers")) {
         show();
       }
-      // Carries on from the digit before, if it came soon and together
-      // they name a tab; otherwise starts again from this one
-      const now = Date.now();
-      const next = now - typedAt < TAB_NUMBER_FOLLOW ? typed + digit : digit;
+      // Carries on from the digits before if together they still name a
+      // tab; otherwise starts again from this one
+      const next = typed + digit;
       typed = startsANumber(next) ? next : startsANumber(digit) ? digit : "";
-      typedAt = now;
-      const tab = typed ? tabs[Number(typed) - 1] : null;
-      if (tab?.isConnected) {
-        gBrowser.selectedTab = tab;
-      }
-      // Nothing longer starts with it: the next digit starts afresh
-      if (!typed || Number(`${typed}0`) > tabs.length) {
-        typed = "";
-      }
+      markTarget();
     };
 
     // Seen both ways: keys pressed in a page reach the window only
@@ -14066,6 +14071,9 @@
               lastDigit = stamp;
               onDigit(digit);
             }
+          } else if (typed) {
+            typed = "";
+            markTarget();
           }
         },
         options
@@ -14074,7 +14082,7 @@
         "keyup",
         (event) => {
           if (isModKey(event)) {
-            hide();
+            commit();
           }
         },
         options
@@ -14113,6 +14121,18 @@
     window.addEventListener("ZenWorkspacesUIUpdate", renumber);
     window.addEventListener("ZenWorkspaceChanged", renumber);
     Services.prefs.addObserver(TAB_NUMBERS_ALWAYS_PREF, renumber);
+
+    // Zia blue or the space's colour for the number being typed
+    const showColor = () => {
+      const space = Services.prefs.getStringPref(TAB_NUMBERS_COLOR_PREF, "zia") === "space";
+      if (space) {
+        root.setAttribute("zia-tab-number-color", "space");
+      } else {
+        root.removeAttribute("zia-tab-number-color");
+      }
+    };
+    showColor();
+    Services.prefs.addObserver(TAB_NUMBERS_COLOR_PREF, showColor);
     renumber();
   }
   function safely(name, fn) {

@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Numbered tabs: typing a number now lights its key up, in Zia blue or your
+  space's colour (a new setting), and the tab is only chosen when you let
+  go of Cmd/Ctrl, so a single digit never loads a tab by accident. Past
+  nine, type the digits in turn at any pace (Cmd + 1 + 2, then let go, for
+  tab 12). Pressing another key, or letting go with nothing typed, changes
+  nothing.
+
 ## [2.74.3] — 2026-09-30
 
 ### Changed

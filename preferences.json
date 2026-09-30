@@ -52,6 +52,22 @@
     "defaultValue": false
   },
   {
+    "type": "dropdown",
+    "label": "Colour of the tab number you type",
+    "property": "zia.tab-numbers.color",
+    "defaultValue": "zia",
+    "options": [
+      {
+        "label": "Zia blue",
+        "value": "zia"
+      },
+      {
+        "label": "The space's colour",
+        "value": "space"
+      }
+    ]
+  },
+  {
     "type": "checkbox",
     "label": "Tab and folder hover cards",
     "property": "zia.features.tab-hover-cards",

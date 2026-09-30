@@ -137,7 +137,7 @@ Essentials sit as tiles, four to a row (six when the sidebar is wide). A space's
 <details>
 <summary>Numbered tabs</summary>
 
-Hold **Cmd** (**Ctrl** on Windows and Linux) and every tab and essential shows its number; press it to jump there. They only show while you hold the key, so there's nothing extra the rest of the time. Tabs past nine are reachable too: keep holding and type the digits in turn, so **Cmd+1+2** goes to tab 1, then on to tab 12, and single digits stay instant. They can show all the time instead, or be switched off.
+Hold **Cmd** (**Ctrl** on Windows and Linux) and every tab and essential shows its number. Type a number and its key lights up, in Zia blue or your space's colour; let go and you're there, so nothing loads by accident. They only show while you hold the key, so there's nothing extra the rest of the time. Tabs past nine are reachable too: keep holding and type the digits in turn, so **Cmd+1+2** then letting go takes you to tab 12. They can show all the time instead, or be switched off.
 
 <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/tab-numbers.webp" alt="Holding Cmd: each essential and tab shows its number" width="300">
 
@@ -322,6 +322,7 @@ The first folder takes a little while as the model downloads and the icon names 
 | Undo a closed tab with Cmd/Ctrl+Z | on |
 | Hold Cmd/Ctrl to show each tab's number, and go to it by number | on |
 | Tab numbers show all the time | off |
+| Colour of the tab number you type: Zia blue or the space's colour | Zia blue |
 | Tab and folder hover cards | on |
 | Hover cards are slightly see-through, with what's behind them blurred | on |
 | Name new folders and choose their icons with a local model ([see above](#folder-names-and-icons)) | off |
