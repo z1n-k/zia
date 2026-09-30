@@ -333,6 +333,7 @@ The first folder takes a little while as the model downloads and the icon names 
 | Address bar pop-up takes the toolbar's colour as it opens (needs the site-coloured toolbar) | off |
 | Address bar pop-up is slightly see-through, with the page blurred behind it | on |
 | Address bar shows only the page's title, in the domain's colour, until clicked | off |
+| Address bar text is centred | off |
 | Address bar position: top or bottom (not with Zen's single toolbar) | top |
 | **New tabs** | |
 | Cmd/Ctrl+T and **+ New Tab** open a real tab (off: Zen's floating address bar) | on |

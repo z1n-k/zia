@@ -557,3 +557,11 @@
   font-size: var(--zia-text-size) !important;
   font-weight: var(--zia-tab-weight) !important;
 }
+
+/* Optional: the address bar's text centred in it (off: from the left) */
+@media -moz-pref("zia.urlbar.center-text") {
+  #urlbar :is(.urlbar-input, #zia-url-title, #zia-url-plain) {
+    text-align: center !important;
+    justify-content: center !important;
+  }
+}

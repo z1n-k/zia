@@ -1749,16 +1749,16 @@
       return { width, height };
     };
 
-    const fillThumb = () => {
-      if (!thumb) {
+    const fillPicture = (node, tab) => {
+      if (!node) {
         return;
       }
       const source = pictureSource();
       if (source) {
-        let canvas = thumb.querySelector("canvas");
+        let canvas = node.querySelector("canvas");
         if (!canvas) {
           canvas = document.createElementNS(XHTML_NS, "canvas");
-          thumb.replaceChildren(canvas);
+          node.replaceChildren(canvas);
         }
         if (canvas.width !== source.width || canvas.height !== source.height) {
           canvas.width = source.width;
@@ -1767,14 +1767,15 @@
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(source, 0, 0);
-        thumb.removeAttribute("zia-card");
-      } else if (!thumb.firstChild && drag?.tab) {
+        node.removeAttribute("zia-card");
+      } else if (!node.firstChild && tab) {
         const icon = document.createElementNS(XHTML_NS, "img");
-        icon.setAttribute("src", gBrowser.getIcon(drag.tab) || DEFAULT_TAB_ICON);
-        thumb.replaceChildren(icon);
-        thumb.setAttribute("zia-card", "true");
+        icon.setAttribute("src", gBrowser.getIcon(tab) || DEFAULT_TAB_ICON);
+        node.replaceChildren(icon);
+        node.setAttribute("zia-card", "true");
       }
     };
+    const fillThumb = () => fillPicture(thumb, drag?.tab);
 
     const sizeThumb = (node, width, height) => {
       node.style.width = `${Math.round(width)}px`;
@@ -2937,6 +2938,50 @@
       }
     };
 
+    // An essential dragged out over the page (to the split cards) turns into
+    // its page's picture, as a tab does, and back into its tile coming back
+    // (it stayed a tile out there)
+    const essentialThumb = (state, point) => {
+      if (!state.thumb || state.thumb.hasAttribute("zia-leaving")) {
+        clearTimeout(state.thumbTimer);
+        state.thumb?.remove();
+        const node = document.createElementNS(XHTML_NS, "div");
+        node.id = "zia-drag-thumb";
+        const box = state.copy.getBoundingClientRect();
+        sizeThumb(node, box.width, box.height);
+        node.style.left = `${Math.round(box.left + box.width / 2)}px`;
+        node.style.top = `${Math.round(box.top + box.height / 2)}px`;
+        root.appendChild(node);
+        node.getBoundingClientRect();
+        state.thumb = node;
+        state.copy.style.setProperty("visibility", "hidden", "important");
+        tap();
+      }
+      fillPicture(state.thumb, state.tab);
+      const size = pictureSize();
+      sizeThumb(state.thumb, size.width, size.height);
+      state.thumb.style.left = `${Math.round(point.x)}px`;
+      state.thumb.style.top = `${Math.round(point.y)}px`;
+    };
+    const essentialThumbBack = (state) => {
+      const node = state.thumb;
+      if (!node || node.hasAttribute("zia-leaving")) {
+        return;
+      }
+      node.setAttribute("zia-leaving", "true");
+      const box = state.copy.getBoundingClientRect();
+      sizeThumb(node, box.width, box.height);
+      node.style.left = `${Math.round(box.left + box.width / 2)}px`;
+      node.style.top = `${Math.round(box.top + box.height / 2)}px`;
+      state.thumbTimer = setTimeout(() => {
+        node.remove();
+        if (state.thumb === node) {
+          state.thumb = null;
+          state.copy?.style.removeProperty("visibility");
+        }
+      }, THUMB_MS);
+    };
+
     const onEssentialOver = (event) => {
       const state = essentialDrag;
       if (!state?.copy?.isConnected) {
@@ -2946,6 +2991,12 @@
       if (!point.x && !point.y) {
         return;
       }
+      const sideBox = document.getElementById("navigator-toolbox")?.getBoundingClientRect();
+      if (sideBox?.width && !event.target?.closest?.("#navigator-toolbox") && (point.x < sideBox.left || point.x > sideBox.right)) {
+        essentialThumb(state, point);
+        return;
+      }
+      essentialThumbBack(state);
       tapOnNewTile(point, state.tab);
       const essentials = document.getElementById("zen-essentials");
       const overTiles = !!event.target?.closest?.("#zen-essentials") || inBox(essentials, point) || overAnyTile(point);
@@ -3041,6 +3092,9 @@
       if (!state) {
         return;
       }
+      clearTimeout(state.thumbTimer);
+      state.thumb?.remove();
+      state.thumb = null;
       if (event?.type === "drop") {
         const point = pointerOf(event);
         const essentials = document.getElementById("zen-essentials");

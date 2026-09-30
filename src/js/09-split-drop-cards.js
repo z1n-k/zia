@@ -54,6 +54,11 @@
     if (!splitter || !tab || !current || tab.closing || tab.hasAttribute("zen-empty-tab")) {
       return false;
     }
+    // (a folder dragged is its name, not a tab: it can't be split; the tabs
+    // in one still can)
+    if (!gBrowser.isTab?.(tab)) {
+      return false;
+    }
     if (tab.hasAttribute("zen-live-folder-item-id")) {
       return false;
     }

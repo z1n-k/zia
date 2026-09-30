@@ -172,6 +172,12 @@
     "defaultValue": false
   },
   {
+    "type": "checkbox",
+    "label": "Address bar text is centred",
+    "property": "zia.urlbar.center-text",
+    "defaultValue": false
+  },
+  {
     "type": "dropdown",
     "label": "Address bar position",
     "property": "zia.urlbar.position",

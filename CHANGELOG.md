@@ -4,6 +4,19 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Setting: **Address bar text is centred** (off by default).
+
+### Fixed
+
+- Dragging a folder onto the page doesn't bring up the split cards: a folder
+  can't be split (the tabs in one still can).
+- Dragging an essential onto the page: it turns into its page's picture, as
+  a tab does, and back into its tile coming back.
+
 ## [2.72.14] — 2026-09-30
 
 ### Fixed
