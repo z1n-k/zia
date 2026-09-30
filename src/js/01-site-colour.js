@@ -5,6 +5,7 @@
   const scrollPositions = new WeakMap();
   const LIGHT_THRESHOLD = 150;
   const INK_MAX = 90;
+  const BLACKISH = 12;
   const ERROR_PAGE_COLOR = [0, 0, 0];
   const ERROR_PAGES = /^about:(neterror|certerror|httpsonlyerror|blocked|tabcrashed)/;
   const errorBrowsers = new WeakSet();
@@ -66,8 +67,11 @@
       return;
     }
     const base = rgb.slice(0, 3);
-    const t = brightness <= 1 ? 0 : Math.min(1, (brightness - 1) / 46);
-    const level = brightness <= 1 ? 251 : Math.round(150 + t * 26);
+    // White on black and near-black pages (GitHub's #0d1117 read as a
+    // brightness of 3, and got the dim grey meant for greyer darks), as
+    // in Dia; the soft grey only from there up.
+    const t = brightness <= BLACKISH ? 0 : Math.min(1, (brightness - BLACKISH) / (INK_MAX - 44 - BLACKISH));
+    const level = brightness <= BLACKISH ? 251 : Math.round(150 + t * 26);
     root.style.setProperty("--zia-dark-ink", `rgb(${level}, ${level}, ${level})`);
     if (inkOnly) {
       root.style.removeProperty("--zia-urlbar-hover-bg");

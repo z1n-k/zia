@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- On black and near-black sites (GitHub) the address is white again, and
+  the grey after it lighter, as in Dia: only the pure black ones got white
+  text, the rest a dim grey.
+
 ## [2.73.0] — 2026-09-30
 
 ### Added
