@@ -4,6 +4,12 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Address bar: the **Switch to tab** tag is in regular weight, not medium.
+
 ## [2.72.17] — 2026-09-30
 
 ### Fixed
