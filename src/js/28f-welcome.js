@@ -39,20 +39,25 @@
       }, 260);
       gBrowser.selectedBrowser?.focus();
     };
+    // The page tells Zia what to do with an event: it runs apart from the
+    // window, so functions handed to it never reached it
     frame.addEventListener("load", () => {
       try {
-        frame.contentWindow.ziaWelcomeDone = close;
-        // Star on GitHub: in a new tab, and the tour steps aside
-        frame.contentWindow.ziaOpenLink = (url) => {
-          if (/^https:\/\/github\.com\//.test(url)) {
-            if (typeof window.openTrustedLinkIn === "function") {
-              window.openTrustedLinkIn(url, "tab");
-            } else {
-              gBrowser.selectedTab = gBrowser.addTrustedTab(url);
-            }
+        frame.contentDocument.addEventListener("ZiaWelcome", (event) => {
+          let message = {};
+          try {
+            message = JSON.parse(String(event.detail));
+          } catch (err) {
+            return;
+          }
+          // Star on GitHub: a tab in this window, and the tour is done
+          if (message.action === "open" && /^https:\/\/github\.com\/z1n-k\/zia\/?$/.test(message.url || "")) {
+            gBrowser.selectedTab = gBrowser.addTrustedTab(message.url);
+          }
+          if (message.action === "open" || message.action === "done") {
             close();
           }
-        };
+        });
         frame.contentWindow.focus();
       } catch (err) {
         noteError("welcome: hook", err);

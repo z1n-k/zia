@@ -250,8 +250,14 @@
   // the version the update tour is for, shown as 2.76
   let version = (hash.split("-")[1] || "").split(".").slice(0, 2).join(".") || "";
   const GITHUB = "https://github.com/z1n-k/zia";
+  // Inside Zia the page tells Zia what to do with an event (Zia's own
+  // functions can't be handed to it); on its own it opens the link itself
+  const inZia = location.protocol === "chrome:";
+  function tellZia(action, url) {
+    document.dispatchEvent(new CustomEvent("ZiaWelcome", { detail: JSON.stringify({ action, url }) }));
+  }
   function openGitHub() {
-    if (window.ziaOpenLink) window.ziaOpenLink(GITHUB);
+    if (inZia) tellZia("open", GITHUB);
     else window.open(GITHUB, "_blank", "noopener");
   }
   let at = 0;
@@ -303,9 +309,9 @@
   }
 
 
-  // Zia sets window.ziaWelcomeDone to take the card away
+  // Zia takes the card away when told
   function done() {
-    window.ziaWelcomeDone?.();
+    tellZia("done");
   }
   document.querySelector(".scrim").addEventListener("mousedown", (e) => {
     if (!e.target.closest(".deck")) done();
