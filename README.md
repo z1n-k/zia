@@ -54,7 +54,7 @@ Other mods may conflict, and Zia won't be adjusted around them. If something loo
 | --- | --- |
 | 🎨 [**Site-coloured toolbar**](#the-page-and-the-toolbar) | One rounded card with the page, always readable, animated navigation |
 | 🔎 [**Address bar**](#the-address-bar) | A pared-back pop-up, at the top or the bottom |
-| 🗂️ [**Sidebar**](#the-sidebar) | Essential tiles, coloured folders, smooth dragging, hover cards, 5,166 icons |
+| 🗂️ [**Sidebar**](#the-sidebar) | Essential tiles, coloured folders, smooth dragging, hover cards, 5,166 icons or your own SVGs |
 | 🧊 [**Glass**](#glass) | Compact sidebar, hover cards and address pop-up frosted over the page |
 | ⬛ [**Split view**](#split-view) | Drop cards to make a split, a toolbar for each pane |
 | 🎵 [**Music**](#music) | A player card with the artwork's glow, sound bars on playing tabs |
@@ -148,7 +148,7 @@ Essentials sit as tiles, four to a row (six when the sidebar is wide). A space's
 </details>
 
 <details>
-<summary>Icons: 5,166 of them</summary>
+<summary>Icons: 5,166 of them, or your own</summary>
 
 Covers come from an icon picker Zia adds beside Zen's own: 5,166 [Tabler](https://tabler.io/icons) icons, in outline or (for about a thousand) solid. The search knows each icon's tags, so *money* finds cash, coins and wallets. Zen's emojis are still there. Right-click a folder or space and choose **Change icon → Choose an SVG…** to give it an icon of your own, tinted to match the sidebar like the rest (or kept in its own colours).
 
