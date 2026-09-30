@@ -279,7 +279,7 @@
     });
   }
 
-  // Your own SVGs for folders and spaces (the icon picker's "Your SVG…"):
+  // Your own SVGs for folders and spaces (their menus' Change icon):
   // kept in the profile and read, tinted like Zia's icons, through
   // resource://, pointed at as this script loads, since Zen draws folder
   // and space icons as it restores them, before the rest of Zia starts.
@@ -456,6 +456,11 @@
     }
     applyExtIcons();
     addExtIconMenus();
+    try {
+      addOwnIconMenus();
+    } catch (err) {
+      noteError("own icons: menus", err);
+    }
     watchExtButtons();
     try {
       CustomizableUI.addListener({
@@ -468,4 +473,128 @@
     }
     document.getElementById("unified-extensions-panel")?.addEventListener("popupshowing", watchExtButtons);
     setTimeout(watchExtButtons, 3000);
+  }
+
+  // Folders and spaces: Zen's "Change icon" becomes a menu like the
+  // extensions' one, with your own SVG, Zia's icons (Zen's picker), your
+  // SVG's own colours, and taking the icon off. Zen's own item stays,
+  // hidden, as the way to its picker.
+  const OWN_ICON_PREFIX = `resource://${OWN_ICON_HOST}/`;
+  const isOwnIcon = (url) => typeof url === "string" && url.startsWith(OWN_ICON_PREFIX);
+  const ownColoursOf = (url) => isOwnIcon(url) && !/\.tinted\.svg$/.test(url);
+
+  function iconTargets() {
+    return {
+      folder: {
+        menuId: "zenFolderActions",
+        itemId: "context_zenFolderChangeIcon",
+        find(menu) {
+          const folder = folderFromNode(menu.triggerNode);
+          return folder?.isZenFolder ? folder : null;
+        },
+        icon: (folder) => folder.iconURL || null,
+        set(folder, url) {
+          gZenFolders.setFolderUserIcon(folder, url);
+          folder.dispatchEvent(new CustomEvent("TabGroupUpdate", { bubbles: true }));
+        },
+        pick: (folder) => gZenFolders.changeFolderUserIcon(folder),
+      },
+      space: {
+        menuId: "zenWorkspaceMoreActions",
+        itemId: "context_zenEditWorkspaceIcon",
+        find(menu) {
+          const node = menu.triggerNode;
+          const id = node?.closest?.("toolbarbutton[zen-workspace-id]")?.getAttribute("zen-workspace-id") || gZenWorkspaces.activeWorkspace;
+          return gZenWorkspaces.getWorkspaceFromId(id) ? id : null;
+        },
+        icon: (id) => gZenWorkspaces.getWorkspaceFromId(id)?.icon || null,
+        async set(id, url) {
+          const space = gZenWorkspaces.getWorkspaceFromId(id);
+          if (space) {
+            space.icon = url;
+            await gZenWorkspaces.saveWorkspace(space);
+          }
+        },
+        pick: () => gZenWorkspaces.changeWorkspaceIcon(),
+      },
+    };
+  }
+
+  function addOwnIconMenus() {
+    for (const target of Object.values(iconTargets())) {
+      const menu = document.getElementById(target.menuId);
+      const zens = document.getElementById(target.itemId);
+      if (!menu || !zens || menu.querySelector(".zia-own-icon-menu")) {
+        continue;
+      }
+      const item = document.createXULElement("menu");
+      item.className = "zia-own-icon-menu";
+      item.setAttribute("label", "Change icon");
+      const popup = document.createXULElement("menupopup");
+      const upload = document.createXULElement("menuitem");
+      upload.setAttribute("label", "Choose an SVG…");
+      const choose = document.createXULElement("menuitem");
+      choose.setAttribute("label", "Pick from Zia's icons…");
+      const keepSeparator = document.createXULElement("menuseparator");
+      const keep = document.createXULElement("menuitem");
+      keep.setAttribute("type", "checkbox");
+      keep.setAttribute("label", "Keep the SVG's own colours");
+      const remove = document.createXULElement("menuitem");
+      remove.setAttribute("label", "Remove icon");
+      popup.append(upload, choose, keepSeparator, keep, remove);
+      item.append(popup);
+      zens.before(item);
+
+      let subject = null;
+      menu.addEventListener("popupshowing", (event) => {
+        if (event.target !== menu) {
+          return;
+        }
+        subject = null;
+        try {
+          subject = target.find(menu);
+        } catch (err) {
+          noteError("own icons: find", err);
+        }
+        // Zen's item stays hidden either way: ours takes its place
+        zens.hidden = true;
+        item.hidden = !subject;
+        if (!subject) {
+          zens.hidden = false;
+          return;
+        }
+        const icon = target.icon(subject);
+        keep.hidden = !isOwnIcon(icon);
+        keep.setAttribute("checked", String(ownColoursOf(icon)));
+        remove.disabled = !icon;
+      });
+      const run = (what) => async () => {
+        const at = subject;
+        if (at === null) {
+          return;
+        }
+        try {
+          await what(at);
+        } catch (err) {
+          console.error("[Zia] Could not change the icon:", err);
+        }
+      };
+      upload.addEventListener("command", run(async (at) => {
+        const url = await chooseOwnSvg();
+        if (url) {
+          await target.set(at, url);
+        }
+      }));
+      choose.addEventListener("command", run((at) => target.pick(at)));
+      keep.addEventListener("command", run(async (at) => {
+        const icon = target.icon(at);
+        if (!isOwnIcon(icon)) {
+          return;
+        }
+        const own = keep.getAttribute("checked") === "true";
+        const url = own ? icon.replace(/\.tinted\.svg$/, ".svg") : icon.replace(/(?<!\.tinted)\.svg$/, ".tinted.svg");
+        await target.set(at, url);
+      }));
+      remove.addEventListener("command", run((at) => target.set(at, null)));
+    }
   }

@@ -8,9 +8,10 @@ Every release of Zia, newest first. The format follows
 
 ### Added
 
-- Your own SVG icons for folders and spaces, as for extensions: "Your SVG…"
-  in the icon picker's Zia section. It takes the sidebar's colour, like
-  Zia's own icons.
+- Your own SVG icons for folders and spaces, as for extensions: right-click
+  a folder or space, then Change icon → Choose an SVG…. It takes the
+  sidebar's colour, like Zia's own icons, or keeps its own colours. The
+  same menu opens the icon picker, or takes the icon off.
 
 ### Fixed
 
