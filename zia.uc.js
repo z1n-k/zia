@@ -12600,6 +12600,13 @@
         } else if (drag?.folder && !drag.away && drag.target) {
           const folder = drag.folder;
           const target = drag.target;
+          // Into a closed folder, Zia puts it there, so Zen's own drop doesn't
+          // run: it opened the folder, which showed all its tabs, the one
+          // dropped missing for a frame, and stayed open (as a tab's drop)
+          if (target.folder && isCollapsed(target.folder) && target.folder !== folder && !folder.contains(target.folder)) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
           pendingFinish = true;
           setTimeout(() => {
             try {
