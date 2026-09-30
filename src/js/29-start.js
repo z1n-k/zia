@@ -273,6 +273,7 @@
     safely("watchSpaceColor", watchSpaceColor);
     safely("animateEssentialsAdds", animateEssentialsAdds);
     ifOn("undo-close", "watchUndoClose", watchUndoClose);
+    ifOn("tab-numbers", "watchTabNumbers", watchTabNumbers);
     safely("watchTypedAddress", watchTypedAddress);
     safely("registerScrollActor", registerScrollActor);
     safely("registerPdfActor", registerPdfActor);

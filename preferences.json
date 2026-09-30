@@ -41,6 +41,18 @@
   },
   {
     "type": "checkbox",
+    "label": "Hold Cmd/Ctrl to show each tab's number, and go to it by number",
+    "property": "zia.features.tab-numbers",
+    "defaultValue": true
+  },
+  {
+    "type": "checkbox",
+    "label": "Tab numbers show all the time",
+    "property": "zia.tab-numbers.always",
+    "defaultValue": false
+  },
+  {
+    "type": "checkbox",
     "label": "Tab and folder hover cards",
     "property": "zia.features.tab-hover-cards",
     "defaultValue": true

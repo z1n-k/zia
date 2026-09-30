@@ -4,6 +4,18 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Tab numbers: hold Cmd/Ctrl and a small key at the end of each tab, and in
+  the corner of each essential, shows its number; press it to go there.
+  Every tab you can see gets one, so all are reachable: a digit goes
+  straight to its tab, and past nine a second digit pressed soon after
+  carries on (1 then 2 for the twelfth). They show as soon
+  as you press the key and stay until you let go. Optionally they show all the
+  time.
+
 ## [2.73.1] — 2026-09-30
 
 ### Fixed

@@ -128,6 +128,7 @@ Essentials sit as tiles, four to a row (six when the sidebar is wide). A space's
 - Tabs you're not on are a little dimmer, as in Dia, and go white once selected.
 - Dragging gives a haptic tap on a trackpad as rows move, as you cross the separator, and as you go into or out of a folder.
 - **Cmd/Ctrl+Z** reopens what you just closed, for ten seconds: whole folders, splits and groups of tabs come back as they were, a deleted folder with its name.
+- Hold **Cmd/Ctrl** and each tab (and essential) shows its number as a small key at its end; press the number to go there. Every tab gets one: past nine, type the digits while holding the key (**1** then **2** for the twelfth). They go when you let go, or can show all the time.
 - Asleep tabs can be dimmed (tabs, essentials, and folders whose tabs are all asleep).
 - Zen's pop-up notices get a close button, so they don't have to be waited out.
 - Downloads sit next to the space name with a progress ring.
@@ -311,6 +312,8 @@ The first folder takes a little while as the model downloads and the icon names 
 | Find in page bar | on |
 | Icon picker (5,166 Tabler icons, outline and solid) | on |
 | Undo a closed tab with Cmd/Ctrl+Z | on |
+| Hold Cmd/Ctrl to show each tab's number, and go to it by number | on |
+| Tab numbers show all the time | off |
 | Tab and folder hover cards | on |
 | Hover cards are slightly see-through, with what's behind them blurred | on |
 | Name new folders and choose their icons with a local model ([see above](#folder-names-and-icons)) | off |
