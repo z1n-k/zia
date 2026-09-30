@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- The selected tab stays dark inside a folder, as in Dia, rather than turning
+  grey on the folder's lighter box.
+
 ## [2.72.20] — 2026-09-30
 
 ### Changed

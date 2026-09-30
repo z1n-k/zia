@@ -662,6 +662,14 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
   background-color: color-mix(in srgb, var(--zia-folder-swatch) var(--zia-folder-wash), transparent) !important;
 }
 
+/* The selected tab stays dark on a folder's lighter box, as in Dia: its
+ * see-through black would otherwise take on the box's lightening and turn
+ * grey. Set only while the box shows (hovered, held, taking a drop, or
+ * coloured), so on a bare folder it matches the tabs outside. */
+:root[zen-sidebar-expanded="true"] :is(zen-folder:is(:hover, [zia-hover-held], [zia-drop-slot], [zia-folder-color]), tab-group:not([split-view-group])) {
+  --zia-active-tab-bg: var(--zia-active-tab-bg-folder);
+}
+
 /* A folder just dropped keeps its hover box until the pointer leaves
    (tab dragging, zia-hover-held) */
 :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group]))[zia-hover-held] {
