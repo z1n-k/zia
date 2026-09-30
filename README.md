@@ -25,7 +25,7 @@ the page, the toolbar, the sidebar, the address bar, PDFs, media and picture-in-
 </div>
 
 <!-- IMAGE hero.webp (1600×1000): replaces the image below -->
-![Zia](https://github.com/user-attachments/assets/998f92b8-74ea-4bac-8131-6ab4a9993ab7)
+![Zia](https://raw.githubusercontent.com/z1n-k/zia/readme-images/hero.webp)
 
 > [!NOTE]
 > **Beta.** Tested on macOS, Windows and Linux in dark mode with the **Sidebar and Top Toolbar** layout. Light mode and Zen's other layouts get less testing: if something looks off, [open an issue](https://github.com/z1n-k/zia/issues) with a screenshot.
