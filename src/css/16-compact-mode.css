@@ -108,20 +108,10 @@
   .titlebar-button,
   .titlebar-button:hover,
   .titlebar-button:hover:active {
-    background-color: transparent !important;
     background-image: none !important;
   }
 
-  .titlebar-button {
-    opacity: 1;
-    transition: opacity 0.15s ease !important;
-  }
-
-  .titlebar-button:hover {
-    opacity: 0.55 !important;
-  }
-
-  .titlebar-button:hover:active {
-    opacity: 0.4 !important;
+  .titlebar-button:last-child {
+    border-top-right-radius: 5px !important;
   }
 }

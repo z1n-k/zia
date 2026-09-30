@@ -51,7 +51,7 @@
   }
 
   & #nav-bar {
-    padding-inline: var(--zia-toolbar-end-gap) !important;
+    padding-inline-start: var(--zia-toolbar-end-gap) !important;
     --zen-toolbar-height: var(--zia-toolbar-height) !important;
     --urlbar-height: var(--zia-urlbar-height) !important;
   }
