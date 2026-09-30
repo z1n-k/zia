@@ -144,6 +144,12 @@
     "defaultValue": false
   },
   {
+    "type": "checkbox",
+    "label": "Windows window buttons just dim on hover (off: Windows' own blocks, red behind close, as in Dia)",
+    "property": "zia.window-buttons.dim",
+    "defaultValue": false
+  },
+  {
     "type": "separator",
     "label": "Address bar"
   },

@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Windows: minimise, maximise and close light up on hover as Windows and Dia
+  do, red behind close, the close button in the window's corner (thanks to
+  Zylaah). The old dimming is a setting: **Windows window buttons just dim
+  on hover**.
+
 ## [2.72.18] — 2026-09-30
 
 ### Changed

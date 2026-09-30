@@ -329,6 +329,7 @@ The first folder takes a little while as the model downloads and the icon names 
 | Split view drop cards when dragging a tab onto the page (off: Zen's own) | on |
 | PDFs open in Zia's viewer look (off: Firefox's own) | on |
 | Hide the window buttons (minimise, maximise, close) on Windows and Linux | off |
+| Windows window buttons just dim on hover (off: Windows' own blocks, red behind close, as in Dia) | off |
 | **Address bar** | |
 | Zia's address bar pop-up (off: Zen's own) | on |
 | Address bar pop-up takes the toolbar's colour as it opens (needs the site-coloured toolbar) | off |

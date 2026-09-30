@@ -230,6 +230,26 @@
   }
 }
 
+/* Windows: no gap after the window buttons at the toolbar's end, so close
+   sits in the window's corner, as in Windows itself (the gap stays with the
+   buttons hidden, or dimming instead) */
+@media (-moz-platform: windows) {
+  :root:not(#zia-none):not([inDOMFullscreen="true"]):not([popup-window]) #nav-bar:has(.titlebar-buttonbox-container) {
+    padding-inline-end: 0 !important;
+  }
+
+  @media -moz-pref("zia.window-buttons.hide") {
+    :root:not(#zia-none):not(#zia-none-2):not([inDOMFullscreen="true"]):not([popup-window]) #nav-bar {
+      padding-inline-end: var(--zia-toolbar-end-gap) !important;
+    }
+  }
+
+  @media -moz-pref("zia.window-buttons.dim") {
+    :root:not(#zia-none):not(#zia-none-2):not([inDOMFullscreen="true"]):not([popup-window]) #nav-bar {
+      padding-inline-end: var(--zia-toolbar-end-gap) !important;
+    }
+  }
+}
 #urlbar:not(:hover):not([focused]):not([breakout-extend]) > .urlbar-background {
   background: transparent !important;
   box-shadow: none !important;
@@ -4696,15 +4716,28 @@ tooltip[default="true"] {
   }
 }
 
-/* Windows: minimise, maximise and close have no coloured block behind them
-   on hover (Windows' red close block among them); hovered, the button just
-   dims, and dims a little more while pressed. */
+/* Windows: minimise, maximise and close as Windows (and Dia) draw them, a
+   block behind each on hover and red behind close, the close button's block
+   following the window's corner (thanks to Zylaah) */
 @media (-moz-platform: windows) {
   .titlebar-button,
   .titlebar-button:hover,
   .titlebar-button:hover:active {
-    background-color: transparent !important;
     background-image: none !important;
+  }
+
+  .titlebar-button:last-child {
+    border-top-right-radius: 5px !important;
+  }
+}
+
+/* Optionally, no block behind them: hovered, a button just dims, and dims a
+   little more while pressed */
+@media (-moz-platform: windows) and -moz-pref("zia.window-buttons.dim") {
+  .titlebar-button,
+  .titlebar-button:hover,
+  .titlebar-button:hover:active {
+    background-color: transparent !important;
   }
 
   .titlebar-button {
@@ -4720,6 +4753,7 @@ tooltip[default="true"] {
     opacity: 0.4 !important;
   }
 }
+
 .tabbrowser-tab .tab-reset-button,
 zen-folder .tab-reset-button {
   -moz-context-properties: fill, fill-opacity !important;

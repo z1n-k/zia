@@ -101,15 +101,28 @@
   }
 }
 
-/* Windows: minimise, maximise and close have no coloured block behind them
-   on hover (Windows' red close block among them); hovered, the button just
-   dims, and dims a little more while pressed. */
+/* Windows: minimise, maximise and close as Windows (and Dia) draw them, a
+   block behind each on hover and red behind close, the close button's block
+   following the window's corner (thanks to Zylaah) */
 @media (-moz-platform: windows) {
   .titlebar-button,
   .titlebar-button:hover,
   .titlebar-button:hover:active {
-    background-color: transparent !important;
     background-image: none !important;
+  }
+
+  .titlebar-button:last-child {
+    border-top-right-radius: 5px !important;
+  }
+}
+
+/* Optionally, no block behind them: hovered, a button just dims, and dims a
+   little more while pressed */
+@media (-moz-platform: windows) and -moz-pref("zia.window-buttons.dim") {
+  .titlebar-button,
+  .titlebar-button:hover,
+  .titlebar-button:hover:active {
+    background-color: transparent !important;
   }
 
   .titlebar-button {
@@ -125,3 +138,4 @@
     opacity: 0.4 !important;
   }
 }
+
