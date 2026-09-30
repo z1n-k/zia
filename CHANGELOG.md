@@ -4,6 +4,12 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- A folder's hover card spaces its tabs as the sidebar does (4px apart).
+
 ## [2.74.2] — 2026-09-30
 
 ### Changed

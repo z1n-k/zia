@@ -2537,9 +2537,9 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
   padding: 6px;
   /* ten rows exactly: each is the tab's height with a margin above and
      below, and between two rows those margins are one, so ten take ten
-     heights and eleven margins (at 37px a row, a sliver of the eleventh
-     showed under the tenth) */
-  --zia-folder-card-gap: calc((37px - var(--zia-tab-height)) / 2);
+     heights and eleven margins. The margin is the space between two tabs
+     in the sidebar (their gap above and below each). */
+  --zia-folder-card-gap: calc(2 * var(--zia-tab-gap));
   max-height: calc(10 * var(--zia-tab-height) + 11 * var(--zia-folder-card-gap) + 12px);
   box-sizing: border-box;
   overflow-y: auto;
@@ -2552,7 +2552,7 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
   gap: 8px;
 
   height: var(--zia-tab-height);
-  margin-block: calc((37px - var(--zia-tab-height)) / 2);
+  margin-block: var(--zia-folder-card-gap);
 
   padding-inline: 9px 6px;
   border-radius: var(--zia-tab-radius);
