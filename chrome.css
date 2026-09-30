@@ -2811,7 +2811,16 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
     &[zia-folder-color="orange"] { --zia-folder-swatch: var(--zia-fc-orange); }
 
     &[zia-folder-color]:not([zia-folder-color="white"]) {
-      background-color: color-mix(in srgb, var(--zia-folder-swatch) var(--zia-folder-wash), var(--zia-tab-card-bg));
+      --zia-folder-card-bg: color-mix(in srgb, var(--zia-folder-swatch) var(--zia-folder-wash), var(--zia-tab-card-bg));
+      background-color: var(--zia-folder-card-bg) !important;
+    }
+  }
+
+  /* (with the cards see-through, as see-through: the setting's own
+     background, which overrode it, left it grey) */
+  @media -moz-pref("zia.cards.blur") {
+    #zia-folder-card[zia-folder-color]:not([zia-folder-color="white"]) {
+      background-color: color-mix(in srgb, var(--zia-folder-card-bg) 76%, transparent) !important;
     }
   }
 }
