@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- A folder's hover card: its selected tab stays dark too, with the same thin
+  edge as in the sidebar.
+
 ## [2.72.21] — 2026-09-30
 
 ### Changed

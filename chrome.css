@@ -2499,8 +2499,25 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
 }
 
 .zia-folder-card-row[zia-selected] {
-  background-color: var(--zia-active-tab-bg);
+  /* dark on the card's lighter grey, as on a folder's box in the sidebar */
+  background-color: var(--zia-active-tab-bg-folder);
   color: rgb(255, 255, 255);
+  position: relative;
+
+  /* the selected tab's thin edge, without its glow */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: var(--zia-shine-width);
+    border-radius: inherit;
+    corner-shape: round;
+    pointer-events: none;
+    background: var(--zia-tab-shine-layers);
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+  }
 }
 
 .zia-folder-card-act:is([zia-act="close"], [zia-act="unload"]) {
