@@ -253,8 +253,15 @@
   // Inside Zia the page tells Zia what to do with an event (Zia's own
   // functions can't be handed to it); on its own it opens the link itself
   const inZia = location.protocol === "chrome:";
+  // three ways, so it gets through however Zen keeps the page apart: an
+  // event, a message to the window, and a mark Zia looks for
   function tellZia(action, url) {
-    document.dispatchEvent(new CustomEvent("ZiaWelcome", { detail: JSON.stringify({ action, url }) }));
+    const message = JSON.stringify({ action, url });
+    document.dispatchEvent(new CustomEvent("ZiaWelcome", { detail: message }));
+    try {
+      window.parent.postMessage({ ziaWelcome: message }, "*");
+    } catch (err) {}
+    document.documentElement.setAttribute("data-zia-welcome", message);
   }
   function openGitHub() {
     if (inZia) tellZia("open", GITHUB);

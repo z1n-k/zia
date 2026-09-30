@@ -14176,26 +14176,56 @@
       }, 260);
       gBrowser.selectedBrowser?.focus();
     };
-    // The page tells Zia what to do with an event: it runs apart from the
-    // window, so functions handed to it never reached it
+    // The page tells Zia what to do three ways (it runs apart from the
+    // window, so functions handed to it don't reach it): an event on its
+    // document, a message to this window, and a mark on the page, looked
+    // for every quarter second. The first to arrive counts.
+    let acted = false;
+    const act = (text) => {
+      if (acted) {
+        return;
+      }
+      let message = {};
+      try {
+        message = JSON.parse(String(text));
+      } catch (err) {
+        return;
+      }
+      // Star on GitHub: a tab in this window, and the tour is done
+      if (message.action === "open" && /^https:\/\/github\.com\/z1n-k\/zia\/?$/.test(message.url || "")) {
+        gBrowser.selectedTab = gBrowser.addTrustedTab(message.url);
+      }
+      if (message.action === "open" || message.action === "done") {
+        acted = true;
+        close();
+      }
+    };
+    const onMessage = (event) => {
+      if (event.source === frame.contentWindow && typeof event.data?.ziaWelcome === "string") {
+        act(event.data.ziaWelcome);
+      }
+    };
+    window.addEventListener("message", onMessage);
+    const watch = setInterval(() => {
+      if (!overlay.isConnected) {
+        clearInterval(watch);
+        window.removeEventListener("message", onMessage);
+        return;
+      }
+      try {
+        const mark = frame.contentDocument?.documentElement?.getAttribute("data-zia-welcome");
+        if (mark) {
+          frame.contentDocument.documentElement.removeAttribute("data-zia-welcome");
+          act(mark);
+        }
+      } catch (err) {
+        noteError("welcome: look", err);
+      }
+    }, 250);
     frame.addEventListener("load", () => {
       try {
-        frame.contentDocument.addEventListener("ZiaWelcome", (event) => {
-          let message = {};
-          try {
-            message = JSON.parse(String(event.detail));
-          } catch (err) {
-            return;
-          }
-          // Star on GitHub: a tab in this window, and the tour is done
-          if (message.action === "open" && /^https:\/\/github\.com\/z1n-k\/zia\/?$/.test(message.url || "")) {
-            gBrowser.selectedTab = gBrowser.addTrustedTab(message.url);
-          }
-          if (message.action === "open" || message.action === "done") {
-            close();
-          }
-        });
-        frame.contentWindow.focus();
+        frame.contentDocument?.addEventListener("ZiaWelcome", (event) => act(event.detail));
+        frame.contentWindow?.focus();
       } catch (err) {
         noteError("welcome: hook", err);
       }
