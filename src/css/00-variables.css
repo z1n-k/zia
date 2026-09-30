@@ -32,7 +32,7 @@
     linear-gradient(to bottom, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.14) 35%, rgba(255, 255, 255, 0.14) 65%, rgba(255, 255, 255, 0.06));
 
   --zia-tab-shine-layers:
-    linear-gradient(to bottom right, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.09) 28%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.09) 72%, rgba(255, 255, 255, 0.32));
+    linear-gradient(to bottom right, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.18) 25%, rgba(255, 255, 255, 0.13) 50%, rgba(255, 255, 255, 0.18) 75%, rgba(255, 255, 255, 0.26));
   --zia-essential-min-width: 54px;
   --zia-essential-height: 42px;
   --zia-essential-inner-tighten: 1;
@@ -106,7 +106,7 @@
   --zia-card-top-gap: 6px;
   --zia-toolbar-height: 39px;
   --zia-urlbar-height: 31px;
-  --zia-active-tab-bg: rgba(0, 0, 0, 0.2);
+  --zia-active-tab-bg: rgba(0, 0, 0, 0.1);
   --zia-space-name-tint: 42%;
   --zia-card-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.16), 0 1px 4px rgba(0, 0, 0, 0.18);
   --zia-hover-card-shadow: none;
