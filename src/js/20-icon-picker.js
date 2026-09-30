@@ -47,11 +47,11 @@
   // Anything that still asked for an icon before the pack was ready (the
   // first start with it) is drawn again.
   function redrawPackIcons() {
-    const prefix = `${ICON_DIR}/`;
+    const prefixes = [`${ICON_DIR}/`, "resource://zia-own-icons/"];
     for (const image of document.querySelectorAll("image, img")) {
       for (const name of ["src", "href"]) {
         const url = image.getAttribute(name);
-        if (url?.startsWith(prefix)) {
+        if (prefixes.some((prefix) => url?.startsWith(prefix))) {
           image.setAttribute(name, "");
           image.setAttribute(name, url);
           if (image.style.opacity === "0") {
@@ -393,7 +393,27 @@
       styleButtons[value] = button;
       styles.appendChild(button);
     }
-    bar.append(box, styles);
+    // An SVG of your own, for anything the picker is choosing for
+    const own = document.createElementNS(HTML, "button");
+    own.id = "zia-icons-own";
+    own.className = "zia-icons-style-option";
+    own.textContent = "Your SVG…";
+    own.addEventListener("click", async (event) => {
+      event.stopPropagation();
+      // The file dialog can close the picker: the pick is kept waiting
+      // for the SVG instead of being dropped with it
+      picked = true;
+      const url = await chooseOwnSvg();
+      if (url) {
+        choose(url);
+      } else {
+        picked = false;
+        if (panel.state === "closed") {
+          rejectPick?.(new Error("No SVG chosen"));
+        }
+      }
+    });
+    bar.append(box, styles, own);
     const grid = document.createElementNS(HTML, "div");
     grid.id = "zia-icons-grid";
     const empty = document.createElementNS(HTML, "div");
@@ -413,6 +433,7 @@
     let showing = false;
     let picked = false;
     let resolvePick = null;
+    let rejectPick = null;
     let options = null;
 
     function choose(url) {
@@ -587,8 +608,9 @@
       }
       options = settings;
       picked = false;
-      const ziaPick = new Promise((resolve) => {
+      const ziaPick = new Promise((resolve, reject) => {
         resolvePick = resolve;
+        rejectPick = reject;
       });
 
       return Promise.race([

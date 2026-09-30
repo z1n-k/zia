@@ -72,6 +72,19 @@
   }
 }
 
+/* Your own SVG: a button of its own beside the outline/solid pair */
+#zia-icons-own {
+  flex: none;
+  padding: 5px 8px;
+  background-color: rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+}
+
 #zia-icons-empty {
   padding: 18px 10px;
   text-align: center;

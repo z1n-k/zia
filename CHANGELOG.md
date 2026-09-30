@@ -6,6 +6,12 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Your own SVG icons for folders and spaces, as for extensions: "Your SVG…"
+  in the icon picker's Zia section. It takes the sidebar's colour, like
+  Zia's own icons.
+
 ### Fixed
 
 - The toolbar no longer flashes white on sites that show a white splash

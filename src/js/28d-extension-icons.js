@@ -217,51 +217,106 @@
     return pressed === 0;
   }
 
-  function chooseExtSvg(id) {
-    if (!okToCover(id)) {
-      return;
-    }
+  // Asks for an SVG and cleans it: null when cancelled or unusable (said)
+  function askForSvg(then) {
     const picker = Cc["@mozilla.org/filepicker;1"].createInstance(Ci.nsIFilePicker);
     picker.init(window.browsingContext, "Choose an SVG icon", Ci.nsIFilePicker.modeOpen);
     picker.appendFilter("SVG images", "*.svg");
     picker.open(async (result) => {
       if (result !== Ci.nsIFilePicker.returnOK || !picker.file) {
+        then(null);
         return;
       }
       try {
         const path = picker.file.path;
         if (!/\.svg$/i.test(path)) {
           Services.prompt.alert(window, "Only SVG icons", "Choose an .svg file: it can take the toolbar's colour, as Zia's own icons do.");
+          then(null);
           return;
         }
         const info = await IOUtils.stat(path);
         if (info.size > EXT_SVG_MAX) {
           Services.prompt.alert(window, "That SVG is too big", "Icons need to be under 300 KB.");
+          then(null);
           return;
         }
         const svg = cleanSvg(await IOUtils.readUTF8(path));
         if (!svg) {
           Services.prompt.alert(window, "That isn't an SVG Zia can read", "Choose another .svg file.");
-          return;
         }
-        const serialize = (node) => new XMLSerializer().serializeToString(node);
-        const dir = extIconsDir();
-        await IOUtils.makeDirectory(dir, { ignoreExisting: true });
-        const base = `${id.replace(/[^\w.-]+/g, "_")}-${Date.now()}`;
-        const own = PathUtils.join(dir, `${base}.svg`);
-        const tinted = PathUtils.join(dir, `${base}.tinted.svg`);
-        await IOUtils.writeUTF8(own, serialize(svg));
-        await IOUtils.writeUTF8(tinted, serialize(tintSvg(svg)));
+        then(svg);
+      } catch (err) {
+        console.error("[Zia] Could not use that icon:", err);
+        then(null);
+      }
+    });
+  }
+
+  // Writes the SVG as it is and tinted, returning the two file names
+  async function saveSvgIcon(dir, base, svg) {
+    const serialize = (node) => new XMLSerializer().serializeToString(node);
+    await IOUtils.makeDirectory(dir, { ignoreExisting: true });
+    await IOUtils.writeUTF8(PathUtils.join(dir, `${base}.svg`), serialize(svg));
+    await IOUtils.writeUTF8(PathUtils.join(dir, `${base}.tinted.svg`), serialize(tintSvg(svg)));
+    return { file: `${base}.svg`, tinted: `${base}.tinted.svg` };
+  }
+
+  function chooseExtSvg(id) {
+    if (!okToCover(id)) {
+      return;
+    }
+    askForSvg(async (svg) => {
+      if (!svg) {
+        return;
+      }
+      try {
+        const names = await saveSvgIcon(extIconsDir(), `${id.replace(/[^\w.-]+/g, "_")}-${Date.now()}`, svg);
         pointAtExtIcons();
-        await setExtIcon(id, {
-          file: `${base}.svg`,
-          tinted: `${base}.tinted.svg`,
-          own: !!extIconMap()[id]?.own,
-          uploaded: true,
-        });
+        await setExtIcon(id, { ...names, own: !!extIconMap()[id]?.own, uploaded: true });
       } catch (err) {
         console.error("[Zia] Could not use that icon:", err);
       }
+    });
+  }
+
+  // Your own SVGs for folders and spaces (the icon picker's "Your SVG…"):
+  // kept in the profile and read, tinted like Zia's icons, through
+  // resource://, pointed at as this script loads, since Zen draws folder
+  // and space icons as it restores them, before the rest of Zia starts.
+  const OWN_ICON_HOST = "zia-own-icons";
+  function ownIconsDir() {
+    return PathUtils.join(PathUtils.profileDir, "zia-icons", "own");
+  }
+  function pointAtOwnIcons() {
+    const handler = Services.io.getProtocolHandler("resource").QueryInterface(Ci.nsIResProtocolHandler);
+    const dir = Services.io.newURI(`${PathUtils.toFileURI(ownIconsDir())}/`);
+    if (!handler.hasSubstitution(OWN_ICON_HOST) || handler.getSubstitution(OWN_ICON_HOST).spec !== dir.spec) {
+      handler.setSubstitution(OWN_ICON_HOST, dir);
+    }
+  }
+  try {
+    pointAtOwnIcons();
+  } catch (err) {
+    noteError("own icons: early", err);
+  }
+
+  // Asks for an SVG and gives its (tinted) address, or null
+  function chooseOwnSvg() {
+    return new Promise((resolve) => {
+      askForSvg(async (svg) => {
+        if (!svg) {
+          resolve(null);
+          return;
+        }
+        try {
+          const { tinted } = await saveSvgIcon(ownIconsDir(), `icon-${Date.now()}`, svg);
+          pointAtOwnIcons();
+          resolve(`resource://${OWN_ICON_HOST}/${encodeURIComponent(tinted)}`);
+        } catch (err) {
+          console.error("[Zia] Could not use that icon:", err);
+          resolve(null);
+        }
+      });
     });
   }
 

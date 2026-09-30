@@ -150,7 +150,7 @@ Essentials sit as tiles, four to a row (six when the sidebar is wide). A space's
 <details>
 <summary>Icons: 5,166 of them</summary>
 
-Covers come from an icon picker Zia adds beside Zen's own: 5,166 [Tabler](https://tabler.io/icons) icons, in outline or (for about a thousand) solid. The search knows each icon's tags, so *money* finds cash, coins and wallets. Zen's emojis are still there.
+Covers come from an icon picker Zia adds beside Zen's own: 5,166 [Tabler](https://tabler.io/icons) icons, in outline or (for about a thousand) solid. The search knows each icon's tags, so *money* finds cash, coins and wallets. Zen's emojis are still there. **Your SVG…** gives a folder or space an icon of your own, tinted to match the sidebar like the rest.
 
 <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/icon-picker.png" alt="The icon picker with Tabler icons in solid style" width="474">
 
