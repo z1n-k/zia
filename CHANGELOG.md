@@ -10,7 +10,7 @@ Every release of Zia, newest first. The format follows
 
 - A welcome tour: a short card with moving pictures of what Zia does, shown
   once when you first install it, and after updates that bring something
-  worth showing. Skip it, step through it, or see it again from settings.
+  worth showing. Step through it, close it, or see it again from settings.
 
 ### Changed
 

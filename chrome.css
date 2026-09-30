@@ -5381,13 +5381,13 @@ zen-folder .tab-reset-button {
 }
 
 /* The welcome tour (zia.uc.js, welcome/index.html): the window behind it
-   dims and blurs to grey, and the tour's card sits in the middle */
+   dims (a plain shade: a blur over the whole window drew the sidebar
+   unevenly), and the tour's card sits in the middle */
 #zia-welcome {
   position: fixed;
   inset: 0;
   z-index: 2147483000;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(10px) saturate(0);
+  background: rgba(0, 0, 0, 0.62);
   opacity: 0;
   transition: opacity 0.26s cubic-bezier(0.2, 0.9, 0.3, 1);
 
