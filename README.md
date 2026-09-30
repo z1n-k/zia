@@ -128,10 +128,18 @@ Essentials sit as tiles, four to a row (six when the sidebar is wide). A space's
 - Tabs you're not on are a little dimmer, as in Dia, and go white once selected.
 - Dragging gives a haptic tap on a trackpad as rows move, as you cross the separator, and as you go into or out of a folder.
 - **Cmd/Ctrl+Z** reopens what you just closed, for ten seconds: whole folders, splits and groups of tabs come back as they were, a deleted folder with its name.
-- Hold **Cmd/Ctrl** and each tab (and essential) shows its number as a small key at its end; press the number to go there. Every tab gets one: past nine, type the digits while holding the key (**1** then **2** for the twelfth). They go when you let go, or can show all the time.
 - Asleep tabs can be dimmed (tabs, essentials, and folders whose tabs are all asleep).
 - Zen's pop-up notices get a close button, so they don't have to be waited out.
 - Downloads sit next to the space name with a progress ring.
+
+</details>
+
+<details>
+<summary>Numbered tabs</summary>
+
+Hold **Cmd** (**Ctrl** on Windows and Linux) and every tab and essential shows its number; press it to jump there. They only show while you hold the key, so there's nothing extra the rest of the time. Tabs past nine are reachable too: keep holding and type the digits in turn, so **Cmd+1+2** goes to tab 1, then on to tab 12, and single digits stay instant. They can show all the time instead, or be switched off.
+
+<img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/tab-numbers.webp" alt="Holding Cmd: each essential and tab shows its number" width="300">
 
 </details>
 
