@@ -10,6 +10,8 @@ Every release of Zia, newest first. The format follows
 
 - Dropping a folder into a closed folder: it stays closed, without opening
   to show all its tabs (the dropped folder missing from them for a frame).
+- The fine edge round essentials, folders and cards shows on 1x screens
+  (most Windows ones): at half a pixel it rounded to nothing there.
 
 ## [2.72.13] — 2026-09-29
 

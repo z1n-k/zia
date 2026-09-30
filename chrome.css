@@ -125,6 +125,16 @@
   corner-shape: round !important;
 }
 
+/* The fine edge round essentials, folders and cards is half a pixel: one
+   screen pixel on a 2x display. On a 1x one (most Windows screens) half a
+   pixel rounded to nothing and the edge was gone, so there it's a whole one,
+   the same one screen pixel. */
+@media (max-resolution: 1.5dppx) {
+  :root {
+    --zia-shine-width: 1px;
+  }
+}
+
 /* Windows draws the sidebar over a flatter, darker backdrop than macOS's
    translucent one, so the same folder colours read far more vivid there;
    they get a lighter wash and hover tint. */
