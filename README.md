@@ -103,6 +103,7 @@ Short rows, one size of text, and none of Firefox's chips, row menus or extra en
 - Optionally, the bar shows just the page's title, in the site's colour, until you click it.
 - A paperclip beside site settings copies the page's link and pops into a tick.
 - The whole bar can move to the **bottom**, under the page, opening upwards, in a single page or a split.
+- Optionally, its text sits centred instead of starting from the left.
 
 </details>
 
@@ -138,7 +139,7 @@ Essentials sit as tiles, four to a row (six when the sidebar is wide). A space's
 
 - Hover boxes, icon or emoji covers, and an × to delete them.
 - They open and close as in Dia: the tabs stay where they are while the folder opens over them, and fade out in place as it closes, with a gentle spring (or without).
-- A colour of their own from the right-click menu that tints the whole folder, or, if you prefer, only when it's hovered or open.
+- A colour of their own from the right-click menu that tints the whole folder, or, if you prefer, only when it's hovered or open. Optionally, the card of tabs shown on hovering a closed folder takes its colour too.
 - An empty folder shows a dashed *Drag tabs here* slot until its first tab arrives.
 - Plain tab groups, like the ones [Advanced Tab Groups](https://github.com/Vertex-Mods/Advanced-Tab-Groups) makes, get the same treatment.
 
