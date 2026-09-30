@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Tab hover card: its buttons' icons are drawn with thinner lines, as in Dia,
+  and split is a wider box.
+
 ## [2.72.19] — 2026-09-30
 
 ### Changed

@@ -10,7 +10,7 @@
   const TAB_CARD_ACTIONS = [
     {
       name: "essential",
-      icon: "pin",
+      icon: "card-pin",
       label: "Add to Essentials",
 
       // a split goes in whole, as a split essential: Zen can't make one of
@@ -20,7 +20,7 @@
     },
     {
       name: "unpin",
-      icon: "pinned-off",
+      icon: "card-pinned-off",
       label: "Unpin",
       run: (tab) => {
         if (tab.hasAttribute("zen-essential")) {
@@ -33,7 +33,7 @@
     },
     {
       name: "split",
-      icon: "layout-columns",
+      icon: "card-split",
       label: "Add to Split",
 
       run: (tab) => {
@@ -46,7 +46,7 @@
     },
     {
       name: "copy",
-      icon: "paperclip",
+      icon: "card-paperclip",
       label: "Copy link",
       run: (tab) => copyLink(tab),
       hidden: (tab) => tabCardKind(tab) !== "web",
