@@ -214,6 +214,13 @@
 
   function fillFolderCard(card, folder) {
     card.ziaFolder = folder;
+    // (its colour, for the card to take when that's on: chrome.css)
+    const color = folder.getAttribute("zia-folder-color");
+    if (color) {
+      card.setAttribute("zia-folder-color", color);
+    } else {
+      card.removeAttribute("zia-folder-color");
+    }
     const rows = [];
     for (const tab of tabsInFolder(folder)) {
       const row = document.createElementNS(XHTML_NS, "div");

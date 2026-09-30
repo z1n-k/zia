@@ -341,6 +341,7 @@ The first folder takes a little while as the model downloads and the icon names 
 | **Folders** | |
 | Folders open and close with a gentle spring | on |
 | Coloured folders only show their colour when hovered or open | off |
+| A coloured folder's card (its tabs, shown on hover) takes the folder's colour | off |
 | **Loading bar** | |
 | Use Zen's accent colour for the loading bar (off: Zia blue) | off |
 | **Picture-in-picture** | |

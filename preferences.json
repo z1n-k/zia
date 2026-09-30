@@ -226,6 +226,12 @@
     "defaultValue": false
   },
   {
+    "type": "checkbox",
+    "label": "A coloured folder's card (its tabs, shown on hover) takes the folder's colour",
+    "property": "zia.folders.tint-card",
+    "defaultValue": false
+  },
+  {
     "type": "separator",
     "label": "Loading bar"
   },

@@ -2797,6 +2797,24 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
     backface-visibility: hidden !important;
   }
 }
+
+/* Optional: a coloured folder's card takes the folder's colour, as its row
+   in the sidebar does (the same wash, over the card's own background) */
+@media -moz-pref("zia.folders.tint-card") {
+  #zia-folder-card {
+    &[zia-folder-color="green"] { --zia-folder-swatch: var(--zia-fc-green); }
+    &[zia-folder-color="blue"] { --zia-folder-swatch: var(--zia-fc-blue); }
+    &[zia-folder-color="purple"] { --zia-folder-swatch: var(--zia-fc-purple); }
+    &[zia-folder-color="amber"] { --zia-folder-swatch: var(--zia-fc-amber); }
+    &[zia-folder-color="pink"] { --zia-folder-swatch: var(--zia-fc-pink); }
+    &[zia-folder-color="red"] { --zia-folder-swatch: var(--zia-fc-red); }
+    &[zia-folder-color="orange"] { --zia-folder-swatch: var(--zia-fc-orange); }
+
+    &[zia-folder-color]:not([zia-folder-color="white"]) {
+      background-color: color-mix(in srgb, var(--zia-folder-swatch) var(--zia-folder-wash), var(--zia-tab-card-bg));
+    }
+  }
+}
 #urlbar:not([breakout-extend]) .urlbar-input {
   color: rgb(255, 255, 255) !important;
 }

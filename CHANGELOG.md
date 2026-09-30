@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Setting: **A coloured folder's card takes the folder's colour** (off by
+  default), the card of tabs shown on hovering a closed folder.
+
 ## [2.72.15] — 2026-09-30
 
 ### Added
