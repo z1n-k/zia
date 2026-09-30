@@ -14155,6 +14155,9 @@
     }
     const overlay = document.createElementNS(HTML_NS, "div");
     overlay.id = "zia-welcome";
+    // In the top layer, as pop-ups are: above the toolbar and address bar,
+    // which sit over anything else in the window
+    overlay.setAttribute("popover", "manual");
     const frame = document.createElementNS(HTML_NS, "iframe");
     frame.setAttribute("src", `${WELCOME_URL}#${mode === "update" ? `update-${WELCOME_VERSION}` : mode}`);
     frame.setAttribute("title", "Welcome to Zia");
@@ -14165,7 +14168,12 @@
         return;
       }
       overlay.setAttribute("closing", "");
-      setTimeout(() => overlay.remove(), 260);
+      setTimeout(() => {
+        try {
+          overlay.hidePopover?.();
+        } catch (err) {}
+        overlay.remove();
+      }, 260);
       gBrowser.selectedBrowser?.focus();
     };
     frame.addEventListener("load", () => {
@@ -14188,6 +14196,11 @@
       }
     });
     document.documentElement.appendChild(overlay);
+    try {
+      overlay.showPopover();
+    } catch (err) {
+      noteError("welcome: top layer", err);
+    }
     requestAnimationFrame(() => overlay.setAttribute("shown", ""));
   }
 

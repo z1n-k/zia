@@ -33,8 +33,8 @@
       <div class="bar"><span class="q"></span><span class="caret"></span></div></div>`,
     multiview: () => `<div class="stage multiview"><div class="w-side">${rows(4).replace(/<span class="w-key">\d<\/span>/g, "")}</div>
       <div class="w-page"><div class="v" style="--c:#2c3542"></div><div class="v" style="--c:#35353a"></div><div class="v" style="--c:#2b2b30"></div><div class="v" style="--c:#3a3a40"></div></div></div>`,
-    pdf: () => `<div class="stage pdf"><div class="w-side">${rows(4).replace(/<span class="w-key">\d<\/span>/g, "")}</div><div class="w-page"></div>
-      <div class="tb"><i></i><i></i><i></i><i></i></div><div class="thumbs"><i></i><i></i><i></i></div><div class="sheet"><div class="lines"></div></div></div>`,
+    pdf: () => `<div class="stage pdf"><div class="w-side">${rows(4).replace(/<span class="w-key">\d<\/span>/g, "")}</div>
+      <div class="pv"><div class="tb"><i></i><i></i><i></i><i></i></div><div class="body"><div class="thumbs"><i class="on"></i><i></i><i></i></div><div class="sheet"><div class="lines"><b></b><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div></div></div>`,
     icons: () => `<div class="stage icons"><div class="folders"><div class="fr" data-icon="briefcase"><span class="fi"><span class="ti old"><svg viewBox="0 0 24 24"><path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2"/></svg></span><span class="ti new"><svg viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2l0 -9"/><path d="M8 7v-2a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v2"/><path d="M12 12l0 .01"/><path d="M3 13a20 20 0 0 0 18 0"/></svg></span></span><span class="nm">Work</span></div><div class="fr" data-icon="plane"><span class="fi"><span class="ti old"><svg viewBox="0 0 24 24"><path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2"/></svg></span><span class="ti new"><svg viewBox="0 0 24 24"><path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2 -7h-4l-2 2h-3l2 -4l-2 -4h3l2 2h4l-2 -7h3l4 7"/></svg></span></span><span class="nm">Travel</span></div><div class="fr" data-icon="music"><span class="fi"><span class="ti old"><svg viewBox="0 0 24 24"><path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2"/></svg></span><span class="ti new"><svg viewBox="0 0 24 24"><path d="M3 17a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M13 17a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M9 17v-13h10v13"/><path d="M9 8h10"/></svg></span></span><span class="nm">Music</span></div><div class="fr" data-icon="wallet"><span class="fi"><span class="ti old"><svg viewBox="0 0 24 24"><path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2"/></svg></span><span class="ti new"><svg viewBox="0 0 24 24"><path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12"/><path d="M20 12v4h-4a2 2 0 0 1 0 -4h4"/></svg></span></span><span class="nm">Finance</span></div></div><div class="search"><span class="q"></span><span class="caret"></span></div><div class="ig"><i data-icon="home"><span class="ti"><svg viewBox="0 0 24 24"><path d="M5 12l-2 0l9 -9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"/><path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/></svg></span></i><i data-icon="briefcase"><span class="ti"><svg viewBox="0 0 24 24"><path d="M3 9a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2l0 -9"/><path d="M8 7v-2a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v2"/><path d="M12 12l0 .01"/><path d="M3 13a20 20 0 0 0 18 0"/></svg></span></i><i data-icon="code"><span class="ti"><svg viewBox="0 0 24 24"><path d="M7 8l-4 4l4 4"/><path d="M17 8l4 4l-4 4"/><path d="M14 4l-4 16"/></svg></span></i><i data-icon="camera"><span class="ti"><svg viewBox="0 0 24 24"><path d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2"/><path d="M9 13a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/></svg></span></i><i data-icon="plane"><span class="ti"><svg viewBox="0 0 24 24"><path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2 -7h-4l-2 2h-3l2 -4l-2 -4h3l2 2h4l-2 -7h3l4 7"/></svg></span></i><i data-icon="book"><span class="ti"><svg viewBox="0 0 24 24"><path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0"/><path d="M3 6l0 13"/><path d="M12 6l0 13"/><path d="M21 6l0 13"/></svg></span></i><i data-icon="shopping-cart"><span class="ti"><svg viewBox="0 0 24 24"><path d="M4 19a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M15 19a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 17h-11v-14h-2"/><path d="M6 5l14 1l-1 7h-13"/></svg></span></i><i data-icon="heart"><span class="ti"><svg viewBox="0 0 24 24"><path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"/></svg></span></i><i data-icon="music"><span class="ti"><svg viewBox="0 0 24 24"><path d="M3 17a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M13 17a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M9 17v-13h10v13"/><path d="M9 8h10"/></svg></span></i><i data-icon="star"><span class="ti"><svg viewBox="0 0 24 24"><path d="M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873l-6.158 -3.245"/></svg></span></i><i data-icon="cloud"><span class="ti"><svg viewBox="0 0 24 24"><path d="M6.657 18c-2.572 0 -4.657 -2.007 -4.657 -4.483c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773c1.88 -.572 3.956 -.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99c1.913 0 3.464 1.56 3.464 3.486c0 1.927 -1.551 3.487 -3.465 3.487h-11.878"/></svg></span></i><i data-icon="device-gamepad-2"><span class="ti"><svg viewBox="0 0 24 24"><path d="M12 5h3.5a5 5 0 0 1 0 10h-5.5l-4.015 4.227a2.3 2.3 0 0 1 -3.923 -2.035l1.634 -8.173a5 5 0 0 1 4.904 -4.019h3.4"/><path d="M14 15l4.07 4.284a2.3 2.3 0 0 0 3.925 -2.023l-1.6 -8.232"/><path d="M8 9v2"/><path d="M7 10h2"/><path d="M14 10h2"/></svg></span></i><i data-icon="palette"><span class="ti"><svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 0 1 0 -18c4.97 0 9 3.582 9 8c0 1.06 -.474 2.078 -1.318 2.828c-.844 .75 -1.989 1.172 -3.182 1.172h-2.5a2 2 0 0 0 -1 3.75a1.3 1.3 0 0 1 -1 2.25"/><path d="M7.5 10.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M11.5 7.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M15.5 10.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/></svg></span></i><i data-icon="wallet"><span class="ti"><svg viewBox="0 0 24 24"><path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a2 2 0 0 0 0 4h12a1 1 0 0 1 1 1v3m0 4v3a1 1 0 0 1 -1 1h-12a2 2 0 0 1 -2 -2v-12"/><path d="M20 12v4h-4a2 2 0 0 1 0 -4h4"/></svg></span></i><i data-icon="chart-bar"><span class="ti"><svg viewBox="0 0 24 24"><path d="M3 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -6"/><path d="M15 9a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -10"/><path d="M9 5a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -14"/><path d="M4 20h14"/></svg></span></i><i data-icon="coffee"><span class="ti"><svg viewBox="0 0 24 24"><path d="M3 14c.83 .642 2.077 1.017 3.5 1c1.423 .017 2.67 -.358 3.5 -1c.83 -.642 2.077 -1.017 3.5 -1c1.423 -.017 2.67 .358 3.5 1"/><path d="M8 3a2.4 2.4 0 0 0 -1 2a2.4 2.4 0 0 0 1 2"/><path d="M12 3a2.4 2.4 0 0 0 -1 2a2.4 2.4 0 0 0 1 2"/><path d="M3 10h14v5a6 6 0 0 1 -6 6h-2a6 6 0 0 1 -6 -6v-5"/><path d="M16.746 16.726a3 3 0 1 0 .252 -5.555"/></svg></span></i><i data-icon="map-pin"><span class="ti"><svg viewBox="0 0 24 24"><path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/><path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0"/></svg></span></i><i data-icon="school"><span class="ti"><svg viewBox="0 0 24 24"><path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"/><path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4"/></svg></span></i></div></div>`,
   };
 
@@ -207,6 +207,23 @@
     }
   }
 
+  async function pdfLoop(stage) {
+    const thumbs = [...stage.querySelectorAll(".thumbs i")];
+    const lines = stage.querySelector(".lines");
+    let page = 0;
+    while (stage.isConnected) {
+      await wait(1900);
+      page = (page + 1) % thumbs.length;
+      thumbs.forEach((t, i) => t.classList.toggle("on", i === page));
+      lines.style.transform = `translateY(${-page * 12}cqw)`;
+    }
+  }
+
+  function setHTML(el, html) {
+    const doc = new DOMParser().parseFromString(`<body>${html}</body>`, "text/html");
+    el.replaceChildren(...[...doc.body.childNodes].map((n) => document.adoptNode(n)));
+  }
+
   function trimKeys(root) {
     root.querySelectorAll("kbd, .w-key").forEach((k) => {
       if (!k.firstElementChild) {
@@ -224,6 +241,7 @@
     root.querySelectorAll(".stage.icons").forEach(iconsLoop);
     root.querySelectorAll(".stage.split").forEach(splitLoop);
     root.querySelectorAll(".stage.star").forEach(starLoop);
+    root.querySelectorAll(".stage.pdf").forEach(pdfLoop);
   }
 
   // #install on a first install; #update-2.76.0 after a release that asks
@@ -241,7 +259,7 @@
   function renderTour() {
     const tour = TOURS[mode];
     const el = document.getElementById("tour");
-    el.innerHTML = `
+    setHTML(el, `
       <div class="track">${tour.list.map((key) => {
         const f = FEATURES[key];
         return `<section class="slide"><div class="visual">${f.v()}</div>
@@ -250,7 +268,7 @@
       <div class="foot">
         <div class="count"><span class="at">1</span> / ${tour.list.length}</div>
         <div class="btns"><button class="btn back">Back</button><button class="btn gh" hidden><svg viewBox="0 0 24 24"><path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"/></svg>Star on GitHub</button><button class="btn primary next">Next</button></div>
-      </div>`;
+      </div>`);
     el.style.animation = "none"; void el.offsetWidth; el.style.animation = "";
     const track = el.querySelector(".track");
     const count = tour.list.length;
@@ -270,7 +288,7 @@
 
       // the picture starts from the beginning each time you land on it
       const visual = slides[at].querySelector(".visual");
-      visual.innerHTML = FEATURES[tour.list[at]].v();
+      setHTML(visual, FEATURES[tour.list[at]].v());
       startWires(visual);
       atEl.textContent = at + 1;
       back.hidden = at === 0;

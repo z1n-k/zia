@@ -5,8 +5,8 @@
   --dim: rgba(255, 255, 255, 0.56);
   --blue: #5ab9f5;
   --edge: linear-gradient(to bottom right, rgba(255,255,255,.28), rgba(255,255,255,.12) 30%, rgba(255,255,255,.08) 50%, rgba(255,255,255,.12) 70%, rgba(255,255,255,.24));
-  --ease: cubic-bezier(0.2, 0.9, 0.3, 1);
-  --spring: cubic-bezier(0.34, 1.4, 0.5, 1);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --spring: cubic-bezier(0.22, 1.12, 0.36, 1);
   --img: "https://raw.githubusercontent.com/z1n-k/zia/readme-images/";
   color-scheme: dark;
 }
@@ -48,12 +48,7 @@ html, body { height: 100%; background: transparent !important; overflow: hidden;
 .slide.before { opacity: 0; transform: translateY(-9%) translateZ(-120px) rotateX(16deg) scale(.9); filter: blur(8px); }
 .slide.cur { opacity: 1; transform: none; filter: none; }
 
-/* the deck's edge: two cards peeking out underneath */
 .deck { position: relative; width: min(520px, 100%); }
-.deck .sheet { position: absolute; left: 50%; bottom: 0; height: 40px; border-radius: 18px; translate: -50% 0;
-  background: #19191b; box-shadow: inset 0 0 0 .5px rgba(255,255,255,.09), 0 10px 30px rgba(0,0,0,.35); }
-.deck .sheet.s1 { width: 92%; transform: translateY(9px); }
-.deck .sheet.s2 { width: 84%; transform: translateY(17px); opacity: .7; }
 .deck .tour { position: relative; }
 .visual { margin: 10px 10px 0; border-radius: 12px; overflow: hidden; }
 .copy { padding: 14px 20px 2px; min-height: 104px; box-sizing: border-box; }
@@ -226,17 +221,20 @@ kbd + kbd { margin-left: .22em; }
 @keyframes v4 { 0%, 50% { opacity: 0; transform: scale(.9); } 57%, 90% { opacity: 1; transform: none; } 100% { opacity: 0; } }
 
 /* the PDF viewer */
-.pdf .tb { left: 44cqw; right: 6cqw; top: 8cqw; height: 5cqw; border-radius: 2cqw 2cqw 0 0; background: rgba(255,255,255,.08); display: flex; align-items: center; gap: 1.6cqw; padding: 0 2cqw; }
-.pdf .tb > * { position: static; width: 3cqw; height: 1.8cqw; border-radius: .7cqw; background: rgba(255,255,255,.3); }
-.pdf .tb i:nth-child(3) { margin-left: auto; width: 8cqw; }
-.pdf .thumbs { left: 45.5cqw; top: 15cqw; width: 7cqw; display: grid; gap: 1.4cqw; }
-.pdf .thumbs i { position: relative; height: 8.5cqw; border-radius: .6cqw; background: rgba(255,255,255,.7); box-shadow: 0 0 0 .3cqw transparent; animation: th 6s steps(1) infinite; }
-.pdf .thumbs i:nth-child(2) { animation-delay: -4s; } .pdf .thumbs i:nth-child(3) { animation-delay: -2s; }
-.pdf .sheet { left: 58cqw; right: 12cqw; top: 15cqw; bottom: 10cqw; border-radius: .8cqw; background: #f4f4f5; overflow: hidden; }
-.pdf .lines { left: 4cqw; right: 4cqw; top: 4cqw; height: 60cqw; background: repeating-linear-gradient(rgba(0,0,0,.28) 0 .9cqw, transparent .9cqw 2.6cqw); animation: scroll 6s steps(1) infinite; }
-.pdf .lines::before { content: ""; position: absolute; left: 0; top: -2cqw; width: 50%; height: 1.6cqw; background: rgba(0,0,0,.6); border-radius: .5cqw; }
-@keyframes th { 0%, 33% { box-shadow: 0 0 0 .4cqw var(--blue); } 33.4%, 100% { box-shadow: 0 0 0 .4cqw transparent; } }
-@keyframes scroll { 0%, 33% { transform: translateY(0); } 33.4%, 66% { transform: translateY(-8cqw); } 66.4%, 100% { transform: translateY(-16cqw); } }
+.pdf .pv { left: 44cqw; top: 8cqw; right: 6cqw; bottom: 8cqw; border-radius: 2cqw; background: rgba(255,255,255,.05); overflow: hidden; display: flex; flex-direction: column; }
+.pdf .pv * { position: relative; }
+.pdf .pv .tb { flex: none; height: 5cqw; display: flex; align-items: center; gap: 1.6cqw; padding: 0 2cqw; background: rgba(255,255,255,.06); }
+.pdf .pv .tb i { width: 3cqw; height: 1.8cqw; border-radius: .7cqw; background: rgba(255,255,255,.3); }
+.pdf .pv .tb i:nth-child(3) { margin-left: auto; width: 8cqw; }
+.pdf .pv .body { flex: 1; min-height: 0; display: flex; gap: 2.4cqw; padding: 2cqw; }
+.pdf .pv .thumbs { flex: none; width: 6.5cqw; display: flex; flex-direction: column; gap: 1.4cqw; }
+.pdf .pv .thumbs i { height: 8.4cqw; border-radius: .6cqw; background: rgba(255,255,255,.62); box-shadow: 0 0 0 .3cqw transparent; transition: box-shadow .3s var(--ease); }
+.pdf .pv .thumbs i.on { box-shadow: 0 0 0 .3cqw var(--blue); }
+.pdf .pv .sheet { flex: 1; min-width: 0; border-radius: .8cqw; background: #eeeef0; overflow: hidden; }
+.pdf .pv .lines { margin: 3cqw 3cqw 0; transition: transform .7s var(--ease); }
+.pdf .pv .lines b { display: block; height: 2cqw; width: 55%; margin-bottom: 2cqw; border-radius: .5cqw; background: rgba(0,0,0,.6); }
+.pdf .pv .lines i { display: block; height: .9cqw; margin-bottom: 1.7cqw; border-radius: .4cqw; background: rgba(0,0,0,.24); }
+.pdf .pv .lines i:nth-of-type(5n) { width: 70%; }
 
 /* icons: real ones from Zia's pack */
 .icons .ti { position: relative; display: block; width: 100%; height: 100%; }
@@ -353,3 +351,16 @@ kbd > span, .w-key > span { position: static; display: block; text-box: trim-bot
 
 /* only the step you're on moves */
 .slide:not(.cur) .stage, .slide:not(.cur) .stage * { animation-play-state: paused !important; }
+
+/* arriving on a step: its rows and page settle in, a beat apart */
+.slide.cur .w-side .w-row, .slide.cur .folders .fr { animation: rowin .7s var(--ease) both; }
+.slide.cur .w-side .w-row:nth-child(2), .slide.cur .folders .fr:nth-child(2) { animation-delay: .05s; }
+.slide.cur .w-side .w-row:nth-child(3), .slide.cur .folders .fr:nth-child(3) { animation-delay: .1s; }
+.slide.cur .w-side .w-row:nth-child(4), .slide.cur .folders .fr:nth-child(4) { animation-delay: .15s; }
+.slide.cur .w-side .w-row:nth-child(5) { animation-delay: .2s; }
+.slide.cur :is(.w-page, .pv, .ig, .search) { animation: pagein .8s .08s var(--ease) both; }
+@keyframes rowin { from { opacity: 0; translate: -1.6cqw 0; } }
+@keyframes pagein { from { opacity: 0; translate: 0 1.2cqw; } }
+
+/* hairlines: a faint light along the top edge of each surface */
+.w-row, .w-page, .pv, .search { box-shadow: inset 0 .18cqw 0 rgba(255,255,255,.045); }

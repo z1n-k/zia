@@ -6,7 +6,21 @@
   position: fixed;
   inset: 0;
   z-index: 2147483000;
+  /* a pop-up's own box and frame undone: the whole window */
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  color-scheme: normal;
   background: rgba(0, 0, 0, 0.62);
+
+  &::backdrop {
+    background: transparent;
+  }
   opacity: 0;
   transition: opacity 0.26s cubic-bezier(0.2, 0.9, 0.3, 1);
 
