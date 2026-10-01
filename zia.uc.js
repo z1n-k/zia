@@ -14865,15 +14865,41 @@
     // no wider than Zen lets the tab sidebar be (dragging its edge stops
     // there too), and following that setting if it's changed
     const MAX_PREF = "zen.view.sidebar-expanded.max-width";
+    // the tab sidebar's own limit as Zen sets it on it, else its setting
+    const maxWidth = () => {
+      const toolbox = parseFloat(gNavToolbox?.style.maxWidth || getComputedStyle(gNavToolbox).maxWidth);
+      if (toolbox > 0) {
+        return toolbox;
+      }
+      try {
+        return Services.prefs.getIntPref(MAX_PREF);
+      } catch (err) {
+        return 300;
+      }
+    };
+    let clamping = false;
     const cap = () => {
-      const max = Services.prefs.getIntPref(MAX_PREF, 0);
-      if (max > 0 && Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true)) {
-        box.style.setProperty("max-width", `${max}px`, "important");
-      } else {
+      if (clamping) {
+        return;
+      }
+      const beside = Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true);
+      const max = maxWidth();
+      if (!beside || !(max > 0)) {
         box.style.removeProperty("max-width");
+        return;
+      }
+      box.style.setProperty("max-width", `${max}px`, "important");
+      // dragged past it anyway: back to the limit, as the tab sidebar stops
+      if (box.getBoundingClientRect().width > max + 0.5) {
+        clamping = true;
+        box.style.width = `${max}px`;
+        box.setAttribute("width", String(max));
+        clamping = false;
       }
     };
     cap();
+    new MutationObserver(cap).observe(box, { attributes: true, attributeFilter: ["width", "style"] });
+    new MutationObserver(cap).observe(gNavToolbox, { attributes: true, attributeFilter: ["style"] });
     Services.prefs.addObserver(MAX_PREF, cap);
     Services.prefs.addObserver(SIDEBAR_BESIDE_PREF, cap);
     window.addEventListener("unload", () => {

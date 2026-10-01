@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- The Bookmarks, History and Synced Tabs panel can no longer be dragged
+  wider than the tab sidebar can.
+
 ## [2.78.0] — 2026-10-01
 
 ### Added
