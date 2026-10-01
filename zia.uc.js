@@ -14922,22 +14922,42 @@
     new MutationObserver(place).observe(box, { attributes: true, attributeFilter: ["sidebar-positionend"] });
 
     // It slides in from the window's edge as it opens, the page giving way
-    // to it, and back out as it closes, as the tab sidebar does: its outer
-    // margin runs from minus its width to nothing
-    const SLIDE = { duration: 180, easing: "cubic-bezier(0.25, 1, 0.5, 1)" };
+    // to it, and back out as it closes: exactly as Zen slides the tab
+    // sidebar (its outer margin, from minus its width to nothing, with
+    // Zen's own spring: no bounce, a tenth of a second)
     const beside = () => Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true) && !matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const frames = () => {
-      const side = box.hasAttribute("sidebar-positionend") ? "marginInlineEnd" : "marginInlineStart";
-      const width = box.getBoundingClientRect().width;
-      return [
-        { [side]: `${-width}px`, opacity: 0 },
-        { [side]: "0px", opacity: 1 },
-      ];
+    const slide = (opening) => {
+      const side = box.hasAttribute("sidebar-positionend") ? "marginRight" : "marginLeft";
+      const hidden = `-${box.getBoundingClientRect().width}px`;
+      const motion = window.gZenUIManager?.motion;
+      const done = () => box.style.removeProperty(side === "marginRight" ? "margin-right" : "margin-left");
+      if (motion?.animate) {
+        box.style[side] = opening ? hidden : "0px";
+        return Promise.resolve(
+          motion.animate(box, { [side]: opening ? [hidden, "0px"] : ["0px", hidden] }, {
+            ease: opening ? "easeOut" : "easeIn",
+            type: "spring",
+            bounce: 0,
+            duration: 0.1,
+          })
+        ).then(() => {
+          if (opening) {
+            done();
+          }
+          return done;
+        });
+      }
+      const run = box.animate([{ [side]: opening ? hidden : "0px" }, { [side]: opening ? "0px" : hidden }], {
+        duration: 100,
+        easing: opening ? "ease-out" : "ease-in",
+        fill: "forwards",
+      });
+      return run.finished.catch(() => {}).then(() => () => run.cancel());
     };
     let wasHidden = box.hidden;
     new MutationObserver(() => {
       if (wasHidden && !box.hidden && beside()) {
-        box.animate(frames(), SLIDE);
+        slide(true).catch((err) => noteError("sidebar panels: slide in", err));
       }
       wasHidden = box.hidden;
     }).observe(box, { attributes: true, attributeFilter: ["hidden"] });
@@ -14952,15 +14972,17 @@
           return hide.apply(this, args);
         }
         sliding = true;
-        const out = box.animate(frames().reverse(), { ...SLIDE, fill: "forwards" });
-        out.finished
-          .catch(() => {})
-          .then(() => {
+        slide(false)
+          .catch((err) => {
+            noteError("sidebar panels: slide out", err);
+            return () => {};
+          })
+          .then((undo) => {
             sliding = false;
             try {
               hide.apply(this, args);
             } finally {
-              out.cancel();
+              undo?.();
             }
           });
         return undefined;
