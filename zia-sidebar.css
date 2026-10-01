@@ -49,9 +49,9 @@ body {
   --focus-outline: none;
 }
 
-/* focused: a hairline, not Firefox's thick ring */
+/* focused: a touch lighter (its hairline is set inside the field, by
+   zia.uc.js) */
 :is(#search-box, .tabsFilter):focus-within {
-  --input-text-border: 1px solid rgba(255, 255, 255, 0.2);
   --input-text-background-color: rgba(255, 255, 255, 0.08);
 }
 

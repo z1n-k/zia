@@ -14580,6 +14580,7 @@
       }
     }
     roundTreeRows(doc);
+    styleSearchField(doc);
     doc.defaultView.requestAnimationFrame(() =>
       doc.defaultView.requestAnimationFrame(() => {
         levelTitle();
@@ -14631,6 +14632,53 @@
     const next = padding + off;
     if (next >= 0 && next < 40) {
       document.documentElement.style.setProperty("--zia-panel-title-top", `${next}px`);
+    }
+  }
+
+  // The search field draws itself inside a component of its own, which a
+  // page's styles don't reach: Zia hands it its own few rules there. A
+  // faint hairline when it's focused, inside it so nothing is cut off at
+  // the panel's edge, in place of Firefox's thick ring; Zia's solid icon.
+  const SEARCH_FIELD_RULES = `
+    #input {
+      border: 1px solid transparent !important;
+      outline: none !important;
+      box-shadow: none !important;
+      -moz-context-properties: fill, fill-opacity;
+      fill: rgb(255, 255, 255) !important;
+      fill-opacity: 0.55;
+    }
+    #input.with-icon {
+      background-image: url("resource://zia-tabler/filled/search.svg") !important;
+    }
+    #input:focus,
+    #input:focus-visible {
+      outline: none !important;
+      border-color: rgba(255, 255, 255, 0.14) !important;
+    }
+  `;
+
+  function styleSearchField(doc) {
+    const win = doc.defaultView;
+    for (const field of doc.querySelectorAll("moz-input-search")) {
+      const apply = () => {
+        const root = field.shadowRoot;
+        if (!root || root.ziaStyled) {
+          return;
+        }
+        try {
+          const sheet = new win.CSSStyleSheet();
+          sheet.replaceSync(SEARCH_FIELD_RULES);
+          root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
+          root.ziaStyled = true;
+        } catch (err) {
+          noteError("sidebar panels: search field", err);
+        }
+      };
+      apply();
+      // drawn a moment later, the first time
+      field.updateComplete?.then(apply, () => {});
+      win.setTimeout(apply, 300);
     }
   }
 
