@@ -150,7 +150,13 @@ body {
 /* text as the tabs': a little dim, and white on the selected row */
 .sidebar-placesTreechildren::-moz-tree-cell-text {
   color: var(--zia-row-text, rgba(255, 255, 255, 0.8)) !important;
-  margin-inline-start: 0 !important;
+  margin-inline: 0 !important;
+}
+
+/* a long title fades out before the row's end, as a tab's does, rather
+   than running to the edge in "…" (on the rows only, not the scrollbar) */
+.sidebar-placesTreechildren {
+  mask-image: linear-gradient(to left, transparent var(--zia-row-pad, 10px), #000 calc(var(--zia-row-pad, 10px) + 2em)) !important;
 }
 
 .sidebar-placesTreechildren::-moz-tree-cell-text(selected),
@@ -214,6 +220,8 @@ body {
 .item-title {
   margin: 0 !important;
   line-height: normal !important;
+  text-overflow: clip !important;
+  mask-image: linear-gradient(to left, transparent, #000 2em) !important;
 }
 
 .item:not(.selected) > .item-title-container:hover {
