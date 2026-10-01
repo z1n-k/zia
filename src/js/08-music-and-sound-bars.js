@@ -284,8 +284,15 @@
     [5.25, 5.5],
   ];
 
+  // The bars stand still when the system asks for less motion (macOS's
+  // Reduce motion, Windows' Animation effects off, GNOME's Reduce
+  // animation), unless the "always move" option is on
+  const SOUND_BARS_ALWAYS_PREF = "zia.sound-bars.always-move";
+  const soundBarsAlwaysMove = () => Services.prefs.getBoolPref(SOUND_BARS_ALWAYS_PREF, false);
+
   function soundBarImages(colors) {
-    const key = colors ? colors.join("|") : "white";
+    const always = soundBarsAlwaysMove();
+    const key = `${colors ? colors.join("|") : "white"}|${always}`;
     let images = soundBarCache.get(key);
     if (images) {
       return images;
@@ -300,14 +307,16 @@
       moving.map(([d], i) => `.b${i}{animation-duration:.26s,${d}s;animation-delay:0s,${(0.26 + i * 0.05).toFixed(2)}s}`).join("") +
       `@keyframes grow{from{height:2px;y:7px}to{height:11px;y:2.5px}}` +
       `@keyframes z{from{transform:scaleY(.22)}to{transform:scaleY(1)}}` +
-      `@media (prefers-reduced-motion:reduce){rect{animation:none;transform:scaleY(.6)}}</style>` +
+      (always ? "" : `@media (prefers-reduced-motion:reduce){rect{animation:none;transform:scaleY(.6)}}`) +
+      `</style>` +
       `<g fill="url(#g)">` +
       BAR_X.map((x, i) => `<rect class="b${i}" x="${x}" y="2.5" width="${BAR_W}" height="11" rx="1"/>`).join("") +
       `</g></svg>`;
     const dots =
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">${gradient}` +
       `<style>rect{animation:shrink .28s cubic-bezier(.4,0,.2,1) forwards}@keyframes shrink{to{height:${BAR_W}px;y:${8 - BAR_W / 2}px}}` +
-      `@media (prefers-reduced-motion:reduce){rect{animation-duration:1ms}}</style>` +
+      (always ? "" : `@media (prefers-reduced-motion:reduce){rect{animation-duration:1ms}}`) +
+      `</style>` +
       `<g fill="url(#g)">` +
       BAR_X.map((x, i) => `<rect x="${x}" y="${BAR_REST[i][0]}" width="${BAR_W}" height="${BAR_REST[i][1]}" rx="1"/>`).join("") +
       `</g></svg>`;
@@ -354,7 +363,10 @@
     }).observe(element, { attributes: true, attributeFilter: ["class", "muted"] });
   }
 
+  const soundBarCards = new Set();
+
   function paintSoundBars(card, colors) {
+    soundBarCards.add(card);
     card.__ziaColors = colors;
     applyCardSoundBars(card);
     watchCardSoundState(card);
@@ -403,7 +415,7 @@
     const essential = tab.hasAttribute("zen-essential");
     const tinted = !essential && Services.prefs.getBoolPref("zia.tabs.favicon-glow", false);
     const colors = tinted ? tabMediaColors(tab) || tabFallbackColors(tab) : null;
-    const key = `${colors ? colors.join("|") : "white"}|${essential}|${tab.hasAttribute("soundplaying")}|${tab.hasAttribute("muted")}`;
+    const key = `${colors ? colors.join("|") : "white"}|${essential}|${tab.hasAttribute("soundplaying")}|${tab.hasAttribute("muted")}|${soundBarsAlwaysMove()}`;
     if (tab.__ziaSoundKey === key) {
       return;
     }
@@ -445,6 +457,25 @@
   }
 
   function watchTabSoundBars() {
+    // the "always move" option changed: every playing tab and player redrawn
+    const redrawAll = () => {
+      for (const tab of gBrowser.tabs) {
+        paintTabSoundBars(tab);
+      }
+      for (const card of soundBarCards) {
+        if (!card.isConnected) {
+          soundBarCards.delete(card);
+          continue;
+        }
+        try {
+          applyCardSoundBars(card);
+        } catch (err) {
+          noteError("music and sound bars: redraw", err);
+        }
+      }
+    };
+    Services.prefs.addObserver(SOUND_BARS_ALWAYS_PREF, redrawAll);
+    window.addEventListener("unload", () => Services.prefs.removeObserver(SOUND_BARS_ALWAYS_PREF, redrawAll));
     gBrowser.tabContainer.addEventListener("TabAttrModified", (event) => {
       const changed = event.detail?.changed || [];
       if (changed.includes("soundplaying") || changed.includes("muted")) {

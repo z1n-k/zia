@@ -339,6 +339,7 @@ The first folder takes a little while as the model downloads and the icon names 
 | Name new folders and choose their icons with a local model ([see above](#folder-names-and-icons)) | off |
 | **Tabs** | |
 | Sound bars on playing tabs (off: Zen's speaker) | on |
+| Sound bars always move, even when your system asks for less motion | off |
 | Tint the selected tab's glow and the sound bars with the site's colours | off |
 | Essentials are Zia's narrower tiles (off: Zen's own widths) | on |
 | The last essential stretches across the rest of its row | off |
@@ -393,6 +394,20 @@ Only at the default level: if you've set either yourself in `about:config`, your
 
 - Light mode and Zen's layouts other than **Sidebar and Top Toolbar** are less polished.
 - Split essentials are experimental: Zen doesn't support them itself yet, so Zia works around it.
+- If your system is set to reduce motion, Zia keeps still too: the sound bars stop moving, and slides, springs and other animations are skipped or cut short. See below to turn it back on for Zen alone.
+
+<details>
+<summary>Animations or sound bars not moving? Reduced motion</summary>
+
+Zia follows your system's reduced-motion setting, which is often switched on for speed rather than comfort:
+
+- **macOS:** System Settings → Accessibility → Display → **Reduce motion**.
+- **Windows 11:** Settings → Accessibility → Visual effects → **Animation effects** (off means reduced). On Windows 10: Settings → Ease of Access → Display → **Show animations in Windows**.
+- **Linux (GNOME):** Settings → Accessibility → **Reduce Animation**, or `gsettings set org.gnome.desktop.interface enable-animations true` to turn animations back on. Other desktops: the "animations" setting in their appearance or accessibility settings, which most pass on to apps.
+
+To keep your system as it is but let Zen animate, open `about:config`, add a **Number** setting named `ui.prefersReducedMotion` and set it to `0` (or `1` to always reduce motion in Zen). Restart Zen. Just the sound bars: turn on **Sound bars always move** in Zia's settings.
+
+</details>
 
 <details>
 <summary>For developers: how the source is laid out</summary>

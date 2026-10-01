@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- An option to keep the sound bars moving even when the system asks for
+  less motion (macOS's Reduce motion, Windows' Animation effects off), off
+  by default. The README explains reduced motion on each system, and how
+  to let Zen animate without changing the system's setting.
+
 ## [2.79.1] — 2026-10-01
 
 ### Fixed

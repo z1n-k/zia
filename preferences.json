@@ -127,6 +127,12 @@
   },
   {
     "type": "checkbox",
+    "label": "Sound bars always move, even when your system asks for less motion",
+    "property": "zia.sound-bars.always-move",
+    "defaultValue": false
+  },
+  {
+    "type": "checkbox",
     "label": "Tint the selected tab's glow and the sound bars with the site's colours",
     "property": "zia.tabs.favicon-glow",
     "defaultValue": false
