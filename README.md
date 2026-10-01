@@ -131,7 +131,6 @@ Essentials sit as tiles, four to a row (six when the sidebar is wide). A space's
 - Asleep tabs can be dimmed (tabs, essentials, and folders whose tabs are all asleep).
 - Zen's pop-up notices get a close button, so they don't have to be waited out.
 - Downloads sit next to the space name with a progress ring.
-- Firefox's Bookmarks, History and Synced Tabs panels (Cmd+B, Cmd+Shift+H, or View > Sidebar) match: a second sidebar beside the page, full height on the window's own background, with a soft search field and quiet rows.
 
 </details>
 
@@ -186,6 +185,12 @@ Keep a split of two sites as one essential: drag a two-site split onto the essen
 <!-- IMAGE split-essential.webp (800×500): a split essential tile beside ordinary ones -->
 
 </details>
+
+### Bookmarks and History
+
+Firefox's Bookmarks, History and Synced Tabs panels become a second sidebar on the other side of the page, full height on the window's own background. They're measured off your tabs, so the text, rows, spacing and highlights are the tabs' own, and the title takes your space's colour. Open them with **Cmd+B** (Bookmarks), **Cmd+Shift+H** (History), or **View > Sidebar**, and drag the gap beside the page to resize.
+
+![The Bookmarks panel as a second sidebar beside the page](https://raw.githubusercontent.com/z1n-k/zia/readme-images/sidebar-panels.webp)
 
 ### Glass
 
