@@ -139,6 +139,16 @@
     order: 0 !important;
   }
 
+  /* beneath the page's card, which it tucks under as it slides in or out
+     on the tab sidebar's side */
+  & #sidebar-box {
+    z-index: 1;
+  }
+
+  & #zen-appcontent-wrapper {
+    z-index: 3;
+  }
+
   /* its sides are the tab sidebar's, mirrored: as far from the window's
      edge, and from the page, as the tabs are (measured by zia.uc.js) */
   & #sidebar-box {

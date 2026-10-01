@@ -15041,7 +15041,12 @@
       });
     };
     const slideBox = (opening) => {
-      const side = box.hasAttribute("sidebar-positionend") ? "marginRight" : "marginLeft";
+      // off the window's edge; but on the tab sidebar's own side that edge
+      // is the tabs, so it's tucked under the page instead (the margin on
+      // the page's side), never sliding over the tabs
+      const onRight = box.hasAttribute("sidebar-positionend");
+      const besideTabs = onRight === (document.documentElement.getAttribute("zen-right-side") === "true");
+      const side = onRight !== besideTabs ? "marginRight" : "marginLeft";
       const hidden = `-${box.getBoundingClientRect().width}px`;
       const motion = window.gZenUIManager?.motion;
       const done = () => box.style.removeProperty(side === "marginRight" ? "margin-right" : "margin-left");
