@@ -108,8 +108,8 @@
     rotate: -8deg;
     translate: 0 3px;
     transition: rotate 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-    /* rises out of the tab as the glance opens, overshoots, tips back on
-     the way down and settles after two small bounces */
+    /* rises out of the tab as the glance opens, overshoots and settles
+     after two small bounces */
     animation: zia-glance-rise 0.8s ease-in-out backwards;
   }
 
@@ -181,21 +181,22 @@
 }
 
 @keyframes zia-glance-rise {
+  /* tips into place on the way up only: the drop and after-bounces are
+   straight down */
   0% {
-    transform: translateY(34px) rotate(0deg);
+    transform: translateY(34px) rotate(4deg);
   }
   38% {
-    transform: translateY(-4px) rotate(-3deg);
+    transform: translateY(-4px);
   }
-  /* tipping back the other way on the drop, then two small after-bounces */
   56% {
-    transform: translateY(1.5px) rotate(2.5deg);
+    transform: translateY(1.5px);
   }
   71% {
-    transform: translateY(-1px) rotate(-1deg);
+    transform: translateY(-1px);
   }
   85% {
-    transform: translateY(0.4px) rotate(0.4deg);
+    transform: translateY(0.4px);
   }
   100% {
     transform: none;
