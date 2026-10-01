@@ -5679,9 +5679,10 @@ zen-folder .tab-reset-button {
   }
 
   & #sidebar-header {
-    /* below the title, made up by zia.uc.js to the space there is
-       between the space's name and the essentials */
-    padding: 8px 8px var(--zia-panel-title-pad, 6px) 8px !important;
+    /* the title level with the space's name, and below it the space
+       there is between that name and the essentials (both made up by
+       zia.uc.js) */
+    padding: var(--zia-panel-title-top, 0px) 8px var(--zia-panel-title-pad, 6px) 8px !important;
     border-bottom: none !important;
     font-size: var(--zia-text-size) !important;
   }
@@ -5720,14 +5721,9 @@ zen-folder .tab-reset-button {
     font-size: var(--zia-text-size) !important;
   }
 
+  /* no arrow after the title either: it's still a button for the menu */
   & #sidebar-switcher-arrow {
-    list-style-image: url("resource://zia-tabler/filled/chevron-down.svg") !important;
-    width: 12px !important;
-    height: 12px !important;
-    -moz-context-properties: fill, fill-opacity !important;
-    fill: rgb(255, 255, 255) !important;
-    fill-opacity: 0.5 !important;
-    opacity: 1 !important;
+    display: none !important;
   }
 
   & #sidebar-close {
@@ -5781,13 +5777,21 @@ zen-folder .tab-reset-button {
     order: 0 !important;
   }
 
-  /* as far from the window's edge as from the card (the splitter's gap) */
+  /* its sides are the tab sidebar's, mirrored: as far from the window's
+     edge, and from the page, as the tabs are (measured by zia.uc.js) */
   & #sidebar-box[sidebar-positionend] {
-    margin-inline: 0 var(--zia-card-gap) !important;
+    margin-inline: 0 !important;
+    padding-inline: var(--zia-panel-pad-card, 0px) var(--zia-panel-pad-window, var(--zia-card-gap)) !important;
   }
 
   & #sidebar-box:not([sidebar-positionend]) {
-    margin-inline: var(--zia-card-gap) 0 !important;
+    margin-inline: 0 !important;
+    padding-inline: var(--zia-panel-pad-window, var(--zia-card-gap)) var(--zia-panel-pad-card, 0px) !important;
+  }
+
+  /* the header, search field and rows all run to those sides */
+  & #sidebar-header {
+    padding-inline: 0 !important;
   }
 
   /* the gap between it and the card, which is also the handle to resize

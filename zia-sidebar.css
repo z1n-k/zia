@@ -31,6 +31,7 @@ body {
 #sidebar-search-container,
 .sidebar-search-container.selected {
   padding: 2px var(--zia-inset) 8px !important;
+  padding-inline: var(--zia-panel-inset, var(--zia-inset)) !important;
   gap: 6px !important;
   align-items: center !important;
 }
@@ -82,7 +83,7 @@ body {
    can't have gaps or round corners of their own) */
 .sidebar-placesTree {
   margin: 0 !important;
-  padding-inline: var(--zia-inset) !important;
+  padding-inline: var(--zia-panel-inset, var(--zia-inset)) !important;
   font-family: var(--zia-row-font-family, inherit) !important;
   font-size: var(--zia-font-size) !important;
   font-weight: var(--zia-font-weight) !important;
@@ -140,7 +141,6 @@ body {
 
   &[selected] {
     background-color: var(--zia-row-selected);
-    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.14);
   }
 }
 
@@ -170,7 +170,7 @@ body {
 
 /* Synced Tabs: devices and their tabs, in rows just like tabs */
 .list {
-  padding-inline: var(--zia-inset) !important;
+  padding-inline: var(--zia-panel-inset, var(--zia-inset)) !important;
 }
 
 .item-title-container {
@@ -211,7 +211,6 @@ body {
 .item.selected > .item-title-container,
 .item.selected:focus > .item-title-container {
   background-color: var(--zia-row-selected) !important;
-  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.14) !important;
   color: rgba(255, 255, 255, 0.92) !important;
 }
 
@@ -263,8 +262,9 @@ body {
   margin-inline-start: var(--zia-row-pad, 10px) !important;
 }
 
+/* a folder's rows step in as far as a folder's tabs do */
 .sidebar-placesTreechildren::-moz-tree-indentation {
-  width: 14px !important;
+  width: var(--zia-row-indent, 14px) !important;
 }
 
 /* Zia's icons, solid ones, in place of Firefox's */

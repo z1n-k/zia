@@ -14494,7 +14494,6 @@
       ? next.getBoundingClientRect().top - background.getBoundingClientRect().bottom
       : 2 * parseFloat(getComputedStyle(tab).getPropertyValue("--tab-margin-block") || "2");
     const text = getComputedStyle(label);
-    const selected = gBrowser.selectedTab?.querySelector(".tab-background");
     const box = content.getBoundingClientRect();
     const toolbox = document.getElementById("navigator-toolbox")?.getBoundingClientRect();
     const inset = toolbox ? background.getBoundingClientRect().left - toolbox.left : 8;
@@ -14508,17 +14507,58 @@
       "--zia-row-pad": `${icon ? icon.getBoundingClientRect().left - box.left : 10}px`,
       "--zia-row-inset": `${Math.max(0, Math.min(16, inset))}px`,
       "--zia-row-hover-bg": getComputedStyle(document.documentElement).getPropertyValue("--zia-tab-hover-bg").trim() || "rgba(255, 255, 255, 0.115)",
-      "--zia-row-selected-bg": (selected && !gBrowser.selectedTab.hasAttribute("zen-essential") && getComputedStyle(selected).backgroundColor) || "rgba(0, 0, 0, 0.1)",
+      "--zia-row-selected-bg": getComputedStyle(document.documentElement).getPropertyValue("--zia-active-tab-bg").trim() || "rgba(0, 0, 0, 0.1)",
+      "--zia-row-indent": `${folderIndent(tab)}px`,
       "--zia-row-icon-gap": `${icon ? label.getBoundingClientRect().left - icon.getBoundingClientRect().right : 8}px`,
     };
   }
 
+  // How far a tab in a folder steps in from one that isn't
+  function folderIndent(tab) {
+    const inFolder = gBrowser.visibleTabs.find((t) => t.closest("zen-folder, tab-group:not([split-view-group])") && t.getBoundingClientRect().height > 0);
+    const outer = tab.closest("zen-folder, tab-group") ? null : tab;
+    if (inFolder && outer) {
+      const step = inFolder.querySelector(".tab-background").getBoundingClientRect().left - outer.querySelector(".tab-background").getBoundingClientRect().left;
+      if (step > 0 && step < 40) {
+        return step;
+      }
+    }
+    return 14;
+  }
+
+  // The tab sidebar's own sides: from the window's edge to its tabs, and
+  // from its tabs to the page's card. The panel takes the same, mirrored
+  // (less the splitter, which is the gap on its card side).
+  function sidebarSides() {
+    const tab = gBrowser.visibleTabs.find((t) => !t.hasAttribute("zen-essential") && !t.closest("zen-folder, tab-group") && t.getBoundingClientRect().height > 0);
+    const background = tab?.querySelector(".tab-background")?.getBoundingClientRect();
+    const card = document.getElementById("zen-appcontent-wrapper")?.getBoundingClientRect();
+    const splitter = document.getElementById("sidebar-splitter")?.getBoundingClientRect().width || 0;
+    if (!background || !card) {
+      return;
+    }
+    const right = document.documentElement.getAttribute("zen-right-side") === "true";
+    const windowSide = right ? window.innerWidth - background.right : background.left;
+    const cardSide = right ? background.left - card.right : card.left - background.right;
+    if (windowSide >= 0 && windowSide < 40 && cardSide >= 0 && cardSide < 40) {
+      document.documentElement.style.setProperty("--zia-panel-pad-window", `${windowSide}px`);
+      document.documentElement.style.setProperty("--zia-panel-pad-card", `${Math.max(0, cardSide - splitter)}px`);
+    }
+  }
+
   function matchTabs(doc) {
+    safely("sidebar panels: sides", sidebarSides);
     const sizes = tabMeasurements();
     if (sizes) {
       for (const [name, value] of Object.entries(sizes)) {
         doc.documentElement.style.setProperty(name, value);
       }
+    }
+    // beside the page, the panel's own sides give the room
+    if (document.documentElement.hasAttribute("zia-panels-beside")) {
+      doc.documentElement.style.setProperty("--zia-panel-inset", "0px");
+    } else {
+      doc.documentElement.style.removeProperty("--zia-panel-inset");
     }
     // the highlights' shape: the space name's own pill
     const label = document.getElementById("zia-space-label");
@@ -14531,7 +14571,12 @@
       }
     }
     roundTreeRows(doc);
-    doc.defaultView.requestAnimationFrame(() => doc.defaultView.requestAnimationFrame(() => spaceTitle(doc)));
+    doc.defaultView.requestAnimationFrame(() =>
+      doc.defaultView.requestAnimationFrame(() => {
+        levelTitle();
+        spaceTitle(doc);
+      })
+    );
   }
 
   // The space between the panel's title and its search field is the one
@@ -14559,6 +14604,25 @@
     }
     const padding = parseFloat(getComputedStyle(header).paddingBottom) || 0;
     document.documentElement.style.setProperty("--zia-panel-title-pad", `${Math.max(0, padding + wanted - now)}px`);
+  }
+
+  // The panel's title sits level with the space's name across the window
+  function levelTitle() {
+    const label = document.getElementById("zia-space-label");
+    const pill = document.getElementById("sidebar-switcher-target");
+    const header = document.getElementById("sidebar-header");
+    if (!label || !pill || !header || !label.getBoundingClientRect().height || !pill.getBoundingClientRect().height) {
+      return;
+    }
+    const off = label.getBoundingClientRect().top - pill.getBoundingClientRect().top;
+    if (Math.abs(off) < 0.5) {
+      return;
+    }
+    const padding = parseFloat(getComputedStyle(header).paddingTop) || 0;
+    const next = padding + off;
+    if (next >= 0 && next < 40) {
+      document.documentElement.style.setProperty("--zia-panel-title-top", `${next}px`);
+    }
   }
 
   // Bookmarks and History are trees, whose rows can't be rounded or
@@ -14599,10 +14663,12 @@
         pill.hidden = true;
         return;
       }
+      // a row inside a folder steps in, as a folder's tabs do
+      const indent = (tree.view?.getLevel(row) || 0) * (parseFloat(win.getComputedStyle(doc.documentElement).getPropertyValue("--zia-row-indent")) || 0);
       pill.hidden = false;
       pill.style.top = `${top + gap / 2}px`;
-      pill.style.left = `${box.left}px`;
-      pill.style.width = `${box.width}px`;
+      pill.style.left = `${box.left + indent}px`;
+      pill.style.width = `${Math.max(0, box.width - indent)}px`;
       pill.style.height = `${height - gap}px`;
     };
     let queued = false;
