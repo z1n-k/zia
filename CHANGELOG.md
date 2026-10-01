@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Firefox's Bookmarks, History and Synced Tabs panels (Cmd+B,
+  Cmd+Shift+H, or View > Sidebar) are in Zia's look: a dark panel parted
+  from the page by a hairline, a quieter header with Zia's close button, a
+  soft search field and tab-like rows. It can be switched off in settings.
+
 ## [2.77.4] — 2026-10-01
 
 ### Fixed

@@ -1,0 +1,167 @@
+/* Zia's look for Firefox's own sidebar panels: Bookmarks, History and
+   Synced Tabs (Cmd+B, Cmd+Shift+H, or View > Sidebar). Each is a page of
+   its own inside the panel, so zia.uc.js loads this into them as they
+   open (sidebar panels, src/js/28h-sidebar-panels.js); the panel's frame
+   and header are in chrome.css (src/css/21-sidebar-panels.css). */
+
+:root {
+  color-scheme: dark !important;
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent !important;
+  scrollbar-width: thin !important;
+
+  --zia-row: 28px;
+  --zia-row-hover: rgba(255, 255, 255, 0.06);
+  --zia-row-selected: rgba(255, 255, 255, 0.1);
+  --zia-quiet: rgba(255, 255, 255, 0.55);
+}
+
+body {
+  background: transparent !important;
+}
+
+/* The search field: a soft filled pill, as the address bar's, no border */
+#sidebar-search-container,
+.sidebar-search-container.selected {
+  padding: 2px 10px 8px !important;
+  gap: 6px !important;
+  align-items: center !important;
+}
+
+:is(#search-box, .tabsFilter) {
+  margin: 0 !important;
+  --input-text-background-color: rgba(255, 255, 255, 0.06);
+  --input-text-border: 1px solid transparent;
+  --input-text-border-radius: 8px;
+  --input-search-border-radius: 8px;
+  --input-text-min-height: 30px;
+  --input-text-color: rgba(255, 255, 255, 0.92);
+  --icon-color: var(--zia-quiet);
+  --focus-outline: 1px solid rgba(255, 255, 255, 0.22);
+  --focus-outline-offset: -1px;
+}
+
+:is(#search-box, .tabsFilter):hover {
+  --input-text-background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* History's "View" sort button: a quiet text button */
+#viewButton {
+  appearance: none !important;
+  margin: 0 !important;
+  padding: 0 8px !important;
+  min-height: 30px !important;
+  border: none !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: var(--zia-quiet) !important;
+  font-size: 12.5px !important;
+}
+
+#viewButton:hover,
+#viewButton[open] {
+  background: var(--zia-row-hover) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+/* Bookmarks and History: the tree's rows, as quiet as tab rows */
+.sidebar-placesTree {
+  margin: 0 !important;
+  padding-inline: 4px !important;
+  font-size: 13px !important;
+  background: transparent !important;
+}
+
+.sidebar-placesTree:focus-visible {
+  outline: none !important;
+}
+
+.sidebar-placesTreechildren::-moz-tree-row {
+  height: var(--zia-row) !important;
+  min-height: var(--zia-row) !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.sidebar-placesTreechildren::-moz-tree-row(hover) {
+  background-color: var(--zia-row-hover) !important;
+}
+
+.sidebar-placesTreechildren::-moz-tree-row(selected),
+.sidebar-placesTreechildren::-moz-tree-row(selected, focus) {
+  background-color: var(--zia-row-selected) !important;
+}
+
+.sidebar-placesTreechildren::-moz-tree-cell-text,
+.sidebar-placesTreechildren::-moz-tree-cell-text(selected),
+.sidebar-placesTreechildren::-moz-tree-cell-text(selected, focus) {
+  color: rgba(255, 255, 255, 0.92) !important;
+  margin-inline-start: 2px !important;
+}
+
+.sidebar-placesTreechildren::-moz-tree-image,
+.sidebar-placesTreechildren::-moz-tree-twisty,
+.sidebar-placesTreechildren::-moz-tree-image(selected),
+.sidebar-placesTreechildren::-moz-tree-twisty(selected) {
+  color: var(--zia-quiet) !important;
+  fill: currentColor !important;
+}
+
+.sidebar-placesTreechildren::-moz-tree-separator {
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  margin: 0 10px !important;
+}
+
+/* Synced Tabs: devices and their tabs, in the same rows */
+.item-title-container {
+  height: var(--zia-row) !important;
+  margin-inline: 4px !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.item:not(.selected) > .item-title-container:hover {
+  background-color: var(--zia-row-hover) !important;
+}
+
+.item.selected > .item-title-container,
+.item.selected:focus > .item-title-container {
+  background-color: var(--zia-row-selected) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.item.client > .item-title-container {
+  font-weight: 500 !important;
+}
+
+.item.client .item-twisty-container,
+.item.client[clientType] > .item-title-container > .item-icon-container {
+  opacity: 0.6;
+}
+
+.item.empty .item-title-container,
+.deck .instructions {
+  color: var(--zia-quiet) !important;
+}
+
+.deck .sync-state {
+  border-top: none !important;
+}
+
+.deck .button {
+  border-radius: 8px !important;
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  color: rgb(18, 18, 18) !important;
+  font-weight: 500 !important;
+}
+
+.deck .button:hover {
+  background-color: #fff !important;
+}
+
+.text-link {
+  color: rgb(90, 185, 245) !important;
+}

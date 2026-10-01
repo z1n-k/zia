@@ -87,6 +87,12 @@
   },
   {
     "type": "checkbox",
+    "label": "Bookmarks, History and Synced Tabs panels in Zia's look",
+    "property": "zia.sidebar-panels.style",
+    "defaultValue": true
+  },
+  {
+    "type": "checkbox",
     "label": "Tab and folder hover cards",
     "property": "zia.features.tab-hover-cards",
     "defaultValue": true
