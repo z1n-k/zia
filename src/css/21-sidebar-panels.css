@@ -69,9 +69,14 @@
     font-size: var(--zia-text-size) !important;
   }
 
-  /* tinted with the space's colour, as the space's name is */
+  /* tinted with the space's colour, as the space's name is: the title and
+     its close button alike */
   &[zia-space-colored="true"] #sidebar-title {
     color: color-mix(in srgb, var(--zen-primary-color, white) var(--zia-space-name-tint), white) !important;
+  }
+
+  &[zia-space-colored="true"] #sidebar-close {
+    fill: color-mix(in srgb, var(--zen-primary-color, white) var(--zia-space-name-tint), white) !important;
   }
 
   /* no arrow after the title either: it's still a button for the menu */

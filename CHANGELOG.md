@@ -4,6 +4,19 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- The Bookmarks, History and Synced Tabs panel's close button takes the
+  space's colour, as its title does.
+
+### Fixed
+
+- The downloads button beside the space's name had more room below its
+  icon than above, in its hover background: it's an even square with the
+  icon in the middle on every system now.
+
 ## [2.80.2] — 2026-10-01
 
 ### Fixed
