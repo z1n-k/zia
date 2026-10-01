@@ -14477,14 +14477,20 @@
   // between rows, the corner radius and the padding before the icon
   function tabMeasurements() {
     const tabs = gBrowser.visibleTabs.filter((tab) => !tab.hasAttribute("zen-essential") && !tab.hasAttribute("zen-glance-tab"));
-    const tab = tabs.find((t) => t.getBoundingClientRect().height > 0);
+    // one whose icon is showing (not hovered, where the close button takes
+    // its place, nor loading), else any to be seen
+    const shownIcon = (t) => {
+      const image = t.querySelector(".tab-icon-image");
+      return image && !t.matches(":hover") && image.getBoundingClientRect().width > 0 ? image : null;
+    };
+    const tab = tabs.find((t) => t.getBoundingClientRect().height > 0 && shownIcon(t)) || tabs.find((t) => t.getBoundingClientRect().height > 0);
     if (!tab) {
       return null;
     }
     const background = tab.querySelector(".tab-background");
     const label = tab.querySelector(".tab-label");
     const content = tab.querySelector(".tab-content");
-    const icon = tab.querySelector(".tab-icon-image");
+    const icon = shownIcon(tab);
     if (!background || !label || !content) {
       return null;
     }
@@ -14505,7 +14511,7 @@
       "--zia-row-font-weight": text.fontWeight,
       "--zia-row-font-family": text.fontFamily,
       // from the tab's own edge (its background), not its content box
-      "--zia-row-pad": `${icon ? icon.getBoundingClientRect().left - background.getBoundingClientRect().left : 10}px`,
+      "--zia-row-pad": `${within(icon ? icon.getBoundingClientRect().left - background.getBoundingClientRect().left : NaN, 2, 24, 10)}px`,
       // text: an unselected tab's (dimmed, as in Dia) and a selected one's
       "--zia-row-text": labelColor(tabs.find((t) => !t.selected && !t.hasAttribute("visuallyselected"))) || "rgba(255, 255, 255, 0.8)",
       "--zia-row-text-selected": labelColor(gBrowser.selectedTab?.hasAttribute("zen-essential") ? null : gBrowser.selectedTab) || "rgb(255, 255, 255)",
@@ -14513,8 +14519,13 @@
       "--zia-row-hover-bg": getComputedStyle(document.documentElement).getPropertyValue("--zia-tab-hover-bg").trim() || "rgba(255, 255, 255, 0.115)",
       "--zia-row-selected-bg": getComputedStyle(document.documentElement).getPropertyValue("--zia-active-tab-bg").trim() || "rgba(0, 0, 0, 0.1)",
       "--zia-row-indent": `${folderIndent(tab)}px`,
-      "--zia-row-icon-gap": `${icon ? label.getBoundingClientRect().left - icon.getBoundingClientRect().right : 8}px`,
+      "--zia-row-icon-gap": `${within(icon ? label.getBoundingClientRect().left - icon.getBoundingClientRect().right : NaN, 2, 16, 8)}px`,
     };
+  }
+
+  // a measurement only if it's a sensible one, else the usual
+  function within(value, low, high, usual) {
+    return Number.isFinite(value) && value >= low && value <= high ? value : usual;
   }
 
   function labelColor(tab) {

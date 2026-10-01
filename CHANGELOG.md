@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Bookmarks and History rows could open with their icon at the very edge
+  and a wide gap before the name, if a tab was hovered as the panel opened.
+
 ## [2.78.2] — 2026-10-01
 
 ### Fixed
