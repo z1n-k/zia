@@ -471,6 +471,16 @@
         setTimeout(() => !slides && setFlag("zia-panel-sliding", false), 250);
       }
     };
+    // the tab sidebar's own slide too: Zen marks it while it runs, and the
+    // colour is held a moment after, as the site catches up
+    let zenSliding = false;
+    new MutationObserver(() => {
+      const now = document.documentElement.hasAttribute("zen-compact-animating");
+      if (now !== zenSliding) {
+        zenSliding = now;
+        sliding(now);
+      }
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ["zen-compact-animating"] });
     const slide = (opening) => {
       sliding(true);
       return slideBox(opening).finally(() => sliding(false));
