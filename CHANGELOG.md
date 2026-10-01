@@ -14,6 +14,10 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- The floating address bar with nothing to list under it (history, top
+  sites and suggestions all off) looks like the pop-up it is, in its
+  colour, corners and shadow, with its text centred, rather than a flat
+  box with the address sitting low.
 - Collapsing or opening the sidebar no longer flashes a black strip at the
   page's edge while the site catches up with its new width: the strip is
   the site's own colour. (Dia shows it too.)

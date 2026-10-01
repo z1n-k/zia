@@ -9,7 +9,7 @@
   transition: background-color 0.06s linear !important;
 }
 
-:root:not([zia-split="true"]) #urlbar:not([breakout-extend]) {
+:root:not([zia-split="true"]) #urlbar:not([breakout-extend], [zen-floating-urlbar="true"]) {
   height: var(--zia-urlbar-height) !important;
   min-height: var(--zia-urlbar-height) !important;
   max-height: var(--zia-urlbar-height) !important;
@@ -44,6 +44,28 @@
   :root[zen-has-empty-tab="true"] #urlbar:is(:hover, [focused]):not([breakout-extend]) > .urlbar-background {
     background: rgba(255, 255, 255, 0.09) !important;
     background-color: rgba(255, 255, 255, 0.09) !important;
+  }
+}
+
+/* The floating address bar with nothing to list under it yet (no history,
+   top sites or suggestions to show as it opens: Firefox doesn't open the
+   list then, so it's never "extended"): it's the pop-up all the same, in
+   its colour, corners, edge and shadow, at its own height (the toolbar's
+   31px squeezed it, its text sitting low) */
+#urlbar[zen-floating-urlbar="true"]:not([breakout-extend]):not([zia-classic]) {
+  border-radius: 16.5px !important;
+
+  & > .urlbar-background {
+    background: var(--zia-urlbar-open-bg) !important;
+    border: none !important;
+    border-radius: 16.5px !important;
+    outline: 1px solid rgba(255, 255, 255, 0.08) !important;
+    outline-offset: -1px !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  & > :is(#urlbar-input-container, .urlbar-input-container) {
+    align-items: center !important;
   }
 }
 
