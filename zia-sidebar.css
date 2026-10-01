@@ -121,10 +121,13 @@ body {
   z-index: 0;
 }
 
+/* the space name's pill shape (its radius and squircle), as Zia's
+   highlights are elsewhere */
 .zia-row-pill {
   position: fixed;
   box-sizing: border-box;
-  border-radius: var(--zia-radius);
+  border-radius: var(--zia-pill-radius, var(--zia-radius));
+  corner-shape: var(--zia-pill-corner, round);
   pointer-events: none;
 
   &[hidden] {
@@ -176,7 +179,8 @@ body {
   margin-block: calc(var(--zia-gap) / 2) !important;
   padding-block: 0 !important;
   padding-inline-end: var(--zia-row-pad, 10px) !important;
-  border-radius: var(--zia-radius) !important;
+  border-radius: var(--zia-pill-radius, var(--zia-radius)) !important;
+  corner-shape: var(--zia-pill-corner, round) !important;
   font-family: var(--zia-row-font-family, inherit) !important;
   font-size: var(--zia-font-size) !important;
   font-weight: var(--zia-font-weight) !important;
@@ -242,4 +246,132 @@ body {
 
 .text-link {
   color: rgb(90, 185, 245) !important;
+}
+
+/* No expand arrows: a click on a folder or a day opens it, and its icon
+   shows it open, so rows start as a tab's do, the icon at the tabs' own
+   padding (nested rows still step in by level) */
+.sidebar-placesTreechildren::-moz-tree-twisty {
+  width: 0 !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  list-style-image: none !important;
+}
+
+.sidebar-placesTreechildren::-moz-tree-image(title) {
+  margin-inline-start: var(--zia-row-pad, 10px) !important;
+}
+
+.sidebar-placesTreechildren::-moz-tree-indentation {
+  width: 14px !important;
+}
+
+/* Zia's icons, solid ones, in place of Firefox's */
+treechildren::-moz-tree-image {
+  -moz-context-properties: fill, fill-opacity !important;
+  fill: rgb(255, 255, 255) !important;
+  fill-opacity: 0.6 !important;
+}
+
+treechildren::-moz-tree-image(title) {
+  list-style-image: url("resource://zia-tabler/filled/world.svg");
+}
+
+treechildren::-moz-tree-image(title, container) {
+  list-style-image: url("resource://zia-tabler/filled/folder.svg") !important;
+}
+
+treechildren::-moz-tree-image(title, open) {
+  list-style-image: url("resource://zia-tabler/filled/folder-open.svg") !important;
+}
+
+treechildren::-moz-tree-image(container, queryFolder_toolbar_____) {
+  list-style-image: url("resource://zia-tabler/filled/layout-navbar.svg") !important;
+}
+
+treechildren::-moz-tree-image(container, queryFolder_menu________) {
+  list-style-image: url("resource://zia-tabler/filled/list.svg") !important;
+}
+
+treechildren::-moz-tree-image(query) {
+  list-style-image: url("resource://zia-tabler/filled/folders.svg") !important;
+}
+
+treechildren::-moz-tree-image(query, OrganizerQuery_allbms_____v) {
+  list-style-image: url("resource://zia-tabler/filled/bookmark.svg") !important;
+}
+
+treechildren::-moz-tree-image(query, OrganizerQuery_downloads__v) {
+  list-style-image: url("resource://zia-tabler/filled/download.svg") !important;
+}
+
+treechildren::-moz-tree-image(title, query, tagContainer),
+treechildren::-moz-tree-image(query, OrganizerQuery_tags_______v) {
+  list-style-image: url("resource://zia-tabler/filled/tag.svg") !important;
+}
+
+treechildren::-moz-tree-image(title, query, dayContainer),
+treechildren::-moz-tree-image(query, OrganizerQuery_history____v) {
+  list-style-image: url("resource://zia-tabler/filled/clock.svg") !important;
+}
+
+treechildren::-moz-tree-image(title, query, hostContainer),
+treechildren::-moz-tree-image(title, query, folder) {
+  list-style-image: url("resource://zia-tabler/filled/folder.svg") !important;
+}
+
+treechildren::-moz-tree-image(title, query, hostContainer, open),
+treechildren::-moz-tree-image(title, query, folder, open) {
+  list-style-image: url("resource://zia-tabler/filled/folder-open.svg") !important;
+}
+
+/* Synced Tabs: devices, tabs without a favicon, and the open/closed mark */
+.item.client > .item-title-container > .item-icon-container {
+  -moz-context-properties: fill, fill-opacity;
+  fill: rgb(255, 255, 255) !important;
+  fill-opacity: 0.6;
+  opacity: 1 !important;
+}
+
+.item.client[clientType="desktop"] > .item-title-container > .item-icon-container {
+  background-image: url("resource://zia-tabler/filled/device-desktop.svg") !important;
+}
+
+.item.client[clientType="phone"] > .item-title-container > .item-icon-container {
+  background-image: url("resource://zia-tabler/filled/device-mobile.svg") !important;
+}
+
+.item.client[clientType="tablet"] > .item-title-container > .item-icon-container {
+  background-image: url("resource://zia-tabler/filled/device-tablet.svg") !important;
+}
+
+.item.client[clientType="tv"] > .item-title-container > .item-icon-container {
+  background-image: url("resource://zia-tabler/filled/device-tv.svg") !important;
+}
+
+.item.client[clientType="vr"] > .item-title-container > .item-icon-container {
+  background-image: url("resource://zia-tabler/filled/device-vision-pro.svg") !important;
+}
+
+.item.tab > .item-title-container > .item-icon-container:not([style*="url"]) {
+  background-image: url("resource://zia-tabler/filled/world.svg") !important;
+  -moz-context-properties: fill, fill-opacity;
+  fill: rgb(255, 255, 255) !important;
+  fill-opacity: 0.6;
+}
+
+.item.client .item-twisty-container {
+  background-image: url("resource://zia-tabler/filled/chevron-down.svg") !important;
+  background-size: 12px !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  -moz-context-properties: fill, fill-opacity;
+  fill: rgb(255, 255, 255) !important;
+  fill-opacity: 0.5;
+  opacity: 1 !important;
+}
+
+.item.client.closed .item-twisty-container {
+  background-image: url("resource://zia-tabler/filled/chevron-right.svg") !important;
 }

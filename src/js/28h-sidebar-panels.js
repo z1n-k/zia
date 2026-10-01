@@ -55,17 +55,45 @@
         doc.documentElement.style.setProperty(name, value);
       }
     }
-    // the space between the panel's title and its search field: the one
-    // between the space's name and the essentials
-    const name = document.getElementById("zia-workspace-slot") || document.querySelector(".zen-current-workspace-indicator");
-    const essentials = [...document.querySelectorAll(".zen-essentials-container")].find((e) => e.getBoundingClientRect().height > 0);
-    if (name && essentials) {
-      const gap = essentials.getBoundingClientRect().top - name.getBoundingClientRect().bottom;
-      if (gap >= 0 && gap < 40) {
-        document.documentElement.style.setProperty("--zia-panel-title-gap", `${gap}px`);
+    // the highlights' shape: the space name's own pill
+    const label = document.getElementById("zia-space-label");
+    if (label) {
+      const pill = getComputedStyle(label);
+      doc.documentElement.style.setProperty("--zia-pill-radius", pill.borderTopLeftRadius);
+      const corner = pill.getPropertyValue("corner-top-left-shape");
+      if (corner) {
+        doc.documentElement.style.setProperty("--zia-pill-corner", corner);
       }
     }
     roundTreeRows(doc);
+    doc.defaultView.requestAnimationFrame(() => doc.defaultView.requestAnimationFrame(() => spaceTitle(doc)));
+  }
+
+  // The space between the panel's title and its search field is the one
+  // between the space's name and the essentials below it, text to tile:
+  // measured on both, and the header's padding made up to it
+  function spaceTitle(doc) {
+    const label = document.getElementById("zia-space-label") || document.querySelector(".zen-current-workspace-indicator-name");
+    const essential = [...document.querySelectorAll(".zen-essentials-container .tabbrowser-tab[zen-essential] > .tab-stack > .tab-background")]
+      .find((e) => e.getBoundingClientRect().height > 0);
+    const title = document.getElementById("sidebar-title");
+    const header = document.getElementById("sidebar-header");
+    const browser = document.getElementById("sidebar");
+    const search = doc.querySelector("#search-box, .sidebar-search-container.selected .tabsFilter");
+    if (!label || !essential || !title || !header || !browser || !search) {
+      return;
+    }
+    const textBottom = (el) => {
+      const box = el.getBoundingClientRect();
+      return box.top + box.height / 2 + parseFloat(getComputedStyle(el).fontSize) / 2;
+    };
+    const wanted = essential.getBoundingClientRect().top - textBottom(label);
+    const now = browser.getBoundingClientRect().top + search.getBoundingClientRect().top - textBottom(title);
+    if (!(wanted > 0 && wanted < 48) || Math.abs(wanted - now) < 0.5) {
+      return;
+    }
+    const padding = parseFloat(getComputedStyle(header).paddingBottom) || 0;
+    document.documentElement.style.setProperty("--zia-panel-title-pad", `${Math.max(0, padding + wanted - now)}px`);
   }
 
   // Bookmarks and History are trees, whose rows can't be rounded or

@@ -11,9 +11,11 @@ Every release of Zia, newest first. The format follows
 - Firefox's Bookmarks, History and Synced Tabs panels (Cmd+B,
   Cmd+Shift+H, or View > Sidebar) are in Zia's look: a second sidebar
   beside the page, full height on the window's own background like the
-  tabs, with a quieter header and Zia's close button, a soft search field
-  and tab-like rows. Its look and its place beside the page can each be
-  switched off in settings.
+  tabs, with a quieter header and Zia's close button, a soft search field,
+  Zia's solid icons and rows measured off the tabs (text, height, gaps,
+  padding), with hover and selected highlights shaped like the space
+  name's. Its look and its place beside the page can each be switched off
+  in settings.
 
 ## [2.77.4] — 2026-10-01
 

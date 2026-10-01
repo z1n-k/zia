@@ -27,9 +27,9 @@
   }
 
   & #sidebar-header {
-    /* below the title, the space there is between the space's name and
-       the essentials (measured by zia.uc.js) */
-    padding: 8px 8px calc(var(--zia-panel-title-gap, 8px) - 2px) 8px !important;
+    /* below the title, made up by zia.uc.js to the space there is
+       between the space's name and the essentials */
+    padding: 8px 8px var(--zia-panel-title-pad, 6px) 8px !important;
     border-bottom: none !important;
     font-size: var(--zia-text-size) !important;
   }
@@ -53,7 +53,23 @@
   & #sidebar-icon {
     width: 16px !important;
     height: 16px !important;
-    opacity: 0.7 !important;
+    opacity: 1 !important;
+    -moz-context-properties: fill, fill-opacity !important;
+    fill: rgb(255, 255, 255) !important;
+    fill-opacity: 0.7 !important;
+  }
+
+  /* Zia's icons, solid ones, for each panel */
+  & #sidebar-box[sidebarcommand="viewBookmarksSidebar"] #sidebar-icon {
+    list-style-image: url("resource://zia-tabler/filled/bookmark.svg") !important;
+  }
+
+  & #sidebar-box[sidebarcommand="viewHistorySidebar"] #sidebar-icon {
+    list-style-image: url("resource://zia-tabler/filled/clock.svg") !important;
+  }
+
+  & #sidebar-box[sidebarcommand="viewTabsSidebar"] #sidebar-icon {
+    list-style-image: url("resource://zia-tabler/filled/device-desktop.svg") !important;
   }
 
   & #sidebar-title {
@@ -64,7 +80,13 @@
   }
 
   & #sidebar-switcher-arrow {
-    opacity: 0.5 !important;
+    list-style-image: url("resource://zia-tabler/filled/chevron-down.svg") !important;
+    width: 12px !important;
+    height: 12px !important;
+    -moz-context-properties: fill, fill-opacity !important;
+    fill: rgb(255, 255, 255) !important;
+    fill-opacity: 0.5 !important;
+    opacity: 1 !important;
   }
 
   & #sidebar-close {
