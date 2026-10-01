@@ -13,6 +13,15 @@ Every release of Zia, newest first. The format follows
   Their click area now reaches the window's top edge, as in Windows
   itself; they look just the same.
 
+## [2.81.2] — 2026-10-01
+
+### Fixed
+
+- Windows: flicking the mouse to the top of the screen missed minimise,
+  maximise and close, landing in the gap above the page's card instead.
+  Their click area now reaches the window's top edge, as in Windows
+  itself; they look just the same.
+
 ## [2.81.1] — 2026-10-01
 
 ### Fixed
