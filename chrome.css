@@ -274,6 +274,17 @@
   }
 }
 
+/* The bar's contents centred in its height, whatever is showing in it:
+   searching your bookmarks, history or tabs brings up a taller search
+   button that otherwise pushed the text and icons down, leaving less room
+   below them than above */
+:root:not([zia-split="true"]) #urlbar:not([breakout-extend]) > :is(#urlbar-input-container, .urlbar-input-container) {
+  height: 100% !important;
+  min-height: 0 !important;
+  padding-block: 0 !important;
+  align-items: center !important;
+}
+
 #urlbar:is(:hover, [focused]):not([breakout-extend]) > .urlbar-background {
   background: var(--zia-urlbar-hover-bg) !important;
   box-shadow: none !important;
