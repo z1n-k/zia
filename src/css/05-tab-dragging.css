@@ -209,6 +209,14 @@ tab-group[split-view-group][zia-no-glow] > .tab-group-container {
   z-index: 1 !important;
 }
 
+/* The section a dragged tab or folder comes from goes above the
+   essentials while it's dragged: otherwise the essentials' icons, drawn on
+   a layer of their own, showed through it when it was dragged up over them */
+:root[zia-dragging-tab] :is(zen-workspace, .zen-workspace-pinned-tabs-section, .zen-workspace-normal-tabs-section):has([zia-dragging]) {
+  position: relative;
+  z-index: 50 !important;
+}
+
 #tabbrowser-tabs :is(.tabbrowser-tab, .tab-group-label-container, zen-folder)[zia-dragging] {
   position: relative !important;
   transform: translateY(var(--zia-drag-y)) !important;
