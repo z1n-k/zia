@@ -108,8 +108,9 @@
     rotate: -8deg;
     translate: 0 3px;
     transition: rotate 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-    /* rises out of the tab as the glance opens, overshoots and settles */
-    animation: zia-glance-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    /* rises out of the tab as the glance opens, overshoots, tips back on
+     the way down and settles after two small bounces */
+    animation: zia-glance-rise 0.8s ease-in-out backwards;
   }
 
   & > .tab-stack > .tab-background {
@@ -181,13 +182,20 @@
 
 @keyframes zia-glance-rise {
   0% {
-    transform: translateY(34px) rotate(2deg);
+    transform: translateY(34px) rotate(0deg);
   }
-  55% {
-    transform: translateY(-3px) rotate(-4deg);
+  38% {
+    transform: translateY(-4px) rotate(-3deg);
   }
-  78% {
-    transform: translateY(1px) rotate(1deg);
+  /* tipping back the other way on the drop, then two small after-bounces */
+  56% {
+    transform: translateY(1.5px) rotate(2.5deg);
+  }
+  71% {
+    transform: translateY(-1px) rotate(-1deg);
+  }
+  85% {
+    transform: translateY(0.4px) rotate(0.4deg);
   }
   100% {
     transform: none;
