@@ -10,7 +10,8 @@ Every release of Zia, newest first. The format follows
 
 - The Bookmarks, History and Synced Tabs panel on the same side as the tab
   sidebar ran straight into it: a hairline, like the sidebar's separator,
-  parts them now. Opposite sides are unchanged.
+  parts them now, with the same gap on both sides of it. Opposite sides
+  are unchanged.
 
 ## [2.80.1] — 2026-10-01
 

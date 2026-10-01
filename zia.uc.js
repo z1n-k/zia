@@ -14627,6 +14627,20 @@
       return;
     }
     const right = document.documentElement.getAttribute("zen-right-side") === "true";
+    // On the tab sidebar's own side, the panel sits between the tabs and
+    // the card, parted from the tabs by a line: the gap from the tabs to
+    // that line is the panel's gap after it, and before the card
+    const panel = document.getElementById("sidebar-box");
+    const panelOnRight = panel?.hasAttribute("sidebar-positionend");
+    if (panel && !panel.hidden && document.documentElement.hasAttribute("zia-panels-beside") && panelOnRight === right) {
+      const edge = panel.getBoundingClientRect();
+      const gap = right ? background.left - edge.right : edge.left - background.right;
+      if (gap >= 0 && gap < 40) {
+        document.documentElement.style.setProperty("--zia-panel-pad-window", `${gap}px`);
+        document.documentElement.style.setProperty("--zia-panel-pad-card", `${Math.max(0, gap - splitter)}px`);
+      }
+      return;
+    }
     const windowSide = right ? window.innerWidth - background.right : background.left;
     const cardSide = right ? background.left - card.right : card.left - background.right;
     if (windowSide >= 0 && windowSide < 40 && cardSide >= 0 && cardSide < 40) {
@@ -15018,7 +15032,13 @@
     const slide = (opening) => {
       const run = slideBox(opening);
       sliding(true);
-      return run.finally(() => sliding(false));
+      return run.finally(() => {
+        sliding(false);
+        // its sides measured where it has come to rest
+        if (opening) {
+          safely("sidebar panels: sides", sidebarSides);
+        }
+      });
     };
     const slideBox = (opening) => {
       const side = box.hasAttribute("sidebar-positionend") ? "marginRight" : "marginLeft";
