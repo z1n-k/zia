@@ -21,7 +21,8 @@
 
   position: relative;
 
-  translate: 0 2px;
+  /* level with the toolbar's own icons beside it */
+  translate: 0 1px;
 
   &:hover {
     background-color: var(--zia-space-pill-bg) !important;
@@ -54,8 +55,8 @@
   }
 
   & > .toolbarbutton-icon {
-    width: 18px !important;
-    height: 18px !important;
+    width: 17px !important;
+    height: 17px !important;
     padding: 0 !important;
     margin: auto !important;
   }
@@ -85,9 +86,9 @@
 }
 
 #downloads-indicator-icon {
-  width: 18px !important;
-  height: 18px !important;
-  max-height: 18px !important;
+  width: 17px !important;
+  height: 17px !important;
+  max-height: 17px !important;
   visibility: visible !important;
 
   translate: 0 -1px;

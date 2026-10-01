@@ -104,7 +104,7 @@
 
   --zia-flyout-border: 1px solid rgba(255, 255, 255, 0.25);
   --zia-card-top-gap: 6px;
-  --zia-toolbar-height: 39px;
+  --zia-toolbar-height: 40px;
   --zia-urlbar-height: 31px;
   --zia-active-tab-bg: rgba(0, 0, 0, 0.1);
   --zia-active-tab-bg-folder: rgba(0, 0, 0, 0.4);
@@ -4468,7 +4468,8 @@ findbar {
 
   position: relative;
 
-  translate: 0 2px;
+  /* level with the toolbar's own icons beside it */
+  translate: 0 1px;
 
   &:hover {
     background-color: var(--zia-space-pill-bg) !important;
@@ -4501,8 +4502,8 @@ findbar {
   }
 
   & > .toolbarbutton-icon {
-    width: 18px !important;
-    height: 18px !important;
+    width: 17px !important;
+    height: 17px !important;
     padding: 0 !important;
     margin: auto !important;
   }
@@ -4532,9 +4533,9 @@ findbar {
 }
 
 #downloads-indicator-icon {
-  width: 18px !important;
-  height: 18px !important;
-  max-height: 18px !important;
+  width: 17px !important;
+  height: 17px !important;
+  max-height: 17px !important;
   visibility: visible !important;
 
   translate: 0 -1px;
