@@ -74,6 +74,8 @@
   & > :is(.toolbarbutton-badge-stack, #downloads-indicator-anchor, .toolbarbutton-icon) {
     padding: 0 !important;
     margin: auto !important;
+    /* (drawn a pixel high of the square's middle otherwise) */
+    translate: 0 1px;
   }
 
   & > .toolbarbutton-text {

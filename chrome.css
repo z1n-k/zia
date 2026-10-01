@@ -4521,6 +4521,8 @@ findbar {
   & > :is(.toolbarbutton-badge-stack, #downloads-indicator-anchor, .toolbarbutton-icon) {
     padding: 0 !important;
     margin: auto !important;
+    /* (drawn a pixel high of the square's middle otherwise) */
+    translate: 0 1px;
   }
 
   & > .toolbarbutton-text {
@@ -5767,14 +5769,9 @@ zen-folder .tab-reset-button {
     font-size: var(--zia-text-size) !important;
   }
 
-  /* tinted with the space's colour, as the space's name is: the title and
-     its close button alike */
+  /* tinted with the space's colour, as the space's name is */
   &[zia-space-colored="true"] #sidebar-title {
     color: color-mix(in srgb, var(--zen-primary-color, white) var(--zia-space-name-tint), white) !important;
-  }
-
-  &[zia-space-colored="true"] #sidebar-close {
-    fill: color-mix(in srgb, var(--zen-primary-color, white) var(--zia-space-name-tint), white) !important;
   }
 
   /* no arrow after the title either: it's still a button for the menu */
@@ -5801,8 +5798,9 @@ zen-folder .tab-reset-button {
     background-color: transparent !important;
     list-style-image: url("chrome://sine/content/zia/icons/ui/x.svg") !important;
     -moz-context-properties: fill, fill-opacity !important;
-    fill: rgb(255, 255, 255) !important;
-    fill-opacity: 1 !important;
+    /* the light grey of the toolbar's icons (downloads beside the space's
+       name, the panel's opposite number) */
+    fill: var(--toolbarbutton-icon-fill, currentColor) !important;
 
     & > .toolbarbutton-icon {
       width: 16px !important;

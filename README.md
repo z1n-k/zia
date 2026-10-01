@@ -186,12 +186,6 @@ Keep a split of two sites as one essential: drag a two-site split onto the essen
 
 </details>
 
-### Bookmarks and History
-
-Firefox's Bookmarks, History and Synced Tabs panels become a second sidebar on the other side of the page, full height on the window's own background. They're measured off your tabs, so the text, rows, spacing and highlights are the tabs' own, and the title takes your space's colour. Open them with **Cmd+B** (Bookmarks), **Cmd+Shift+H** (History), or **View > Sidebar**, and drag the gap beside the page to resize.
-
-![The Bookmarks panel as a second sidebar beside the page](https://raw.githubusercontent.com/z1n-k/zia/readme-images/sidebar-panels.webp)
-
 ### Glass
 
 The compact sidebar, the hover cards and the address pop-up are frosted glass: slightly see-through, with the page blurred behind them. Each can be switched back to solid.
@@ -222,6 +216,12 @@ Drag a tab over the page and drop cards rise on either side, growing and turning
 - Your pinned extensions sit in the focused pane's toolbar and move with the focus.
 
 </details>
+
+### Bookmarks and History
+
+Firefox's Bookmarks, History and Synced Tabs panels become a second sidebar on the other side of the page, full height on the window's own background. They're measured off your tabs, so the text, rows, spacing and highlights are the tabs' own, and the title takes your space's colour. Open them with **Cmd+B** (Bookmarks), **Cmd+Shift+H** (History), or **View > Sidebar**, and drag the gap beside the page to resize.
+
+![The Bookmarks panel as a second sidebar beside the page](https://raw.githubusercontent.com/z1n-k/zia/readme-images/sidebar-panels.webp)
 
 ### Music
 

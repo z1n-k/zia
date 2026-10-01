@@ -69,14 +69,9 @@
     font-size: var(--zia-text-size) !important;
   }
 
-  /* tinted with the space's colour, as the space's name is: the title and
-     its close button alike */
+  /* tinted with the space's colour, as the space's name is */
   &[zia-space-colored="true"] #sidebar-title {
     color: color-mix(in srgb, var(--zen-primary-color, white) var(--zia-space-name-tint), white) !important;
-  }
-
-  &[zia-space-colored="true"] #sidebar-close {
-    fill: color-mix(in srgb, var(--zen-primary-color, white) var(--zia-space-name-tint), white) !important;
   }
 
   /* no arrow after the title either: it's still a button for the menu */
@@ -103,8 +98,9 @@
     background-color: transparent !important;
     list-style-image: url("chrome://sine/content/zia/icons/ui/x.svg") !important;
     -moz-context-properties: fill, fill-opacity !important;
-    fill: rgb(255, 255, 255) !important;
-    fill-opacity: 1 !important;
+    /* the light grey of the toolbar's icons (downloads beside the space's
+       name, the panel's opposite number) */
+    fill: var(--toolbarbutton-icon-fill, currentColor) !important;
 
     & > .toolbarbutton-icon {
       width: 16px !important;

@@ -8,8 +8,9 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
-- The Bookmarks, History and Synced Tabs panel's close button takes the
-  space's colour, as its title does.
+- The Bookmarks, History and Synced Tabs panel's close button is the light
+  grey of the toolbar's icons, like the downloads button.
+- README: Bookmarks and History comes after Split view.
 
 ### Fixed
 
