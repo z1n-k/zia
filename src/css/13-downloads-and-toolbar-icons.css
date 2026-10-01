@@ -61,26 +61,27 @@
   }
 }
 
-/* An even square everywhere, its icon in the middle: Windows gives toolbar
-   buttons more padding, which stretched the hover square tall, and on
-   macOS the button's own padding left more room below the icon than above */
-#downloads-button {
-  width: var(--zia-space-pill-height) !important;
-  min-width: var(--zia-space-pill-height) !important;
-  max-width: var(--zia-space-pill-height) !important;
-  padding: 0 !important;
-  corner-shape: round !important;
-
-  & > :is(.toolbarbutton-badge-stack, #downloads-indicator-anchor, .toolbarbutton-icon) {
+/* Windows gives toolbar buttons more padding, which stretched the hover
+   square into an uneven tall shape; it's held to an even square there. */
+@media (-moz-platform: windows) {
+  #downloads-button {
+    width: var(--zia-space-pill-height) !important;
+    min-width: var(--zia-space-pill-height) !important;
+    max-width: var(--zia-space-pill-height) !important;
     padding: 0 !important;
-    margin: auto !important;
-    /* (drawn a pixel high of the square's middle otherwise) */
-    translate: 0 1px;
-  }
+    corner-shape: round !important;
 
-  & > .toolbarbutton-text {
-    display: none !important;
+    & > :is(.toolbarbutton-badge-stack, #downloads-indicator-anchor, .toolbarbutton-icon) {
+      padding: 0 !important;
+      margin: auto !important;
+    }
   }
+}
+
+/* The icon in the vertical middle of its hover square: drawn a pixel high
+   of it otherwise, more room below it than above */
+#downloads-button > :is(.toolbarbutton-badge-stack, #downloads-indicator-anchor, .toolbarbutton-icon) {
+  translate: 0 1px;
 }
 
 #downloads-indicator-icon {

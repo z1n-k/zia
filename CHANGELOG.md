@@ -15,8 +15,7 @@ Every release of Zia, newest first. The format follows
 ### Fixed
 
 - The downloads button beside the space's name had more room below its
-  icon than above, in its hover background: it's an even square with the
-  icon in the middle on every system now.
+  icon than above, in its hover background: the icon sits in its middle.
 
 ## [2.80.2] — 2026-10-01
 
