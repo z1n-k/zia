@@ -88,8 +88,9 @@
   margin-inline-start: 6px !important;
   overflow: visible !important;
   /* the glance itself stays square to the tab, so this cut is level: it
-   ends where the tab does (--zia-glance-cut, measured by zia.uc.js) */
-  clip-path: inset(-12px -12px var(--zia-glance-cut, -12px) -12px);
+   ends where the tab does (--zia-glance-cut, measured by zia.uc.js; till
+   then, about where it will be: the tab ends just under the glance) */
+  clip-path: inset(-12px -12px var(--zia-glance-cut, -2px) -12px);
 
   /* taller than the tab has room for, so its foot, corners and all, is
    always below the cut */
@@ -129,18 +130,18 @@
 }
 
 :root:not([zia-glance-thumb-off]) .tabbrowser-tab:not([zen-essential]):has(> .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]) > .tab-stack > .tab-content {
-  /* the close button after the glance, laid over its middle without
-   taking any room (36px picture, 22px button: net width nil) */
-  & > .tabbrowser-tab[zen-glance-tab] {
+  /* the close button stays just where it always is, and the glance goes
+   before it, centred under it (36px picture, 22px button) */
+  & > .tabbrowser-tab[zen-glance-tab]:not(#zia-none) {
     order: 1;
+    margin-inline-end: calc((36px + var(--zia-close-size)) / -2) !important;
   }
 
   & > .tab-close-button {
     order: 2;
+    display: flex !important;
     position: relative;
     z-index: 1;
-    margin-inline-start: calc((36px + var(--zia-close-size)) / -2) !important;
-    margin-inline-end: calc((36px - var(--zia-close-size)) / 2) !important;
     background-color: transparent !important;
   }
 
@@ -157,7 +158,7 @@
 
 /* hovering the tab: the picture tips a little further and dims under the
  close button */
-:root:not([zia-glance-thumb-off]) .tabbrowser-tab:not([zen-essential]):hover > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab] > .tab-stack:not(#zia-none) {
+:root:not([zia-glance-thumb-off]) .tabbrowser-tab:not([zen-essential]):hover > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]:not(#zia-none) > .tab-stack:not(#zia-none) {
   rotate: -12deg;
 }
 

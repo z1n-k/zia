@@ -122,6 +122,8 @@
     // A glance opening: photographed as it appears, as it loads, and after
     new MutationObserver((records) => {
       if (records.some((r) => r.target.hasAttribute?.("zen-glance-tab"))) {
+        // cut where the tab ends before it's first drawn, not after
+        glanceTabsOnNormalTabs().forEach(cutGlanceAtTab);
         [150, 600, 1500].forEach((ms) => setTimeout(photographShowing, ms));
       }
     }).observe(gBrowser.tabContainer, { subtree: true, attributes: true, attributeFilter: ["zen-glance-tab"] });
