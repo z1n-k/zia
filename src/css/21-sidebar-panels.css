@@ -133,6 +133,10 @@
 
   /* its sides are the tab sidebar's, mirrored: as far from the window's
      edge, and from the page, as the tabs are (measured by zia.uc.js) */
+  & #sidebar-box {
+    box-sizing: border-box !important;
+  }
+
   & #sidebar-box[sidebar-positionend] {
     margin-inline: 0 !important;
     padding-inline: var(--zia-panel-pad-card, 0px) var(--zia-panel-pad-window, var(--zia-card-gap)) !important;

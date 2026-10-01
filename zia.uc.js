@@ -14867,6 +14867,25 @@
     };
     place();
     Services.prefs.addObserver(SIDEBAR_BESIDE_PREF, place);
+
+    // no wider than Zen lets the tab sidebar be (dragging its edge stops
+    // there too), and following that setting if it's changed
+    const MAX_PREF = "zen.view.sidebar-expanded.max-width";
+    const cap = () => {
+      const max = Services.prefs.getIntPref(MAX_PREF, 0);
+      if (max > 0 && Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true)) {
+        box.style.setProperty("max-width", `${max}px`, "important");
+      } else {
+        box.style.removeProperty("max-width");
+      }
+    };
+    cap();
+    Services.prefs.addObserver(MAX_PREF, cap);
+    Services.prefs.addObserver(SIDEBAR_BESIDE_PREF, cap);
+    window.addEventListener("unload", () => {
+      Services.prefs.removeObserver(MAX_PREF, cap);
+      Services.prefs.removeObserver(SIDEBAR_BESIDE_PREF, cap);
+    });
     window.addEventListener("unload", () => Services.prefs.removeObserver(SIDEBAR_BESIDE_PREF, place));
     // moving it to the other side
     new MutationObserver(place).observe(box, { attributes: true, attributeFilter: ["sidebar-positionend"] });
