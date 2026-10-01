@@ -459,7 +459,7 @@
     // It slides in from the window's edge as it opens, the page giving way
     // to it, and back out as it closes, as the tab sidebar does: its outer
     // margin runs from minus its width to nothing
-    const SLIDE = { duration: 280, easing: "cubic-bezier(0.2, 0.9, 0.3, 1)" };
+    const SLIDE = { duration: 180, easing: "cubic-bezier(0.25, 1, 0.5, 1)" };
     const beside = () => Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true) && !matchMedia("(prefers-reduced-motion: reduce)").matches;
     const frames = () => {
       const side = box.hasAttribute("sidebar-positionend") ? "marginInlineEnd" : "marginInlineStart";
