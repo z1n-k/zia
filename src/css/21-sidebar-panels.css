@@ -1,9 +1,12 @@
 
 /* Firefox's own sidebar panels (Bookmarks, History, Synced Tabs: Cmd+B,
-   Cmd+Shift+H, or View > Sidebar), in Zia's look: a dark panel at the
-   page's side, parted from it by a hairline, with a header like a tab
-   card's. What's inside each panel is in zia-sidebar.css, loaded into it
-   by zia.uc.js. Off in Zia's settings (zia-panels-plain on the root). */
+   Cmd+Shift+H, or View > Sidebar), in Zia's look. Beside the page (Zia
+   moves it there, zia-panels-beside on the root) it's a second sidebar,
+   on the window's own background like the tabs; left inside the page's
+   card it's a dark panel parted from the page by a hairline. Either way
+   the header is like a tab card's. What's inside each panel is in
+   zia-sidebar.css, loaded into it by zia.uc.js. Off in Zia's settings
+   (zia-panels-plain on the root). */
 :root:not([zia-panels-plain]) {
   & #sidebar-box {
     background: var(--zia-fallback-bg) !important;
@@ -91,5 +94,51 @@
 
   & #sidebar {
     background: transparent !important;
+  }
+}
+
+/* Beside the page: no panel of its own, just the window's background
+   (and its space colour and blur) as the tab sidebar has, full height
+   from the card's top to its bottom */
+:root[zia-panels-beside]:not([zia-panels-plain]) {
+  & #sidebar-box,
+  & #sidebar-box[sidebar-positionend] {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    margin-block: var(--zia-card-top-gap) var(--zia-card-gap) !important;
+  }
+
+  /* laid out in the order Zia put them in, beside the card, not by the
+     order Firefox gives them for where they used to be */
+  & :is(#sidebar-box, #sidebar-splitter) {
+    order: 0 !important;
+  }
+
+  & #sidebar-box[sidebar-positionend] {
+    margin-inline-end: 2px !important;
+  }
+
+  & #sidebar-box:not([sidebar-positionend]) {
+    margin-inline-start: 2px !important;
+  }
+
+  /* the gap between it and the card, which is also the handle to resize
+     it by */
+  & #sidebar-splitter {
+    width: var(--zia-card-gap) !important;
+    min-width: var(--zia-card-gap) !important;
+    margin: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    opacity: 1 !important;
+  }
+
+  & #zen-appcontent-wrapper:has(+ #sidebar-splitter:not([hidden])) {
+    margin-inline-end: 0 !important;
+  }
+
+  & #sidebar-splitter:not([hidden]) + #zen-appcontent-wrapper {
+    margin-inline-start: 0 !important;
   }
 }

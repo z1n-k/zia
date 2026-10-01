@@ -93,6 +93,12 @@
   },
   {
     "type": "checkbox",
+    "label": "Bookmarks, History and Synced Tabs panels beside the page, full height, as a second sidebar",
+    "property": "zia.sidebar-panels.beside",
+    "defaultValue": true
+  },
+  {
+    "type": "checkbox",
     "label": "Tab and folder hover cards",
     "property": "zia.features.tab-hover-cards",
     "defaultValue": true

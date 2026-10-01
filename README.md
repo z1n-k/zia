@@ -131,7 +131,7 @@ Essentials sit as tiles, four to a row (six when the sidebar is wide). A space's
 - Asleep tabs can be dimmed (tabs, essentials, and folders whose tabs are all asleep).
 - Zen's pop-up notices get a close button, so they don't have to be waited out.
 - Downloads sit next to the space name with a progress ring.
-- Firefox's Bookmarks, History and Synced Tabs panels (Cmd+B, Cmd+Shift+H, or View > Sidebar) match: a dark panel beside the page, a soft search field and quiet rows.
+- Firefox's Bookmarks, History and Synced Tabs panels (Cmd+B, Cmd+Shift+H, or View > Sidebar) match: a second sidebar beside the page, full height on the window's own background, with a soft search field and quiet rows.
 
 </details>
 
@@ -326,6 +326,7 @@ The first folder takes a little while as the model downloads and the icon names 
 | Colour of the tab number you type: Zia blue or the space's colour | Zia blue |
 | A glance shows on its tab as a small picture of the page, as in Dia | on |
 | Bookmarks, History and Synced Tabs panels in Zia's look | on |
+| Bookmarks, History and Synced Tabs panels beside the page, full height, as a second sidebar | on |
 | Show the welcome tour after updates that bring something new | on |
 | Show the welcome tour again (turns itself back off) | off |
 | Tab and folder hover cards | on |
