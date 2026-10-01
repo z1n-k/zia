@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- With asleep tabs dimmed, collapsing a folder hides a folder inside it
+  again: the dimming had kept the inner folder showing.
+
 ## [2.78.1] — 2026-10-01
 
 ### Fixed
