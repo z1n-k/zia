@@ -461,9 +461,40 @@
     // sidebar (its outer margin, from minus its width to nothing, with
     // Zen's own spring: no bounce, a tenth of a second)
     const beside = () => Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true) && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // While a sidebar slides, the page is held at the width it had: were
+    // it resized every frame, the site would redraw a frame or two behind
+    // each time and anything near its edge would shake. The card still
+    // slides, showing more or less of the page; the site is resized once,
+    // when the slide is done.
+    let frozen = [];
+    const freezePages = () => {
+      frozen = [...document.querySelectorAll("#tabbrowser-tabpanels browser[type='content']")]
+        .filter((browser) => browser.getBoundingClientRect().width > 0)
+        .map((browser) => {
+          const width = `${browser.getBoundingClientRect().width}px`;
+          for (const name of ["width", "min-width", "max-width"]) {
+            browser.style.setProperty(name, width, "important");
+          }
+          return browser;
+        });
+    };
+    const thawPages = () => {
+      for (const browser of frozen) {
+        for (const name of ["width", "min-width", "max-width"]) {
+          browser.style.removeProperty(name);
+        }
+      }
+      frozen = [];
+    };
     let slides = 0;
     const sliding = (on) => {
+      const before = slides;
       slides = Math.max(0, slides + (on ? 1 : -1));
+      if (slides && !before) {
+        freezePages();
+      } else if (!slides && before) {
+        thawPages();
+      }
       // a little after it stops, as the site catches up with its new size
       if (slides) {
         setFlag("zia-panel-sliding", true);

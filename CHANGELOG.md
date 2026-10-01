@@ -14,9 +14,11 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
-- Collapsing or opening the sidebar no longer flashes a black strip at the
-  page's edge while the site catches up with its new width: the strip is
-  the site's own colour. (Dia shows it too.)
+- Collapsing or opening the sidebar no longer jolts the page: the site is
+  held at its width while the sidebar slides and resized once at the end,
+  rather than redrawn a frame behind on every frame (which shook anything
+  near its edge), and the strip it doesn't yet cover is the site's own
+  colour, not black. (Dia does it too.)
 
 ## [2.78.3] — 2026-10-01
 
