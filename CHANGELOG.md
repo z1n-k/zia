@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Windows: flicking the mouse to the top of the screen missed minimise,
+  maximise and close, landing in the gap above the page's card instead.
+  Their click area now reaches the window's top edge, as in Windows
+  itself; they look just the same.
+
 ## [2.81.1] — 2026-10-01
 
 ### Fixed
