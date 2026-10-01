@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Glance's picture on a tab sinks back into the tab when the glance is
+  opened as a tab of its own, closed, or opened into a split, instead of
+  vanishing and covering the site's icon. Thanks to
+  [Zylaah](https://github.com/Zylaah).
+
 ## [2.80.4] — 2026-10-01
 
 ### Fixed

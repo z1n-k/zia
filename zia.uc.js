@@ -14371,7 +14371,7 @@
   // A close is marked as soon as the picture starts sinking, so the glance
   // mark coming off afterwards does not play the sink a second time.
   // Splitting also drops the mark, then immediately rebuilds the tab strip.
-  // The sink waits out that rebuild, or the strip work eats the 0.2s and
+  // The sink waits out that rebuild, or the strip work eats into it and
   // the drop looks quicker than a close or an expand.
   const glanceClosing = new WeakSet();
   let glanceSplitOpen = false;
@@ -14510,7 +14510,7 @@
       });
       setTimeout(drop, GLANCE_THUMB_SINK_MS + (fromHover ? GLANCE_THUMB_UNTIP_MS : 0) + 80);
     };
-    // held off the tab until the strip has finished moving, so the 0.2s
+    // held off the tab until the strip has finished moving, so the sink
     // starts after that work instead of during it
     clearGlanceThumb(glanceTab);
     if (defer) {
