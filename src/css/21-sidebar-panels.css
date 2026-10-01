@@ -200,9 +200,9 @@
     &::before {
       content: "";
       position: absolute;
-      /* stopping short of the top and bottom, as the sidebar's own line
-         stops short of its sides, and half as bright: a quiet parting */
-      inset-block: 16px;
+      /* the window's full height, through the panel's own gaps above and
+         below, and half as bright as the sidebar's line: a quiet parting */
+      inset-block: calc(-1 * var(--zia-card-top-gap)) calc(-1 * var(--zia-card-gap));
       width: 1px;
       background: rgba(255, 255, 255, 0.065);
       pointer-events: none;
