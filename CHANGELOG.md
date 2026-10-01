@@ -9,7 +9,8 @@ Every release of Zia, newest first. The format follows
 ### Added
 
 - A glance on a normal tab shows as a small picture of the page, tipped at an
-  angle and cut off by the tab's bottom edge as in Dia, instead of an icon. It can be switched off in settings.
+  angle and cut off by the tab's bottom edge as in Dia, instead of an icon.
+  It can be switched off in settings.
 
 ## [2.76.0] — 2026-09-30
 
