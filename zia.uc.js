@@ -14926,52 +14926,9 @@
     // sidebar (its outer margin, from minus its width to nothing, with
     // Zen's own spring: no bounce, a tenth of a second)
     const beside = () => Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true) && !matchMedia("(prefers-reduced-motion: reduce)").matches;
-    // While a sidebar slides, the page is held at the width it had: were
-    // it resized every frame, the site would redraw a frame or two behind
-    // each time and anything near its edge would shake. The card still
-    // slides, showing more or less of the page; the site is resized once,
-    // when the slide is done.
-    // It's held against the card's edge that stays still (the one away
-    // from the sliding sidebar), so only the other edge moves: the page
-    // opens up, or is covered, from that side, and what's on the still
-    // side doesn't move at all.
-    let frozen = [];
-    const HELD = ["width", "min-width", "max-width", "margin-inline-start", "margin-inline-end", "justify-self"];
-    const freezePages = (stillSide) => {
-      frozen = [...document.querySelectorAll("#tabbrowser-tabpanels browser[type='content']")]
-        .filter((browser) => browser.getBoundingClientRect().width > 0)
-        .map((browser) => {
-          const width = `${browser.getBoundingClientRect().width}px`;
-          for (const name of ["width", "min-width", "max-width"]) {
-            browser.style.setProperty(name, width, "important");
-          }
-          const atEnd = stillSide === "right";
-          browser.style.setProperty(atEnd ? "margin-inline-start" : "margin-inline-end", "auto", "important");
-          browser.style.setProperty("justify-self", atEnd ? "end" : "start", "important");
-          return browser;
-        });
-    };
-    const thawPages = () => {
-      for (const browser of frozen) {
-        for (const name of HELD) {
-          browser.style.removeProperty(name);
-        }
-      }
-      frozen = [];
-    };
     let slides = 0;
-    // which of the card's edges stays still: the tab sidebar's slide moves
-    // the edge on its side, the panel's the edge on its own
-    const tabsOnRight = () => document.documentElement.getAttribute("zen-right-side") === "true";
-    const panelOnRight = () => box.hasAttribute("sidebar-positionend");
-    const sliding = (on, stillSide) => {
-      const before = slides;
+    const sliding = (on) => {
       slides = Math.max(0, slides + (on ? 1 : -1));
-      if (slides && !before) {
-        freezePages(stillSide);
-      } else if (!slides && before) {
-        thawPages();
-      }
       // a little after it stops, as the site catches up with its new size
       if (slides) {
         setFlag("zia-panel-sliding", true);
@@ -14986,13 +14943,12 @@
       const now = document.documentElement.hasAttribute("zen-compact-animating");
       if (now !== zenSliding) {
         zenSliding = now;
-        sliding(now, tabsOnRight() ? "left" : "right");
+        sliding(now);
       }
     }).observe(document.documentElement, { attributes: true, attributeFilter: ["zen-compact-animating"] });
     const slide = (opening) => {
-      // (placed off the edge first, so the page is held at its full width)
       const run = slideBox(opening);
-      sliding(true, panelOnRight() ? "left" : "right");
+      sliding(true);
       return run.finally(() => sliding(false));
     };
     const slideBox = (opening) => {
