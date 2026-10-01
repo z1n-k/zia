@@ -211,8 +211,11 @@ tab-group[split-view-group][zia-no-glow] > .tab-group-container {
 
 /* The section a dragged tab or folder comes from goes above the
    essentials while it's dragged: otherwise the essentials' icons, drawn on
-   a layer of their own, showed through it when it was dragged up over them */
-:root[zia-dragging-tab] :is(zen-workspace, .zen-workspace-pinned-tabs-section, .zen-workspace-normal-tabs-section):has([zia-dragging]) {
+   a layer of their own, showed through it when it was dragged up over them.
+   Not while it's going into the essentials: raised, the section covered
+   them, and Zen saw the tab list under the pointer and refused the drop
+   (the row is hidden then anyway, its tile shown instead) */
+:root[zia-dragging-tab]:not([zia-drag-over-essentials]) :is(zen-workspace, .zen-workspace-pinned-tabs-section, .zen-workspace-normal-tabs-section):has([zia-dragging]) {
   position: relative;
   z-index: 50 !important;
 }

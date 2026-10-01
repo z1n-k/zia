@@ -2252,6 +2252,7 @@
         if (drag.away) {
           debugDrag(event, point, sidebar, null);
           drag.essentials = false;
+          setFlag("zia-drag-over-essentials", false);
           hideProxy();
           if (!drag.folder && !drag.split) {
             showThumb(point.x, point.y);
@@ -2267,7 +2268,10 @@
         const hasTiles = !!grid?.querySelector(".tabbrowser-tab[zen-essential]:not([zia-essential-proxy])");
         const promo = over?.closest?.("zen-essentials-promo") || null;
 
-        let overEssentials = !!promo || !!over?.closest?.("#zen-essentials") || inBox(essentials, point);
+        // (#zen-essentials can measure 0px tall with the tiles drawn above
+        // it, so the space's own grid is measured too)
+        let overEssentials =
+          !!promo || !!over?.closest?.("#zen-essentials, .zen-essentials-container") || inBox(essentials, point) || inBox(grid, point);
 
         drag.firstTop = drag.rows?.length ? Math.min(...drag.rows.map((row) => row.top)) : null;
         if (!overEssentials && !hasTiles && drag.firstTop != null) {
@@ -2313,6 +2317,9 @@
             window.ziaDragDebug.push(line);
           }
         }
+        // the dragged tab's section stops covering the essentials, so Zen
+        // sees them under the pointer and takes the drop
+        setFlag("zia-drag-over-essentials", !!(drag.essentials || drag.splitEssential));
         drag.noTiles = drag.essentials && !hasTiles && !promo;
         makeRoom(drag.noTiles ? document.getElementById("zen-essentials") || grid : null);
         if (drag.essentials) {
@@ -3581,6 +3588,7 @@
       drag = null;
       pending = null;
       document.documentElement.removeAttribute("zia-dragging-tab");
+      setFlag("zia-drag-over-essentials", false);
       muteZenHaptics(false);
       reclip();
       document.querySelectorAll("[zia-drop-slot]").forEach((folder) => folder.removeAttribute("zia-drop-slot"));

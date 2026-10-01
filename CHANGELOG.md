@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Dragging a tab onto the essentials did nothing: it no longer turned into
+  a tile on the way, and didn't become an essential when dropped. The
+  dragged tab's section was raised over the essentials (so their icons
+  didn't show through it), which hid them from Zen, and with separate
+  essentials per container Zia looked for them in an empty box.
+
 ## [2.81.0] — 2026-10-01
 
 ### Added
