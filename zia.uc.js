@@ -14287,6 +14287,7 @@
   }
 
   // Where the tab the glance sits on ends, so the picture is cut off there
+  // (insets from the glance's own edges)
   function cutGlanceAtTab(glanceTab) {
     const background = glanceTab.parentElement
       ?.closest(".tabbrowser-tab")
@@ -14294,8 +14295,12 @@
     if (!background) {
       return;
     }
-    const cut = glanceTab.getBoundingClientRect().bottom - background.getBoundingClientRect().bottom;
-    glanceTab.style.setProperty("--zia-glance-cut", `${Math.round(cut * 2) / 2}px`);
+    const glance = glanceTab.getBoundingClientRect();
+    const tab = background.getBoundingClientRect();
+    const px = (n) => `${Math.round(n * 2) / 2}px`;
+    glanceTab.style.setProperty("--zia-glance-cut-top", px(tab.top - glance.top));
+    glanceTab.style.setProperty("--zia-glance-cut-right", px(glance.right - tab.right));
+    glanceTab.style.setProperty("--zia-glance-cut-bottom", px(glance.bottom - tab.bottom));
   }
 
   // The canvas that sits over a glance tab's tile

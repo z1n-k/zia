@@ -5512,10 +5512,13 @@ zen-folder .tab-reset-button {
   min-height: 30px !important;
   margin-inline-start: 6px !important;
   overflow: visible !important;
-  /* the glance itself stays square to the tab, so this cut is level: it
-   ends where the tab does (--zia-glance-cut, measured by zia.uc.js; till
-   then, about where it will be: the tab ends just under the glance) */
-  clip-path: inset(-12px -12px var(--zia-glance-cut, -2px) -12px);
+  /* the glance itself stays square to the tab, so this cut is level: the
+   picture ends where the tab does, round corners and all (the tab's edges
+   are measured by zia.uc.js; till then, about where they will be) */
+  clip-path: inset(
+    var(--zia-glance-cut-top, -2px) var(--zia-glance-cut-right, -4px)
+    var(--zia-glance-cut-bottom, -2px) -12px round var(--zia-tab-radius)
+  );
 
   /* taller than the tab has room for, so its foot, corners and all, is
    always below the cut */
@@ -5584,7 +5587,12 @@ zen-folder .tab-reset-button {
 /* hovering the tab: the picture tips a little further and dims under the
  close button */
 :root:not([zia-glance-thumb-off]) .tabbrowser-tab:not([zen-essential]):hover > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]:not(#zia-none) > .tab-stack:not(#zia-none) {
-  rotate: -12deg;
+  rotate: -16deg;
+}
+
+/* the tab's edge is drawn over the picture, as if it were tucked in */
+:root:not([zia-glance-thumb-off]) .tabbrowser-tab:not([zen-essential]):has(> .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]) > .tab-stack > .tab-background::after {
+  z-index: 2 !important;
 }
 
 :root:not([zia-glance-thumb-off]) .tabbrowser-tab:not([zen-essential]):hover > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab] > .tab-stack > .zia-glance-thumb {
