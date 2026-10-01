@@ -14931,8 +14931,13 @@
     // each time and anything near its edge would shake. The card still
     // slides, showing more or less of the page; the site is resized once,
     // when the slide is done.
+    // It's held against the card's edge that stays still (the one away
+    // from the sliding sidebar), so only the other edge moves: the page
+    // opens up, or is covered, from that side, and what's on the still
+    // side doesn't move at all.
     let frozen = [];
-    const freezePages = () => {
+    const HELD = ["width", "min-width", "max-width", "margin-inline-start", "margin-inline-end", "justify-self"];
+    const freezePages = (stillSide) => {
       frozen = [...document.querySelectorAll("#tabbrowser-tabpanels browser[type='content']")]
         .filter((browser) => browser.getBoundingClientRect().width > 0)
         .map((browser) => {
@@ -14940,23 +14945,30 @@
           for (const name of ["width", "min-width", "max-width"]) {
             browser.style.setProperty(name, width, "important");
           }
+          const atEnd = stillSide === "right";
+          browser.style.setProperty(atEnd ? "margin-inline-start" : "margin-inline-end", "auto", "important");
+          browser.style.setProperty("justify-self", atEnd ? "end" : "start", "important");
           return browser;
         });
     };
     const thawPages = () => {
       for (const browser of frozen) {
-        for (const name of ["width", "min-width", "max-width"]) {
+        for (const name of HELD) {
           browser.style.removeProperty(name);
         }
       }
       frozen = [];
     };
     let slides = 0;
-    const sliding = (on) => {
+    // which of the card's edges stays still: the tab sidebar's slide moves
+    // the edge on its side, the panel's the edge on its own
+    const tabsOnRight = () => document.documentElement.getAttribute("zen-right-side") === "true";
+    const panelOnRight = () => box.hasAttribute("sidebar-positionend");
+    const sliding = (on, stillSide) => {
       const before = slides;
       slides = Math.max(0, slides + (on ? 1 : -1));
       if (slides && !before) {
-        freezePages();
+        freezePages(stillSide);
       } else if (!slides && before) {
         thawPages();
       }
@@ -14974,13 +14986,13 @@
       const now = document.documentElement.hasAttribute("zen-compact-animating");
       if (now !== zenSliding) {
         zenSliding = now;
-        sliding(now);
+        sliding(now, tabsOnRight() ? "left" : "right");
       }
     }).observe(document.documentElement, { attributes: true, attributeFilter: ["zen-compact-animating"] });
     const slide = (opening) => {
       // (placed off the edge first, so the page is held at its full width)
       const run = slideBox(opening);
-      sliding(true);
+      sliding(true, panelOnRight() ? "left" : "right");
       return run.finally(() => sliding(false));
     };
     const slideBox = (opening) => {
