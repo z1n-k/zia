@@ -5882,3 +5882,31 @@ zen-folder .tab-reset-button {
   will-change: transform !important;
   backface-visibility: hidden !important;
 }
+
+/* On the same side as the tab sidebar (both left, or both right), the two
+   ran into each other: a hairline parts them, the sidebar's own separator
+   line stood on end. Not when they're on opposite sides, nor when compact
+   mode has the tab sidebar out of the way. */
+:root[zia-panels-beside]:not([zia-panels-plain]):not([zen-compact-mode="true"]) {
+  &:not([zen-right-side="true"]) #sidebar-box:not([sidebar-positionend]),
+  &[zen-right-side="true"] #sidebar-box[sidebar-positionend] {
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset-block: 0;
+      width: 1px;
+      background: rgba(255, 255, 255, 0.13);
+      pointer-events: none;
+    }
+  }
+
+  &:not([zen-right-side="true"]) #sidebar-box:not([sidebar-positionend])::before {
+    inset-inline-start: 0;
+  }
+
+  &[zen-right-side="true"] #sidebar-box[sidebar-positionend]::before {
+    inset-inline-end: 0;
+  }
+}
