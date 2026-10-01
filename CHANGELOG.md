@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- A glance's picture on a tab rises out of the tab as the glance opens,
+  overshoots a touch and settles, as in Dia.
+
 ## [2.77.0] — 2026-10-01
 
 ### Added

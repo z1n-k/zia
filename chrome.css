@@ -5533,6 +5533,8 @@ zen-folder .tab-reset-button {
     rotate: -8deg;
     translate: 0 3px;
     transition: rotate 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    /* rises out of the tab as the glance opens, overshoots and settles */
+    animation: zia-glance-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards;
   }
 
   & > .tab-stack > .tab-background {
@@ -5600,6 +5602,21 @@ zen-folder .tab-reset-button {
 
 :root:not([zia-glance-thumb-off]) .tabbrowser-tab[zen-glance-tab] > .tab-stack > .zia-glance-thumb {
   transition: filter 0.15s ease;
+}
+
+@keyframes zia-glance-rise {
+  0% {
+    transform: translateY(34px) rotate(2deg);
+  }
+  55% {
+    transform: translateY(-3px) rotate(-4deg);
+  }
+  78% {
+    transform: translateY(1px) rotate(1deg);
+  }
+  100% {
+    transform: none;
+  }
 }
 
 :root[zia-glance-thumb-off] .zia-glance-thumb {
