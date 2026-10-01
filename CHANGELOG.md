@@ -4,14 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.80.2] — 2026-10-01
 
 ### Fixed
 
 - The Bookmarks, History and Synced Tabs panel on the same side as the tab
   sidebar ran straight into it: a hairline, like the sidebar's separator,
-  parts them now, with the same gap on both sides of it. Opposite sides
-  are unchanged.
+  parts them now, the window's full height, with the same gap on both
+  sides of it, and the panel slides in and out from under the page
+  rather than across the tabs. Opposite sides are unchanged.
 
 ## [2.80.1] — 2026-10-01
 
