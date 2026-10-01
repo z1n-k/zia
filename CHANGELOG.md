@@ -8,9 +8,8 @@ Every release of Zia, newest first. The format follows
 
 ### Added
 
-- A glance on a normal tab shows as a small picture of the page, as in Dia,
-  instead of an icon. Hover the tab and the picture dims under an ×; click it
-  to close the glance. It can be switched off in settings.
+- A glance on a normal tab shows as a small picture of the page, tipped at an
+  angle as in Dia, instead of an icon. It can be switched off in settings.
 
 ## [2.76.0] — 2026-09-30
 

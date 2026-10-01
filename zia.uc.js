@@ -14269,14 +14269,13 @@
   }
 
   // A page peeked at with Glance shows on its tab as a small picture of the
-  // page, as in Dia, in place of Zen's icon tile. Hover the tab and the
-  // picture dims under an ×; click it and the glance closes. The picture is
+  // page, tipped at an angle, as in Dia, in place of Zen's icon tile. It is
   // taken while the glance is on screen (Zia can only photograph a page
   // that's showing), when it opens, as it loads, and every few seconds
   // after, and kept when you switch away.
   const GLANCE_THUMB_PREF = "zia.glance.thumbnail";
-  const GLANCE_THUMB_W = 34;
-  const GLANCE_THUMB_H = 22;
+  const GLANCE_THUMB_W = 32;
+  const GLANCE_THUMB_H = 24;
   const GLANCE_THUMB_EVERY = 3000;
 
   function glanceTabsOnNormalTabs() {
@@ -14285,7 +14284,7 @@
     )];
   }
 
-  // The canvas and the × that sit over a glance tab's tile
+  // The canvas that sits over a glance tab's tile
   function glanceThumbParts(glanceTab) {
     const stack = glanceTab.querySelector(":scope > .tab-stack");
     if (!stack) {
@@ -14298,11 +14297,7 @@
       const ratio = Math.max(1, window.devicePixelRatio || 1);
       canvas.width = Math.round(GLANCE_THUMB_W * ratio);
       canvas.height = Math.round(GLANCE_THUMB_H * ratio);
-      const close = document.createElementNS(HTML_NS, "div");
-      close.className = "zia-glance-close";
-      close.setAttribute("role", "button");
-      close.setAttribute("aria-label", "Close glance");
-      stack.append(canvas, close);
+      stack.append(canvas);
     }
     return canvas;
   }
@@ -14334,19 +14329,6 @@
     ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
     bitmap.close();
     glanceTab.setAttribute("zia-glance-thumb", "true");
-  }
-
-  function closeGlanceFrom(glanceTab) {
-    const parent = glanceTab.parentElement?.closest(".tabbrowser-tab");
-    try {
-      if ((glanceTab.selected || parent?.selected) && window.gZenGlanceManager?.closeGlance) {
-        window.gZenGlanceManager.closeGlance();
-      } else {
-        gBrowser.removeTab(glanceTab, { animate: false });
-      }
-    } catch (err) {
-      noteError("glance thumbnail: close", err);
-    }
   }
 
   function watchGlanceThumbs() {
@@ -14388,33 +14370,6 @@
     });
     setInterval(photographShowing, GLANCE_THUMB_EVERY);
     photographShowing();
-
-    // The × over the picture closes the glance, without choosing its tab
-    gBrowser.tabContainer.addEventListener(
-      "click",
-      (event) => {
-        const close = event.target?.closest?.(".zia-glance-close");
-        const glanceTab = close?.closest(".tabbrowser-tab[zen-glance-tab]");
-        if (!glanceTab || !on()) {
-          return;
-        }
-        event.preventDefault();
-        event.stopPropagation();
-        closeGlanceFrom(glanceTab);
-      },
-      true
-    );
-    for (const type of ["mousedown", "mouseup"]) {
-      gBrowser.tabContainer.addEventListener(
-        type,
-        (event) => {
-          if (event.target?.closest?.(".zia-glance-close") && on()) {
-            event.stopPropagation();
-          }
-        },
-        true
-      );
-    }
   }
   function safely(name, fn) {
     try {
