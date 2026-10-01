@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- With an extension open in the sidebar panel (Bitwarden and the like),
+  the compact sidebar, hover cards and address pop-up lost their blur on
+  macOS. The panel is drawn the way the page is for them, so they blur
+  again.
+
 ## [2.80.0] — 2026-10-01
 
 ### Added

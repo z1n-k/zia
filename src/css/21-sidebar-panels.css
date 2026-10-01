@@ -177,3 +177,13 @@
     margin-inline-start: 0 !important;
   }
 }
+
+/* An extension's panel (Bitwarden and the like) is a web page of its own,
+   which macOS would be handed to draw as a layer of its own: with it open,
+   Zia's blurs (the compact sidebar, the hover cards, the address pop-up)
+   stopped seeing through to the page. Drawn by Firefox itself, like the
+   page is for them (the compositing trick from Floaty UI). */
+#sidebar-box:not([hidden]) {
+  will-change: transform !important;
+  backface-visibility: hidden !important;
+}
