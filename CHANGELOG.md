@@ -10,6 +10,9 @@ Every release of Zia, newest first. The format follows
 
 - Searching bookmarks, history or tabs from the address bar: the text and
   icons sit in the middle of the bar, not lower down with less room below.
+- Tab numbers go away as soon as another shortcut is pressed with Cmd (or
+  Ctrl), such as Cmd+W to close tabs, instead of staying up after Cmd is
+  let go.
 
 ## [2.77.2] — 2026-10-01
 

@@ -125,9 +125,11 @@
               lastDigit = stamp;
               onDigit(digit);
             }
-          } else if (typed) {
-            typed = "";
-            markTarget();
+          } else if (root.hasAttribute("zia-tab-numbers")) {
+            // Any other shortcut (Cmd+W, Cmd+T…) or key: the keys go, and
+            // nothing is chosen. Closing a tab can lose the letting go of
+            // Cmd, which would otherwise leave them up.
+            hide();
           }
         },
         options
@@ -140,6 +142,20 @@
           }
         },
         options
+      );
+    }
+    // Should the letting go of Cmd still be missed, the next key or move
+    // of the mouse without it held puts the keys away
+    const heldStill = (event) => (mac ? event.metaKey : event.ctrlKey);
+    for (const type of ["mousemove", "mousedown", "wheel", "keyup"]) {
+      window.addEventListener(
+        type,
+        (event) => {
+          if (root.hasAttribute("zia-tab-numbers") && !heldStill(event) && !isModKey(event)) {
+            hide();
+          }
+        },
+        { capture: true, passive: true }
       );
     }
     // Only when the window itself is left: focus moving into the page just
