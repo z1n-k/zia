@@ -14269,7 +14269,9 @@
   }
 
   // A page peeked at with Glance shows on its tab as a small picture of the
-  // page, tipped at an angle, as in Dia, in place of Zen's icon tile. It is
+  // page, tipped at an angle, as in Dia, in place of Zen's icon tile.
+  // Hovering the tab brings its close button over the picture, and that
+  // first close shuts the glance; the next one closes the tab. It is
   // taken while the glance is on screen (Zia can only photograph a page
   // that's showing), when it opens, as it loads, and every few seconds
   // after, and kept when you switch away.
@@ -14344,6 +14346,26 @@
     glanceTab.setAttribute("zia-glance-thumb", "true");
   }
 
+  // The glance on a normal tab, if it has one
+  function glanceOnTab(tab) {
+    return tab && !tab.hasAttribute("zen-essential")
+      ? tab.querySelector(":scope > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]")
+      : null;
+  }
+
+  function closeGlanceOn(glanceTab) {
+    const parent = glanceTab.parentElement?.closest(".tabbrowser-tab");
+    try {
+      if ((glanceTab.selected || parent?.selected) && window.gZenGlanceManager?.closeGlance) {
+        window.gZenGlanceManager.closeGlance({ onTabClose: true });
+      } else {
+        gBrowser.removeTab(glanceTab, { animate: false });
+      }
+    } catch (err) {
+      noteError("glance thumbnail: close", err);
+    }
+  }
+
   function watchGlanceThumbs() {
     const on = () => Services.prefs.getBoolPref(GLANCE_THUMB_PREF, true);
     // on unless switched off: the styles look for this mark, not the setting
@@ -14383,6 +14405,40 @@
     });
     setInterval(photographShowing, GLANCE_THUMB_EVERY);
     photographShowing();
+
+    // A tab with a glance: its close button, which sits over the picture,
+    // closes the glance first, and only then the tab
+    const glanceUnderClose = (event) => {
+      if (!on() || event.button !== 0) {
+        return null;
+      }
+      const close = event.target?.closest?.(".tab-close-button");
+      const tab = close?.closest(".tabbrowser-tab");
+      return close?.parentElement?.parentElement?.parentElement === tab ? glanceOnTab(tab) : null;
+    };
+    gBrowser.tabContainer.addEventListener(
+      "click",
+      (event) => {
+        const glanceTab = glanceUnderClose(event);
+        if (glanceTab) {
+          event.preventDefault();
+          event.stopPropagation();
+          closeGlanceOn(glanceTab);
+        }
+      },
+      true
+    );
+    for (const type of ["mousedown", "mouseup"]) {
+      gBrowser.tabContainer.addEventListener(
+        type,
+        (event) => {
+          if (glanceUnderClose(event)) {
+            event.stopPropagation();
+          }
+        },
+        true
+      );
+    }
   }
   function safely(name, fn) {
     try {
