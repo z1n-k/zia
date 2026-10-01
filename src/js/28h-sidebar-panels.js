@@ -115,8 +115,29 @@
     }
   }
 
+  // The close button in the downloads button's colour: its icon's fill,
+  // at the strength it's drawn (its fill's own and the button's opacity)
+  function matchCloseToDownloads() {
+    const icon = document.querySelector("#downloads-button .toolbarbutton-icon, #downloads-button image");
+    if (!icon || !icon.getBoundingClientRect().width) {
+      return;
+    }
+    const style = getComputedStyle(icon);
+    let strength = (parseFloat(style.fillOpacity) || 1) * (parseFloat(style.opacity) || 1);
+    for (let el = icon.parentElement; el && el.id !== "zia-workspace-slot" && el !== document.documentElement; el = el.parentElement) {
+      strength *= parseFloat(getComputedStyle(el).opacity) || 1;
+      if (el.id === "downloads-button") {
+        break;
+      }
+    }
+    const root = document.documentElement.style;
+    root.setProperty("--zia-panel-close-fill", style.fill && style.fill !== "none" ? style.fill : "rgb(255, 255, 255)");
+    root.setProperty("--zia-panel-close-opacity", String(Math.round(strength * 1000) / 1000));
+  }
+
   function matchTabs(doc) {
     safely("sidebar panels: sides", sidebarSides);
+    safely("sidebar panels: close colour", matchCloseToDownloads);
     const sizes = tabMeasurements();
     if (sizes) {
       for (const [name, value] of Object.entries(sizes)) {

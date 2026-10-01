@@ -98,9 +98,10 @@
     background-color: transparent !important;
     list-style-image: url("chrome://sine/content/zia/icons/ui/x.svg") !important;
     -moz-context-properties: fill, fill-opacity !important;
-    /* the light grey of the toolbar's icons (downloads beside the space's
-       name, the panel's opposite number) */
-    fill: var(--toolbarbutton-icon-fill, currentColor) !important;
+    /* the light grey of the toolbar's icons: the downloads button's own
+       colour and strength, copied from it by zia.uc.js */
+    fill: var(--zia-panel-close-fill, rgb(255, 255, 255)) !important;
+    fill-opacity: var(--zia-panel-close-opacity, 0.7) !important;
 
     & > .toolbarbutton-icon {
       width: 16px !important;
