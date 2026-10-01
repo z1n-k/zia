@@ -6,6 +6,12 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- The floating address bar with nothing listed under it had its address
+  and icon 5px below the middle: the bar was drawn 10px shorter than the
+  row it holds. It's as tall as its row now.
+
 ### Added
 
 - An option to keep the sound bars moving even when the system asks for

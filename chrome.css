@@ -309,6 +309,14 @@
   }
 }
 
+/* The floating address bar's row is Zen's 62px (15px above and below the
+   text), but with nothing listed under it the bar itself stayed 52px, so
+   its background was 10px short at the bottom and the address and icon sat
+   5px below its middle: the bar is at least as tall as its row */
+#urlbar[zen-floating-urlbar="true"]:not([zia-classic]) {
+  min-height: var(--urlbar-container-height, 62px) !important;
+}
+
 /* The floating address bar with nothing to list under it yet (no history,
    top sites or suggestions to show as it opens: Firefox doesn't open the
    list then, so it's never "extended"): it's the pop-up all the same, in
