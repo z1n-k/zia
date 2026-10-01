@@ -6,18 +6,18 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
-### Fixed
-
-- The floating address bar with nothing listed under it had its address
-  and icon 5px below the middle: the bar was drawn 10px shorter than the
-  row it holds. It's as tall as its row now.
-
 ### Added
 
 - An option to keep the sound bars moving even when the system asks for
   less motion (macOS's Reduce motion, Windows' Animation effects off), off
   by default. The README explains reduced motion on each system, and how
   to let Zen animate without changing the system's setting.
+
+### Fixed
+
+- The floating address bar with nothing listed under it had its address
+  and icon 5px below the middle: the bar was drawn 10px shorter than the
+  row it holds. It's as tall as its row now.
 
 ## [2.79.1] — 2026-10-01
 
