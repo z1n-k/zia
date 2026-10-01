@@ -513,8 +513,10 @@
       }
     }).observe(document.documentElement, { attributes: true, attributeFilter: ["zen-compact-animating"] });
     const slide = (opening) => {
+      // (placed off the edge first, so the page is held at its full width)
+      const run = slideBox(opening);
       sliding(true);
-      return slideBox(opening).finally(() => sliding(false));
+      return run.finally(() => sliding(false));
     };
     const slideBox = (opening) => {
       const side = box.hasAttribute("sidebar-positionend") ? "marginRight" : "marginLeft";
