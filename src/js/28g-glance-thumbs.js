@@ -5,8 +5,8 @@
   // that's showing), when it opens, as it loads, and every few seconds
   // after, and kept when you switch away.
   const GLANCE_THUMB_PREF = "zia.glance.thumbnail";
-  const GLANCE_THUMB_W = 32;
-  const GLANCE_THUMB_H = 24;
+  const GLANCE_THUMB_W = 36;
+  const GLANCE_THUMB_H = 30;
   const GLANCE_THUMB_EVERY = 3000;
 
   function glanceTabsOnNormalTabs() {
@@ -15,12 +15,25 @@
     )];
   }
 
+  // Where the tab the glance sits on ends, so the picture is cut off there
+  function cutGlanceAtTab(glanceTab) {
+    const background = glanceTab.parentElement
+      ?.closest(".tabbrowser-tab")
+      ?.querySelector(":scope > .tab-stack > .tab-background");
+    if (!background) {
+      return;
+    }
+    const cut = glanceTab.getBoundingClientRect().bottom - background.getBoundingClientRect().bottom;
+    glanceTab.style.setProperty("--zia-glance-cut", `${Math.round(cut * 2) / 2}px`);
+  }
+
   // The canvas that sits over a glance tab's tile
   function glanceThumbParts(glanceTab) {
     const stack = glanceTab.querySelector(":scope > .tab-stack");
     if (!stack) {
       return null;
     }
+    cutGlanceAtTab(glanceTab);
     let canvas = stack.querySelector(":scope > .zia-glance-thumb");
     if (!canvas) {
       canvas = document.createElementNS(HTML_NS, "canvas");

@@ -74,26 +74,30 @@
 }
 
 /* A glance on a normal tab: a small picture of the page, tipped at an
- angle like a card set down on the tab, as in Dia (zia.uc.js, glance
- thumbnails), in place of Zen's icon tile. On unless switched off
- (zia-glance-thumb-off on the root). */
+ angle like a card set down on the tab and cut off by the tab's bottom
+ edge, as in Dia (zia.uc.js, glance thumbnails), in place of Zen's icon
+ tile. On unless switched off (zia-glance-thumb-off on the root). */
 :root:not([zia-glance-thumb-off]) .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]:not(#zia-none) {
-  width: 32px !important;
-  min-width: 32px !important;
-  max-width: 32px !important;
-  height: 24px !important;
-  min-height: 24px !important;
+  width: 36px !important;
+  min-width: 36px !important;
+  max-width: 36px !important;
+  height: 30px !important;
+  min-height: 30px !important;
   margin-inline-start: 6px !important;
   overflow: visible !important;
-  rotate: -8deg;
+  /* the glance itself stays square to the tab, so this cut is level: it
+   ends where the tab does (--zia-glance-cut, measured by zia.uc.js) */
+  clip-path: inset(-12px -12px var(--zia-glance-cut, -12px) -12px);
 
   & > .tab-stack {
     position: relative;
     overflow: visible !important;
+    rotate: -8deg;
+    translate: 0 3px;
   }
 
   & > .tab-stack > .tab-background {
-    border-radius: 5px !important;
+    border-radius: 6px !important;
   }
 
   /* the picture arrived: the icon and its tile give way to it */
@@ -112,7 +116,7 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    border-radius: 5px;
+    border-radius: 6px;
     box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.18), 0 2px 6px rgba(0, 0, 0, 0.5);
     pointer-events: none;
   }
