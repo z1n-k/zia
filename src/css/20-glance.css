@@ -107,7 +107,7 @@
     height: 42px !important;
     rotate: -8deg;
     translate: 0 3px;
-    transition: rotate 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: rotate 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   & > .tab-stack > .tab-background {
