@@ -9,7 +9,8 @@ Every release of Zia, newest first. The format follows
 ### Changed
 
 - A glance's picture on a tab no longer tilts as it drops back from its
-  bounce: it tips into place on the way up only.
+  bounce: it tips into place on the way up only. The small bounces after
+  the big one are slower, so it settles more naturally.
 
 ## [2.77.1] — 2026-10-01
 
