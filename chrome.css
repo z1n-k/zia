@@ -5686,47 +5686,36 @@ zen-folder .tab-reset-button {
     font-size: var(--zia-text-size) !important;
   }
 
+  /* the title is a pill like the space name's: its height, padding,
+     rounding and hover colour (#zia-space-label) */
   & #sidebar-switcher-target {
     flex: 0 1 auto !important;
-    gap: 2px !important;
+    align-items: center !important;
+    gap: 4px !important;
     margin: 0 !important;
-    padding: 4px 8px 4px 6px !important;
+    padding: 0 8px !important;
+    height: var(--zia-space-pill-height) !important;
+    min-height: var(--zia-space-pill-height) !important;
     border: none !important;
-    border-radius: 8px !important;
+    border-radius: 10px !important;
     corner-shape: round !important;
+    background: transparent !important;
     color: inherit !important;
-    transition: background-color 0.12s ease !important;
   }
 
-  & #sidebar-switcher-target:is(:hover, .active) {
-    background-color: rgba(255, 255, 255, 0.08) !important;
+  & #sidebar-switcher-target:is(:hover, .active, [open]) {
+    background-color: var(--zia-space-pill-bg) !important;
   }
 
+  /* no icon before the title */
   & #sidebar-icon {
-    width: 16px !important;
-    height: 16px !important;
-    opacity: 1 !important;
-    -moz-context-properties: fill, fill-opacity !important;
-    fill: rgb(255, 255, 255) !important;
-    fill-opacity: 0.7 !important;
-  }
-
-  /* Zia's icons, solid ones, for each panel */
-  & #sidebar-box[sidebarcommand="viewBookmarksSidebar"] #sidebar-icon {
-    list-style-image: url("resource://zia-tabler/filled/bookmark.svg") !important;
-  }
-
-  & #sidebar-box[sidebarcommand="viewHistorySidebar"] #sidebar-icon {
-    list-style-image: url("resource://zia-tabler/filled/clock.svg") !important;
-  }
-
-  & #sidebar-box[sidebarcommand="viewTabsSidebar"] #sidebar-icon {
-    list-style-image: url("resource://zia-tabler/filled/device-desktop.svg") !important;
+    display: none !important;
   }
 
   & #sidebar-title {
-    padding-inline: 6px 4px !important;
-    /* the tabs' text, a touch bolder, as a folder's name */
+    padding: 0 !important;
+    margin: 0 !important;
+    /* the tabs' text, bold as the space name is */
     font-weight: 600 !important;
     font-size: var(--zia-text-size) !important;
   }
