@@ -173,19 +173,13 @@
   // The search field draws itself inside a component of its own, which a
   // page's styles don't reach: Zia hands it its own few rules there. A
   // faint hairline when it's focused, inside it so nothing is cut off at
-  // the panel's edge, in place of Firefox's thick ring; Zia's solid icon.
+  // the panel's edge, in place of Firefox's thick ring.
   const SEARCH_FIELD_RULES = `
     #input {
       appearance: none !important;
       border: 1px solid transparent !important;
       outline: none !important;
       box-shadow: none !important;
-      -moz-context-properties: fill, fill-opacity;
-      fill: rgb(255, 255, 255) !important;
-      fill-opacity: 0.55;
-    }
-    #input.with-icon {
-      background-image: url("resource://zia-tabler/filled/search.svg") !important;
     }
     #input:focus,
     #input:focus-visible {
