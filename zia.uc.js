@@ -14641,6 +14641,7 @@
   // the panel's edge, in place of Firefox's thick ring; Zia's solid icon.
   const SEARCH_FIELD_RULES = `
     #input {
+      appearance: none !important;
       border: 1px solid transparent !important;
       outline: none !important;
       box-shadow: none !important;
