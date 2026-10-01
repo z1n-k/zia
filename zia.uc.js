@@ -14277,7 +14277,7 @@
   // after, and kept when you switch away.
   const GLANCE_THUMB_PREF = "zia.glance.thumbnail";
   const GLANCE_THUMB_W = 36;
-  const GLANCE_THUMB_H = 30;
+  const GLANCE_THUMB_H = 42;
   const GLANCE_THUMB_EVERY = 3000;
 
   function glanceTabsOnNormalTabs() {

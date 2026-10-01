@@ -91,11 +91,15 @@
    ends where the tab does (--zia-glance-cut, measured by zia.uc.js) */
   clip-path: inset(-12px -12px var(--zia-glance-cut, -12px) -12px);
 
-  & > .tab-stack {
+  /* taller than the tab has room for, so its foot, corners and all, is
+   always below the cut */
+  & > .tab-stack:not(#zia-none) {
     position: relative;
     overflow: visible !important;
+    height: 42px !important;
     rotate: -8deg;
     translate: 0 3px;
+    transition: rotate 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   & > .tab-stack > .tab-background {
@@ -151,9 +155,14 @@
   pointer-events: none !important;
 }
 
-/* hovering the tab: the picture dims under the close button */
+/* hovering the tab: the picture tips a little further and dims under the
+ close button */
+:root:not([zia-glance-thumb-off]) .tabbrowser-tab:not([zen-essential]):hover > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab] > .tab-stack:not(#zia-none) {
+  rotate: -12deg;
+}
+
 :root:not([zia-glance-thumb-off]) .tabbrowser-tab:not([zen-essential]):hover > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab] > .tab-stack > .zia-glance-thumb {
-  filter: brightness(0.45);
+  filter: brightness(0.4);
 }
 
 :root:not([zia-glance-thumb-off]) .tabbrowser-tab[zen-glance-tab] > .tab-stack > .zia-glance-thumb {

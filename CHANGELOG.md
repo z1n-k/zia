@@ -10,7 +10,8 @@ Every release of Zia, newest first. The format follows
 
 - A glance on a normal tab shows as a small picture of the page, tipped at an
   angle and cut off by the tab's bottom edge as in Dia, instead of an icon.
-  Hovering the tab brings its close button over the picture: the first
+  Hovering the tab tips it a little further and brings its close button
+  over it: the first
   click closes the glance, the next closes the tab. It can be switched off
   in settings.
 
