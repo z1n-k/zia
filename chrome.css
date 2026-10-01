@@ -5822,6 +5822,9 @@ zen-folder .tab-reset-button {
     background: transparent !important;
     border: none !important;
     border-radius: 0 !important;
+    /* (nothing to round off here, and its parting line from the tabs
+       reaches past its top and bottom) */
+    overflow: visible !important;
     margin-block: var(--zia-card-top-gap) var(--zia-card-gap) !important;
   }
 
