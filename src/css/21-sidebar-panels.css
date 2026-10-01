@@ -29,7 +29,7 @@
   & #sidebar-header {
     padding: 8px 8px 6px 8px !important;
     border-bottom: none !important;
-    font-size: 13px !important;
+    font-size: var(--zia-text-size) !important;
   }
 
   & #sidebar-switcher-target {
@@ -56,8 +56,9 @@
 
   & #sidebar-title {
     padding-inline: 6px 4px !important;
+    /* the tabs' text, a touch bolder, as a folder's name */
     font-weight: 600 !important;
-    font-size: 13.5px !important;
+    font-size: var(--zia-text-size) !important;
   }
 
   & #sidebar-switcher-arrow {

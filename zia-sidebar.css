@@ -11,7 +11,13 @@
   scrollbar-color: rgba(255, 255, 255, 0.18) transparent !important;
   scrollbar-width: thin !important;
 
-  --zia-row: 28px;
+  /* the tabs' own measurements, set by zia.uc.js as the panel opens */
+  --zia-row: var(--zia-row-h, 34px);
+  --zia-gap: var(--zia-row-gap, 4px);
+  --zia-radius: var(--zia-row-radius, 9.5px);
+  --zia-font-size: var(--zia-row-font-size, 13px);
+  --zia-font-weight: var(--zia-row-font-weight, 400);
+  --zia-inset: var(--zia-row-inset, 8px);
   --zia-row-hover: rgba(255, 255, 255, 0.06);
   --zia-row-selected: rgba(255, 255, 255, 0.1);
   --zia-quiet: rgba(255, 255, 255, 0.55);
@@ -24,18 +30,19 @@ body {
 /* The search field: a soft filled pill, as the address bar's, no border */
 #sidebar-search-container,
 .sidebar-search-container.selected {
-  padding: 2px 10px 8px !important;
+  padding: 2px var(--zia-inset) 8px !important;
   gap: 6px !important;
   align-items: center !important;
 }
 
 :is(#search-box, .tabsFilter) {
   margin: 0 !important;
+  font-size: var(--zia-font-size) !important;
   --input-text-background-color: rgba(255, 255, 255, 0.06);
   --input-text-border: 1px solid transparent;
-  --input-text-border-radius: 8px;
-  --input-search-border-radius: 8px;
-  --input-text-min-height: 30px;
+  --input-text-border-radius: var(--zia-radius);
+  --input-search-border-radius: var(--zia-radius);
+  --input-text-min-height: var(--zia-row);
   --input-text-color: rgba(255, 255, 255, 0.92);
   --icon-color: var(--zia-quiet);
   --focus-outline: 1px solid rgba(255, 255, 255, 0.22);
@@ -51,12 +58,12 @@ body {
   appearance: none !important;
   margin: 0 !important;
   padding: 0 8px !important;
-  min-height: 30px !important;
+  min-height: var(--zia-row) !important;
   border: none !important;
-  border-radius: 8px !important;
+  border-radius: var(--zia-radius) !important;
   background: transparent !important;
   color: var(--zia-quiet) !important;
-  font-size: 12.5px !important;
+  font-size: var(--zia-font-size) !important;
 }
 
 #viewButton:hover,
@@ -65,11 +72,15 @@ body {
   color: rgba(255, 255, 255, 0.92) !important;
 }
 
-/* Bookmarks and History: the tree's rows, as quiet as tab rows */
+/* Bookmarks and History: the tree's rows, as tab rows: the tabs' text,
+   and a row each as tall as a tab and the gap after it (a tree's rows
+   can't have gaps or round corners of their own) */
 .sidebar-placesTree {
   margin: 0 !important;
-  padding-inline: 4px !important;
-  font-size: 13px !important;
+  padding-inline: var(--zia-inset) !important;
+  font-family: var(--zia-row-font-family, inherit) !important;
+  font-size: var(--zia-font-size) !important;
+  font-weight: var(--zia-font-weight) !important;
   background: transparent !important;
 }
 
@@ -78,8 +89,8 @@ body {
 }
 
 .sidebar-placesTreechildren::-moz-tree-row {
-  height: var(--zia-row) !important;
-  min-height: var(--zia-row) !important;
+  height: calc(var(--zia-row) + var(--zia-gap)) !important;
+  min-height: calc(var(--zia-row) + var(--zia-gap)) !important;
   background: transparent !important;
   border: none !important;
   outline: none !important;
@@ -101,6 +112,10 @@ body {
   margin-inline-start: 2px !important;
 }
 
+.sidebar-placesTreechildren::-moz-tree-image {
+  margin-inline-end: var(--zia-row-icon-gap, 8px) !important;
+}
+
 .sidebar-placesTreechildren::-moz-tree-image,
 .sidebar-placesTreechildren::-moz-tree-twisty,
 .sidebar-placesTreechildren::-moz-tree-image(selected),
@@ -114,13 +129,39 @@ body {
   margin: 0 10px !important;
 }
 
-/* Synced Tabs: devices and their tabs, in the same rows */
+/* Synced Tabs: devices and their tabs, in rows just like tabs */
+.list {
+  padding-inline: var(--zia-inset) !important;
+}
+
 .item-title-container {
+  box-sizing: border-box !important;
   height: var(--zia-row) !important;
-  margin-inline: 4px !important;
-  border-radius: 8px !important;
-  font-size: 13px !important;
+  margin-block: calc(var(--zia-gap) / 2) !important;
+  padding-block: 0 !important;
+  padding-inline-end: var(--zia-row-pad, 10px) !important;
+  border-radius: var(--zia-radius) !important;
+  font-family: var(--zia-row-font-family, inherit) !important;
+  font-size: var(--zia-font-size) !important;
+  font-weight: var(--zia-font-weight) !important;
   color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.item.client > .item-title-container {
+  padding-inline-start: calc(var(--zia-row-pad, 10px) - 4px) !important;
+}
+
+.item-icon-container {
+  margin-inline: 0 var(--zia-row-icon-gap, 8px) !important;
+}
+
+.item-twisty-container {
+  margin-inline-end: 4px !important;
+}
+
+.item-title {
+  margin: 0 !important;
+  line-height: normal !important;
 }
 
 .item:not(.selected) > .item-title-container:hover {
@@ -134,7 +175,7 @@ body {
 }
 
 .item.client > .item-title-container {
-  font-weight: 500 !important;
+  font-weight: var(--zia-folder-weight, 500) !important;
 }
 
 .item.client .item-twisty-container,

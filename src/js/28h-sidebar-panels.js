@@ -7,6 +7,54 @@
   // fresh each session, so an updated Zia's styles aren't served from cache
   const SIDEBAR_SHEET = `chrome://sine/content/zia/zia-sidebar.css?${Date.now()}`;
 
+  // The tabs' own measurements, read off a tab in the sidebar, for the
+  // panels' rows to match: text size and weight, row height, the gap
+  // between rows, the corner radius and the padding before the icon
+  function tabMeasurements() {
+    const tabs = gBrowser.visibleTabs.filter((tab) => !tab.hasAttribute("zen-essential") && !tab.hasAttribute("zen-glance-tab"));
+    const tab = tabs.find((t) => t.getBoundingClientRect().height > 0);
+    if (!tab) {
+      return null;
+    }
+    const background = tab.querySelector(".tab-background");
+    const label = tab.querySelector(".tab-label");
+    const content = tab.querySelector(".tab-content");
+    const icon = tab.querySelector(".tab-icon-image");
+    if (!background || !label || !content) {
+      return null;
+    }
+    const height = background.getBoundingClientRect().height;
+    const next = tabs[tabs.indexOf(tab) + 1]?.querySelector(".tab-background");
+    const gap = next
+      ? next.getBoundingClientRect().top - background.getBoundingClientRect().bottom
+      : 2 * parseFloat(getComputedStyle(tab).getPropertyValue("--tab-margin-block") || "2");
+    const text = getComputedStyle(label);
+    const box = content.getBoundingClientRect();
+    const toolbox = document.getElementById("navigator-toolbox")?.getBoundingClientRect();
+    const inset = toolbox ? background.getBoundingClientRect().left - toolbox.left : 8;
+    return {
+      "--zia-row-h": `${height}px`,
+      "--zia-row-gap": `${Math.max(0, Math.min(12, gap))}px`,
+      "--zia-row-radius": getComputedStyle(background).borderTopLeftRadius,
+      "--zia-row-font-size": text.fontSize,
+      "--zia-row-font-weight": text.fontWeight,
+      "--zia-row-font-family": text.fontFamily,
+      "--zia-row-pad": `${icon ? icon.getBoundingClientRect().left - box.left : 10}px`,
+      "--zia-row-inset": `${Math.max(0, Math.min(16, inset))}px`,
+      "--zia-row-icon-gap": `${icon ? label.getBoundingClientRect().left - icon.getBoundingClientRect().right : 8}px`,
+    };
+  }
+
+  function matchTabs(doc) {
+    const sizes = tabMeasurements();
+    if (!sizes) {
+      return;
+    }
+    for (const [name, value] of Object.entries(sizes)) {
+      doc.documentElement.style.setProperty(name, value);
+    }
+  }
+
   function watchSidebarPanels() {
     const on = () => Services.prefs.getBoolPref(SIDEBAR_PANELS_PREF, true);
     const styled = new WeakSet();
@@ -23,9 +71,12 @@
             win.windowUtils.removeSheetUsingURIString(SIDEBAR_SHEET, win.windowUtils.AUTHOR_SHEET);
             styled.delete(doc);
           }
-        } else if (!styled.has(doc)) {
-          win.windowUtils.loadSheetUsingURIString(SIDEBAR_SHEET, win.windowUtils.AUTHOR_SHEET);
-          styled.add(doc);
+        } else {
+          if (!styled.has(doc)) {
+            win.windowUtils.loadSheetUsingURIString(SIDEBAR_SHEET, win.windowUtils.AUTHOR_SHEET);
+            styled.add(doc);
+          }
+          matchTabs(doc);
         }
       } catch (err) {
         noteError("sidebar panels: style", err);
@@ -44,9 +95,9 @@
   }
 
   // Zen puts the panel inside the page's card, under the toolbar. Zia
-  // moves it beside the card instead, full height, as a card of its own
-  // like a split pane, on whichever side it's set to (Firefox's "Move
-  // sidebar to left/right"). Off in settings: back where Zen has it.
+  // moves it beside the card instead, full height on the window's own
+  // background, a second sidebar, on whichever side it's set to (Firefox's
+  // "Move sidebar to left/right"). Off in settings: back where Zen has it.
   const SIDEBAR_BESIDE_PREF = "zia.sidebar-panels.beside";
 
   function placeSidebarPanel() {
