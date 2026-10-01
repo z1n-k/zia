@@ -144,11 +144,20 @@ body {
   }
 }
 
-.sidebar-placesTreechildren::-moz-tree-cell-text,
+/* text as the tabs': a little dim, and white on the selected row */
+.sidebar-placesTreechildren::-moz-tree-cell-text {
+  color: var(--zia-row-text, rgba(255, 255, 255, 0.8)) !important;
+  margin-inline-start: 0 !important;
+}
+
 .sidebar-placesTreechildren::-moz-tree-cell-text(selected),
 .sidebar-placesTreechildren::-moz-tree-cell-text(selected, focus) {
-  color: rgba(255, 255, 255, 0.92) !important;
-  margin-inline-start: 2px !important;
+  color: var(--zia-row-text-selected, rgb(255, 255, 255)) !important;
+}
+
+/* no padding of Firefox's own before the icon: it sits where a tab's does */
+.sidebar-placesTreechildren::-moz-tree-cell {
+  padding: 0 !important;
 }
 
 .sidebar-placesTreechildren::-moz-tree-image {
@@ -184,7 +193,7 @@ body {
   font-family: var(--zia-row-font-family, inherit) !important;
   font-size: var(--zia-font-size) !important;
   font-weight: var(--zia-font-weight) !important;
-  color: rgba(255, 255, 255, 0.92) !important;
+  color: var(--zia-row-text, rgba(255, 255, 255, 0.8)) !important;
 }
 
 .item.client > .item-title-container {
@@ -211,7 +220,7 @@ body {
 .item.selected > .item-title-container,
 .item.selected:focus > .item-title-container {
   background-color: var(--zia-row-selected) !important;
-  color: rgba(255, 255, 255, 0.92) !important;
+  color: var(--zia-row-text-selected, rgb(255, 255, 255)) !important;
 }
 
 .item.client > .item-title-container {
@@ -260,6 +269,7 @@ body {
 
 .sidebar-placesTreechildren::-moz-tree-image(title) {
   margin-inline-start: var(--zia-row-pad, 10px) !important;
+  padding-inline-start: 0 !important;
 }
 
 /* a folder's rows step in as far as a folder's tabs do */

@@ -39,13 +39,22 @@
       "--zia-row-font-size": text.fontSize,
       "--zia-row-font-weight": text.fontWeight,
       "--zia-row-font-family": text.fontFamily,
-      "--zia-row-pad": `${icon ? icon.getBoundingClientRect().left - box.left : 10}px`,
+      // from the tab's own edge (its background), not its content box
+      "--zia-row-pad": `${icon ? icon.getBoundingClientRect().left - background.getBoundingClientRect().left : 10}px`,
+      // text: an unselected tab's (dimmed, as in Dia) and a selected one's
+      "--zia-row-text": labelColor(tabs.find((t) => !t.selected && !t.hasAttribute("visuallyselected"))) || "rgba(255, 255, 255, 0.8)",
+      "--zia-row-text-selected": labelColor(gBrowser.selectedTab?.hasAttribute("zen-essential") ? null : gBrowser.selectedTab) || "rgb(255, 255, 255)",
       "--zia-row-inset": `${Math.max(0, Math.min(16, inset))}px`,
       "--zia-row-hover-bg": getComputedStyle(document.documentElement).getPropertyValue("--zia-tab-hover-bg").trim() || "rgba(255, 255, 255, 0.115)",
       "--zia-row-selected-bg": getComputedStyle(document.documentElement).getPropertyValue("--zia-active-tab-bg").trim() || "rgba(0, 0, 0, 0.1)",
       "--zia-row-indent": `${folderIndent(tab)}px`,
       "--zia-row-icon-gap": `${icon ? label.getBoundingClientRect().left - icon.getBoundingClientRect().right : 8}px`,
     };
+  }
+
+  function labelColor(tab) {
+    const label = tab?.querySelector(".tab-label-container");
+    return label ? getComputedStyle(label).color : null;
   }
 
   // How far a tab in a folder steps in from one that isn't
