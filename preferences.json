@@ -269,7 +269,7 @@
   },
   {
     "type": "checkbox",
-    "label": "New tabs open your default search engine's page",
+    "label": "New tabs open your default search engine's page (off: Zen's new tab page, or an extension's if you use one)",
     "property": "zia.newtab.search-engine",
     "defaultValue": true
   },

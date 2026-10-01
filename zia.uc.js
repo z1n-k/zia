@@ -1502,6 +1502,36 @@
   }
 
   let searchHomeUrl = null;
+  // the address Zia itself made the new tab page, so it only ever undoes
+  // its own: a new tab page an extension set is left as it is
+  let ziaNewTabUrl = null;
+
+  // An extension's new tab page (Yet another speed dial and the like), if
+  // one is in charge, put back after Zia's own is undone
+  async function restoreExtensionNewTab(AboutNewTabModule) {
+    try {
+      const { ExtensionSettingsStore } = ChromeUtils.importESModule("resource://gre/modules/ExtensionSettingsStore.sys.mjs");
+      await ExtensionSettingsStore.initialize();
+      const setting = ExtensionSettingsStore.getSetting("url_overrides", "newTabURL");
+      if (setting?.value) {
+        AboutNewTabModule.newTabURL = setting.value;
+      }
+    } catch (err) {
+      noteError("new tabs: restoreExtensionNewTab", err);
+    }
+  }
+
+  // the new tab page as it is now: Zia's, an extension's, or Zen's own
+  function currentNewTabUrl() {
+    try {
+      const AboutNewTabModule =
+        window.AboutNewTab ||
+        ChromeUtils.importESModule("resource:///modules/AboutNewTab.sys.mjs").AboutNewTab;
+      return AboutNewTabModule.newTabURL || "about:newtab";
+    } catch (err) {
+      return "about:newtab";
+    }
+  }
 
   function newTabSearchEnabled() {
     return Services.prefs.getBoolPref("zia.newtab.search-engine", true);
@@ -1515,7 +1545,13 @@
 
       if (!newTabSearchEnabled()) {
         searchHomeUrl = null;
-        AboutNewTabModule.resetNewTabURL();
+        // only Zia's own page is undone (turned off while running); one an
+        // extension set stays, and is put back if Zia had replaced it
+        if (ziaNewTabUrl && AboutNewTabModule.newTabURL === ziaNewTabUrl) {
+          AboutNewTabModule.resetNewTabURL();
+          await restoreExtensionNewTab(AboutNewTabModule);
+        }
+        ziaNewTabUrl = null;
         return;
       }
 
@@ -1531,6 +1567,7 @@
       }
       try {
         AboutNewTabModule.newTabURL = searchHomeUrl;
+        ziaNewTabUrl = searchHomeUrl;
       } catch (err) {
         noteError("new tabs: applyNewTabPage", err);
       }
@@ -4207,7 +4244,8 @@
     let dragged = glance?.getTabOrGlanceParent?.(tab) ?? tab;
 
     if (dragged === target) {
-      const url = searchHomeUrl && newTabSearchEnabled() ? searchHomeUrl : "about:newtab";
+      // the new tab page as it is (the search page, an extension's, Zen's)
+      const url = searchHomeUrl && newTabSearchEnabled() ? searchHomeUrl : currentNewTabUrl();
       const newTab = gBrowser.addTrustedTab(url, { inBackground: true });
       const left = side === "left";
       splitter.splitTabs(left ? [target, newTab] : [newTab, target], "vsep", left ? 1 : 0);

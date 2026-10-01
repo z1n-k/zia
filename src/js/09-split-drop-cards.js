@@ -389,7 +389,8 @@
     let dragged = glance?.getTabOrGlanceParent?.(tab) ?? tab;
 
     if (dragged === target) {
-      const url = searchHomeUrl && newTabSearchEnabled() ? searchHomeUrl : "about:newtab";
+      // the new tab page as it is (the search page, an extension's, Zen's)
+      const url = searchHomeUrl && newTabSearchEnabled() ? searchHomeUrl : currentNewTabUrl();
       const newTab = gBrowser.addTrustedTab(url, { inBackground: true });
       const left = side === "left";
       splitter.splitTabs(left ? [target, newTab] : [newTab, target], "vsep", left ? 1 : 0);

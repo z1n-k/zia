@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- With "New tabs open your default search engine's page" off, a new tab
+  page set by an extension (Yet another speed dial and the like) is left
+  alone: Zia had reset it to an empty page. Zia now only undoes the page
+  it set itself, and puts an extension's back if it had replaced it.
+  Splitting a tab by dropping it on itself opens that page too.
+
 ## [2.79.0] — 2026-10-01
 
 ### Added

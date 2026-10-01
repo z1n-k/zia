@@ -362,7 +362,7 @@ The first folder takes a little while as the model downloads and the icon names 
 | Address bar position: top or bottom (not with Zen's single toolbar) | top |
 | **New tabs** | |
 | Cmd/Ctrl+T and **+ New Tab** open a real tab (off: Zen's floating address bar) | on |
-| New tabs open your default search engine's page | on |
+| New tabs open your default search engine's page (off: Zen's new tab page, or an extension's if you use one) | on |
 | **Folders** | |
 | Folders open and close with a gentle spring | on |
 | Coloured folders only show their colour when hovered or open | off |
