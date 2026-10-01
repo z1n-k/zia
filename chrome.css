@@ -5726,32 +5726,38 @@ zen-folder .tab-reset-button {
     display: none !important;
   }
 
+  /* the close button as the space name's buttons are (downloads): a
+     square pill as tall as the space name's, rounded and hovered alike */
   & #sidebar-close {
     appearance: none !important;
-    width: 26px !important;
-    height: 26px !important;
-    min-width: 26px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: var(--zia-space-pill-height) !important;
+    min-width: var(--zia-space-pill-height) !important;
+    height: var(--zia-space-pill-height) !important;
+    min-height: var(--zia-space-pill-height) !important;
     margin: 0 !important;
-    padding: 6px !important;
-    border-radius: 7px !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 10px !important;
     corner-shape: round !important;
+    background-color: transparent !important;
     list-style-image: url("chrome://sine/content/zia/icons/ui/x.svg") !important;
     -moz-context-properties: fill, fill-opacity !important;
     fill: rgb(255, 255, 255) !important;
-    fill-opacity: 0.65 !important;
-    transition: background-color 0.12s ease !important;
+    fill-opacity: 1 !important;
 
     & > .toolbarbutton-icon {
-      width: 14px !important;
-      height: 14px !important;
+      width: 16px !important;
+      height: 16px !important;
       padding: 0 !important;
       background: none !important;
     }
   }
 
   & #sidebar-close:hover {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    fill-opacity: 1 !important;
+    background-color: var(--zia-space-pill-bg) !important;
   }
 
   & #sidebar {
