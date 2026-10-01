@@ -5895,9 +5895,11 @@ zen-folder .tab-reset-button {
     &::before {
       content: "";
       position: absolute;
-      inset-block: 0;
+      /* stopping short of the top and bottom, as the sidebar's own line
+         stops short of its sides, and half as bright: a quiet parting */
+      inset-block: 16px;
       width: 1px;
-      background: rgba(255, 255, 255, 0.13);
+      background: rgba(255, 255, 255, 0.065);
       pointer-events: none;
     }
   }
