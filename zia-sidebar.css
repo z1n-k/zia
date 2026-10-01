@@ -18,8 +18,8 @@
   --zia-font-size: var(--zia-row-font-size, 13px);
   --zia-font-weight: var(--zia-row-font-weight, 400);
   --zia-inset: var(--zia-row-inset, 8px);
-  --zia-row-hover: rgba(255, 255, 255, 0.06);
-  --zia-row-selected: rgba(255, 255, 255, 0.1);
+  --zia-row-hover: var(--zia-row-hover-bg, rgba(255, 255, 255, 0.115));
+  --zia-row-selected: var(--zia-row-selected-bg, rgba(0, 0, 0, 0.1));
   --zia-quiet: rgba(255, 255, 255, 0.55);
 }
 
@@ -45,8 +45,13 @@ body {
   --input-text-min-height: var(--zia-row);
   --input-text-color: rgba(255, 255, 255, 0.92);
   --icon-color: var(--zia-quiet);
-  --focus-outline: 1px solid rgba(255, 255, 255, 0.22);
-  --focus-outline-offset: -1px;
+  --focus-outline: none;
+}
+
+/* focused: a hairline, not Firefox's thick ring */
+:is(#search-box, .tabsFilter):focus-within {
+  --input-text-border: 1px solid rgba(255, 255, 255, 0.2);
+  --input-text-background-color: rgba(255, 255, 255, 0.08);
 }
 
 :is(#search-box, .tabsFilter):hover {
@@ -96,13 +101,44 @@ body {
   outline: none !important;
 }
 
-.sidebar-placesTreechildren::-moz-tree-row(hover) {
-  background-color: var(--zia-row-hover) !important;
-}
-
+/* the tree's own highlights give way to Zia's, drawn behind it in a
+   tab's shape (zia.uc.js, roundTreeRows) */
+.sidebar-placesTreechildren::-moz-tree-row(hover),
 .sidebar-placesTreechildren::-moz-tree-row(selected),
 .sidebar-placesTreechildren::-moz-tree-row(selected, focus) {
-  background-color: var(--zia-row-selected) !important;
+  background: transparent !important;
+}
+
+.sidebar-placesTree {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+#zia-row-pills {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.zia-row-pill {
+  position: fixed;
+  box-sizing: border-box;
+  border-radius: var(--zia-radius);
+  pointer-events: none;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &[hover] {
+    background-color: var(--zia-row-hover);
+  }
+
+  &[selected] {
+    background-color: var(--zia-row-selected);
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.14);
+  }
 }
 
 .sidebar-placesTreechildren::-moz-tree-cell-text,
@@ -171,6 +207,7 @@ body {
 .item.selected > .item-title-container,
 .item.selected:focus > .item-title-container {
   background-color: var(--zia-row-selected) !important;
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.14) !important;
   color: rgba(255, 255, 255, 0.92) !important;
 }
 

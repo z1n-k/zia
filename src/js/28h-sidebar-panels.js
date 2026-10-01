@@ -29,6 +29,7 @@
       ? next.getBoundingClientRect().top - background.getBoundingClientRect().bottom
       : 2 * parseFloat(getComputedStyle(tab).getPropertyValue("--tab-margin-block") || "2");
     const text = getComputedStyle(label);
+    const selected = gBrowser.selectedTab?.querySelector(".tab-background");
     const box = content.getBoundingClientRect();
     const toolbox = document.getElementById("navigator-toolbox")?.getBoundingClientRect();
     const inset = toolbox ? background.getBoundingClientRect().left - toolbox.left : 8;
@@ -41,18 +42,114 @@
       "--zia-row-font-family": text.fontFamily,
       "--zia-row-pad": `${icon ? icon.getBoundingClientRect().left - box.left : 10}px`,
       "--zia-row-inset": `${Math.max(0, Math.min(16, inset))}px`,
+      "--zia-row-hover-bg": getComputedStyle(document.documentElement).getPropertyValue("--zia-tab-hover-bg").trim() || "rgba(255, 255, 255, 0.115)",
+      "--zia-row-selected-bg": (selected && !gBrowser.selectedTab.hasAttribute("zen-essential") && getComputedStyle(selected).backgroundColor) || "rgba(0, 0, 0, 0.1)",
       "--zia-row-icon-gap": `${icon ? label.getBoundingClientRect().left - icon.getBoundingClientRect().right : 8}px`,
     };
   }
 
   function matchTabs(doc) {
     const sizes = tabMeasurements();
-    if (!sizes) {
+    if (sizes) {
+      for (const [name, value] of Object.entries(sizes)) {
+        doc.documentElement.style.setProperty(name, value);
+      }
+    }
+    // the space between the panel's title and its search field: the one
+    // between the space's name and the essentials
+    const name = document.getElementById("zia-workspace-slot") || document.querySelector(".zen-current-workspace-indicator");
+    const essentials = [...document.querySelectorAll(".zen-essentials-container")].find((e) => e.getBoundingClientRect().height > 0);
+    if (name && essentials) {
+      const gap = essentials.getBoundingClientRect().top - name.getBoundingClientRect().bottom;
+      if (gap >= 0 && gap < 40) {
+        document.documentElement.style.setProperty("--zia-panel-title-gap", `${gap}px`);
+      }
+    }
+    roundTreeRows(doc);
+  }
+
+  // Bookmarks and History are trees, whose rows can't be rounded or
+  // spaced apart. Zia draws the hovered and the selected row's highlight
+  // itself, behind the tree, shaped like a tab: as tall as a tab, rounded
+  // like one, with the gap between rows left clear.
+  function roundTreeRows(doc) {
+    const tree = doc.querySelector(".sidebar-placesTree");
+    if (!tree || doc.getElementById("zia-row-pills")) {
       return;
     }
-    for (const [name, value] of Object.entries(sizes)) {
-      doc.documentElement.style.setProperty(name, value);
+    const win = doc.defaultView;
+    const layer = doc.createElementNS(HTML_NS, "div");
+    layer.id = "zia-row-pills";
+    const hover = doc.createElementNS(HTML_NS, "div");
+    hover.className = "zia-row-pill";
+    hover.setAttribute("hover", "");
+    const chosen = doc.createElementNS(HTML_NS, "div");
+    chosen.className = "zia-row-pill";
+    chosen.setAttribute("selected", "");
+    layer.append(chosen, hover);
+    tree.before(layer);
+
+    let hoveredRow = -1;
+    const put = (pill, row) => {
+      const body = tree.treeBody || tree.querySelector("treechildren");
+      const height = tree.rowHeight;
+      if (row < 0 || !body || !height) {
+        pill.hidden = true;
+        return;
+      }
+      const shown = row - tree.getFirstVisibleRow();
+      const box = body.getBoundingClientRect();
+      // each row is a tab's height and the gap after it: the pill is the tab
+      const gap = parseFloat(win.getComputedStyle(doc.documentElement).getPropertyValue("--zia-row-gap")) || 0;
+      const top = box.top + shown * height;
+      if (shown < 0 || top + height > box.bottom + 1) {
+        pill.hidden = true;
+        return;
+      }
+      pill.hidden = false;
+      pill.style.top = `${top + gap / 2}px`;
+      pill.style.left = `${box.left}px`;
+      pill.style.width = `${box.width}px`;
+      pill.style.height = `${height - gap}px`;
+    };
+    let queued = false;
+    const update = () => {
+      if (queued) {
+        return;
+      }
+      queued = true;
+      win.requestAnimationFrame(() => {
+        queued = false;
+        try {
+          // the selected row keeps its look under the pointer, as a tab does
+          const current = tree.view?.selection?.count ? tree.currentIndex : -1;
+          put(chosen, current);
+          put(hover, hoveredRow === current ? -1 : hoveredRow);
+        } catch (err) {
+          noteError("sidebar panels: rows", err);
+        }
+      });
+    };
+    tree.addEventListener("mousemove", (event) => {
+      const row = tree.getRowAt(event.clientX, event.clientY);
+      if (row !== hoveredRow) {
+        hoveredRow = row;
+        update();
+      }
+    });
+    tree.addEventListener("mouseleave", () => {
+      hoveredRow = -1;
+      update();
+    });
+    for (const type of ["select", "wheel", "keydown", "click", "focus", "blur"]) {
+      tree.addEventListener(type, update, true);
     }
+    win.addEventListener("resize", update);
+    // rows coming and going (a search, a folder opened) and scrolling the
+    // tree itself don't all tell anyone: checked over as well while open
+    const every = win.setInterval(update, 250);
+    win.addEventListener("unload", () => win.clearInterval(every));
+    update();
   }
 
   function watchSidebarPanels() {
