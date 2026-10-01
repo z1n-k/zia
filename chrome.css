@@ -5497,3 +5497,75 @@ zen-folder .tab-reset-button {
     list-style-image: url("chrome://sine/content/zia/icons/ui/layout-columns.svg") !important;
   }
 }
+
+/* A glance on a normal tab: a small picture of the page, as in Dia
+ (zia.uc.js, glance thumbnails), in place of Zen's icon tile. Hover the
+ tab and the picture dims under an ×, which closes the glance. On unless
+ switched off (zia-glance-thumb-off on the root). */
+:root:not([zia-glance-thumb-off]) .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]:not(#zia-none) {
+  width: 34px !important;
+  min-width: 34px !important;
+  max-width: 34px !important;
+  height: 22px !important;
+  min-height: 22px !important;
+  margin-inline-start: 6px !important;
+
+  & > .tab-stack > .tab-background {
+    border-radius: 5px !important;
+  }
+
+  /* the picture arrived: the icon and its tile give way to it */
+  &[zia-glance-thumb] > .tab-stack > .tab-background {
+    background: transparent !important;
+  }
+
+  &[zia-glance-thumb] .tab-icon-stack {
+    visibility: hidden !important;
+  }
+
+  & > .tab-stack > .zia-glance-thumb {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 5px;
+    box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.22), 0 1px 3px rgba(0, 0, 0, 0.35);
+    transition: filter 0.15s ease;
+    pointer-events: none;
+  }
+}
+
+:root:not([zia-glance-thumb-off]) .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab] > .tab-stack {
+  position: relative;
+}
+
+:root:not([zia-glance-thumb-off]) .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab] > .tab-stack > .zia-glance-close {
+  position: absolute;
+  inset: 0;
+  border-radius: 5px;
+  background: url("chrome://sine/content/zia/icons/ui/x.svg") center / 12px no-repeat;
+  -moz-context-properties: fill, fill-opacity;
+  fill: rgb(255, 255, 255);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+/* hovering the tab: the picture dims and its × comes up, clickable */
+:root:not([zia-glance-thumb-off]) .tabbrowser-tab:not([zen-essential]):hover > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab][zia-glance-thumb]:not(#zia-none) {
+  pointer-events: auto !important;
+
+  & > .tab-stack > .zia-glance-thumb {
+    filter: brightness(0.4);
+  }
+
+  & > .tab-stack > .zia-glance-close {
+    opacity: 1;
+    pointer-events: auto;
+    cursor: default;
+  }
+}
+
+:root[zia-glance-thumb-off] :is(.zia-glance-thumb, .zia-glance-close) {
+display: none !important;
+}

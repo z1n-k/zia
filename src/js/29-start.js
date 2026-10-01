@@ -275,6 +275,7 @@
     ifOn("undo-close", "watchUndoClose", watchUndoClose);
     ifOn("tab-numbers", "watchTabNumbers", watchTabNumbers);
     safely("watchWelcome", watchWelcome);
+    safely("watchGlanceThumbs", watchGlanceThumbs);
     safely("watchTypedAddress", watchTypedAddress);
     safely("registerScrollActor", registerScrollActor);
     safely("registerPdfActor", registerPdfActor);

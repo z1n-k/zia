@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- A glance on a normal tab shows as a small picture of the page, as in Dia,
+  instead of an icon. Hover the tab and the picture dims under an ×; click it
+  to close the glance. It can be switched off in settings.
+
 ## [2.76.0] — 2026-09-30
 
 ### Added
