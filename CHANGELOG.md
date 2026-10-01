@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- The Bookmarks, History and Synced Tabs panel slides in from the
+  window's edge as it opens, the page giving way to it, and back out as it
+  closes, as the tab sidebar does.
+
 ## [2.78.3] — 2026-10-01
 
 ### Fixed

@@ -455,4 +455,51 @@
     window.addEventListener("unload", () => Services.prefs.removeObserver(SIDEBAR_BESIDE_PREF, place));
     // moving it to the other side
     new MutationObserver(place).observe(box, { attributes: true, attributeFilter: ["sidebar-positionend"] });
+
+    // It slides in from the window's edge as it opens, the page giving way
+    // to it, and back out as it closes, as the tab sidebar does: its outer
+    // margin runs from minus its width to nothing
+    const SLIDE = { duration: 280, easing: "cubic-bezier(0.2, 0.9, 0.3, 1)" };
+    const beside = () => Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true) && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const frames = () => {
+      const side = box.hasAttribute("sidebar-positionend") ? "marginInlineEnd" : "marginInlineStart";
+      const width = box.getBoundingClientRect().width;
+      return [
+        { [side]: `${-width}px`, opacity: 0 },
+        { [side]: "0px", opacity: 1 },
+      ];
+    };
+    let wasHidden = box.hidden;
+    new MutationObserver(() => {
+      if (wasHidden && !box.hidden && beside()) {
+        box.animate(frames(), SLIDE);
+      }
+      wasHidden = box.hidden;
+    }).observe(box, { attributes: true, attributeFilter: ["hidden"] });
+
+    // closing: slid out first, then hidden as Firefox would have
+    const controller = window.SidebarController;
+    if (controller && typeof controller.hide === "function" && !controller.ziaSlides) {
+      const hide = controller.hide;
+      let sliding = false;
+      controller.hide = function (...args) {
+        if (sliding || box.hidden || !beside()) {
+          return hide.apply(this, args);
+        }
+        sliding = true;
+        const out = box.animate(frames().reverse(), { ...SLIDE, fill: "forwards" });
+        out.finished
+          .catch(() => {})
+          .then(() => {
+            sliding = false;
+            try {
+              hide.apply(this, args);
+            } finally {
+              out.cancel();
+            }
+          });
+        return undefined;
+      };
+      controller.ziaSlides = true;
+    }
   }
