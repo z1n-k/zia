@@ -4526,6 +4526,14 @@ findbar {
   }
 }
 
+/* A square everywhere: as wide as it's tall (the space name's height) */
+#downloads-button {
+  width: var(--zia-space-pill-height) !important;
+  min-width: var(--zia-space-pill-height) !important;
+  max-width: var(--zia-space-pill-height) !important;
+  padding-inline: 0 !important;
+}
+
 /* The icon in the vertical middle of its hover square: drawn a pixel high
    of it otherwise, more room below it than above */
 #downloads-button > :is(.toolbarbutton-badge-stack, #downloads-indicator-anchor, .toolbarbutton-icon) {
