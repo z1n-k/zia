@@ -139,8 +139,11 @@ body {
     background-color: var(--zia-row-hover);
   }
 
+  /* the selected tab's colour, laid on twice: on a tab it's set off by
+     Zia's shine edge and glow, which a row doesn't have, and once alone
+     reads lighter than the tab does */
   &[selected] {
-    background-color: var(--zia-row-selected);
+    background: linear-gradient(var(--zia-row-selected), var(--zia-row-selected)), var(--zia-row-selected);
   }
 }
 
@@ -219,7 +222,7 @@ body {
 
 .item.selected > .item-title-container,
 .item.selected:focus > .item-title-container {
-  background-color: var(--zia-row-selected) !important;
+  background: linear-gradient(var(--zia-row-selected), var(--zia-row-selected)), var(--zia-row-selected) !important;
   color: var(--zia-row-text-selected, rgb(255, 255, 255)) !important;
 }
 
