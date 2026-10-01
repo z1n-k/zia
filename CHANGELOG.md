@@ -10,7 +10,13 @@ Every release of Zia, newest first. The format follows
 
 - The Bookmarks, History and Synced Tabs panel slides in from the
   window's edge as it opens, the page giving way to it, and back out as it
-  closes, as the tab sidebar does.
+  closes, with Zen's own spring, exactly as the tab sidebar does.
+
+### Fixed
+
+- Collapsing or opening the sidebar no longer flashes a black strip at the
+  page's edge while the site catches up with its new width: the strip is
+  the site's own colour. (Dia shows it too.)
 
 ## [2.78.3] — 2026-10-01
 

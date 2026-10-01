@@ -461,7 +461,21 @@
     // sidebar (its outer margin, from minus its width to nothing, with
     // Zen's own spring: no bounce, a tenth of a second)
     const beside = () => Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true) && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let slides = 0;
+    const sliding = (on) => {
+      slides = Math.max(0, slides + (on ? 1 : -1));
+      // a little after it stops, as the site catches up with its new size
+      if (slides) {
+        setFlag("zia-panel-sliding", true);
+      } else {
+        setTimeout(() => !slides && setFlag("zia-panel-sliding", false), 250);
+      }
+    };
     const slide = (opening) => {
+      sliding(true);
+      return slideBox(opening).finally(() => sliding(false));
+    };
+    const slideBox = (opening) => {
       const side = box.hasAttribute("sidebar-positionend") ? "marginRight" : "marginLeft";
       const hidden = `-${box.getBoundingClientRect().width}px`;
       const motion = window.gZenUIManager?.motion;

@@ -209,6 +209,15 @@
     background: var(--zia-page-loading-bg) !important;
   }
 
+  /* While a sidebar slides in or out, the page widens or narrows a few
+     frames before the site redraws at its new size, and the strip in
+     between showed this black: it takes the site's own colour then, so
+     the wait doesn't show (the tab sidebar's slide, and the Bookmarks or
+     History panel's) */
+  &:is([zen-compact-animating], [zia-panel-sliding]) #tabbrowser-tabpanels browser[type="content"]:not([transparent="true"]) {
+    background: var(--zia-site-bg, var(--zia-page-loading-bg)) !important;
+  }
+
   & #zen-appcontent-navbar-wrapper {
     background-color: var(--zia-site-bg, var(--zia-fallback-bg)) !important;
     border-radius: var(--zia-card-radius) var(--zia-card-radius) 0 0 !important;
