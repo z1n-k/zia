@@ -10,7 +10,8 @@ Every release of Zia, newest first. The format follows
 
 - The toolbar's text and buttons take the site's own colour, as in Dia:
   on a cream page they're a soft brown, on a white one a soft grey, the
-  buttons the same ink as the address.
+  buttons (and the icons you've given extensions) the same ink as the
+  address.
 - The find bar is as tall as the address bar, and a touch see-through
   with the page blurred behind it.
 

@@ -162,7 +162,7 @@
 /* the toolbar's ink, with a faint touch of the site's hue (zia.uc.js
    sets the hue and strength; without them it's the plain grey) */
 :root {
-  --zia-light-ink: hsl(var(--zia-ink-h, 240) var(--zia-ink-s, 3.5%) 44%);
+  --zia-light-ink: hsl(var(--zia-ink-h, 240) var(--zia-ink-s, 3.5%) 40%);
   --zia-dark-button-ink: hsl(var(--zia-ink-h, 240) var(--zia-ink-s, 60%) 99.2%);
 }
 
@@ -810,6 +810,7 @@
   /* The buttons are white on every dark site, as in Dia, so a dimmed one
      (back with nowhere to go) still reads; the address keeps the softer ink. */
   --toolbarbutton-icon-fill: var(--zia-dark-button-ink) !important;
+  --zia-toolbar-ink: var(--zia-dark-button-ink);
 
   & toolbarbutton:not(.webextension-browser-action, [id$="-browser-action"], [id$="-BAP"]) {
     color: var(--zia-dark-button-ink) !important;
@@ -829,6 +830,7 @@
   --toolbar-color: rgb(255, 255, 255) !important;
   --toolbar-field-color: rgb(255, 255, 255) !important;
   --toolbarbutton-icon-fill: rgb(255, 255, 255) !important;
+  --zia-toolbar-ink: rgb(255, 255, 255);
   --zen-toolbar-element-bg-hover: rgba(0, 0, 0, 0.14) !important;
 
   & toolbarbutton:not(.webextension-browser-action, [id$="-browser-action"], [id$="-BAP"]) {
@@ -854,6 +856,7 @@
   --toolbar-field-color: var(--zia-light-ink) !important;
   /* the buttons in the same ink as the address, as in Dia */
   --toolbarbutton-icon-fill: var(--zia-light-ink) !important;
+  --zia-toolbar-ink: var(--zia-light-ink);
   --zen-toolbar-element-bg: rgba(0, 0, 0, 0.06) !important;
   --zen-toolbar-element-bg-hover: rgba(0, 0, 0, 0.1) !important;
 }
@@ -866,6 +869,8 @@
 :root[zia-site-light="true"] #zen-appcontent-navbar-wrapper toolbarbutton:not(.webextension-browser-action, [id$="-browser-action"], [id$="-BAP"]) {
   color: var(--zia-light-ink) !important;
   fill: var(--zia-light-ink) !important;
+  /* full strength, or the thin strokes read lighter than the address */
+  fill-opacity: 1 !important;
 }
 
 :root #urlbar[breakout-extend]:not([zia-classic]) {
