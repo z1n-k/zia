@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- The welcome tour for a new install shows everything the update card
+  does too: glass folders, a glance kept in its tab, and Bookmarks and
+  History beside your tabs.
+
 ## [2.84.0] — 2026-10-02
 
 ### Added

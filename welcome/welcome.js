@@ -59,7 +59,7 @@
     numbers: { v: WIRES.numbers, t: "Numbered tabs", d: "Hold <kbd>⌘</kbd> and every tab shows its number. Type it and let go. Past nine, keep typing: 1 then 2 is tab twelve." },
     undo: { v: WIRES.undo, t: "<kbd>⌘</kbd><kbd>Z</kbd> to undo a close", d: "Works on folders and splits too. They come back where they were, for ten seconds after you close them." },
     split: { v: WIRES.split, t: "Drop cards for splits", d: "Drag a tab over the page and cards show exactly where it'll land. Keep a split you use a lot as a single essential." },
-    color: { v: WIRES.color, t: "A toolbar that matches the page", d: "It takes the colour at the top of each site and keeps its text readable on it." },
+    color: { v: WIRES.color, t: "A toolbar that matches the page", d: "It takes the colour at the top of each site, and its text and buttons take a touch of that colour too." },
     folders: { v: WIRES.folders, t: "Folders", d: "Give one a colour or an icon. Hover a closed folder to see what's in it." },
     cards: { v: WIRES.cards, t: "Hover cards", d: "Title, address, and a row of shortcuts: pin, split, copy the link." },
     music: { v: WIRES.music, t: "Now playing", d: "Whatever's making sound gets a small player, lit by its artwork." },
@@ -67,7 +67,7 @@
     multiview: { v: WIRES.multiview, t: "Multiview", d: "Up to four videos or streams, side by side in one tab." },
     pip: { v: WIRES.pip, t: "Picture-in-picture", d: "Throw the player off the edge of the screen. It waits there until you pull it back." },
     pdf: { v: WIRES.pdf, t: "PDFs", d: "A quieter toolbar and a page sidebar that fit with the rest of Zia." },
-    glassfolder: { v: WIRES.glassfolder, t: "Glass folders", d: "A folder without an icon of its own is glass, in its colour. It holds a sheet for each tab inside, up to three, so you can see how full it is before you open it." },
+    glassfolder: { v: WIRES.glassfolder, t: "Glass folders", d: "A folder without an icon of its own is glass, in its colour, with a sheet for each tab inside, up to three. Give one a colour or an icon, and hover a closed one to see what's in it." },
     tabpeek: { v: WIRES.tabpeek, t: "A glance, kept in its tab", d: "Glance at a link and a small picture of the page tucks into the tab, as in Dia. Close the glance and it sinks back in." },
     panels: { v: WIRES.panels, t: "Bookmarks and History, beside your tabs", d: "<kbd>⌘</kbd><kbd>B</kbd> and <kbd>⌘</kbd><kbd>⇧</kbd><kbd>H</kbd> slide in as a second sidebar, matched to your tabs row for row." },
     ink: { v: WIRES.ink, t: "The site's own ink", d: "The toolbar's text and buttons take a touch of each site's colour: a soft brown on a cream page, a soft grey on a white one." },
@@ -75,7 +75,7 @@
   };
 
   const TOURS = {
-    install: { eyebrow: "Welcome to Zia", list: ["intro", "numbers", "undo", "split", "color", "folders", "cards", "music", "address", "multiview", "pip", "pdf", "icons", "star"] },
+    install: { eyebrow: "Welcome to Zia", list: ["intro", "numbers", "undo", "split", "color", "glassfolder", "cards", "tabpeek", "panels", "music", "address", "multiview", "pip", "pdf", "icons", "star"] },
     update: { eyebrow: "New in Zia", list: ["whatsnew", "glassfolder", "tabpeek", "panels", "ink", "star"] },
   };
 
