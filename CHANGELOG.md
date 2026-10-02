@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- On a site with a thin strip of another colour along its top edge, the
+  toolbar kept flicking between the strip's colour and the page's, even
+  with nothing moving. Every reading of the site's colour now looks at the
+  same band at the top of the page, so they no longer disagree.
+
 ## [2.82.3] — 2026-10-02
 
 ### Fixed
