@@ -6,6 +6,13 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- On trial: a glass folder icon, in the folder's colour (or the space's),
+  that opens and closes with the folder, for folders without an icon of
+  their own. Six to choose from in Settings → Sine Mods → Zia → Folder
+  icon; Zia's rings stay the default.
+
 ### Changed
 
 - The toolbar's text and buttons take the site's own colour, as in Dia:

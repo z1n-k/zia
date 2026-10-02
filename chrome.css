@@ -2587,6 +2587,164 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
 :root[zen-sidebar-expanded="true"] zen-folder[zia-holding]::after {
   bottom: var(--zia-hold-inset) !important;
 }
+
+/* Folder icon (on trial, zia.folders.icon-style): a glass folder in the
+   folder's colour (or the space's) for folders without an icon of their
+   own, opening and closing with them. Drawn in em from one 1em-wide box. */
+.zia-fi {
+  display: none;
+}
+
+:root[zia-folder-icon] :is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container .tab-group-folder-icon:not(:has(.icon image:not([href=""]))) {
+  background-color: transparent !important;
+  mask: none !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+
+  & > svg {
+    display: none !important;
+  }
+
+  & > .zia-fi {
+    --fi-accent: var(--zia-folder-swatch, var(--zia-group-swatch, var(--zen-primary-color, #5ab9f5)));
+    --fi-spring: cubic-bezier(0.34, 1.5, 0.6, 1);
+    --fi-soft: cubic-bezier(0.32, 0.72, 0, 1);
+    display: block;
+    position: relative;
+    font-size: 17px;
+    width: 1em;
+    height: 0.82em;
+    perspective: 3em;
+    flex: none;
+    pointer-events: none;
+
+    & > * {
+      position: absolute;
+      transition: transform 0.4s var(--fi-soft), opacity 0.3s var(--fi-soft);
+    }
+  }
+}
+
+/* opening springs a touch past and settles; closing eases home */
+:root[zia-folder-icon] :is(zen-folder, tab-group:not([split-view-group])):not([collapsed]) > .tab-group-label-container .zia-fi > * {
+  transition: transform 0.55s var(--fi-spring), opacity 0.3s var(--fi-soft);
+}
+
+/* the back and its tab, one shape: the tab on the right easing down into
+   the body; a little narrower than the front so it never peeks round it */
+.zia-fi-back {
+  left: 0.03em;
+  right: 0.03em;
+  top: 0;
+  bottom: 0.03em;
+  --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 82' preserveAspectRatio='none'%3E%3Cpath d='M100 9 Q100 0 91 0 H66 Q61 0 58 3 L54 7.5 Q51 10.5 46 10.5 H9 Q0 10.5 0 19.5 V73 Q0 82 9 82 H91 Q100 82 100 73 Z'/%3E%3C/svg%3E");
+  mask: var(--shape) 0 0 / 100% 100% no-repeat;
+  transform-origin: 50% 100%;
+}
+
+.zia-fi-sheet {
+  left: 0.12em;
+  right: 0.42em;
+  top: 0.06em;
+  height: 0.66em;
+  border-radius: 0.07em;
+  opacity: 0;
+}
+
+.zia-fi-front {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0.78em;
+  border-radius: 0.12em;
+  transform-origin: 50% 100%;
+}
+
+/* the clear glass front (1) */
+.zia-fi-front {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08) 60%, rgba(255, 255, 255, 0.04));
+  backdrop-filter: blur(1px) saturate(1.6);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.42), 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+/* 1 · Frosted front: a light back, a sheet in the colour rising as the
+   glass front tips forward */
+:root[zia-folder-icon="frosted"] {
+  & .zia-fi-back { background: linear-gradient(#e9e9ec, #b4b4bb); }
+  & .zia-fi-sheet.zia-fi-a { opacity: 1; background: linear-gradient(color-mix(in srgb, var(--fi-accent) 70%, white), var(--fi-accent)); }
+  & :is(zen-folder, tab-group):not([collapsed]) .zia-fi {
+    & .zia-fi-front { transform: rotateX(-34deg) scaleY(0.96); }
+    & .zia-fi-sheet { transform: translateY(-0.18em); }
+  }
+}
+
+/* 17 · Tinted: 1's shape, no sheet, the whole folder in the colour */
+:root[zia-folder-icon="tinted"] {
+  & .zia-fi-back { background: linear-gradient(color-mix(in srgb, var(--fi-accent) 78%, white), color-mix(in srgb, var(--fi-accent) 88%, black)); }
+  & .zia-fi-front {
+    background: linear-gradient(160deg, color-mix(in srgb, var(--fi-accent) 45%, rgba(255, 255, 255, 0.5)), color-mix(in srgb, var(--fi-accent) 30%, rgba(255, 255, 255, 0.14)) 60%, color-mix(in srgb, var(--fi-accent) 22%, rgba(255, 255, 255, 0.08)));
+  }
+  & :is(zen-folder, tab-group):not([collapsed]) .zia-fi .zia-fi-front { transform: rotateX(-34deg) scaleY(0.96); }
+}
+
+/* The coloured ones (12-16): the folder in the colour, the tab on the
+   left, a milky front tinted the same, tapering to the bottom */
+:root:is([zia-folder-icon="tip"], [zia-folder-icon="skew"], [zia-folder-icon="paper"], [zia-folder-icon="two-papers"]) {
+  & .zia-fi-back {
+    left: 0.07em;
+    right: 0.07em;
+    bottom: 0.04em;
+    --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 82' preserveAspectRatio='none'%3E%3Cpath d='M0 9 Q0 0 9 0 H30 Q35 0 39 3 L45 8 Q48 10.5 53 10.5 H90 Q100 10.5 100 20.5 V73 Q100 82 91 82 H9 Q0 82 0 73 Z'/%3E%3C/svg%3E");
+    background: linear-gradient(color-mix(in srgb, var(--fi-accent) 80%, white), color-mix(in srgb, var(--fi-accent) 85%, black));
+  }
+  & .zia-fi-front {
+    height: 0.66em;
+    border-radius: 0.1em;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--fi-accent) 55%, rgba(255, 255, 255, 0.55)), color-mix(in srgb, var(--fi-accent) 45%, rgba(255, 255, 255, 0.35)) 55%, rgba(255, 255, 255, 0.55));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+    clip-path: polygon(0 0, 100% 0, 97% 100%, 3% 100%);
+  }
+  & .zia-fi-sheet { background: linear-gradient(#fff, #e9e9ee); left: 0.16em; right: 0.16em; top: 0.1em; }
+}
+
+/* 12 · Tip: the front tips forward */
+:root[zia-folder-icon="tip"] :is(zen-folder, tab-group):not([collapsed]) .zia-fi .zia-fi-front {
+  transform: rotateX(-32deg);
+}
+
+/* 14 · Skew: the front swings open sideways, like a Finder folder */
+:root[zia-folder-icon="skew"] :is(zen-folder, tab-group):not([collapsed]) .zia-fi {
+  & .zia-fi-front { transform-origin: 0 100%; transform: skewX(-12deg) scaleY(0.9) translateX(0.05em); }
+  & .zia-fi-back { transform: skewX(4deg) translateX(-0.02em); }
+}
+
+/* 13 · Paper: a white sheet rises as the front tips */
+:root[zia-folder-icon="paper"] {
+  & .zia-fi-sheet.zia-fi-a { opacity: 1; }
+  & :is(zen-folder, tab-group):not([collapsed]) .zia-fi {
+    & .zia-fi-front { transform: rotateX(-28deg); }
+    & .zia-fi-sheet { transform: translateY(-0.16em); }
+  }
+}
+
+/* 16 · Two papers: a white sheet and a pale one in the colour, in turn */
+:root[zia-folder-icon="two-papers"] {
+  & .zia-fi-sheet { opacity: 1; }
+  & .zia-fi-sheet.zia-fi-a { left: 0.12em; right: 0.3em; }
+  & .zia-fi-sheet.zia-fi-b { left: 0.26em; right: 0.1em; top: 0.12em; background: color-mix(in srgb, var(--fi-accent) 25%, white); }
+  & :is(zen-folder, tab-group):not([collapsed]) .zia-fi {
+    & .zia-fi-front { transform: rotateX(-26deg); }
+    & .zia-fi-sheet.zia-fi-a { transform: translateY(-0.17em) rotate(-5deg); }
+    & .zia-fi-sheet.zia-fi-b { transform: translateY(-0.12em) rotate(6deg); transition-delay: 0.06s; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zia-fi > * {
+    transition-duration: 0.01s !important;
+  }
+}
 #zia-tab-card,
 #zia-folder-card {
   clip-path: inset(0 round var(--zia-tab-card-radius));

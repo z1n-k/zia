@@ -302,6 +302,42 @@
     "defaultValue": false
   },
   {
+    "type": "dropdown",
+    "label": "Folder icon, for folders without one of their own (trying these out)",
+    "property": "zia.folders.icon-style",
+    "defaultValue": "rings",
+    "options": [
+      {
+        "label": "Zia's rings",
+        "value": "rings"
+      },
+      {
+        "label": "Frosted (1): glass front, a sheet in the colour",
+        "value": "frosted"
+      },
+      {
+        "label": "Tinted (17): the shape of 1, all in the colour",
+        "value": "tinted"
+      },
+      {
+        "label": "Tip (12): coloured, the front tips forward",
+        "value": "tip"
+      },
+      {
+        "label": "Skew (14): coloured, the front swings sideways",
+        "value": "skew"
+      },
+      {
+        "label": "Paper (13): coloured, a white sheet rises",
+        "value": "paper"
+      },
+      {
+        "label": "Two papers (16): coloured, two sheets rise",
+        "value": "two-papers"
+      }
+    ]
+  },
+  {
     "type": "separator",
     "label": "Loading bar"
   },

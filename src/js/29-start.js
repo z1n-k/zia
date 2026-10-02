@@ -290,6 +290,7 @@
     safely("watchOldIcons", watchOldIcons);
     safely("watchNewFolders", watchNewFolders);
     safely("watchFolderColors", watchFolderColors);
+    safely("watchFolderIcon", watchFolderIcon);
     safely("addFolderColorPicker", addFolderColorPicker);
     safely("watchGroupColors", watchGroupColors);
     safely("watchFolderCloseButtons", watchFolderCloseButtons);
