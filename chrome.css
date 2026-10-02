@@ -2671,7 +2671,7 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
 /* 1 · Frosted front: a light back, a sheet in the colour rising as the
    glass front tips forward */
 :root[zia-folder-icon="frosted"] {
-  & .zia-fi-back { background: linear-gradient(#e9e9ec, #b4b4bb); }
+  & .zia-fi-back { background: linear-gradient(#f2f2f4, #cfcfd5); }
   & .zia-fi-sheet.zia-fi-a { opacity: 1; background: linear-gradient(color-mix(in srgb, var(--fi-accent) 70%, white), var(--fi-accent)); }
   & :is(zen-folder, tab-group):not([collapsed]) .zia-fi {
     & .zia-fi-front { transform: rotateX(-34deg) scaleY(0.96); }
@@ -2681,7 +2681,7 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
 
 /* 17 · Tinted: 1's shape, no sheet, the whole folder in the colour */
 :root[zia-folder-icon="tinted"] {
-  & .zia-fi-back { background: linear-gradient(color-mix(in srgb, var(--fi-accent) 78%, white), color-mix(in srgb, var(--fi-accent) 88%, black)); }
+  & .zia-fi-back { background: linear-gradient(color-mix(in srgb, var(--fi-accent) 62%, white), color-mix(in srgb, var(--fi-accent) 88%, white)); }
   & .zia-fi-front {
     background: linear-gradient(160deg, color-mix(in srgb, var(--fi-accent) 45%, rgba(255, 255, 255, 0.5)), color-mix(in srgb, var(--fi-accent) 30%, rgba(255, 255, 255, 0.14)) 60%, color-mix(in srgb, var(--fi-accent) 22%, rgba(255, 255, 255, 0.08)));
   }
@@ -2690,13 +2690,15 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
 
 /* The coloured ones (12-16): the folder in the colour, the tab on the
    left, a milky front tinted the same, tapering to the bottom */
-:root:is([zia-folder-icon="tip"], [zia-folder-icon="skew"], [zia-folder-icon="paper"], [zia-folder-icon="two-papers"]) {
+:root:is([zia-folder-icon="tip"], [zia-folder-icon="skew"], [zia-folder-icon="paper"], [zia-folder-icon="two-papers"], [zia-folder-icon="plain"]) {
   & .zia-fi-back {
     left: 0.07em;
     right: 0.07em;
     bottom: 0.04em;
     --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 82' preserveAspectRatio='none'%3E%3Cpath d='M0 9 Q0 0 9 0 H30 Q35 0 39 3 L45 8 Q48 10.5 53 10.5 H90 Q100 10.5 100 20.5 V73 Q100 82 91 82 H9 Q0 82 0 73 Z'/%3E%3C/svg%3E");
-    background: linear-gradient(color-mix(in srgb, var(--fi-accent) 80%, white), color-mix(in srgb, var(--fi-accent) 85%, black));
+    /* bright enough to read on a dark sidebar: lighter at the top, the
+       plain colour at the bottom (no black mixed in) */
+    background: linear-gradient(color-mix(in srgb, var(--fi-accent) 62%, white), color-mix(in srgb, var(--fi-accent) 88%, white));
   }
   & .zia-fi-front {
     height: 0.66em;
@@ -2738,6 +2740,11 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
     & .zia-fi-sheet.zia-fi-a { transform: translateY(-0.17em) rotate(-5deg); }
     & .zia-fi-sheet.zia-fi-b { transform: translateY(-0.12em) rotate(6deg); transition-delay: 0.06s; }
   }
+}
+
+/* 16 without the papers: the coloured folder, its front tipping as in 16 */
+:root[zia-folder-icon="plain"] :is(zen-folder, tab-group):not([collapsed]) .zia-fi .zia-fi-front {
+  transform: rotateX(-26deg);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -334,6 +334,10 @@
       {
         "label": "Two papers (16): coloured, two sheets rise",
         "value": "two-papers"
+      },
+      {
+        "label": "Plain (16 without the papers): coloured, the front tips",
+        "value": "plain"
       }
     ]
   },
