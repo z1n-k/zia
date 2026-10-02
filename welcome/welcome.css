@@ -384,7 +384,7 @@ kbd > span, .w-key > span { position: static; display: block; text-box: trim-bot
 
 /* a glance's picture rising out of its tab, and sinking back */
 .tabpeek .w-row.sel { background: rgba(255,255,255,.16); }
-.tabpeek .tp-clip { left: 27cqw; top: 6cqw; width: 12cqw; height: 16.4cqw; overflow: hidden; border-radius: 0 0 1.8cqw 0; }
+.tabpeek .tp-clip { left: 20cqw; top: 6cqw; width: 19cqw; height: 16.4cqw; overflow: hidden; border-radius: 0 0 1.8cqw 0; }
 .tabpeek .tp { right: 1.4cqw; bottom: -2.6cqw; width: 10cqw; height: 7.6cqw; border-radius: .9cqw; background: linear-gradient(#e9eef5 0 1.4cqw, #f6f6f8 1.4cqw); box-shadow: 0 .6cqw 1.6cqw rgba(0,0,0,.45), inset 0 0 0 .15cqw rgba(255,255,255,.4); transform-origin: 50% 100%; animation: tp 6s var(--spring) infinite; }
 .tabpeek .tp::after { content: ""; position: absolute; left: 1cqw; right: 2.6cqw; top: 2.4cqw; height: .8cqw; border-radius: .4cqw; background: rgba(0,0,0,.22); box-shadow: 0 1.4cqw 0 rgba(0,0,0,.12); }
 .tabpeek .w-page .link { left: 6cqw; top: 8cqw; width: 18cqw; height: 1.6cqw; border-radius: 1cqw; background: var(--blue); opacity: .8; }
