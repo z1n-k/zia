@@ -8,9 +8,8 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
-- The folder icon's sheets are paper-shaped (taller than they're wide)
-  rather than nearly square, and stack from left to right: one sits in
-  the middle, a second slides in behind it on the right and pushes it
+- The folder icon's sheets stack from left to right: one sits in the
+  middle, a second slides in behind it on the right and pushes it
   left, a third goes in behind those two. The back one is a little
   dimmer, so it reads as further back.
 
