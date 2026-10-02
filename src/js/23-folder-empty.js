@@ -24,7 +24,13 @@
   const FOLDER_SLOT_INSET = { start: 14, end: 5 };
   let slotSize = "";
   function measureFolderSlot() {
-    const visible = (tab) => tab.getBoundingClientRect().height > 8 && !tab.hasAttribute("zen-empty-tab");
+    // (not a glance: its tab sits inside the one it came from, drawn as a
+    // small picture, and the slot shrank to that while a glance was open)
+    const visible = (tab) =>
+      tab.getBoundingClientRect().height > 8 &&
+      !tab.hasAttribute("zen-empty-tab") &&
+      !tab.hasAttribute("zen-glance-tab") &&
+      !tab.parentElement?.closest(".tabbrowser-tab");
     const inFolder = [...document.querySelectorAll("zen-folder:not([collapsed]) > .tab-group-container > .tabbrowser-tab")].find(visible);
     const tab =
       inFolder || [...document.querySelectorAll("#tabbrowser-tabs .tabbrowser-tab:not([zen-essential])")].find(visible);

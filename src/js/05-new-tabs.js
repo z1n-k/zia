@@ -109,8 +109,39 @@
     }
   }
 
+  // Optional: Cmd/Ctrl+T leaves the address bar ready to type in, with the
+  // search page showing behind it (off: the page's own search box)
+  const focusAddressBarOnNewTab = () => Services.prefs.getBoolPref("zia.newtab.focus-address-bar", false);
+
+  function keepNewTabUrlbar(tab) {
+    const focus = () => {
+      if (gBrowser.selectedTab !== tab || tab.ziaTypedInPage) {
+        return;
+      }
+      if (!gURLBar.focused) {
+        gURLBar.focus();
+        gURLBar.select();
+      }
+    };
+    // the search page loading after can pull focus to its own box: put it
+    // back, until something's been typed or clicked in the page
+    tab.linkedBrowser?.addEventListener("mousedown", () => (tab.ziaTypedInPage = true), { once: true });
+    requestAnimationFrame(focus);
+    for (const ms of [250, 700, 1500]) {
+      setTimeout(() => {
+        if (document.activeElement === tab.linkedBrowser) {
+          focus();
+        }
+      }, ms);
+    }
+  }
+
   function closeNewTabUrlbar(tab) {
     if (!searchHomeUrl || !newTabSearchEnabled()) {
+      return;
+    }
+    if (focusAddressBarOnNewTab()) {
+      keepNewTabUrlbar(tab);
       return;
     }
     requestAnimationFrame(() => {

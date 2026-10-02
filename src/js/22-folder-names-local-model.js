@@ -651,7 +651,8 @@
     }
     // A folder made empty (New Folder) has nothing to go by but its own
     // default name, which only ever suggested a plain folder icon
-    if (!(folder.tabs || []).length) {
+    // (Zen keeps a hidden placeholder tab in an empty folder: not a tab)
+    if (!(folder.tabs || []).some((tab) => !tab.hasAttribute("zen-empty-tab"))) {
       return;
     }
 

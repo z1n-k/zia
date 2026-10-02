@@ -280,6 +280,12 @@
     "defaultValue": true
   },
   {
+    "type": "checkbox",
+    "label": "Cmd/Ctrl+T leaves the address bar ready to type in, the search page behind it (off: the page's own search box)",
+    "property": "zia.newtab.focus-address-bar",
+    "defaultValue": false
+  },
+  {
     "type": "separator",
     "label": "Folders"
   },

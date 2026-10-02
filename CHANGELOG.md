@@ -17,6 +17,10 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
+- Optional: Cmd/Ctrl+T can leave the address bar ready to type in, with
+  your search engine's page behind it, instead of the page's own search
+  box (Settings → Sine Mods → Zia → New tabs).
+
 - The toolbar's text and buttons take the site's own colour, as in Dia:
   on a cream page they're a soft brown, on a white one a soft grey, the
   buttons (and the icons you've given extensions) the same ink as the
@@ -25,6 +29,12 @@ Every release of Zia, newest first. The format follows
   with the page blurred behind it.
 
 ### Fixed
+
+- An empty folder's "Drag tabs here" slot shrank while a glance was open:
+  it was sized from the glance's small picture.
+- A new, empty folder (New Folder) briefly showed a loading placeholder
+  and got a plain folder icon, with naming folders by a local model on:
+  Zen's hidden placeholder tab counted as a tab to name it by.
 
 - Windows: flicking the mouse to the top of the screen missed minimise,
   maximise and close, landing in the gap above the page's card instead.
