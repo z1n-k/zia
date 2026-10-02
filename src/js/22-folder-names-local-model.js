@@ -699,8 +699,25 @@
     }, 600);
   }
 
+  // Only a folder you've just made is named. Zen announces every folder it
+  // brings back at start-up the same way as a new one, and Cmd+Z can bring
+  // a deleted one back, so a restored "New Folder" was being renamed: the
+  // naming waits until the window's tabs are back, and sits out an undo.
+  const FOLDER_NAMING_SETTLE_MS = 3000;
+
   function watchNewFolders() {
+    let ready = false;
+    const settle = () => setTimeout(() => (ready = true), FOLDER_NAMING_SETTLE_MS);
+    const restored = window.SessionStore?.promiseAllWindowsRestored;
+    if (restored) {
+      restored.then(settle, settle);
+    } else {
+      settle();
+    }
     gBrowser.tabContainer.addEventListener("TabGroupCreate", (event) => {
+      if (!ready || Date.now() < (window.ziaReopeningUntil || 0)) {
+        return;
+      }
       requestAnimationFrame(() => requestAnimationFrame(() => applySuggestedFolderIcon(event.target)));
     });
   }

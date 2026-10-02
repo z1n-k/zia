@@ -97,6 +97,8 @@
   // Firefox's own "reopen closed tab" brings back everything one close action
   // took away (a whole folder, a split, several tabs at once), not just one tab.
   function reopenLastClose() {
+    // folders coming back keep their names (zia.uc.js, folder names)
+    window.ziaReopeningUntil = Date.now() + 3000;
     try {
       if (typeof window.undoCloseTab === "function") {
         window.undoCloseTab();

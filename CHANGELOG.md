@@ -14,6 +14,10 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- With folder naming by the local model on, a folder still called *New
+  Folder* was renamed after restarting the browser (or bringing it back
+  with Cmd+Z): Zen announces restored folders as if they were new. Only
+  folders you make now get named.
 - A tab dropped into a folder put down its sheet in the two-sheet spot,
   which then jumped wider: while Zen drops a tab in, the folder holds an
   extra child for a moment, and it was counted. The sheets are counted
