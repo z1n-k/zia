@@ -11,7 +11,9 @@ Every release of Zia, newest first. The format follows
 - The welcome card comes back once after this update, with what's new
   since it last showed: glass folders, a glance's picture kept in its tab,
   Bookmarks and History beside your tabs, and the toolbar in each site's
-  own ink. As before, it can be switched off after updates in settings.
+  own ink. As before, it can be switched off after updates in settings,
+  and **Show what's new in this version again** brings it back (Show the
+  welcome tour again still shows the full tour).
 
 ### Fixed
 

@@ -340,6 +340,7 @@ The first folder takes a little while as the model downloads and the icon names 
 | Bookmarks, History and Synced Tabs panels beside the page, full height, as a second sidebar | on |
 | Show the welcome tour after updates that bring something new | on |
 | Show the welcome tour again (turns itself back off) | off |
+| Show what's new in this version again (turns itself back off) | off |
 | Tab and folder hover cards | on |
 | Hover cards are slightly see-through, with what's behind them blurred | on |
 | Name new folders and choose their icons with a local model ([see above](#folder-names-and-icons)) | off |

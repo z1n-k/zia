@@ -10,6 +10,7 @@
   const WELCOME_SEEN_PREF = "zia.welcome.seen";
   const WELCOME_UPDATES_PREF = "zia.welcome.show";
   const WELCOME_AGAIN_PREF = "zia.welcome.again";
+  const WHATS_NEW_AGAIN_PREF = "zia.welcome.whats-new-again";
   const WELCOME_URL = "chrome://sine/content/zia/welcome/index.html";
 
   function showWelcome(mode) {
@@ -115,18 +116,20 @@
       }
     }
 
-    // "Show the welcome tour again" in settings: shows it, then turns
-    // itself back off
-    const again = () => {
-      if (!Services.prefs.getBoolPref(WELCOME_AGAIN_PREF, false)) {
-        return;
-      }
-      Services.prefs.setBoolPref(WELCOME_AGAIN_PREF, false);
-      if (Services.wm.getMostRecentWindow("navigator:browser") === window) {
-        showWelcome("install");
-      }
-    };
-    Services.prefs.addObserver(WELCOME_AGAIN_PREF, again);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(WELCOME_AGAIN_PREF, again));
-    again();
+    // "Show the welcome tour again" and "Show what's new again" in
+    // settings: each shows its tour, then turns itself back off
+    for (const [pref, mode] of [[WELCOME_AGAIN_PREF, "install"], [WHATS_NEW_AGAIN_PREF, "update"]]) {
+      const again = () => {
+        if (!Services.prefs.getBoolPref(pref, false)) {
+          return;
+        }
+        Services.prefs.setBoolPref(pref, false);
+        if (Services.wm.getMostRecentWindow("navigator:browser") === window) {
+          showWelcome(mode);
+        }
+      };
+      Services.prefs.addObserver(pref, again);
+      window.addEventListener("unload", () => Services.prefs.removeObserver(pref, again));
+      again();
+    }
   }

@@ -81,6 +81,12 @@
   },
   {
     "type": "checkbox",
+    "label": "Show what's new in this version again (turns itself back off)",
+    "property": "zia.welcome.whats-new-again",
+    "defaultValue": false
+  },
+  {
+    "type": "checkbox",
     "label": "A glance shows on its tab as a small picture of the page, as in Dia",
     "property": "zia.glance.thumbnail",
     "defaultValue": true
