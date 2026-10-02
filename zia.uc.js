@@ -74,6 +74,7 @@
     appliedColorKey = key;
     if (!rgb) {
       root.style.removeProperty("--zia-site-bg");
+      updateInkTint(null);
       setFlag("zia-site-light", false);
       setFlag("zia-site-dark", true);
       setFlag("zia-site-mid", false);
@@ -83,6 +84,7 @@
       return;
     }
     root.style.setProperty("--zia-site-bg", cssColor(rgb));
+    updateInkTint(rgb);
     const brightness = brightnessOf(rgb);
     const light = wantsDarkInk(rgb);
     // A vivid colour (a strong red, say) is treated as mid even when it's a
@@ -98,6 +100,38 @@
     updateDarkSiteInk(rgb, mid ? INK_MAX : brightness);
   }
 
+  // The toolbar's text and buttons take a faint touch of the site's own
+  // hue, as in Dia: on a cream page they're a warm dark brown rather than a
+  // neutral grey. Grey pages (no hue to speak of) stay neutral.
+  function updateInkTint(rgb) {
+    if (!rgb) {
+      root.style.removeProperty("--zia-ink-h");
+      root.style.removeProperty("--zia-ink-s");
+      return;
+    }
+    const [r, g, b] = rgb.slice(0, 3).map((c) => c / 255);
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const l = (max + min) / 2;
+    const d = max - min;
+    let h = 0;
+    let s = 0;
+    if (d > 0.0001) {
+      s = d / (1 - Math.abs(2 * l - 1));
+      if (max === r) {
+        h = 60 * (((g - b) / d) % 6);
+      } else if (max === g) {
+        h = 60 * ((b - r) / d + 2);
+      } else {
+        h = 60 * ((r - g) / d + 4);
+      }
+    }
+    root.style.setProperty("--zia-ink-h", `${Math.round((h + 360) % 360)}`);
+    // a fraction of the site's saturation, never strong enough to read as
+    // coloured text
+    root.style.setProperty("--zia-ink-s", `${Math.round(Math.min(s, 0.6) * 30)}%`);
+  }
+
   function updateDarkSiteInk(rgb, brightness, inkOnly = false) {
     if (!rgb || brightness >= INK_MAX) {
       root.style.removeProperty("--zia-dark-ink");
@@ -110,7 +144,7 @@
     // in Dia; the soft grey only from there up.
     const t = brightness <= BLACKISH ? 0 : Math.min(1, (brightness - BLACKISH) / (INK_MAX - 44 - BLACKISH));
     const level = brightness <= BLACKISH ? 251 : Math.round(150 + t * 26);
-    root.style.setProperty("--zia-dark-ink", `rgb(${level}, ${level}, ${level})`);
+    root.style.setProperty("--zia-dark-ink", `hsl(var(--zia-ink-h, 0) var(--zia-ink-s, 0%) ${((level / 255) * 100).toFixed(1)}%)`);
     if (inkOnly) {
       root.style.removeProperty("--zia-urlbar-hover-bg");
       return;

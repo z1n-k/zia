@@ -159,6 +159,13 @@
   }
 }
 
+/* the toolbar's ink, with a faint touch of the site's hue (zia.uc.js
+   sets the hue and strength; without them it's the plain grey) */
+:root {
+  --zia-light-ink: hsl(var(--zia-ink-h, 240) var(--zia-ink-s, 3.5%) 11.4%);
+  --zia-dark-button-ink: hsl(var(--zia-ink-h, 240) var(--zia-ink-s, 60%) 99.2%);
+}
+
 :root[zia-site-dark="true"] {
   --zia-urlbar-hover-bg: rgba(255, 255, 255, 0.09);
 }
@@ -802,11 +809,11 @@
   --toolbar-field-color: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
   /* The buttons are white on every dark site, as in Dia, so a dimmed one
      (back with nowhere to go) still reads; the address keeps the softer ink. */
-  --toolbarbutton-icon-fill: rgb(251, 251, 254) !important;
+  --toolbarbutton-icon-fill: var(--zia-dark-button-ink) !important;
 
   & toolbarbutton:not(.webextension-browser-action, [id$="-browser-action"], [id$="-BAP"]) {
-    color: rgb(251, 251, 254) !important;
-    fill: rgb(251, 251, 254) !important;
+    color: var(--zia-dark-button-ink) !important;
+    fill: var(--zia-dark-button-ink) !important;
   }
 }
 
@@ -841,10 +848,10 @@
 
 :root[zia-site-light="true"] #zen-appcontent-navbar-wrapper {
   color-scheme: light !important;
-  color: rgb(28, 28, 30) !important;
-  --toolbox-textcolor: rgb(28, 28, 30) !important;
-  --toolbar-color: rgb(28, 28, 30) !important;
-  --toolbar-field-color: rgb(28, 28, 30) !important;
+  color: var(--zia-light-ink) !important;
+  --toolbox-textcolor: var(--zia-light-ink) !important;
+  --toolbar-color: var(--zia-light-ink) !important;
+  --toolbar-field-color: var(--zia-light-ink) !important;
   --zen-toolbar-element-bg: rgba(0, 0, 0, 0.06) !important;
   --zen-toolbar-element-bg-hover: rgba(0, 0, 0, 0.1) !important;
 }
@@ -3050,7 +3057,7 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
 }
 
 :root[zia-site-light="true"] #urlbar:not([breakout-extend]) .urlbar-input {
-  color: rgb(28, 28, 30) !important;
+  color: var(--zia-light-ink) !important;
 }
 
 :is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container > label,

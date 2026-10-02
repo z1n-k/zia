@@ -6,6 +6,12 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- The toolbar's text and buttons take a faint touch of the site's own
+  colour, as in Dia: on a cream page they're a warm dark brown rather than
+  a neutral grey. Grey and white pages stay neutral.
+
 ### Fixed
 
 - Windows: flicking the mouse to the top of the screen missed minimise,

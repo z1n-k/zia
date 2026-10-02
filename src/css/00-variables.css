@@ -159,6 +159,13 @@
   }
 }
 
+/* the toolbar's ink, with a faint touch of the site's hue (zia.uc.js
+   sets the hue and strength; without them it's the plain grey) */
+:root {
+  --zia-light-ink: hsl(var(--zia-ink-h, 240) var(--zia-ink-s, 3.5%) 11.4%);
+  --zia-dark-button-ink: hsl(var(--zia-ink-h, 240) var(--zia-ink-s, 60%) 99.2%);
+}
+
 :root[zia-site-dark="true"] {
   --zia-urlbar-hover-bg: rgba(255, 255, 255, 0.09);
 }

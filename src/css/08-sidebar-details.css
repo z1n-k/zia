@@ -6,7 +6,7 @@
 }
 
 :root[zia-site-light="true"] #urlbar:not([breakout-extend]) .urlbar-input {
-  color: rgb(28, 28, 30) !important;
+  color: var(--zia-light-ink) !important;
 }
 
 :is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container > label,
