@@ -62,8 +62,8 @@
     updateDarkSiteInk(rgb, mid ? INK_MAX : brightness);
   }
 
-  // The toolbar's text and buttons take a faint touch of the site's own
-  // hue, as in Dia: on a cream page they're a warm dark brown rather than a
+  // The toolbar's text and buttons take the site's own hue, as in Dia: on
+  // a cream page they're a soft brown (Dia's own, measured) rather than a
   // neutral grey. Grey pages (no hue to speak of) stay neutral.
   function updateInkTint(rgb) {
     if (!rgb) {
@@ -89,9 +89,8 @@
       }
     }
     root.style.setProperty("--zia-ink-h", `${Math.round((h + 360) % 360)}`);
-    // a fraction of the site's saturation, never strong enough to read as
-    // coloured text
-    root.style.setProperty("--zia-ink-s", `${Math.round(Math.min(s, 0.6) * 30)}%`);
+    // a third of the site's saturation, as Dia does
+    root.style.setProperty("--zia-ink-s", `${Math.round(Math.min(s, 1) * 34)}%`);
   }
 
   function updateDarkSiteInk(rgb, brightness, inkOnly = false) {

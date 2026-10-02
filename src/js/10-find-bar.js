@@ -58,14 +58,52 @@
     }
   }
 
+  // On macOS Firefox fills a find bar that opens with nothing selected from
+  // the system's shared find clipboard, the last search made anywhere: so it
+  // reopened with that search in it. Opened with nothing selected, it starts
+  // empty; text selected on the page still fills it in.
+  function skipClipboardPrefill(findbar) {
+    if (!findbar || findbar.__ziaNoClipboardPrefill || typeof findbar.onCurrentSelection !== "function") {
+      return;
+    }
+    findbar.__ziaNoClipboardPrefill = true;
+    const original = findbar.onCurrentSelection;
+    findbar.onCurrentSelection = function (selectionString, isInitialSelection) {
+      if (!isInitialSelection || selectionString) {
+        return original.call(this, selectionString, isInitialSelection);
+      }
+      // Firefox's own steps for an empty opening, minus the clipboard
+      try {
+        if (!this._startFindDeferred) {
+          return undefined;
+        }
+        this._findField.value = "";
+        this._enableFindButtons(false);
+        this._findField.select();
+        this._findField.focus();
+        this._startFindDeferred.resolve();
+        this._startFindDeferred = null;
+        return undefined;
+      } catch (err) {
+        noteError("find bar: skipClipboardPrefill", err);
+        return original.call(this, selectionString, isInitialSelection);
+      }
+    };
+  }
+
+  function dressFindBar(findbar) {
+    shortenFindCount(findbar);
+    skipClipboardPrefill(findbar);
+  }
+
   function watchFindBars() {
     window.addEventListener("findbaropen", clearFindBarOnOpen, true);
     gBrowser.tabContainer.addEventListener("TabFindInitialized", (event) => {
-      shortenFindCount(gBrowser.getCachedFindBar?.(event.target));
+      dressFindBar(gBrowser.getCachedFindBar?.(event.target));
     });
     for (const tab of gBrowser.tabs) {
       if (gBrowser.isFindBarInitialized?.(tab)) {
-        shortenFindCount(gBrowser.getCachedFindBar(tab));
+        dressFindBar(gBrowser.getCachedFindBar(tab));
       }
     }
   }

@@ -565,8 +565,20 @@
   --toolbox-textcolor: var(--zia-light-ink) !important;
   --toolbar-color: var(--zia-light-ink) !important;
   --toolbar-field-color: var(--zia-light-ink) !important;
+  /* the buttons in the same ink as the address, as in Dia */
+  --toolbarbutton-icon-fill: var(--zia-light-ink) !important;
   --zen-toolbar-element-bg: rgba(0, 0, 0, 0.06) !important;
   --zen-toolbar-element-bg-hover: rgba(0, 0, 0, 0.1) !important;
+}
+
+:root[zia-site-light="true"] :is(#zia-url-title, #zia-url-plain) .zia-url-title-rest {
+  /* (the ink is already the softer brown-grey, so less dim than on dark) */
+  opacity: 0.7;
+}
+
+:root[zia-site-light="true"] #zen-appcontent-navbar-wrapper toolbarbutton:not(.webextension-browser-action, [id$="-browser-action"], [id$="-BAP"]) {
+  color: var(--zia-light-ink) !important;
+  fill: var(--zia-light-ink) !important;
 }
 
 :root #urlbar[breakout-extend]:not([zia-classic]) {

@@ -8,9 +8,11 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
-- The toolbar's text and buttons take a faint touch of the site's own
-  colour, as in Dia: on a cream page they're a warm dark brown rather than
-  a neutral grey. Grey and white pages stay neutral.
+- The toolbar's text and buttons take the site's own colour, as in Dia:
+  on a cream page they're a soft brown, on a white one a soft grey, the
+  buttons the same ink as the address.
+- The find bar is as tall as the address bar, and a touch see-through
+  with the page blurred behind it.
 
 ### Fixed
 
@@ -23,8 +25,9 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
-- Find in page (Cmd/Ctrl+F) opened with your last search still in it: it
-  opens empty now, as in Dia. Text selected on the page still fills it in.
+- Find in page (Cmd/Ctrl+F) opened with your last search still in it (on
+  macOS, from the system's shared find clipboard): it opens empty now, as
+  in Dia. Text selected on the page still fills it in.
 - With the address bar's text centred, the floating address bar in the
   middle of the window was centred too: only the toolbar's is now.
 

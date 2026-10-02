@@ -162,7 +162,7 @@
 /* the toolbar's ink, with a faint touch of the site's hue (zia.uc.js
    sets the hue and strength; without them it's the plain grey) */
 :root {
-  --zia-light-ink: hsl(var(--zia-ink-h, 240) var(--zia-ink-s, 3.5%) 11.4%);
+  --zia-light-ink: hsl(var(--zia-ink-h, 240) var(--zia-ink-s, 3.5%) 44%);
   --zia-dark-button-ink: hsl(var(--zia-ink-h, 240) var(--zia-ink-s, 60%) 99.2%);
 }
 
@@ -852,8 +852,20 @@
   --toolbox-textcolor: var(--zia-light-ink) !important;
   --toolbar-color: var(--zia-light-ink) !important;
   --toolbar-field-color: var(--zia-light-ink) !important;
+  /* the buttons in the same ink as the address, as in Dia */
+  --toolbarbutton-icon-fill: var(--zia-light-ink) !important;
   --zen-toolbar-element-bg: rgba(0, 0, 0, 0.06) !important;
   --zen-toolbar-element-bg-hover: rgba(0, 0, 0, 0.1) !important;
+}
+
+:root[zia-site-light="true"] :is(#zia-url-title, #zia-url-plain) .zia-url-title-rest {
+  /* (the ink is already the softer brown-grey, so less dim than on dark) */
+  opacity: 0.7;
+}
+
+:root[zia-site-light="true"] #zen-appcontent-navbar-wrapper toolbarbutton:not(.webextension-browser-action, [id$="-browser-action"], [id$="-BAP"]) {
+  color: var(--zia-light-ink) !important;
+  fill: var(--zia-light-ink) !important;
 }
 
 :root #urlbar[breakout-extend]:not([zia-classic]) {
@@ -4021,12 +4033,15 @@ findbar {
   z-index: 3;
   width: 380px;
   max-width: calc(100% - 24px);
-  height: 44px;
+  /* as tall as the address bar, and a touch see-through, the page
+     blurred behind it, as in Dia */
+  height: var(--zia-urlbar-height, 32px);
   margin: 0 !important;
-  padding: 0 6px 0 12px !important;
+  padding: 0 4px 0 10px !important;
   display: flex;
   align-items: center;
-  background: rgb(38, 38, 38) !important;
+  background: rgba(38, 38, 38, 0.78) !important;
+  backdrop-filter: blur(18px) saturate(1.4);
   border: none !important;
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 0 0 0.5px rgba(255, 255, 255, 0.1);

@@ -13,12 +13,15 @@ findbar {
   z-index: 3;
   width: 380px;
   max-width: calc(100% - 24px);
-  height: 44px;
+  /* as tall as the address bar, and a touch see-through, the page
+     blurred behind it, as in Dia */
+  height: var(--zia-urlbar-height, 32px);
   margin: 0 !important;
-  padding: 0 6px 0 12px !important;
+  padding: 0 4px 0 10px !important;
   display: flex;
   align-items: center;
-  background: rgb(38, 38, 38) !important;
+  background: rgba(38, 38, 38, 0.78) !important;
+  backdrop-filter: blur(18px) saturate(1.4);
   border: none !important;
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 0 0 0.5px rgba(255, 255, 255, 0.1);
