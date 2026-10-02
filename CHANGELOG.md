@@ -14,12 +14,11 @@ Every release of Zia, newest first. The format follows
   folder. It opens and closes with the folder, the sheets fanning out, and
   a tab dropped in drops a sheet in with it; dragged out, its sheet lifts
   out and away.
-
-### Changed
-
 - Optional: Cmd/Ctrl+T can leave the address bar ready to type in, with
   your search engine's page behind it, instead of the page's own search
   box (Settings → Sine Mods → Zia → New tabs).
+
+### Changed
 
 - The toolbar's text and buttons take the site's own colour, as in Dia:
   on a cream page they're a soft brown, on a white one a soft grey, the
@@ -30,26 +29,16 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
-- An empty folder's "Drag tabs here" slot shrank while a glance was open:
-  it was sized from the glance's small picture.
-- A new, empty folder (New Folder) briefly showed a loading placeholder
-  and got a plain folder icon, with naming folders by a local model on:
-  Zen's hidden placeholder tab counted as a tab to name it by.
-
-- Windows: flicking the mouse to the top of the screen missed minimise,
-  maximise and close, landing in the gap above the page's card instead.
-  Their click area now reaches the window's top edge, as in Windows
-  itself; they look just the same.
-
-## [2.82.0] — 2026-10-02
-
-### Fixed
-
 - Find in page (Cmd/Ctrl+F) opened with your last search still in it (on
   macOS, from the system's shared find clipboard): it opens empty now, as
   in Dia. Text selected on the page still fills it in.
 - With the address bar's text centred, the floating address bar in the
   middle of the window was centred too: only the toolbar's is now.
+- An empty folder's "Drag tabs here" slot shrank while a glance was open:
+  it was sized from the glance's small picture.
+- A new, empty folder (New Folder) briefly showed a loading placeholder
+  and got a plain folder icon, with naming folders by a local model on:
+  Zen's hidden placeholder tab counted as a tab to name it by.
 
 ## [2.81.2] — 2026-10-01
 
