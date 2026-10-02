@@ -8,7 +8,8 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
-- Tab number keys have no fill at all, just their outline.
+- Tab number keys have no fill at all, just their outline, and their
+  corners are a little less round.
 
 ## [2.84.2] — 2026-10-02
 
