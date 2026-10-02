@@ -258,7 +258,7 @@ kbd + kbd { margin-left: .22em; }
 
 /* the opening card: what Zia is */
 .intro { display: grid; place-items: center; background: #0f0f10; }
-.intro .light { left: 50%; top: -34cqw; width: 96cqw; height: 74cqw; translate: -50% 0; border-radius: 50%;
+:is(.intro, .glassfolder) .light { left: 50%; top: -34cqw; width: 96cqw; height: 74cqw; translate: -50% 0; border-radius: 50%;
   background: radial-gradient(closest-side, rgba(255,255,255,.13), rgba(255,255,255,.1) 20%, rgba(255,255,255,.065) 40%, rgba(255,255,255,.035) 60%, rgba(255,255,255,.012) 80%, transparent);
   filter: blur(3cqw); }
 .intro .lockup { position: relative; display: grid; justify-items: center; gap: 2.6cqw; }
@@ -350,6 +350,81 @@ kbd > span, .w-key > span { position: static; display: block; text-box: trim-bot
 .gh svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
 /* only the step you're on moves */
+/* ---------- 2.83 ---------- */
+
+/* a glass folder: tabs drop in as sheets, it opens and closes, and they
+   lift out again (the same shapes as the sidebar's, much bigger) */
+.glassfolder .gf { left: 50%; top: 13cqw; margin-left: -.5em; font-size: 22cqw; width: 1em; height: .82em; perspective: 3em; --a: #5ab9f5; }
+.glassfolder .gf > * { position: absolute; }
+.glassfolder .back { left: .07em; right: .07em; top: 0; bottom: .04em;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 82' preserveAspectRatio='none'%3E%3Cpath d='M0 9 Q0 0 9 0 H30 Q35 0 39 3 L45 8 Q48 10.5 53 10.5 H90 Q100 10.5 100 20.5 V73 Q100 82 91 82 H9 Q0 82 0 73 Z'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+  background: linear-gradient(color-mix(in srgb, var(--a) 62%, white), color-mix(in srgb, var(--a) 88%, white)); }
+.glassfolder .front { left: 0; right: 0; bottom: 0; height: .66em; border-radius: .1em; transform-origin: 50% 100%;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--a) 55%, rgba(255,255,255,.55)), color-mix(in srgb, var(--a) 45%, rgba(255,255,255,.35)) 55%, rgba(255,255,255,.55));
+  backdrop-filter: blur(.4cqw) saturate(1.5); box-shadow: inset 0 .02em 0 rgba(255,255,255,.6), inset 0 0 0 .01em rgba(255,255,255,.25);
+  clip-path: polygon(0 0, 100% 0, 97% 100%, 3% 100%); animation: gf-front 9s var(--spring) infinite; }
+.glassfolder .sheet { top: .04em; height: .62em; border-radius: .06em; transform-origin: 50% 100%; opacity: 0; }
+.glassfolder .s1 { left: .14em; right: .28em; background: linear-gradient(#fff, #e9e9ee); animation: gf-s1 9s var(--spring) infinite, gf-o1 9s var(--spring) infinite; }
+.glassfolder .s2 { left: .3em; right: .1em; top: .06em; background: color-mix(in srgb, var(--a) 25%, white); animation: gf-s2 9s var(--spring) infinite, gf-o2 9s var(--spring) infinite; }
+.glassfolder .s3 { left: .1em; right: .3em; top: .07em; background: linear-gradient(#f4f4f6, #dcdce2); animation: gf-s3 9s var(--spring) infinite, gf-o3 9s var(--spring) infinite; }
+.glassfolder .gf-name { left: 0; right: 0; top: 37cqw; text-align: center; font: 600 3.4cqw/1 -apple-system, system-ui, sans-serif; color: var(--text); }
+/* a tab, falling in just before its sheet */
+.glassfolder .gf-tab { left: 50%; top: 2cqw; width: 14cqw; height: 3.6cqw; margin-left: -7cqw; border-radius: 1.2cqw; background: rgba(255,255,255,.14); box-shadow: inset 0 0 0 .2cqw rgba(255,255,255,.12); opacity: 0; animation: gf-tab 9s var(--ease) infinite; }
+.glassfolder .gf-tab::before { content: ""; position: absolute; left: 1.2cqw; top: .9cqw; width: 1.8cqw; height: 1.8cqw; border-radius: .5cqw; background: var(--c, #ececef); }
+.glassfolder .t1 { --c: #ececef; } .glassfolder .t2 { --c: #5ab9f5; animation-delay: 1.08s; } .glassfolder .t3 { --c: #c9c9ce; animation-delay: 2.16s; }
+@keyframes gf-tab { 0%, 1% { opacity: 0; transform: translateY(-2cqw); } 4% { opacity: 1; transform: none; } 9% { opacity: 1; transform: translateY(12cqw) scale(.55); } 11%, 100% { opacity: 0; transform: translateY(14cqw) scale(.4); } }
+/* drops at 11%, 23%, 35%; open 46–68%; lift out at 76%, 82%, 88% (the top one first) */
+@keyframes gf-s1 { 0%, 9% { opacity: 0; translate: 0 -.55em; } 13% { opacity: 1; translate: 0 .04em; } 15%, 86% { opacity: 1; translate: 0 0; rotate: 0deg; } 88% { translate: 0 -.12em; rotate: -3deg; } 94%, 100% { opacity: 0; translate: .08em -.62em; rotate: 8deg; } }
+@keyframes gf-s2 { 0%, 21% { opacity: 0; translate: 0 -.55em; } 25% { opacity: 1; translate: 0 .04em; } 27%, 80% { opacity: 1; translate: 0 0; rotate: 0deg; } 82% { translate: 0 -.12em; rotate: -3deg; } 88%, 100% { opacity: 0; translate: .08em -.62em; rotate: 8deg; } }
+@keyframes gf-s3 { 0%, 33% { opacity: 0; translate: 0 -.55em; } 37% { opacity: 1; translate: 0 .04em; } 39%, 74% { opacity: 1; translate: 0 0; rotate: 0deg; } 76% { translate: 0 -.12em; rotate: -3deg; } 82%, 100% { opacity: 0; translate: .08em -.62em; rotate: 8deg; } }
+@keyframes gf-front { 0%, 44% { transform: none; } 50%, 66% { transform: rotateX(-26deg); } 72%, 100% { transform: none; } }
+@keyframes gf-o1 { 0%, 44% { transform: none; } 50%, 66% { transform: translateY(-.12em) rotate(-5deg); } 72%, 100% { transform: none; } }
+@keyframes gf-o2 { 0%, 45% { transform: none; } 51%, 66% { transform: translateY(-.08em) rotate(6deg); } 72%, 100% { transform: none; } }
+@keyframes gf-o3 { 0%, 46% { transform: none; } 52%, 66% { transform: translateY(-.06em) rotate(-10deg); } 72%, 100% { transform: none; } }
+
+/* a glance's picture rising out of its tab, and sinking back */
+.tabpeek .w-row.sel { background: rgba(255,255,255,.16); }
+.tabpeek .tp-clip { left: 27cqw; top: 6cqw; width: 12cqw; height: 16.4cqw; overflow: hidden; border-radius: 0 0 1.8cqw 0; }
+.tabpeek .tp { right: 1.4cqw; bottom: -2.6cqw; width: 10cqw; height: 7.6cqw; border-radius: .9cqw; background: linear-gradient(#e9eef5 0 1.4cqw, #f6f6f8 1.4cqw); box-shadow: 0 .6cqw 1.6cqw rgba(0,0,0,.45), inset 0 0 0 .15cqw rgba(255,255,255,.4); transform-origin: 50% 100%; animation: tp 6s var(--spring) infinite; }
+.tabpeek .tp::after { content: ""; position: absolute; left: 1cqw; right: 2.6cqw; top: 2.4cqw; height: .8cqw; border-radius: .4cqw; background: rgba(0,0,0,.22); box-shadow: 0 1.4cqw 0 rgba(0,0,0,.12); }
+.tabpeek .w-page .link { left: 6cqw; top: 8cqw; width: 18cqw; height: 1.6cqw; border-radius: 1cqw; background: var(--blue); opacity: .8; }
+.tabpeek .peek { left: 52cqw; top: 13cqw; width: 36cqw; height: 32cqw; border-radius: 2.4cqw; background: linear-gradient(#e9eef5 0 5cqw, #f6f6f8 5cqw); box-shadow: 0 2cqw 6cqw rgba(0,0,0,.5); transform-origin: 6cqw 3cqw; animation: tpk 6s var(--spring) infinite; }
+.tabpeek .peek::after { content: ""; position: absolute; left: 3cqw; right: 12cqw; top: 9cqw; height: 1.8cqw; border-radius: 1cqw; background: rgba(0,0,0,.22); box-shadow: 0 3.4cqw 0 rgba(0,0,0,.12), 0 6.8cqw 0 rgba(0,0,0,.12); }
+@keyframes tp { 0%, 16% { transform: translateY(9cqw) rotate(-4deg); } 26%, 70% { transform: rotate(-11deg); } 80%, 100% { transform: translateY(9cqw) rotate(-4deg); } }
+@keyframes tpk { 0%, 14% { opacity: 0; transform: scale(.3); } 26%, 68% { opacity: 1; transform: none; } 78%, 100% { opacity: 0; transform: scale(.85); } }
+
+/* the Bookmarks panel sliding in beside the tabs, the page giving way */
+.panels .w-side { width: 30cqw; }
+.panels .pp { left: 39cqw; right: 6cqw; top: 8cqw; bottom: 8cqw; border-radius: 2cqw; background: rgba(255,255,255,.05); box-shadow: inset 0 .18cqw 0 rgba(255,255,255,.045); animation: pgw 6s var(--spring) infinite; }
+.panels .pp::before { content: ""; position: absolute; left: 4cqw; right: 4cqw; top: 4cqw; height: 3cqw; border-radius: 1cqw; background: rgba(255,255,255,.2); }
+.panels .pp::after { content: ""; position: absolute; left: 4cqw; right: 10cqw; top: 10cqw; height: 12cqw; border-radius: 1.6cqw; background: rgba(255,255,255,.1); }
+.panels .bm { left: 39cqw; top: 8cqw; bottom: 8cqw; width: 0; overflow: hidden; animation: bmw 6s var(--spring) infinite; }
+.panels .bm .in { left: 0; top: 0; width: 24cqw; }
+.panels .bm .bt { position: relative; height: 2cqw; width: 12cqw; margin: .8cqw 0 2.4cqw 1cqw; border-radius: 1cqw; background: rgba(255,255,255,.55); }
+.panels .bm .br { position: relative; height: 4.4cqw; margin-bottom: .6cqw; border-radius: 1.4cqw; display: flex; align-items: center; gap: 1.4cqw; padding-left: 1.4cqw; }
+.panels .bm .br > * { position: static; }
+.panels .bm .br.sub { padding-left: 3.6cqw; }
+.panels .bm .br:nth-child(3) { background: rgba(255,255,255,.08); }
+.panels .bm .br i { width: 2.2cqw; height: 1.8cqw; border-radius: .4cqw; background: rgba(255,255,255,.4); flex: none; }
+.panels .bm .br u { height: 1.1cqw; border-radius: 1cqw; background: rgba(255,255,255,.22); }
+@keyframes bmw { 0%, 14% { width: 0; } 30%, 72% { width: 24cqw; } 88%, 100% { width: 0; } }
+@keyframes pgw { 0%, 14% { left: 39cqw; } 30%, 72% { left: 65cqw; } 88%, 100% { left: 39cqw; } }
+
+/* the toolbar's ink: a touch of each page's own colour */
+.ink .bar { left: 6cqw; right: 6cqw; top: 8cqw; height: 8.4cqw; border-radius: 2.4cqw 2.4cqw 0 0; display: flex; align-items: center; gap: 2.2cqw; padding-left: 3cqw; border-bottom: .15cqw solid rgba(0,0,0,.06); animation: ink-bg 9s var(--ease) infinite, ink-c 9s var(--ease) infinite; }
+.ink .bar > * { position: static; }
+.ink .bar svg { width: 2.8cqw; height: 2.8cqw; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.ink .bar svg.off { opacity: .4; }
+.ink .bar .url { flex: 1; text-align: center; margin-right: 14cqw; font: 500 2.5cqw/1 -apple-system, system-ui, sans-serif; white-space: nowrap; }
+.ink .bar .url b { position: static; font-weight: 600; }
+.ink .body { left: 6cqw; right: 6cqw; top: 16.4cqw; bottom: 8cqw; border-radius: 0 0 2.4cqw 2.4cqw; animation: ink-bg 9s var(--ease) infinite; }
+.ink .body i { position: relative; display: block; margin: 0 0 1.8cqw 8cqw; height: 1.4cqw; width: 52cqw; border-radius: 1cqw; background: rgba(0,0,0,.1); }
+.ink .body i.h { margin-top: 6cqw; margin-bottom: 3.4cqw; height: 3.4cqw; width: 34cqw; background: rgba(0,0,0,.72); }
+.ink .body i.s { width: 30cqw; }
+/* cream, white, mint, lilac */
+@keyframes ink-bg { 0%, 20% { background-color: #fbf5ec; } 25%, 45% { background-color: #ffffff; } 50%, 70% { background-color: #eaf6ef; } 75%, 95% { background-color: #f1edfb; } 100% { background-color: #fbf5ec; } }
+@keyframes ink-c { 0%, 20% { color: hsl(36 24% 40%); } 25%, 45% { color: hsl(240 3.5% 40%); } 50%, 70% { color: hsl(148 15% 40%); } 75%, 95% { color: hsl(258 23% 40%); } 100% { color: hsl(36 24% 40%); } }
+
 .slide:not(.cur) .stage, .slide:not(.cur) .stage * { animation-play-state: paused !important; }
 
 /* arriving on a step: its rows and page settle in, a beat apart */

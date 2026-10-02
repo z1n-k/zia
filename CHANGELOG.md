@@ -4,7 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.82.4] — 2026-10-02
+## [2.83.0] — 2026-10-02
+
+### Added
+
+- The welcome card comes back once after this update, with what's new
+  since it last showed: glass folders, a glance's picture kept in its tab,
+  Bookmarks and History beside your tabs, and the toolbar in each site's
+  own ink. As before, it can be switched off after updates in settings.
 
 ### Fixed
 
