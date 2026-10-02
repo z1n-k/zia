@@ -146,13 +146,19 @@ Hold **Cmd** (**Ctrl** on Windows and Linux) and every tab and essential shows i
 <details>
 <summary>Folders</summary>
 
+- A glass folder in the folder's colour (or the space's) unless you give it a cover. It holds a sheet of paper for each tab or folder inside, up to three, so a closed folder shows how full it is. It opens and closes with the folder, the sheets fanning out; a tab dropped in drops a sheet in with it, and one dragged out lifts its sheet away.
 - Hover boxes, icon or emoji covers, and an × to delete them.
 - They open and close as in Dia: the tabs stay where they are while the folder opens over them, and fade out in place as it closes, with a gentle spring (or without).
 - A colour of their own from the right-click menu that tints the whole folder, or, if you prefer, only when it's hovered or open. Optionally, the card of tabs shown on hovering a closed folder takes its colour too.
 - An empty folder shows a dashed *Drag tabs here* slot until its first tab arrives.
 - Plain tab groups, like the ones [Advanced Tab Groups](https://github.com/Vertex-Mods/Advanced-Tab-Groups) makes, get the same treatment.
 
-<img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/folder-empty.png" alt="A tinted empty folder with its Drag tabs here slot" width="360">
+<p>
+  <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/folder-icon-tinted.png" alt="A tinted folder, open, its sheets fanned out" width="49%">
+  <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/folder-icon-two.png" alt="A folder holding two tabs, with two sheets" width="49%">
+  <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/folder-icon-one.png" alt="A folder holding one tab, with one sheet" width="49%">
+  <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/folder-icon-empty.png" alt="An empty folder, no sheets, with its Drag tabs here slot" width="49%">
+</p>
 
 </details>
 
@@ -364,6 +370,7 @@ The first folder takes a little while as the model downloads and the icon names 
 | **New tabs** | |
 | Cmd/Ctrl+T and **+ New Tab** open a real tab (off: Zen's floating address bar) | on |
 | New tabs open your default search engine's page (off: Zen's new tab page, or an extension's if you use one) | on |
+| Cmd/Ctrl+T leaves the address bar ready to type in, the search page behind it (off: the page's own search box) | off |
 | **Folders** | |
 | Folders open and close with a gentle spring | on |
 | Coloured folders only show their colour when hovered or open | off |
