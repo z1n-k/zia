@@ -27,7 +27,7 @@
   }
 }
 
-.tab-icon-overlay:not([crashed]):is([soundplaying], [muted]) {
+.tab-icon-overlay:not([crashed]):is([soundplaying], [muted], [activemedia-blocked]) {
   list-style-image: var(--zia-sound-wave, url("chrome://sine/content/zia/icons/sound-wave.svg")) !important;
   -moz-context-properties: fill !important;
   fill: rgb(255, 255, 255) !important;
@@ -43,6 +43,19 @@
   &[muted] {
     list-style-image: var(--zia-sound-muted, url("chrome://sine/content/zia/icons/sound-muted.svg")) !important;
     fill: rgba(255, 255, 255, 0.8) !important;
+  }
+
+  /* a site waiting to play (autoplay blocked): Zen's music note becomes
+     a small play button in the same badge, and a click plays it */
+  &[activemedia-blocked]:not([soundplaying], [muted]) {
+    list-style-image: url("chrome://sine/content/zia/icons/media-blocked.svg") !important;
+
+    &::before,
+    &::after {
+      content: none !important;
+      background: none !important;
+      mask: none !important;
+    }
   }
 
   &:hover {

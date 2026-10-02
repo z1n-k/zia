@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- A tab whose site is waiting to play (autoplay blocked) showed Zen's
+  music note in a plain black badge. It's now a small play button in the
+  same round badge as Zia's sound bars, and a click still plays it.
+
 ## [2.82.0] — 2026-10-02
 
 ### Added
