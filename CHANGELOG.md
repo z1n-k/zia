@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- On Windows, the minimise, maximise and close buttons lost their icons in
+  v2.81.2: the wider click area above them took the place Firefox draws
+  the icons in.
+
 ## [2.82.2] — 2026-10-02
 
 ### Changed

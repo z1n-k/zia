@@ -258,12 +258,13 @@
   /* The card sits a little below the window's top edge, so a flick of the
      mouse to the top of the screen landed in that gap, which only drags
      the window. Each button's click area reaches up to the edge, as in
-     Windows itself; the buttons look just the same. */
+     Windows itself; the buttons look just the same. (On ::after, as
+     Firefox draws each button's glyph in its ::before.) */
   :root:not([inDOMFullscreen="true"]):not([popup-window]) #nav-bar .titlebar-button {
     position: relative;
     -moz-window-dragging: no-drag;
 
-    &::before {
+    &::after {
       content: "";
       position: absolute;
       inset-inline: 0;
