@@ -139,6 +139,20 @@
   animation: zia-fi-drop 0.6s cubic-bezier(0.3, 0.9, 0.4, 1) both;
 }
 
+/* a tab dragged out: its sheet lifts up out of the folder, tipping a
+   little, and fades as it goes */
+@keyframes zia-fi-lift {
+  0% { opacity: 1; translate: 0 0; rotate: 0deg; }
+  30% { opacity: 1; translate: 0 -0.12em; rotate: -3deg; }
+  100% { opacity: 0; translate: 0.08em -0.62em; rotate: 8deg; }
+}
+
+:is(zen-folder, tab-group)[zia-fi-lift="1"] .zia-fi-s1,
+:is(zen-folder, tab-group)[zia-fi-lift="2"] .zia-fi-s2,
+:is(zen-folder, tab-group)[zia-fi-lift="3"] .zia-fi-s3 {
+  animation: zia-fi-lift 0.5s cubic-bezier(0.4, 0, 0.6, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .zia-fi > * {
     transition-duration: 0.01s !important;

@@ -47,12 +47,23 @@
       return;
     }
     folder.setAttribute("zia-fi-count", String(count));
-    // a sheet more than before (not on first sight): it drops in
-    if (before !== null && count > before) {
-      folder.setAttribute("zia-fi-drop", String(count));
-      clearTimeout(folder.ziaFolderDropTimer);
-      folder.ziaFolderDropTimer = setTimeout(() => folder.removeAttribute("zia-fi-drop"), FOLDER_ICON_DROP_MS);
+    if (before === null) {
+      return;
     }
+    // a sheet more than before: it drops in. A sheet fewer: the top one
+    // lifts out and away, as if pulled from the folder with the tab.
+    clearTimeout(folder.ziaFolderDropTimer);
+    folder.removeAttribute("zia-fi-drop");
+    folder.removeAttribute("zia-fi-lift");
+    if (count > before) {
+      folder.setAttribute("zia-fi-drop", String(count));
+    } else {
+      folder.setAttribute("zia-fi-lift", String(before));
+    }
+    folder.ziaFolderDropTimer = setTimeout(() => {
+      folder.removeAttribute("zia-fi-drop");
+      folder.removeAttribute("zia-fi-lift");
+    }, FOLDER_ICON_DROP_MS);
   }
 
   function countAllFolderSheets() {

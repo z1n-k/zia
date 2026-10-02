@@ -12,7 +12,8 @@ Every release of Zia, newest first. The format follows
   colour (or the space's) instead of Zia's rings, holding a sheet of paper
   for each tab or folder in it, up to three: an empty folder is just the
   folder. It opens and closes with the folder, the sheets fanning out, and
-  a tab dropped in drops a sheet in with it.
+  a tab dropped in drops a sheet in with it; dragged out, its sheet lifts
+  out and away.
 
 ### Changed
 
