@@ -4,6 +4,12 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- The glass folder icon's corners are a little rounder, front and back.
+
 ## [2.83.0] — 2026-10-02
 
 ### Added
