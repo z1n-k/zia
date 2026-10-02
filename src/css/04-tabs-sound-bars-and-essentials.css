@@ -458,8 +458,25 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   }
 }
 
+/* let go: they slide back off to the right, as they came in */
+:root[zia-tab-numbers-leaving]:not([zia-tab-numbers]) .tabbrowser-tab > .tab-stack > .tab-content > .zia-tab-number {
+  display: block;
+  animation: zia-tab-number-out 0.15s cubic-bezier(0.4, 0, 0.8, 0.4) forwards;
+}
+
+@keyframes zia-tab-number-out {
+  to {
+    opacity: 0;
+    translate: 4px 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root[zia-tab-numbers] .tabbrowser-tab > .tab-stack > .tab-content > .zia-tab-number {
     animation: none;
+  }
+
+  :root[zia-tab-numbers-leaving]:not([zia-tab-numbers]) .tabbrowser-tab > .tab-stack > .tab-content > .zia-tab-number {
+    display: none;
   }
 }

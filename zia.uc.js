@@ -14325,6 +14325,8 @@
     return tabs;
   }
 
+  const TAB_NUMBERS_LEAVE_MS = 160;
+
   function watchTabNumbers() {
     const mac = AppConstants.platform === "macosx";
     const isModKey = (event) => event.key === (mac ? "Meta" : "Control");
@@ -14340,13 +14342,22 @@
       tabs.forEach((tab, i) => keyOf(tab)?.toggleAttribute("zia-target", !!typed && Number(typed) === i + 1));
     };
 
+    // Letting go, the keys slide back off to the right the way they came
+    let leaving = null;
     const show = () => {
+      clearTimeout(leaving);
+      setFlag("zia-tab-numbers-leaving", false);
       tabs = numberTabs();
       setFlag("zia-tab-numbers", true);
     };
     const hide = () => {
       typed = "";
       markTarget();
+      if (root.hasAttribute("zia-tab-numbers") && !Services.prefs.getBoolPref(TAB_NUMBERS_ALWAYS_PREF, false)) {
+        setFlag("zia-tab-numbers-leaving", true);
+        clearTimeout(leaving);
+        leaving = setTimeout(() => setFlag("zia-tab-numbers-leaving", false), TAB_NUMBERS_LEAVE_MS);
+      }
       setFlag("zia-tab-numbers", false);
     };
     // Letting go: the tab typed, if any

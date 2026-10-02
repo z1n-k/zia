@@ -10,6 +10,8 @@ Every release of Zia, newest first. The format follows
 
 - Tab numbers are outlined keys in the system's own font, like the
   shortcuts in Zen's pop-ups, rather than filled keys in a monospace one.
+- Letting go of Cmd/Ctrl, the tab numbers slide back off to the right the
+  way they came in, rather than vanishing.
 
 ## [2.84.1] — 2026-10-02
 
