@@ -9,6 +9,10 @@ Every release of Zia, newest first. The format follows
 ### Changed
 
 - The glass folder icon's corners are a little rounder, front and back.
+- An opening folder's front tips further open, so it reads clearly as
+  open, falling a touch past and settling back up. The spring was meant
+  to be there all along, but a more specific rule kept every part of the
+  icon easing plainly.
 
 ## [2.83.0] — 2026-10-02
 

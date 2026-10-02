@@ -34,9 +34,13 @@
 
     & > * {
       position: absolute;
-      transition: transform 0.4s var(--fi-soft), opacity 0.25s var(--fi-soft);
     }
   }
+}
+
+/* closing eases home (kept plain, so the opening rules below win while open) */
+.zia-fi > * {
+  transition: transform 0.4s var(--fi-soft), opacity 0.25s var(--fi-soft);
 }
 
 /* a folder left white (the default) takes the space's colour, a touch
@@ -45,9 +49,14 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   --fi-accent: color-mix(in srgb, var(--zen-primary-color, #5ab9f5) 85%, white);
 }
 
-/* opening springs a touch past and settles; closing eases home */
+/* opening springs a touch past and settles */
 :is(zen-folder, tab-group:not([split-view-group])):not([collapsed]) > .tab-group-label-container .zia-fi > * {
   transition: transform 0.55s var(--fi-spring), opacity 0.25s var(--fi-soft);
+}
+
+/* the front falls open a touch past where it rests, then settles back up */
+:is(zen-folder, tab-group:not([split-view-group])):not([collapsed]) > .tab-group-label-container .zia-fi > .zia-fi-front {
+  transition: transform 0.6s cubic-bezier(0.3, 1.9, 0.5, 1), opacity 0.25s var(--fi-soft);
 }
 
 /* the back and its tab, one shape: bright enough to read on a dark
@@ -57,7 +66,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   right: 0.07em;
   top: 0;
   bottom: 0.04em;
-  --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 82' preserveAspectRatio='none'%3E%3Cpath d='M0 13 Q0 0 13 0 H30 Q35 0 39 3 L45 8 Q48 10.5 53 10.5 H87 Q100 10.5 100 23.5 V69 Q100 82 87 82 H13 Q0 82 0 69 Z'/%3E%3C/svg%3E");
+  --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 82' preserveAspectRatio='none'%3E%3Cpath d='M0 12 Q0 0 12 0 H30 Q35 0 39 3 L45 8 Q48 10.5 53 10.5 H88 Q100 10.5 100 22.5 V70 Q100 82 88 82 H12 Q0 82 0 70 Z'/%3E%3C/svg%3E");
   mask: var(--shape) 0 0 / 100% 100% no-repeat;
   background: linear-gradient(color-mix(in srgb, var(--fi-accent) 62%, white), color-mix(in srgb, var(--fi-accent) 88%, white));
 }
@@ -68,12 +77,12 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   right: 0;
   bottom: 0;
   height: 0.66em;
-  border-radius: 0.15em;
+  border-radius: 0.135em;
   transform-origin: 50% 100%;
   background: linear-gradient(180deg, color-mix(in srgb, var(--fi-accent) 55%, rgba(255, 255, 255, 0.55)), color-mix(in srgb, var(--fi-accent) 45%, rgba(255, 255, 255, 0.35)) 55%, rgba(255, 255, 255, 0.55));
   backdrop-filter: blur(1px) saturate(1.5);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.25);
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 66' preserveAspectRatio='none'%3E%3Cpath d='M0 15 Q0 0 15 0 H85 Q100 0 100 15 L97.9 51 Q97.1 66 82 66 H18 Q2.9 66 2.1 51 Z'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 66' preserveAspectRatio='none'%3E%3Cpath d='M0 13.5 Q0 0 13.5 0 H86.5 Q100 0 100 13.5 L97.9 52.5 Q97.2 66 83.5 66 H16.5 Q2.8 66 2.1 52.5 Z'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
 }
 
 /* the sheets: hidden until there's something in the folder for them,
@@ -121,7 +130,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 
 /* open: the front tips forward and the sheets rise, fanning out */
 :is(zen-folder, tab-group):not([collapsed]) .zia-fi {
-  & .zia-fi-front { transform: rotateX(-26deg); }
+  & .zia-fi-front { transform: rotateX(-32deg); }
   & .zia-fi-s1 { transform: translateY(-0.12em); }
 }
 
