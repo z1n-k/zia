@@ -81,3 +81,23 @@
   transform: rotate(0deg);
 }
 
+
+/* Optional: the space's name hidden, its icon kept. The top row is as wide
+   as the name, so a long one widened the sidebar and it changed size from
+   space to space; with no icon, nothing is left to show. */
+@media -moz-pref("zia.sidebar.hide-space-name") {
+  #zia-space-label {
+    & > .zia-space-name {
+      display: none;
+    }
+
+    &[zia-has-icon]::before,
+    & > .zia-space-svg {
+      margin-inline-end: 0 !important;
+    }
+
+    &:not([zia-has-icon], [zia-has-svg]) {
+      display: none;
+    }
+  }
+}

@@ -180,6 +180,12 @@
     "defaultValue": false
   },
   {
+    "type": "checkbox",
+    "label": "Hide the space's name at the top of the sidebar, keeping its icon (the sidebar no longer widens for a long name)",
+    "property": "zia.sidebar.hide-space-name",
+    "defaultValue": false
+  },
+  {
     "type": "separator",
     "label": "Page"
   },
