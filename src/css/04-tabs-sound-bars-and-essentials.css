@@ -410,6 +410,13 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   width: auto;
   min-width: 18px;
   padding: 0 4px;
+
+  /* the two digits a little closer; the space the last one gives back is
+     made up after it, so the pair stays centred */
+  & > span {
+    letter-spacing: -0.05em;
+    margin-inline-end: 0.05em;
+  }
 }
 
 .tabbrowser-tab[visuallyselected] > .tab-stack > .tab-content > .zia-tab-number {
