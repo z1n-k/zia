@@ -8,10 +8,11 @@ Every release of Zia, newest first. The format follows
 
 ### Added
 
-- On trial: a glass folder icon, in the folder's colour (or the space's),
-  that opens and closes with the folder, for folders without an icon of
-  their own. Seven to choose from in Settings → Sine Mods → Zia → Folder
-  icon; Zia's rings stay the default.
+- Folders without an icon of their own show a glass folder in their
+  colour (or the space's) instead of Zia's rings, holding a sheet of paper
+  for each tab or folder in it, up to three: an empty folder is just the
+  folder. It opens and closes with the folder, the sheets fanning out, and
+  a tab dropped in drops a sheet in with it.
 
 ### Changed
 

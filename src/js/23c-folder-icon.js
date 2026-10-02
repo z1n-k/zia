@@ -1,42 +1,83 @@
-  // Folder icon (on trial): folders without an icon of their own can show a
-  // glass folder in their colour (or the space's) that opens and closes with
-  // them, instead of Zia's rings. Pick one in Zia's settings.
-  const FOLDER_ICON_PREF = "zia.folders.icon-style";
+  // Folders without an icon of their own show a glass folder in their colour
+  // (or the space's) holding a sheet of paper for each tab in it, up to
+  // three: an empty folder is just the folder. It opens and closes with the
+  // folder, and a tab dropped in drops a sheet in with it.
+  const FOLDER_ICON_MAX_SHEETS = 3;
+  const FOLDER_ICON_DROP_MS = 650;
+
+  function folderIconBox(folder) {
+    return folder?.querySelector?.(":scope > .tab-group-label-container .tab-group-folder-icon");
+  }
 
   function addFolderIcon(folder) {
-    const box = folder?.querySelector?.(":scope > .tab-group-label-container .tab-group-folder-icon");
+    const box = folderIconBox(folder);
     if (!box || box.querySelector(":scope > .zia-fi")) {
       return;
     }
     const icon = document.createElementNS(HTML_NS, "div");
     icon.className = "zia-fi";
-    for (const part of ["back", "sheet b", "sheet a", "front"]) {
+    // back to front: the folder's back, the sheets, the glass front
+    for (const part of ["back", "sheet zia-fi-s3", "sheet zia-fi-s2", "sheet zia-fi-s1", "front"]) {
       const el = document.createElementNS(HTML_NS, "div");
-      el.className = `zia-fi-${part.replace(" ", " zia-fi-")}`;
+      el.className = `zia-fi-${part}`;
       icon.append(el);
     }
     box.append(icon);
   }
 
-  function addFolderIcons() {
-    document.querySelectorAll("zen-folder, tab-group:not([split-view-group])").forEach(addFolderIcon);
+  // What's in a folder: its tabs (a split counts once) and folders
+  function folderItemCount(folder) {
+    const container = folder.querySelector(":scope > .tab-group-container");
+    if (!container) {
+      return 0;
+    }
+    return [...container.children].filter(
+      (el) =>
+        (el.classList.contains("tabbrowser-tab") && !el.hasAttribute("zen-empty-tab")) ||
+        el.localName === "zen-folder" ||
+        el.localName === "tab-group"
+    ).length;
+  }
+
+  function countFolderSheets(folder) {
+    addFolderIcon(folder);
+    const count = Math.min(FOLDER_ICON_MAX_SHEETS, folderItemCount(folder));
+    const before = folder.hasAttribute("zia-fi-count") ? Number(folder.getAttribute("zia-fi-count")) : null;
+    if (before === count) {
+      return;
+    }
+    folder.setAttribute("zia-fi-count", String(count));
+    // a sheet more than before (not on first sight): it drops in
+    if (before !== null && count > before) {
+      folder.setAttribute("zia-fi-drop", String(count));
+      clearTimeout(folder.ziaFolderDropTimer);
+      folder.ziaFolderDropTimer = setTimeout(() => folder.removeAttribute("zia-fi-drop"), FOLDER_ICON_DROP_MS);
+    }
+  }
+
+  function countAllFolderSheets() {
+    document.querySelectorAll("zen-folder, tab-group:not([split-view-group])").forEach(countFolderSheets);
   }
 
   function watchFolderIcon() {
-    const show = () => {
-      const style = Services.prefs.getStringPref(FOLDER_ICON_PREF, "rings");
-      if (style && style !== "rings") {
-        root.setAttribute("zia-folder-icon", style);
-        addFolderIcons();
-      } else {
-        root.removeAttribute("zia-folder-icon");
+    let queued = false;
+    const recount = () => {
+      if (queued) {
+        return;
       }
+      queued = true;
+      requestAnimationFrame(() => {
+        queued = false;
+        countAllFolderSheets();
+      });
     };
-    show();
-    Services.prefs.addObserver(FOLDER_ICON_PREF, show);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(FOLDER_ICON_PREF, show));
-    gBrowser.tabContainer.addEventListener("TabGroupCreate", (event) => addFolderIcon(event.target));
-    // folders restored at start-up, and redrawn ones
-    setTimeout(addFolderIcons, 1500);
-    window.addEventListener("ZenWorkspacesUIUpdate", addFolderIcons);
+    for (const type of ["TabGroupCreate", "TabGrouped", "TabUngrouped", "TabOpen", "TabClose", "TabMove", "TabGroupRemoved"]) {
+      gBrowser.tabContainer.addEventListener(type, recount);
+    }
+    window.addEventListener("ZenWorkspacesUIUpdate", recount);
+    // tabs moved in and out by Zen's own drag and drop, without an event
+    new MutationObserver(recount).observe(gBrowser.tabContainer, { subtree: true, childList: true });
+    countAllFolderSheets();
+    // folders restored at start-up
+    setTimeout(countAllFolderSheets, 1500);
   }
