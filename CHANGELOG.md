@@ -8,8 +8,10 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
-- Tab numbers are outlined keys in the system's own font, like the
-  shortcuts in Zen's pop-ups, rather than filled keys in a monospace one.
+- Tab numbers are outlined squircle keys in the system's own font, like
+  the shortcuts in Zen's pop-ups, rather than filled keys in a monospace
+  one. A single digit's key is always square (two digits widen it), and
+  the digits sit exactly in its middle.
 - Letting go of Cmd/Ctrl, the tab numbers slide back off to the right the
   way they came in, rather than vanishing.
 

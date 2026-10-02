@@ -14318,14 +14318,20 @@
         key.setAttribute("aria-hidden", "true");
         tab.querySelector(":scope > .tab-stack > .tab-content")?.append(key);
       }
+      // the digits in a box of their own, trimmed to their height, so the
+      // key can centre them exactly (zia.css)
       if (key.textContent !== String(number)) {
-        key.textContent = String(number);
+        const digits = document.createElementNS(HTML_NS, "span");
+        digits.textContent = String(number);
+        key.replaceChildren(digits);
       }
+      // one digit keeps its key square; two widen it
+      key.toggleAttribute("zia-wide", number > 9);
     }
     return tabs;
   }
 
-  const TAB_NUMBERS_LEAVE_MS = 160;
+  const TAB_NUMBERS_LEAVE_MS = 110;
 
   function watchTabNumbers() {
     const mac = AppConstants.platform === "macosx";
