@@ -6,6 +6,11 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- The folder icon's sheets are the shape of A4 paper, rather than nearly
+  square.
+
 ### Fixed
 
 - A tab dropped into a folder put down its sheet in the two-sheet spot,

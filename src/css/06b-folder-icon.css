@@ -85,7 +85,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 66' preserveAspectRatio='none'%3E%3Cpath d='M0 13.5 Q0 0 13.5 0 H86.5 Q100 0 100 13.5 L97.9 52.5 Q97.2 66 83.5 66 H16.5 Q2.8 66 2.1 52.5 Z'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
 }
 
-/* the sheets: hidden until there's something in the folder for them,
+/* the sheets, A4 in shape (0.44em by 0.62em): hidden until there's something in the folder for them,
    each peeking over the front's edge, so a closed folder shows how full
    it is */
 .zia-fi-sheet {
@@ -97,21 +97,21 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 }
 
 .zia-fi-s1 {
-  left: 0.16em;
-  right: 0.16em;
+  left: 0.28em;
+  right: 0.28em;
   background: linear-gradient(#fff, #e9e9ee);
 }
 
 .zia-fi-s2 {
-  left: 0.3em;
-  right: 0.1em;
+  left: 0.36em;
+  right: 0.2em;
   top: 0.06em;
   background: color-mix(in srgb, var(--fi-accent) 25%, white);
 }
 
 .zia-fi-s3 {
-  left: 0.1em;
-  right: 0.3em;
+  left: 0.16em;
+  right: 0.4em;
   top: 0.07em;
   background: linear-gradient(#f4f4f6, #dcdce2);
 }
@@ -124,8 +124,8 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 
 /* with two or three, the front sheet sits left of centre so the others show */
 :is(zen-folder, tab-group):is([zia-fi-count="2"], [zia-fi-count="3"]) .zia-fi-s1 {
-  left: 0.14em;
-  right: 0.28em;
+  left: 0.22em;
+  right: 0.34em;
 }
 
 /* open: the front tips forward and the sheets rise, fanning out */
