@@ -2641,6 +2641,12 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
   }
 }
 
+/* a folder left white (the default) takes the space's colour, a touch
+   lighter so it reads as brightly as the coloured ones */
+zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
+  --fi-accent: color-mix(in srgb, var(--zen-primary-color, #5ab9f5) 85%, white);
+}
+
 /* opening springs a touch past and settles; closing eases home */
 :is(zen-folder, tab-group:not([split-view-group])):not([collapsed]) > .tab-group-label-container .zia-fi > * {
   transition: transform 0.55s var(--fi-spring), opacity 0.25s var(--fi-soft);

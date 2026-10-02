@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- The folder icon of a folder left white (the default) is a touch
+  brighter.
+
 ## [2.82.1] — 2026-10-02
 
 ### Changed
