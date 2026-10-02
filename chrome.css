@@ -879,9 +879,11 @@
   font-weight: var(--zia-tab-weight) !important;
 }
 
-/* Optional: the address bar's text centred in it (off: from the left) */
+/* Optional: the address bar's text centred in it (off: from the left).
+   Only the toolbar's: the floating bar mid-window (Zen's new tab bar, or
+   its own setting) is a search box, and starts from the left. */
 @media -moz-pref("zia.urlbar.center-text") {
-  #urlbar :is(.urlbar-input, #zia-url-title, #zia-url-plain) {
+  #urlbar:not([zen-floating-urlbar="true"]) :is(.urlbar-input, #zia-url-title, #zia-url-plain) {
     text-align: center !important;
     justify-content: center !important;
   }

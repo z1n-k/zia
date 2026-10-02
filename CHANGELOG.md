@@ -13,6 +13,15 @@ Every release of Zia, newest first. The format follows
   Their click area now reaches the window's top edge, as in Windows
   itself; they look just the same.
 
+## [Unreleased]
+
+### Fixed
+
+- Find in page (Cmd/Ctrl+F) opened with your last search still in it: it
+  opens empty now, as in Dia. Text selected on the page still fills it in.
+- With the address bar's text centred, the floating address bar in the
+  middle of the window was centred too: only the toolbar's is now.
+
 ## [2.81.2] — 2026-10-01
 
 ### Fixed

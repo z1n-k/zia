@@ -35,7 +35,31 @@
     update();
   }
 
+  // Find opens empty, as in Dia, rather than with the last search in it.
+  // (Text selected on the page still fills it in: Firefox does that just
+  // after this.)
+  function clearFindBarOnOpen(event) {
+    const findbar = event.target;
+    if (findbar?.localName !== "findbar") {
+      return;
+    }
+    // (not findbar.clear(): that collapses the page's selection too, which
+    // Firefox is about to read)
+    try {
+      const field = findbar._findField;
+      if (field?.value) {
+        field.value = "";
+        field.editor?.clearUndoRedo();
+        findbar._updateStatusUI?.();
+        findbar._enableFindButtons?.(false);
+      }
+    } catch (err) {
+      noteError("find bar: clearFindBarOnOpen", err);
+    }
+  }
+
   function watchFindBars() {
+    window.addEventListener("findbaropen", clearFindBarOnOpen, true);
     gBrowser.tabContainer.addEventListener("TabFindInitialized", (event) => {
       shortenFindCount(gBrowser.getCachedFindBar?.(event.target));
     });
