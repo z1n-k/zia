@@ -8,8 +8,9 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
-- The folder icon's sheets are the shape of A4 paper, rather than nearly
-  square.
+- The folder icon's sheets are paper-shaped (taller than they're wide)
+  rather than nearly square, and the back one is a little dimmer, so it
+  reads as further back.
 
 ### Fixed
 
