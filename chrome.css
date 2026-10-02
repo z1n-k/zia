@@ -1398,7 +1398,8 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
 
 /* Tab numbers (zia.uc.js): hold Cmd/Ctrl and a small key at the end of each
    tab, and in the corner of each essential, shows the number Cmd/Ctrl+1–9
-   takes you to, like the shortcuts in a macOS menu. Optionally always shown. */
+   takes you to, drawn as an outlined key like the shortcuts in Zen's own
+   menus and pop-ups. Optionally always shown. */
 .tabbrowser-tab > .tab-stack > .tab-content > .zia-tab-number {
   display: none;
   flex: none;
@@ -1408,17 +1409,19 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   margin: 0 0 0 6px;
   padding: 0 5px;
   border-radius: 6px;
-  background-color: rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.14), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
-  color: rgba(255, 255, 255, 0.9);
-  font: 450 9.5px/20px ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  corner-shape: round;
+  background-color: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.62);
+  font: 500 11px/20px -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   text-align: center;
   pointer-events: none;
 }
 
 .tabbrowser-tab[visuallyselected] > .tab-stack > .tab-content > .zia-tab-number {
-  background-color: rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* Essentials, and every tab when the sidebar is collapsed to icons: a
@@ -1437,7 +1440,8 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   margin: 0;
   padding: 0 3px;
   border-radius: 5px;
-  font-size: 8.75px;
+  background-color: rgba(30, 30, 32, 0.72);
+  font-size: 9.5px;
   line-height: 16px;
 }
 

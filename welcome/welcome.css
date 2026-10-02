@@ -94,8 +94,8 @@ kbd + kbd { margin-left: .22em; }
 .w-line { height: 1.2cqw; margin: 0 2cqw; flex: 1; border-radius: 1cqw; background: rgba(255,255,255,.2); }
 .w-key {
   display: grid; place-items: center; box-sizing: border-box;
-  margin-right: 1.4cqw; min-width: 3.6cqw; height: 3.6cqw; padding: 0 .8cqw; border-radius: 1cqw; background: rgba(255,255,255,.12);
-  font: 500 2.1cqw/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; font-variant-numeric: tabular-nums; color: #fff; flex: none;
+  margin-right: 1.4cqw; min-width: 3.6cqw; height: 3.6cqw; padding: 0 .8cqw; border-radius: 1cqw; background: rgba(255,255,255,.04); box-shadow: inset 0 0 0 .18cqw rgba(255,255,255,.2);
+  font: 500 2.1cqw/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; font-variant-numeric: tabular-nums; color: rgba(255,255,255,.62); flex: none;
 }
 .w-page { left: 44cqw; top: 8cqw; right: 6cqw; bottom: 8cqw; border-radius: 2cqw; background: rgba(255,255,255,.05); overflow: hidden; }
 .w-sel { left: 6cqw; width: 34cqw; height: 6.6cqw; border-radius: 1.8cqw; background: rgba(0,0,0,.35); box-shadow: inset 0 0 0 .25cqw rgba(255,255,255,.16); }
@@ -103,7 +103,7 @@ kbd + kbd { margin-left: .22em; }
 /* 1 · numbered tabs, and 2 · undo: stepped by script (wireLoops) */
 .seq .w-key { opacity: 0; transform: translateX(1cqw); transition: opacity .2s var(--ease), transform .25s var(--ease), background-color .15s, color .15s; }
 .seq.held .w-key { opacity: 1; transform: none; }
-.seq .w-row.lit .w-key { background: var(--blue); color: #08182a; }
+.seq .w-row.lit .w-key { background: var(--blue); box-shadow: none; color: #08182a; }
 .seq .w-sel { top: 8cqw; transition: transform .45s var(--ease), opacity .2s; }
 .seq .w-page { transition: background-color .45s var(--ease); display: grid; place-items: center; }
 .seq .w-page::before { content: ""; position: absolute; left: 5cqw; right: 5cqw; top: 5cqw; height: 3cqw; border-radius: 1cqw; background: rgba(255,255,255,.28); }
