@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Tab number keys are filled with the faintest shade of black (3%) rather
+  than white, so the key reads as a quiet outline.
+
 ## [2.84.2] — 2026-10-02
 
 ### Changed
