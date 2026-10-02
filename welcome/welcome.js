@@ -39,7 +39,7 @@
     // 2.83: a glass folder fills a sheet at a time, opens, closes, empties
     glassfolder: () => `<div class="stage glassfolder"><div class="light"></div>
       <div class="gf-tab t1"></div><div class="gf-tab t2"></div><div class="gf-tab t3"></div>
-      <div class="gf"><div class="back"></div><div class="sheet s3"></div><div class="sheet s2"></div><div class="sheet s1"></div><div class="front"></div></div>
+      <div class="gf"><div class="gf-back"></div><div class="sheet s3"></div><div class="sheet s2"></div><div class="sheet s1"></div><div class="gf-front"></div></div>
       <div class="gf-name">Work</div></div>`,
     tabpeek: () => `<div class="stage tabpeek"><div class="w-side">${rows(5, ["#ececef", "#5ab9f5", "#c9c9ce", "#7f7f86", "#b4b4ba"], (i) => (i === 1 ? "sel" : "")).replace(/<span class="w-key">\d<\/span>/g, "")}</div>
       <div class="tp-clip"><div class="tp"></div></div>
@@ -303,11 +303,13 @@
     el.style.animation = "none"; void el.offsetWidth; el.style.animation = "";
     const track = el.querySelector(".track");
     const count = tour.list.length;
-    const atEl = el.querySelector(".count .at");
-    const back = el.querySelector(".back");
-    const gh = el.querySelector(".gh");
+    const atEl = el.querySelector(".foot .count .at");
+    // the buttons are looked for in the footer: a picture's parts can share
+    // their names (the glass folder's back did, and took Back's clicks)
+    const back = el.querySelector(".foot .back");
+    const gh = el.querySelector(".foot .gh");
     gh.addEventListener("click", openGitHub);
-    const next = el.querySelector(".next");
+    const next = el.querySelector(".foot .next");
     const slides = [...track.children];
     const go = (n) => {
       at = Math.max(0, Math.min(n, count - 1));
