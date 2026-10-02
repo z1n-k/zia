@@ -40,7 +40,7 @@
 
 /* closing eases home (kept plain, so the opening rules below win while open) */
 .zia-fi > * {
-  transition: transform 0.4s var(--fi-soft), opacity 0.25s var(--fi-soft);
+  transition: transform 0.4s var(--fi-soft), opacity 0.25s var(--fi-soft), left 0.3s var(--fi-soft), right 0.3s var(--fi-soft);
 }
 
 /* a folder left white (the default) takes the space's colour, a touch
@@ -51,7 +51,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 
 /* opening springs a touch past and settles */
 :is(zen-folder, tab-group:not([split-view-group])):not([collapsed]) > .tab-group-label-container .zia-fi > * {
-  transition: transform 0.55s var(--fi-spring), opacity 0.25s var(--fi-soft);
+  transition: transform 0.55s var(--fi-spring), opacity 0.25s var(--fi-soft), left 0.3s var(--fi-soft), right 0.3s var(--fi-soft);
 }
 
 /* the front falls open a touch past where it rests, then settles back up */

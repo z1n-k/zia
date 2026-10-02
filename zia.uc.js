@@ -8131,17 +8131,16 @@
     document.querySelectorAll("zen-folder, tab-group:not([split-view-group])").forEach(countFolderSheets);
   }
 
+  // Counted once the folders have stopped changing: while Zen drops a tab
+  // in, the folder holds an extra child for a moment, and counting then
+  // put down two sheets before settling on one, the sheet jumping wider.
+  const FOLDER_ICON_SETTLE_MS = 150;
+
   function watchFolderIcon() {
-    let queued = false;
+    let timer = null;
     const recount = () => {
-      if (queued) {
-        return;
-      }
-      queued = true;
-      requestAnimationFrame(() => {
-        queued = false;
-        countAllFolderSheets();
-      });
+      clearTimeout(timer);
+      timer = setTimeout(countAllFolderSheets, FOLDER_ICON_SETTLE_MS);
     };
     for (const type of ["TabGroupCreate", "TabGrouped", "TabUngrouped", "TabOpen", "TabClose", "TabMove", "TabGroupRemoved"]) {
       gBrowser.tabContainer.addEventListener(type, recount);
