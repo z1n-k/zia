@@ -109,3 +109,52 @@
     }
   }
 }
+
+/* Zen's single toolbar (Look and Feel), with the address bar in the
+   sidebar: the bar above the page holds nothing but the window buttons, so
+   it isn't drawn as a toolbar (no site colour, no line under it, no top
+   corners), and the page itself is the rounded card, with all four corners
+   round. Drawn as the toolbar, it showed as a dark strip across the top. */
+:root[zen-single-toolbar="true"]:not(#zia-none):not([inDOMFullscreen="true"]):not([popup-window]) {
+  & #zen-appcontent-wrapper {
+    box-shadow: none !important;
+  }
+
+  & #zen-appcontent-navbar-wrapper {
+    background: transparent !important;
+    border-bottom: none !important;
+    border-radius: 0 !important;
+  }
+
+  & #tabbrowser-tabbox {
+    border-radius: var(--zia-card-radius) !important;
+    box-shadow: var(--zia-card-shadow) !important;
+  }
+
+  & #tabbrowser-tabbox #tabbrowser-tabpanels .browserSidebarContainer {
+    border-radius: var(--zia-card-radius) !important;
+  }
+
+  & #tabbrowser-tabpanels :is(.browserSidebarContainer, .browserStack, browser) {
+    clip-path: inset(0 round var(--zia-card-radius));
+  }
+}
+
+/* Optional: the page edge to edge, with no gap, rounded corners or shadow
+   around it. Zen's own zen.theme.content-element-separation = 0 does the
+   same, so that's followed too. */
+:root[zen-no-padding="true"]:not(#zia-none):not(#zia-none-2) {
+  --zia-card-gap: 0px;
+  --zia-card-top-gap: 0px;
+  --zia-card-radius: 0px;
+  --zia-card-shadow: none;
+}
+
+@media -moz-pref("zia.page.edge-to-edge") {
+  :root:not(#zia-none):not(#zia-none-2) {
+    --zia-card-gap: 0px;
+    --zia-card-top-gap: 0px;
+    --zia-card-radius: 0px;
+    --zia-card-shadow: none;
+  }
+}

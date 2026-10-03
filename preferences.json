@@ -203,6 +203,12 @@
   },
   {
     "type": "checkbox",
+    "label": "The page fills its space edge to edge, with no gap, rounded corners or shadow around it",
+    "property": "zia.page.edge-to-edge",
+    "defaultValue": false
+  },
+  {
+    "type": "checkbox",
     "label": "Split view drop cards when dragging a tab onto the page (off: Zen's own)",
     "property": "zia.split.drop-cards",
     "defaultValue": true

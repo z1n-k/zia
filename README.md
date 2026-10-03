@@ -358,6 +358,7 @@ The first folder takes a little while as the model downloads and the icon names 
 | **Page** | |
 | Toolbar takes the colour of the site (off: the theme's colour) | on |
 | Zia's rounded page corners (off: Zen's own) | on |
+| The page fills its space edge to edge, with no gap, rounded corners or shadow around it (Zen's `zen.theme.content-element-separation` = 0 does the same) | off |
 | Split view drop cards when dragging a tab onto the page (off: Zen's own) | on |
 | PDFs open in Zia's viewer look (off: Firefox's own) | on |
 | Hide the window buttons (minimise, maximise, close) on Windows and Linux | off |

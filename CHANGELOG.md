@@ -4,6 +4,23 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Optional: the page edge to edge, with no gap, rounded corners or shadow
+  around it (Settings → Sine Mods → Zia → Page, off by default). Zen's
+  own `zen.theme.content-element-separation` set to 0 now does the same,
+  where before Zia kept its gap.
+
+### Fixed
+
+- With Zen's single toolbar (the address bar in the sidebar), a dark strip
+  ran across the top of the page: the bar there holds only the window
+  buttons, but Zia drew it as a toolbar in the site's colour, with a line
+  under it and the page's top corners squared off below. The bar is left
+  clear and the page is the rounded card, all four corners round.
+
 ## [2.84.3] — 2026-10-02
 
 ### Changed
