@@ -6,12 +6,6 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
-### Added
-
-- The Library's Downloads has a Clear button, beside the search, which
-  clears the finished downloads (and their history), as Firefox's own
-  downloads list does; any still going stay.
-
 ### Changed
 
 - A tab without its own icon shows just a translucent square, without
@@ -20,33 +14,12 @@ Every release of Zia, newest first. The format follows
   name springs like a folder opening and closing: the tabs below go a
   little past and settle back (with folders' gentle spring on, Settings
   → Sine Mods → Zia → Folders).
-- Zen's donate button is gone, from the Library and from the note Zen
-  shows after an update.
-
-- Zen 1.23's Library (History, Downloads, Boosts, Spaces, Media) in
-  Zia's look: its lists as the sidebar's tab rows (their height, corners,
-  hover and type size), the open section and active filters as the
-  selected tab, search and filters as Zia's pills, media and boost tiles
-  as the essentials, the spaces and the media card with the hover cards'
-  corners and fine edge, the side rail flat with a fine edge, and its
-  section icons (still Zen's animated ones) in plain white instead of
-  the accent colour. Every rounded item in it has exactly the tabs'
-  corners, and a row under the pointer the tab's fine light edge. Its
-  side is a thin rail with the sections' icons in a small rounded dock
-  level with the list's first heading, the open one's tile drawn as a
-  selected essential and its icon white, each name
-  in a small pill beside it on hover; on macOS the window's buttons stay
-  just where they sit in the sidebar as the Library opens and closes.
+- Zen's donate button is gone from the note Zen shows after an update.
 
 - A white folder's icon has no shadow behind it; coloured folders keep
   theirs.
 
 ### Fixed
-
-- Opening Bookmarks, History or Synced Tabs (Cmd/Ctrl+B and the rest)
-  with the Library open showed the panel half off the window; the
-  Library closes first now, and opening the Library (from its button or
-  a swipe) closes the panel.
 
 - Zen 1.23 turned its "acrylic" look on for everyone, drawing the
   sidebar part see-through under Zia's own, so it came out far too

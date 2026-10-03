@@ -781,3 +781,9 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
 :root[zen-sidebar-expanded="true"] zen-folder[zia-holding]::after {
   bottom: var(--zia-hold-inset) !important;
 }
+
+/* Zen's donate button goes from the note it shows in the sidebar after an
+   update */
+.zen-sidebar-notification-link-container[data-l10n-id="zen-sidebar-notification-donate-tooltip"] {
+  display: none !important;
+}
