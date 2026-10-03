@@ -7109,17 +7109,3 @@ zen-folder .tab-reset-button {
     filter: drop-shadow(0 0 0.5px rgba(0, 0, 0, 0.32)) drop-shadow(0 0.5px 1px rgba(0, 0, 0, 0.1));
   }
 }
-/* Swiping between spaces (experimental, off by default): Zen moves the
-   spaces straight to each trackpad update as it comes, so the strip moved
-   in small jumps, more so when the browser was busy. While the fingers are
-   down, each move glides to the next for a moment (a tenth of a second).
-   Not once they lift: Zen's own slide then takes the spaces the rest of
-   the way (it marks the window animating-background for it). The
-   essentials are left as Zen moves them: a space's own essentials are
-   shown as the swipe starts, placed off to the side at the same moment,
-   and gliding there they were drawn over the others first. */
-@media -moz-pref("zia.motion.smooth") {
-  :root:not([animating-background]) zen-workspace[swipe-gesture]:not(.zen-essentials-container) {
-    transition: transform 100ms cubic-bezier(0.25, 1, 0.5, 1) !important;
-  }
-}
