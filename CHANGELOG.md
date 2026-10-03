@@ -25,7 +25,8 @@ Every release of Zia, newest first. The format follows
 - Swiping between spaces is smoother: as Zen fades one space's colour into
   the next, Zia worked out the music card's colours again on every frame
   and restyled the whole window each time. It now waits until the swipe
-  is over (the colour still fades as before).
+  is over (the colour still fades as before). The essentials' rows aren't
+  measured again on every frame of the slide either.
 
 ## [2.90.0] — 2026-10-03
 

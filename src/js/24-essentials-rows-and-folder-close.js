@@ -61,15 +61,21 @@
     if (!essentials) {
       return;
     }
+    // (not while spaces are switching: Zen shows and hides each space's
+    // essentials as they slide, and working the rows out again then measured
+    // the grid every frame of the slide; once it's over instead)
     let frame = 0;
     const schedule = () => {
       if (!frame) {
         frame = requestAnimationFrame(() => {
           frame = 0;
-          fillEssentialRows();
+          if (!root.hasAttribute("animating-background")) {
+            fillEssentialRows();
+          }
         });
       }
     };
+    new MutationObserver(schedule).observe(root, { attributes: true, attributeFilter: ["animating-background"] });
     new MutationObserver(schedule).observe(essentials, {
       childList: true,
       subtree: true,
