@@ -7487,9 +7487,12 @@ zen-library .zen-library-tab {
     --fill: light-dark(rgba(28, 28, 32, 0.16), rgba(255, 255, 255, 0.22)) !important;
   }
 
+  /* the open one's tile: as a selected essential (Zen's tint of the
+     space's colour, or, with essentials on a favicon backdrop, Zia's grey
+     tile with its fine edges; a white card in a light space) */
   &[active]::before {
-    background: color-mix(in srgb, currentColor 14%, transparent) !important;
-    box-shadow: none !important;
+    background: color-mix(in srgb, var(--zen-primary-color), rgba(132, 132, 132, 0.85) 40%) !important;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16) !important;
   }
 
   &:hover:active::before {
@@ -7553,4 +7556,24 @@ zen-library[zen-library-downloading] .zen-library-tab[data-section="downloads"]:
   width: 25px !important;
   height: 25px !important;
   border-width: 2px !important;
+}
+
+:root[zen-default-theme="true"] zen-library .zen-library-tab[active]::before {
+  background: rgba(68, 64, 64, 0.85) !important;
+}
+
+@media -moz-pref("zen.theme.essentials-favicon-bg") {
+  zen-library .zen-library-tab[active]::before {
+    background: rgba(92, 92, 94, 0.72) !important;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+      0 0 0 1px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.18) !important;
+  }
+}
+
+:root[zen-should-be-dark-mode="false"]:not(#zia-none) zen-library .zen-library-tab[active]::before {
+  background: rgba(255, 255, 255, 0.82) !important;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06), 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1) !important;
 }
