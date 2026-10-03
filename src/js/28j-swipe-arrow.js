@@ -75,6 +75,19 @@
     let holdTimer = null;
     let side = null;
     let pinned = false;
+    // macOS only plays a tap while a trackpad event is being handled, so
+    // the card's tap goes with the swipe's own updates: the card opens on
+    // one once the hold is long enough, or, held quite still (no updates
+    // coming), on a timer, its tap then waiting for the next update or
+    // the fingers lifting
+    let willSince = 0;
+    let tapOwed = false;
+    const payTap = () => {
+      if (tapOwed) {
+        tapOwed = false;
+        swipeTap();
+      }
+    };
 
     const clearHold = () => {
       clearTimeout(holdTimer);
@@ -142,8 +155,8 @@
 
     // The card of pages, the next one first. It stays from here on, a click
     // on a page going to it and a click anywhere round it closing it.
-    const open = () => {
-      holdTimer = null;
+    const open = (fromEvent = false) => {
+      clearHold();
       if (!el || el.hasAttribute("open")) {
         return;
       }
@@ -181,11 +194,18 @@
       backdrop.addEventListener("mousedown", close);
       el.before(backdrop);
       // the arrow turning into the card
-      swipeTap();
+      tapOwed = true;
+      if (fromEvent) {
+        payTap();
+      }
     };
 
     const follow = (animation, update) => {
-      if (!on() || !swiping || pinned) {
+      if (!on() || !swiping) {
+        return;
+      }
+      payTap();
+      if (pinned) {
         return;
       }
       const back = !!animation._willGoBack?.(update);
@@ -211,11 +231,14 @@
       if (will && !el.hasAttribute("will")) {
         // the arrow fully in: letting go now goes back
         swipeTap();
+        willSince = Date.now();
       }
       el.toggleAttribute("will", will);
       if (will) {
-        if (!holdTimer) {
-          holdTimer = setTimeout(open, SWIPE_HOLD_MS);
+        if (Date.now() - willSince >= SWIPE_HOLD_MS) {
+          open(true);
+        } else if (!holdTimer) {
+          holdTimer = setTimeout(open, SWIPE_HOLD_MS + 120);
         }
       } else {
         clearHold();
@@ -223,6 +246,7 @@
     };
 
     const leave = () => {
+      payTap();
       // the card stays once the fingers lift
       if (pinned) {
         return;
@@ -246,6 +270,7 @@
     swipe.startAnimation = function () {
       discard();
       swiping = true;
+      tapOwed = false;
       return start.apply(this, arguments);
     };
     const update = swipe.updateAnimation;
