@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Windows: the page's corners came out too sharp after 2.85.0 matched
+  them to the window's. They're Zen's own corners there now, worked out
+  from the window's, which sit evenly inside it. Thanks to KRY.
+
 ## [2.86.1] — 2026-10-03
 
 ### Fixed

@@ -131,13 +131,13 @@
   }
 }
 
-/* Windows: the page's corners match Windows 11's own window corner (8px):
-   the page sits the gap inside the window, so its curve is the window's
-   less that gap, the two sitting evenly one inside the other. (8px of its
-   own looked rounder than the window round it.) */
+/* Windows: the page's corners are Zen's own there, worked out from the
+   window's corner (zen.theme.border-radius) so the two sit evenly one
+   inside the other. Zia's 10.5px looked rounder than the window round it,
+   and the window's corner less the whole gap too sharp. */
 @media (-moz-platform: windows) and -moz-pref("zia.page.rounding") {
   :root:not(#zia-none) {
-    --zia-card-radius: max(2px, calc(8px - var(--zia-card-gap)));
+    --zia-card-radius: calc(var(--zen-native-inner-radius, 8px) / var(--zen-squircle-value, 1));
   }
 }
 
