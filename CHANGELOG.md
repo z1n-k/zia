@@ -8,8 +8,8 @@ Every release of Zia, newest first. The format follows
 
 ### Added
 
-- Smoother scrolling and swipes between spaces (on by default, Settings →
-  Sine Mods → Zia → Features): a two-finger swipe between spaces glides
+- Smoother scrolling and swipes between spaces, an experimental option
+  (off by default, Settings → Sine Mods → Zia → Features): a two-finger swipe between spaces glides
   from one trackpad update to the next instead of moving in small jumps,
   and pages scroll with Firefox's smoother easing, which eases out as a
   flick does, closer to Chrome and macOS. (Firefox's own setting for it,

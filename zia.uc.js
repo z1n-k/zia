@@ -5662,7 +5662,7 @@
     }
     set("zia.tabs.favicon-glow", false);
     set("zia.swipe.dia-arrow", true);
-    set("zia.motion.smooth", true);
+    set("zia.motion.smooth", false);
     // Dimming asleep tabs was on by default for a few releases and is now
     // off: switched off once for anyone who had it from then.
     set("zia.tabs.dim-asleep", false);
@@ -16271,7 +16271,8 @@
       };
     }
   }
-  // Smoother motion (Settings → Sine Mods → Zia → Features, on by default):
+  // Smoother motion (Settings → Sine Mods → Zia → Features, experimental,
+  // off by default):
   // a swipe between spaces glides from one trackpad update to the next
   // (zia.css) rather than jumping, and pages scroll with Firefox's smoother
   // easing, closer to Chrome's and macOS's own: it eases out as a flick
@@ -16286,7 +16287,7 @@
   function watchSmoothMotion() {
     const apply = () => {
       try {
-        const on = Services.prefs.getBoolPref(SMOOTH_PREF, true);
+        const on = Services.prefs.getBoolPref(SMOOTH_PREF, false);
         const ours = Services.prefs.getBoolPref(SCROLL_PHYSICS_OURS, false);
         if (on && !ours && !Services.prefs.prefHasUserValue(SCROLL_PHYSICS_PREF)) {
           Services.prefs.setBoolPref(SCROLL_PHYSICS_PREF, true);

@@ -1,4 +1,5 @@
-  // Smoother motion (Settings → Sine Mods → Zia → Features, on by default):
+  // Smoother motion (Settings → Sine Mods → Zia → Features, experimental,
+  // off by default):
   // a swipe between spaces glides from one trackpad update to the next
   // (zia.css) rather than jumping, and pages scroll with Firefox's smoother
   // easing, closer to Chrome's and macOS's own: it eases out as a flick
@@ -13,7 +14,7 @@
   function watchSmoothMotion() {
     const apply = () => {
       try {
-        const on = Services.prefs.getBoolPref(SMOOTH_PREF, true);
+        const on = Services.prefs.getBoolPref(SMOOTH_PREF, false);
         const ours = Services.prefs.getBoolPref(SCROLL_PHYSICS_OURS, false);
         if (on && !ours && !Services.prefs.prefHasUserValue(SCROLL_PHYSICS_PREF)) {
           Services.prefs.setBoolPref(SCROLL_PHYSICS_PREF, true);
