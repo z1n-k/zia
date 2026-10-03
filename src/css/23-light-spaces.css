@@ -1,0 +1,124 @@
+/* Light spaces: a space whose colour is light (Zen marks the window
+   zen-should-be-dark-mode="false" and gives its sidebar dark text). Zia
+   drew the sidebar for dark spaces only, white text and white-tinted
+   surfaces, which on a pale space was white on cream. Here the sidebar's
+   ink is dark and its surfaces light, as in Dia's light mode: the selected
+   tab a white card, hovers and edges a faint shade of black. */
+:root[zen-should-be-dark-mode="false"]:not(#zia-none):not(#zia-none-2) {
+  --zia-sidebar-ink: rgb(28, 28, 32);
+  --zia-active-tab-bg: rgba(255, 255, 255, 0.78);
+  --zia-active-tab-bg-folder: rgba(255, 255, 255, 0.66);
+  --zia-tab-hover-bg: rgba(0, 0, 0, 0.055);
+  --zia-active-glow-color: rgba(0, 0, 0, 0.035);
+  --zia-folder-mark-color: rgba(0, 0, 0, 0.6);
+
+  /* tab names: the rest a little softer, the open one full */
+  & .tabbrowser-tab:not([zen-essential]) .tab-label-container {
+    color: color-mix(in srgb, var(--zia-sidebar-ink) 76%, transparent) !important;
+  }
+
+  & .tabbrowser-tab:not([zen-essential])[visuallyselected] .tab-label-container {
+    color: var(--zia-sidebar-ink) !important;
+  }
+
+  & .tabbrowser-tab:not([zen-essential])[visuallyselected] > .tab-stack > .tab-background {
+    box-shadow:
+      0 0 0 0.5px rgba(0, 0, 0, 0.06),
+      0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  & .tabbrowser-tab:not([zen-essential], [visuallyselected]):hover > .tab-stack > .tab-background {
+    background: var(--zia-tab-hover-bg) !important;
+  }
+
+  /* folder names, and coloured ones tinted towards dark rather than white */
+  & :is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container > label {
+    color: var(--zia-sidebar-ink) !important;
+  }
+
+  & :is(zen-folder[zia-folder-color], tab-group:not([split-view-group])) > .tab-group-label-container > label {
+    color: color-mix(in srgb, var(--zia-folder-swatch, var(--zia-sidebar-ink)) 70%, var(--zia-sidebar-ink)) !important;
+  }
+
+  & zen-folder > .tab-group-label-container > .zia-folder-close {
+    fill: var(--zia-sidebar-ink) !important;
+    color: var(--zia-sidebar-ink) !important;
+  }
+
+  /* the space's name, tinted towards dark */
+  & :is(#zia-workspace-slot .zen-current-workspace-indicator-name, #zia-space-label) {
+    color: var(--zia-sidebar-ink) !important;
+  }
+
+  &[zia-space-colored="true"] :is(#zia-workspace-slot .zen-current-workspace-indicator-name, #zia-space-label) {
+    color: color-mix(in srgb, var(--zen-primary-color, var(--zia-sidebar-ink)) 45%, var(--zia-sidebar-ink)) !important;
+  }
+
+  & #zia-workspace-slot > .zen-current-workspace-indicator > #zia-space-label:hover {
+    background-color: rgba(0, 0, 0, 0.06) !important;
+  }
+
+  /* essentials: tiles a faint white, the open one a white card */
+  & .tabbrowser-tab[zen-essential]:not([visuallyselected]):hover > .tab-stack > .tab-background {
+    background: rgba(255, 255, 255, 0.4) !important;
+  }
+
+  & .tabbrowser-tab[zen-essential][visuallyselected] > .tab-stack > .tab-background {
+    --zen-essential-tab-selected-bg: rgba(255, 255, 255, 0.82) !important;
+    --zen-essential-tab-selected-bg-hover: rgba(255, 255, 255, 0.9) !important;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06) !important;
+
+    &::before {
+      box-shadow:
+        0 0 0 0.5px rgba(0, 0, 0, 0.08),
+        0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    }
+  }
+
+  /* tab numbers: dark outlines and digits */
+  & .tabbrowser-tab > .tab-stack > .tab-content > .zia-tab-number:not([zia-target]) {
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+    color: rgba(0, 0, 0, 0.55);
+  }
+
+  & .tabbrowser-tab[visuallyselected] > .tab-stack > .tab-content > .zia-tab-number:not([zia-target]) {
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.26);
+    color: rgba(0, 0, 0, 0.75);
+  }
+
+  & :is(.tabbrowser-tab[zen-essential], :root:not([zen-sidebar-expanded="true"]) .tabbrowser-tab) > .tab-stack > .tab-content > .zia-tab-number:not([zia-target]) {
+    background-color: rgba(255, 255, 255, 0.72);
+  }
+
+  /* the line above the tabs, the space dots, the sound bars' hover */
+  & .pinned-tabs-container-separator toolbarseparator {
+    background: rgba(0, 0, 0, 0.12) !important;
+  }
+
+  & #zen-workspaces-button toolbarbutton {
+    & > .zen-workspace-icon[no-icon="true"] {
+      background: rgba(0, 0, 0, 0.22) !important;
+    }
+
+    &[active="true"] > .zen-workspace-icon[no-icon="true"] {
+      background: rgba(0, 0, 0, 0.75) !important;
+    }
+
+    &:hover:not([active="true"]) > .zen-workspace-icon[no-icon="true"] {
+      background: rgba(0, 0, 0, 0.42) !important;
+    }
+  }
+
+  & .zia-tab-sound:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+  }
+
+  /* an empty folder's "Drag tabs here" slot */
+  &[zen-sidebar-expanded="true"] zen-folder[zia-empty] {
+    --zia-slot-border: 1.5px dashed rgba(0, 0, 0, 0.22);
+
+    & > .tab-group-container::after {
+      color: rgba(0, 0, 0, 0.45);
+    }
+  }
+}

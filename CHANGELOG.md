@@ -33,6 +33,11 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- Light spaces (a pale space colour, or light mode): the sidebar was
+  drawn for dark spaces only, white text and white-tinted surfaces on a
+  cream sidebar. Its text is dark there now, with the selected tab and
+  essential white cards, and the tab numbers, folder names, space name,
+  separator and space dots to match.
 - Zen 1.23: the address bar pop-up's rows were taller and further apart
   (Zen gave each a least height and a clear border); they're Zia's size
   again.
