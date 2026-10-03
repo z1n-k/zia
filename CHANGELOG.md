@@ -15,6 +15,11 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- A folder inside another showed its parent's state, not its own: in an
+  open folder it looked open even when shut, so opening and closing it
+  didn't animate, and it took the parent's sheets, or its archive box.
+  Each folder's icon now follows only its own folder.
+
 - Closing a folder ended in a snap, its glass icon's bright bottom edge
   suddenly sharpening as the front landed: Firefox drew the front one way
   while it tipped and another once it was shut. It's drawn the same way

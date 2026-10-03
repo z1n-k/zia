@@ -2976,32 +2976,32 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   background: linear-gradient(color-mix(in srgb, var(--fi-accent) 12%, #cfcfd5), color-mix(in srgb, var(--fi-accent) 12%, #b4b4bc));
 }
 
-:is(zen-folder, tab-group)[zia-fi-count="1"] .zia-fi-s1,
-:is(zen-folder, tab-group)[zia-fi-count="2"] :is(.zia-fi-s1, .zia-fi-s2),
-:is(zen-folder, tab-group)[zia-fi-count="3"] .zia-fi-sheet {
+:is(zen-folder, tab-group)[zia-fi-count="1"] > .tab-group-label-container .zia-fi-s1,
+:is(zen-folder, tab-group)[zia-fi-count="2"] > .tab-group-label-container :is(.zia-fi-s1, .zia-fi-s2),
+:is(zen-folder, tab-group)[zia-fi-count="3"] > .tab-group-label-container .zia-fi-sheet {
   opacity: 1;
 }
 
 /* a stack from left to right: alone, the sheet sits in the middle; a
    second slides in behind it on the right, pushing it left; a third goes
    behind those two, further right, the second moving to the middle */
-:is(zen-folder, tab-group)[zia-fi-count="2"] .zia-fi-s1 {
+:is(zen-folder, tab-group)[zia-fi-count="2"] > .tab-group-label-container .zia-fi-s1 {
   left: 0.12em;
   right: 0.28em;
 }
 
-:is(zen-folder, tab-group)[zia-fi-count="3"] {
+:is(zen-folder, tab-group)[zia-fi-count="3"] > .tab-group-label-container {
   & .zia-fi-s1 { left: 0.08em; right: 0.32em; }
   & .zia-fi-s2 { left: 0.2em; right: 0.2em; }
 }
 
 /* open: the front tips forward and the sheets rise, fanning out */
-:is(zen-folder, tab-group):not([collapsed]) .zia-fi {
+:is(zen-folder, tab-group):not([collapsed]) > .tab-group-label-container .zia-fi {
   & .zia-fi-front { transform: rotateX(-32deg); }
   & .zia-fi-s1 { transform: translateY(-0.12em); }
 }
 
-:is(zen-folder, tab-group):is([zia-fi-count="2"], [zia-fi-count="3"]):not([collapsed]) .zia-fi {
+:is(zen-folder, tab-group):is([zia-fi-count="2"], [zia-fi-count="3"]):not([collapsed]) > .tab-group-label-container .zia-fi {
   & .zia-fi-s1 { transform: translateY(-0.12em) rotate(-6deg); }
   & .zia-fi-s2 { transform: translateY(-0.09em) rotate(2deg); transition-delay: 0.05s; }
   & .zia-fi-s3 { transform: translateY(-0.06em) rotate(9deg); transition-delay: 0.1s; }
@@ -3015,9 +3015,9 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   100% { opacity: 1; translate: 0 0; }
 }
 
-:is(zen-folder, tab-group)[zia-fi-drop="1"] .zia-fi-s1,
-:is(zen-folder, tab-group)[zia-fi-drop="2"] .zia-fi-s2,
-:is(zen-folder, tab-group)[zia-fi-drop="3"] .zia-fi-s3 {
+:is(zen-folder, tab-group)[zia-fi-drop="1"] > .tab-group-label-container .zia-fi-s1,
+:is(zen-folder, tab-group)[zia-fi-drop="2"] > .tab-group-label-container .zia-fi-s2,
+:is(zen-folder, tab-group)[zia-fi-drop="3"] > .tab-group-label-container .zia-fi-s3 {
   animation: zia-fi-drop 0.6s cubic-bezier(0.3, 0.9, 0.4, 1) both;
 }
 
@@ -3029,9 +3029,9 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   100% { opacity: 0; translate: 0.08em -0.62em; rotate: 8deg; }
 }
 
-:is(zen-folder, tab-group)[zia-fi-lift="1"] .zia-fi-s1,
-:is(zen-folder, tab-group)[zia-fi-lift="2"] .zia-fi-s2,
-:is(zen-folder, tab-group)[zia-fi-lift="3"] .zia-fi-s3 {
+:is(zen-folder, tab-group)[zia-fi-lift="1"] > .tab-group-label-container .zia-fi-s1,
+:is(zen-folder, tab-group)[zia-fi-lift="2"] > .tab-group-label-container .zia-fi-s2,
+:is(zen-folder, tab-group)[zia-fi-lift="3"] > .tab-group-label-container .zia-fi-s3 {
   animation: zia-fi-lift 0.5s cubic-bezier(0.4, 0, 0.6, 1) both;
 }
 
@@ -3040,8 +3040,8 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 /* one or the other shows; crossing three and four, the old one shrinks and
    blurs away and the new one grows out of a blur into focus, running a
    touch past full size */
-:is(zen-folder, tab-group)[zia-fi-full] .zia-fi-fold,
-:is(zen-folder, tab-group):not([zia-fi-full]) .zia-fb {
+:is(zen-folder, tab-group)[zia-fi-full] > .tab-group-label-container .zia-fi-fold,
+:is(zen-folder, tab-group):not([zia-fi-full]) > .tab-group-label-container .zia-fb {
   opacity: 0;
 }
 
@@ -3086,7 +3086,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   --fb-rise: 0em;
 }
 
-:is(zen-folder, tab-group):not([collapsed]) .zia-fb {
+:is(zen-folder, tab-group):not([collapsed]) > .tab-group-label-container .zia-fb {
   --fb-rise: -0.1em;
 }
 
@@ -3189,7 +3189,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   will-change: transform;
 }
 
-:is(zen-folder, tab-group):not([collapsed]) .zia-fb-lid,
+:is(zen-folder, tab-group):not([collapsed]) > .tab-group-label-container .zia-fb-lid,
 .zia-fi[zia-fb-peek] .zia-fb-lid {
   transform: translate(-0.05em, -0.2em) rotate(-14deg);
 }
