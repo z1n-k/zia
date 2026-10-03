@@ -50,7 +50,33 @@
     header.append(button);
   }
 
+  // Bookmarks, History or Synced Tabs (Cmd/Ctrl+B and the rest) opened
+  // with the Library open: the Library closes first. Zia's panel is laid
+  // out beside the page as the sidebar leaves it, and with the Library
+  // over the sidebar it came out half off the window.
+  function closeLibraryForSidebar() {
+    const controller = window.SidebarController;
+    if (!controller || typeof controller.show !== "function" || controller.show.__zia) {
+      return;
+    }
+    const show = controller.show;
+    const wrapped = function () {
+      try {
+        const Library = customElements.get("zen-library");
+        if (Library?.isLibraryOpen) {
+          Library.close();
+        }
+      } catch (err) {
+        noteError("library: close for sidebar", err);
+      }
+      return show.apply(this, arguments);
+    };
+    wrapped.__zia = true;
+    controller.show = wrapped;
+  }
+
   function watchLibrary() {
+    closeLibraryForSidebar();
     const toolbox = document.getElementById("navigator-toolbox");
     if (!toolbox?.parentElement) {
       return;

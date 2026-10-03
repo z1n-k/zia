@@ -35,6 +35,10 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- Opening Bookmarks, History or Synced Tabs (Cmd/Ctrl+B and the rest)
+  with the Library open showed the panel half off the window; the
+  Library closes first now.
+
 - Zen 1.23 turned its "acrylic" look on for everyone, drawing the
   sidebar part see-through under Zia's own, so it came out far too
   transparent (and the compact sidebar and address bar pop-up changed
