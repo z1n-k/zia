@@ -14,6 +14,8 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
+- A tab without its own icon shows just a translucent square, without
+  Zen's logo in it.
 - Hiding or showing a space's pinned tabs and folders by clicking its
   name springs like a folder opening and closing: the tabs below go a
   little past and settle back (with folders' gentle spring on, Settings

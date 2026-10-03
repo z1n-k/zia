@@ -1404,8 +1404,9 @@
   color: color-mix(in srgb, var(--zen-primary-color, white) var(--zia-space-name-tint), white) !important;
 }
 
-.tabbrowser-tab:not([busy], [crashed]) .tab-icon-image:is(:not([src]), :-moz-broken, [src="chrome://branding/content/icon32.png"]) {
-  content: url("chrome://sine/content/zia/icons/tab-default.svg") !important;
+/* A tab with no icon of its own shows a plain translucent square (no logo) */
+.tabbrowser-tab:not([busy], [crashed]) .tab-icon-image:is(:not([src]), [src=""], :-moz-broken, [src="chrome://branding/content/icon32.png"], [src="chrome://global/skin/icons/defaultFavicon.svg"]) {
+  content: url("chrome://sine/content/zia/icons/tab-blank.svg") !important;
 }
 
 
