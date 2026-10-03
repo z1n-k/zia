@@ -8,6 +8,10 @@ Every release of Zia, newest first. The format follows
 
 ### Added
 
+- Page corners (Settings → Sine Mods → Zia → Page): Zia's, following the
+  window's own corner (its curve less the gap round the page, so the page
+  sits evenly inside it, as Windows 11's tighter corners want), small, or
+  square.
 - Swiping back or forward with two fingers shows Dia's round arrow,
   sliding in from the page's edge level with the pointer, in place of
   Firefox's. Hold the swipe and it opens into a card of the pages it goes
