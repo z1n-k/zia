@@ -2866,18 +2866,25 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
     font-size: 17px;
     width: 1em;
     height: 0.82em;
-    perspective: 3em;
     flex: none;
     pointer-events: none;
 
-    & > * {
+    /* the folder and the box, one over the other */
+    & > :is(.zia-fi-fold, .zia-fb) {
+      position: absolute;
+      inset: 0;
+      perspective: 3em;
+    }
+
+    & > .zia-fi-fold > *,
+    & > .zia-fb > * {
       position: absolute;
     }
   }
 }
 
 /* closing eases home (kept plain, so the opening rules below win while open) */
-.zia-fi > * {
+.zia-fi-fold > * {
   transition: transform 0.4s var(--fi-soft), opacity 0.25s var(--fi-soft), left 0.3s var(--fi-soft), right 0.3s var(--fi-soft);
 }
 
@@ -2888,12 +2895,12 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 }
 
 /* opening springs a touch past and settles */
-:is(zen-folder, tab-group:not([split-view-group])):not([collapsed]) > .tab-group-label-container .zia-fi > * {
+:is(zen-folder, tab-group:not([split-view-group])):not([collapsed]) > .tab-group-label-container .zia-fi-fold > * {
   transition: transform 0.55s var(--fi-spring), opacity 0.25s var(--fi-soft), left 0.3s var(--fi-soft), right 0.3s var(--fi-soft);
 }
 
 /* the front falls open a touch past where it rests, then settles back up */
-:is(zen-folder, tab-group:not([split-view-group])):not([collapsed]) > .tab-group-label-container .zia-fi > .zia-fi-front {
+:is(zen-folder, tab-group:not([split-view-group])):not([collapsed]) > .tab-group-label-container .zia-fi-fold > .zia-fi-front {
   transition: transform 0.6s cubic-bezier(0.3, 1.9, 0.5, 1), opacity 0.25s var(--fi-soft);
 }
 
@@ -3013,8 +3020,163 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   animation: zia-fi-lift 0.5s cubic-bezier(0.4, 0, 0.6, 1) both;
 }
 
+/* ---- past three: the archive box ---- */
+
+/* one or the other shows; crossing three and four, the old one shrinks and
+   blurs away and the new one grows out of a blur into focus, running a
+   touch past full size */
+:is(zen-folder, tab-group)[zia-fi-full] .zia-fi-fold,
+:is(zen-folder, tab-group):not([zia-fi-full]) .zia-fb {
+  opacity: 0;
+}
+
+@keyframes zia-fi-morph-out {
+  from { opacity: 1; scale: 1; filter: blur(0); }
+  to { opacity: 0; scale: 0.5; filter: blur(2px); }
+}
+
+@keyframes zia-fi-morph-in {
+  0% { opacity: 0; scale: 0.5; filter: blur(2px); }
+  62% { opacity: 1; scale: 1.08; filter: blur(0); }
+  100% { opacity: 1; scale: 1; filter: blur(0); }
+}
+
+.zia-fi > [zia-morph-out] {
+  animation: zia-fi-morph-out 0.2s cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+.zia-fi > [zia-morph-in] {
+  animation: zia-fi-morph-in 0.42s cubic-bezier(0.3, 0.9, 0.4, 1) both;
+}
+
+/* the inside, in the folder's back's tint, the glass front's size so no
+   band shows round its edge */
+.zia-fb-back {
+  left: 0.08em;
+  right: 0.08em;
+  bottom: 0;
+  height: 0.62em;
+  border-radius: 0.1em;
+  background: linear-gradient(color-mix(in srgb, var(--fi-accent) 62%, white), color-mix(in srgb, var(--fi-accent) 88%, white));
+}
+
+/* the pile, layered as in the folder: each sheet a little off from the
+   last and tipped a touch, the ones further back a shade darker; newer
+   ones sit lower, in front. They rise a little while the folder's open,
+   and peek higher the fuller the box. */
+.zia-fb {
+  --fb-rise: 0em;
+}
+
+:is(zen-folder, tab-group):not([collapsed]) .zia-fb {
+  --fb-rise: -0.1em;
+}
+
+.zia-fb-sheet {
+  left: 0.21em;
+  right: 0.21em;
+  top: calc(0.19em + var(--i) * 0.014em);
+  height: 0.5em;
+  border-radius: 0.04em;
+  background: #fff;
+  opacity: 0;
+  translate: var(--dx) calc(var(--fb-full, 0) * -0.05em);
+  rotate: var(--rz);
+  transform: translateY(var(--fb-rise));
+  filter: brightness(calc(0.8 + var(--i) * 0.028));
+  box-shadow: 0 -0.006em 0 rgba(0, 0, 0, 0.1), -0.008em 0 0.016em rgba(0, 0, 0, 0.22), 0.008em 0 0.016em rgba(0, 0, 0, 0.14);
+  transition: transform 0.4s var(--fi-spring), translate 0.35s var(--fi-soft);
+
+  &[zia-on] {
+    opacity: 1;
+  }
+
+  &:nth-child(2) { --dx: -0.05em; --rz: -2deg; }
+  &:nth-child(3) { --dx: 0.05em; --rz: 1.8deg; }
+  &:nth-child(4) { --dx: -0.02em; --rz: -1deg; }
+  &:nth-child(5) { --dx: 0.04em; --rz: 2deg; }
+  &:nth-child(6) { --dx: -0.05em; --rz: -2deg; }
+  &:nth-child(7) { --dx: 0.03em; --rz: 1.5deg; }
+  &:nth-child(8) { --dx: -0.03em; --rz: -1.6deg; }
+  &:nth-child(9) { --dx: 0.02em; --rz: 1deg; }
+}
+
+/* a sheet dropping in, with the folder's bounce; or rising back out */
+@keyframes zia-fb-fall {
+  0% { opacity: 0; transform: translateY(calc(var(--fb-rise) - 0.6em)); }
+  45% { opacity: 1; transform: translateY(calc(var(--fb-rise) + 0.04em)); }
+  70% { transform: translateY(calc(var(--fb-rise) - 0.03em)); }
+  100% { opacity: 1; transform: translateY(var(--fb-rise)); }
+}
+
+.zia-fb-sheet[zia-fall] {
+  animation: zia-fb-fall 0.6s cubic-bezier(0.3, 0.9, 0.4, 1) both;
+}
+
+.zia-fb-sheet[zia-rise] {
+  animation: zia-fb-fall 0.5s cubic-bezier(0.4, 0, 0.6, 1) reverse backwards;
+}
+
+/* past eight: a sheet that drops in and out of sight, or comes out */
+.zia-fb-pass {
+  left: 0.21em;
+  right: 0.21em;
+  top: 0.19em;
+  height: 0.5em;
+  border-radius: 0.04em;
+  background: #fff;
+  opacity: 0;
+  box-shadow: 0 0.01em 0.03em rgba(0, 0, 0, 0.28);
+}
+
+@keyframes zia-fb-pass {
+  0% { opacity: 0; translate: 0 -0.6em; }
+  5% { opacity: 1; }
+  45% { translate: 0 0.04em; }
+  70% { translate: 0 -0.03em; }
+  99% { opacity: 1; translate: 0 0.04em; }
+  100% { opacity: 0; translate: 0 0.04em; }
+}
+
+.zia-fb-pass[zia-in] {
+  animation: zia-fb-pass 0.6s cubic-bezier(0.3, 0.9, 0.4, 1) backwards;
+}
+
+.zia-fb-pass[zia-out] {
+  animation: zia-fb-pass 0.5s cubic-bezier(0.4, 0, 0.6, 1) reverse backwards;
+}
+
+/* the glass front, as the folder's */
+.zia-fb-front {
+  left: 0.08em;
+  right: 0.08em;
+  bottom: 0;
+  height: 0.56em;
+  border-radius: 0.1em;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--fi-accent) 55%, rgba(255, 255, 255, 0.55)), color-mix(in srgb, var(--fi-accent) 45%, rgba(255, 255, 255, 0.35)) 55%, rgba(255, 255, 255, 0.55));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+/* the lid, in the same glass; it rides a touch higher the fuller the box,
+   and lifts and tips back while the folder's open or a sheet goes by */
+.zia-fb-lid {
+  left: 0.04em;
+  right: 0.04em;
+  height: 0.13em;
+  bottom: calc(0.53em + var(--fb-full, 0) * 0.05em);
+  border-radius: 0.05em;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--fi-accent) 55%, rgba(255, 255, 255, 0.7)), color-mix(in srgb, var(--fi-accent) 62%, rgba(255, 255, 255, 0.45)));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.25), 0 0.02em 0.035em rgba(0, 0, 0, 0.22);
+  transition: transform 0.32s var(--fi-spring), bottom 0.35s var(--fi-soft);
+}
+
+:is(zen-folder, tab-group):not([collapsed]) .zia-fb-lid,
+.zia-fi[zia-fb-peek] .zia-fb-lid {
+  transform: translate(-0.05em, -0.2em) rotate(-14deg);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .zia-fi > * {
+  .zia-fi :is(.zia-fi-fold, .zia-fb, .zia-fi-fold > *, .zia-fb > *) {
     transition-duration: 0.01s !important;
     animation: none !important;
   }

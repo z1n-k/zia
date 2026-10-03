@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- A folder of more than three tabs becomes a glass archive box: the
+  folder shrinks and blurs away and the box grows into focus. For each tab
+  added its lid opens, a sheet drops into the pile and the lid shuts; for
+  each one taken out a sheet rises back out. The pile shows up to eight;
+  past that a sheet still goes in or out each time. The lid stays open
+  while the folder is, and back at three it turns into the folder again.
+
 ## [2.86.2] — 2026-10-03
 
 ### Fixed
