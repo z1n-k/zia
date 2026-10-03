@@ -74,7 +74,10 @@
   overflow-clip-margin: 16px !important;
 }
 
-:root[zen-sidebar-expanded="true"]:is([swipe-gesture="true"], [animating-background="true"]) #tabbrowser-tabs {
+:root[zen-sidebar-expanded="true"]:is([swipe-gesture="true"], [animating-background="true"]) #tabbrowser-tabs,
+/* (Zen 1.23 marks the sidebar and the tab list itself, not the window) */
+:root[zen-sidebar-expanded="true"] #navigator-toolbox[animating-background] #tabbrowser-tabs,
+:root[zen-sidebar-expanded="true"] #tabbrowser-tabs:has(#tabbrowser-arrowscrollbox[swipe-gesture]) {
   overflow-clip-margin: var(--zen-toolbox-padding) !important;
 }
 

@@ -106,10 +106,16 @@
 }
 
 #urlbar[breakout-extend]:not([zia-classic]) {
+  /* (Zen 1.23 gave every row a 45px least height and a clear 2px border
+     above and below, which made Zia's rows taller and further apart) */
+  --urlbarview-row-min-height: var(--zia-pop-row-height) !important;
+
   & .urlbarView-row {
     margin-inline: var(--zia-pop-row-inset) !important;
     margin-block: calc(var(--zia-pop-row-gap) / 2) !important;
     padding-block: 0 !important;
+    border-block: 0 !important;
+    min-height: 0 !important;
     border-radius: var(--zia-pop-row-radius) !important;
 
     & > .urlbarView-row-inner {

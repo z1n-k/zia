@@ -15640,6 +15640,11 @@
   const SWIPE_MAX_PAGES = 8;
   const SWIPE_ROW = 34;
   const SWIPE_LEAVE_MS = 260;
+  // with the card open, each step this much further along the swipe (or a
+  // two-finger scroll up or down, where the system passes it on) picks the
+  // next page back
+  const SWIPE_STEP = 0.07;
+  const SWIPE_WHEEL_STEP = 28;
 
   function swipePages(forward) {
     const pages = [];
@@ -15662,11 +15667,11 @@
     svg.setAttribute("viewBox", "0 0 24 24");
     svg.setAttribute("fill", "none");
     svg.setAttribute("stroke", "currentColor");
-    svg.setAttribute("stroke-width", "2.2");
+    svg.setAttribute("stroke-width", "2.6");
     svg.setAttribute("stroke-linecap", "round");
     svg.setAttribute("stroke-linejoin", "round");
     const path = document.createElementNS(SVG_NS, "path");
-    path.setAttribute("d", "M14.5 6l-6 6l6 6");
+    path.setAttribute("d", "M14 5.5l-5.5 6.5l5.5 6.5");
     svg.append(path);
     return svg;
   }
@@ -15703,6 +15708,41 @@
     let el = null;
     let holdTimer = null;
     let side = null;
+    // the card: how far along the swipe was when it opened, scroll steps
+    // since, and the page picked (how many back or forward)
+    let lastDelta = 0;
+    let openDelta = 0;
+    let wheelSteps = 0;
+    let wheelRest = 0;
+    let choice = null;
+
+    const pick = () => {
+      const rows = el ? [...el.querySelectorAll(".zia-swipe-page")] : [];
+      if (!el?.hasAttribute("open") || !rows.length) {
+        choice = null;
+        return;
+      }
+      const along = Math.floor(Math.max(0, lastDelta - openDelta) / SWIPE_STEP);
+      const index = Math.min(Math.max(along + wheelSteps, 0), rows.length - 1);
+      rows.forEach((row, i) => row.toggleAttribute("selected", i === index));
+      choice = { depth: index + 1, forward: side === "forward" };
+    };
+
+    window.addEventListener(
+      "wheel",
+      (event) => {
+        if (!el?.hasAttribute("open") || !event.deltaY) {
+          return;
+        }
+        wheelRest += event.deltaY;
+        while (Math.abs(wheelRest) >= SWIPE_WHEEL_STEP) {
+          wheelSteps += Math.sign(wheelRest);
+          wheelRest -= Math.sign(wheelRest) * SWIPE_WHEEL_STEP;
+        }
+        pick();
+      },
+      { capture: true, passive: true }
+    );
 
     const clearHold = () => {
       clearTimeout(holdTimer);
@@ -15733,7 +15773,7 @@
       list.className = "zia-swipe-pages";
       el.append(arrow, list);
       const height = stack.clientHeight;
-      const y = Math.min(Math.max(pointerY ?? height / 2, 40), height - 40);
+      const y = Math.min(Math.max(pointerY ?? height / 2, 60), height - 60);
       el.style.setProperty("--zia-swipe-y", `${y}px`);
       stack.append(el);
     };
@@ -15765,6 +15805,10 @@
       );
       el.style.setProperty("--zia-swipe-h", `${pages.length * SWIPE_ROW + 12}px`);
       el.setAttribute("open", "");
+      openDelta = lastDelta;
+      wheelSteps = 0;
+      wheelRest = 0;
+      pick();
     };
 
     const follow = (animation, update) => {
@@ -15789,7 +15833,8 @@
       if (!el) {
         return;
       }
-      const progress = Math.min(Math.abs(update?.delta || 0) * 4, 1);
+      lastDelta = Math.abs(update?.delta || 0);
+      const progress = Math.min(lastDelta * 4, 1);
       el.style.setProperty("--p", `${progress}`);
       const will = progress >= 1;
       el.toggleAttribute("will", will);
@@ -15797,10 +15842,12 @@
         if (!holdTimer && !el.hasAttribute("open")) {
           holdTimer = setTimeout(open, SWIPE_HOLD_MS);
         }
+        pick();
       } else {
         clearHold();
         if (progress < 0.6) {
           el.removeAttribute("open");
+          choice = null;
         }
       }
     };
@@ -15821,6 +15868,7 @@
     swipe.startAnimation = function () {
       discard();
       swiping = true;
+      choice = null;
       return start.apply(this, arguments);
     };
     const update = swipe.updateAnimation;
@@ -15844,6 +15892,31 @@
       return stop.apply(this, arguments);
     };
     gBrowser.tabContainer.addEventListener("TabSelect", discard);
+
+    // Letting go with a page further back picked on the card: straight to
+    // it, rather than the one page back Firefox would go
+    const gestures = window.gGestureSupport;
+    const coordinate = gestures?._coordinateSwipeEventWithAnimation;
+    if (gestures && coordinate) {
+      gestures._coordinateSwipeEventWithAnimation = function (aEvent, aDir) {
+        const picked = choice;
+        choice = null;
+        if (on() && picked && picked.depth > 1) {
+          try {
+            const history = gBrowser.selectedBrowser.browsingContext.sessionHistory;
+            const target = history.index + (picked.forward ? picked.depth : -picked.depth);
+            if (target >= 0 && target < history.count) {
+              swipe.stopAnimation();
+              gBrowser.gotoIndex(target);
+              return;
+            }
+          } catch (err) {
+            noteError("swipe arrow: go to page", err);
+          }
+        }
+        return coordinate.apply(this, arguments);
+      };
+    }
   }
   function safely(name, fn) {
     try {
