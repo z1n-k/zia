@@ -366,8 +366,8 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 /* centred on the front, so it tips with it as the folder opens; on the
    box, on its front. In a deep shade of the folder's own colour, pressed
    into the glass (a faint light edge below it), as macOS marks its
-   folders: white was lost on the pale tints. An emoji keeps its own
-   colours. */
+   folders: white was lost on the coloured tints (a white folder keeps a
+   white one). An emoji keeps its own colours. */
 .zia-fi-mark {
   display: none;
   position: absolute;
@@ -384,6 +384,15 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   stroke-opacity: 0.88;
   filter: drop-shadow(0 0.025em 0 rgba(255, 255, 255, 0.45));
   pointer-events: none;
+}
+
+/* a white folder (the default) keeps a white icon, lifted by a soft shadow */
+zen-folder:is(:not([zia-folder-color]), [zia-folder-color="white"]) > .tab-group-label-container .zia-fi-mark {
+  fill: rgba(255, 255, 255, 0.95);
+  fill-opacity: 1;
+  stroke: rgba(255, 255, 255, 0.95);
+  stroke-opacity: 1;
+  filter: drop-shadow(0 0.02em 0.03em rgba(0, 0, 0, 0.3));
 }
 
 :is(zen-folder, tab-group)[zia-fi-marked] > .tab-group-label-container .zia-fi-mark {
