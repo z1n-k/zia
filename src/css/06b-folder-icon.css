@@ -43,14 +43,9 @@
       position: absolute;
     }
 
-    /* each centred on the row by what shows when it's closed: the box
-       from its lid down (so up by the gap above the lid), the folder a
-       touch up too, its glass front being most of what shows; opening,
-       they rise from there */
-    & > .zia-fi-fold {
-      translate: 0 -0.04em;
-    }
-
+    /* each centred on the row by what shows when it's closed: the folder
+       by its whole outline, tab and all; the box from its lid down (so up
+       by the gap above the lid). Opening, they rise from there. */
     & > .zia-fb {
       translate: 0 -0.08em;
     }
