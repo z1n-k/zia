@@ -16347,6 +16347,26 @@
     requestAnimationFrame(step);
   }
 
+  // The dock of sections starts level with the open section's first
+  // heading ("Today"), or its list where there's no heading
+  function alignLibraryDock(library) {
+    const dock = library.querySelector("#zen-library-sidebar-tabs");
+    if (!dock) {
+      return;
+    }
+    const shown = (el) => el && el.getBoundingClientRect().height > 0;
+    const section = [...library.querySelectorAll(".zen-library-section")].find(shown);
+    const mark = [section?.querySelector(".zen-library-group h3"), section?.querySelector(".zen-library-search-results")].find(shown);
+    if (!mark) {
+      return;
+    }
+    const current = parseFloat(getComputedStyle(dock).marginTop) || 0;
+    const delta = mark.getBoundingClientRect().top - dock.getBoundingClientRect().top;
+    if (Math.abs(delta) > 0.5) {
+      dock.style.marginTop = `${Math.max(0, Math.round(current + delta))}px`;
+    }
+  }
+
   function watchLibrary() {
     closeLibraryForSidebar();
     const toolbox = document.getElementById("navigator-toolbox");
@@ -16356,6 +16376,9 @@
     let library = null;
     let sectionWatch = null;
     const findSections = () => {
+      if (library) {
+        requestAnimationFrame(() => alignLibraryDock(library));
+      }
       for (const section of library?.querySelectorAll("zen-library-downloads-section") || []) {
         addDownloadsClearButton(section);
       }
@@ -16391,6 +16414,7 @@
       // anything) closes the sidebar panel
       new MutationObserver(() => {
         followLibraryWindowButtons(library);
+        requestAnimationFrame(() => alignLibraryDock(library));
         if (library.hasAttribute("open") && window.SidebarController?.isOpen) {
           try {
             window.SidebarController.hide();
