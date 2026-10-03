@@ -8,6 +8,8 @@ Every release of Zia, newest first. The format follows
 
 ### Added
 
+- Optional: hide the glow around the selected tab, keeping its highlight
+  (Settings → Sine Mods → Zia → Tabs, off by default).
 - Optional: two essentials to a row, however wide the sidebar, so it can
   be made narrower (Settings → Sine Mods → Zia → Tabs, off by default).
 - Optional: the page edge to edge, with no gap, rounded corners or shadow

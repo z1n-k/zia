@@ -221,6 +221,19 @@
   --zen-active-tab-scale: 1 !important;
 }
 
+/* Optional: no glow around the selected tab (or a split's group), just
+   its highlight and fine edge; the favicon-tinted glow goes with it */
+@media -moz-pref("zia.tabs.no-glow") {
+  :root:not(#zia-none) {
+    --zia-active-glow-color: transparent;
+
+    & .tabbrowser-tab:not([zen-essential])[visuallyselected] > .tab-stack > .tab-background,
+    & tab-group[split-view-group] > .tab-group-container {
+      box-shadow: none !important;
+    }
+  }
+}
+
 #zia-workspace-slot .zen-current-workspace-indicator-name,
 #zia-space-label {
   color: rgb(255, 255, 255) !important;

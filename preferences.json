@@ -145,6 +145,12 @@
   },
   {
     "type": "checkbox",
+    "label": "Hide the glow around the selected tab",
+    "property": "zia.tabs.no-glow",
+    "defaultValue": false
+  },
+  {
+    "type": "checkbox",
     "label": "Essentials are Zia's narrower tiles (off: Zen's own widths)",
     "property": "zia.essentials.zia-width",
     "defaultValue": true

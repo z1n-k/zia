@@ -348,6 +348,7 @@ The first folder takes a little while as the model downloads and the icon names 
 | Sound bars on playing tabs (off: Zen's speaker) | on |
 | Sound bars always move, even when your system asks for less motion | off |
 | Tint the selected tab's glow and the sound bars with the site's colours | off |
+| Hide the glow around the selected tab | off |
 | Essentials are Zia's narrower tiles (off: Zen's own widths) | on |
 | Two essentials to a row, so the sidebar can be made narrower | off |
 | The last essential stretches across the rest of its row | off |
