@@ -15728,20 +15728,49 @@
       choice = { depth: index + 1, forward: side === "forward" };
     };
 
+    // Let go with the card open and it stays, to pick from: two fingers up
+    // and down (the system only passes those on once the swipe is over),
+    // the arrow keys, or the pointer; a click or Return goes there, Escape
+    // or a click elsewhere closes it.
+    let pinned = false;
+    const rowsOf = () => (el ? [...el.querySelectorAll(".zia-swipe-page")] : []);
+    const selectedIndex = () => Math.max(0, rowsOf().findIndex((row) => row.hasAttribute("selected")));
+    const select = (index) => {
+      const rows = rowsOf();
+      if (!rows.length) {
+        return;
+      }
+      const at = Math.min(Math.max(index, 0), rows.length - 1);
+      rows.forEach((row, i) => row.toggleAttribute("selected", i === at));
+      choice = { depth: at + 1, forward: side === "forward" };
+    };
+
     window.addEventListener(
       "wheel",
       (event) => {
         if (!el?.hasAttribute("open") || !event.deltaY) {
           return;
         }
+        if (pinned) {
+          event.preventDefault();
+        }
         wheelRest += event.deltaY;
+        let steps = 0;
         while (Math.abs(wheelRest) >= SWIPE_WHEEL_STEP) {
-          wheelSteps += Math.sign(wheelRest);
+          steps += Math.sign(wheelRest);
           wheelRest -= Math.sign(wheelRest) * SWIPE_WHEEL_STEP;
         }
-        pick();
+        if (!steps) {
+          return;
+        }
+        if (pinned) {
+          select(selectedIndex() + steps);
+        } else {
+          wheelSteps += steps;
+          pick();
+        }
       },
-      { capture: true, passive: true }
+      { capture: true, passive: false }
     );
 
     const clearHold = () => {
@@ -15751,10 +15780,80 @@
 
     const discard = () => {
       clearHold();
+      pinned = false;
       el?.remove();
       el = null;
       side = null;
     };
+
+    const closePinned = () => {
+      pinned = false;
+      const gone = el;
+      el = null;
+      side = null;
+      choice = null;
+      if (gone) {
+        gone.setAttribute("leaving", "");
+        setTimeout(() => gone.remove(), SWIPE_LEAVE_MS);
+      }
+    };
+
+    const goTo = (depth, forward) => {
+      try {
+        const history = gBrowser.selectedBrowser.browsingContext.sessionHistory;
+        const target = history.index + (forward ? depth : -depth);
+        if (target >= 0 && target < history.count) {
+          gBrowser.gotoIndex(target);
+        }
+      } catch (err) {
+        noteError("swipe arrow: go to page", err);
+      }
+    };
+
+    const pin = () => {
+      if (pinned || !el?.hasAttribute("open")) {
+        return;
+      }
+      pinned = true;
+      el.setAttribute("pinned", "");
+      clearHold();
+      select(selectedIndex());
+    };
+
+    window.addEventListener(
+      "keydown",
+      (event) => {
+        if (!pinned) {
+          return;
+        }
+        const keys = { ArrowDown: 1, ArrowUp: -1 };
+        if (event.key in keys) {
+          select(selectedIndex() + keys[event.key]);
+        } else if (event.key === "Enter") {
+          const picked = choice;
+          closePinned();
+          if (picked) {
+            goTo(picked.depth, picked.forward);
+          }
+        } else if (event.key === "Escape") {
+          closePinned();
+        } else {
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+      },
+      true
+    );
+    window.addEventListener(
+      "mousedown",
+      (event) => {
+        if (pinned && !el?.contains(event.target)) {
+          closePinned();
+        }
+      },
+      true
+    );
 
     const build = (forward) => {
       discard();
@@ -15800,6 +15899,20 @@
           const title = document.createElementNS(HTML_NS, "span");
           title.textContent = page.title;
           row.append(icon, title);
+          row.addEventListener("mouseenter", () => {
+            if (pinned) {
+              select(rowsOf().indexOf(row));
+            }
+          });
+          row.addEventListener("click", () => {
+            if (!pinned) {
+              return;
+            }
+            const depth = rowsOf().indexOf(row) + 1;
+            const forward = side === "forward";
+            closePinned();
+            goTo(depth, forward);
+          });
           return row;
         })
       );
@@ -15854,6 +15967,11 @@
 
     const leave = () => {
       clearHold();
+      // with the card open, letting go keeps it, to pick from
+      if (pinned || el?.hasAttribute("open")) {
+        pin();
+        return;
+      }
       const gone = el;
       el = null;
       side = null;
@@ -15893,26 +16011,16 @@
     };
     gBrowser.tabContainer.addEventListener("TabSelect", discard);
 
-    // Letting go with a page further back picked on the card: straight to
-    // it, rather than the one page back Firefox would go
+    // Letting go with the card open: no going back yet, the card stays to
+    // pick from (above); otherwise Firefox's one page back
     const gestures = window.gGestureSupport;
     const coordinate = gestures?._coordinateSwipeEventWithAnimation;
     if (gestures && coordinate) {
       gestures._coordinateSwipeEventWithAnimation = function (aEvent, aDir) {
-        const picked = choice;
-        choice = null;
-        if (on() && picked && picked.depth > 1) {
-          try {
-            const history = gBrowser.selectedBrowser.browsingContext.sessionHistory;
-            const target = history.index + (picked.forward ? picked.depth : -picked.depth);
-            if (target >= 0 && target < history.count) {
-              swipe.stopAnimation();
-              gBrowser.gotoIndex(target);
-              return;
-            }
-          } catch (err) {
-            noteError("swipe arrow: go to page", err);
-          }
+        if (on() && (pinned || el?.hasAttribute("open"))) {
+          pin();
+          swipe.stopAnimation();
+          return;
         }
         return coordinate.apply(this, arguments);
       };

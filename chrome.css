@@ -6549,6 +6549,11 @@ zen-folder .tab-reset-button {
       --zia-swipe-in: -20px;
     }
 
+    /* left open to pick from */
+    &[pinned] {
+      pointer-events: auto;
+    }
+
     &[leaving] {
       opacity: 0 !important;
       transition: opacity 0.22s ease, translate 0.26s cubic-bezier(0.4, 0, 1, 1);
