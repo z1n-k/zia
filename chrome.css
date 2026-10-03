@@ -6984,14 +6984,17 @@ zen-folder .tab-reset-button {
     --zia-slot-border: 1.5px dashed rgba(0, 0, 0, 0.22);
 
     & > .tab-group-container::after {
+      content: url("chrome://sine/content/zia/icons/folder-drop-dark.svg") "\2002 Drag tabs here";
       color: rgba(0, 0, 0, 0.45);
     }
   }
 
-  /* the buttons on tabs and folders (close, unload, reset) in the dark ink */
+  /* the buttons on tabs and folders (close, unload, reset) in the dark
+     ink, as soft as the folders' own close mark */
   & :is(.tabbrowser-tab, zen-folder) .tab-reset-button,
   & .tabbrowser-tab .tab-close-button {
     fill: var(--zia-sidebar-ink) !important;
+    fill-opacity: var(--zia-folder-mark-opacity) !important;
     color: var(--zia-sidebar-ink) !important;
   }
 
@@ -7046,5 +7049,16 @@ zen-folder .tab-reset-button {
     & .zia-ring-track {
       stroke: rgba(0, 0, 0, 0.12);
     }
+  }
+
+  /* the glass folder and box: a deeper tint than the dark spaces' pale one
+     when it takes the space's colour, and a fine dark edge to hold it
+     against the cream */
+  & zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
+    --fi-accent: color-mix(in srgb, var(--zen-primary-color, #5ab9f5) 78%, rgb(70, 72, 80));
+  }
+
+  & .zia-fi {
+    filter: drop-shadow(0 0 0.5px rgba(0, 0, 0, 0.32)) drop-shadow(0 0.5px 1px rgba(0, 0, 0, 0.1));
   }
 }
