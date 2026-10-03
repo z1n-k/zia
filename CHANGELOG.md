@@ -21,6 +21,8 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- Reload has its hover square again on Zen 1.23, like back and forward.
+
 - Zen 1.23 turned its "acrylic" look on for everyone, drawing the
   sidebar part see-through under Zia's own, so it came out far too
   transparent (and the compact sidebar and address bar pop-up changed

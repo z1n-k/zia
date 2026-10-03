@@ -6000,13 +6000,15 @@ zen-folder .tab-reset-button {
    starts and stops loading: the one swapped in isn't hovered until the
    pointer next moves, so the hover square went and snapped back with no
    fade (and reload, disabled for a moment after each load, lost it too).
-   It's drawn for the pair instead, which stays hovered throughout. */
+   It's drawn for the pair instead, which stays hovered throughout. (Zen
+   1.23 no longer sets Firefox's hover colour, so with none this is Zen's
+   own: the text colour at 7%, as back and forward get.) */
 #stop-reload-button:hover > :is(#reload-button, #stop-button) > .toolbarbutton-icon {
-  background-color: var(--toolbarbutton-hover-background) !important;
+  background-color: var(--toolbarbutton-hover-background, color-mix(in srgb, currentColor 7%, transparent)) !important;
 }
 
 #stop-reload-button:hover > :is(#reload-button, #stop-button):hover:active > .toolbarbutton-icon {
-  background-color: var(--toolbarbutton-active-background, var(--toolbarbutton-hover-background)) !important;
+  background-color: var(--toolbarbutton-active-background, color-mix(in srgb, currentColor 12%, transparent)) !important;
 }
 
 #back-button::before {
