@@ -16304,30 +16304,6 @@
     controller.show = wrapped;
   }
 
-  // The side's sections sit in one strip, a highlight under the open one
-  // springing to the next as it's picked (zia.css)
-  function placeLibraryHighlight(library) {
-    const strip = library?.querySelector("#zen-library-sidebar-tabs");
-    const active = strip?.querySelector(".zen-library-tab[active]");
-    if (!strip || !active) {
-      return;
-    }
-    let hl = strip.querySelector(":scope > .zia-library-hl");
-    const first = !hl;
-    if (first) {
-      hl = document.createElementNS(HTML_NS, "div");
-      hl.className = "zia-library-hl";
-      strip.prepend(hl);
-    }
-    const top = `${active.offsetTop}px`;
-    if (hl.style.top === top) {
-      return;
-    }
-    // the first time (and the Library just opened), straight there
-    hl.toggleAttribute("zia-still", first || !library.hasAttribute("open"));
-    hl.style.top = top;
-  }
-
   function watchLibrary() {
     closeLibraryForSidebar();
     const toolbox = document.getElementById("navigator-toolbox");
@@ -16342,7 +16318,6 @@
       }
       // the side's sections show just their icons (zia.css); each one's
       // name comes up beside it on hover
-      placeLibraryHighlight(library);
       for (const tab of library?.querySelectorAll(".zen-library-tab") || []) {
         const name = tab.querySelector("label")?.textContent?.trim();
         if (!name) {
@@ -16367,7 +16342,7 @@
       library = found;
       sectionWatch?.disconnect();
       sectionWatch = new MutationObserver(findSections);
-      sectionWatch.observe(library, { childList: true, subtree: true, attributes: true, attributeFilter: ["active"] });
+      sectionWatch.observe(library, { childList: true, subtree: true });
       findSections();
       // and the other way: the Library opening (from its button, a swipe,
       // anything) closes the sidebar panel

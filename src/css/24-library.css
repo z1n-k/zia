@@ -305,61 +305,58 @@ zen-library .zen-library-row:hover {
   box-shadow: inset 0 0 0 var(--zia-shine-width, 0.5px) color-mix(in srgb, currentColor 10%, transparent);
 }
 
-/* ---- the side: a thin rail, its sections in one rounded strip, a
-   highlight springing to the open one; each name beside it on hover ---- */
+/* ---- the side: a thin, clear rail, its sections in a small rounded dock
+   floating at its top; the open one's tile filled; each name beside it
+   on hover ---- */
 
 zen-library #zen-library-side {
   min-width: 0 !important;
-  width: 52px !important;
-  max-width: 52px !important;
+  width: 56px !important;
+  max-width: 56px !important;
+  justify-content: flex-start !important;
   align-items: center;
+  background: transparent !important;
+  box-shadow: none !important;
   /* (above the list beside it, so a name's pill shows over it) */
   position: relative;
   z-index: 2;
 }
 
-zen-library .zen-library-section:not([data-section="spaces"]) {
-  max-width: calc(418px - 52px) !important;
-}
-
-zen-library #zen-library-sidebar-tabs {
-  position: relative;
-  gap: 2px !important;
-  margin-top: 10px;
-  padding: 4px !important;
-  border-radius: 13px;
-  corner-shape: round !important;
-  background: color-mix(in srgb, currentColor 6%, transparent);
-  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, currentColor 8%, transparent);
-}
-
-/* the highlight, under the open section's icon (zia.uc.js moves it) */
-zen-library .zia-library-hl {
-  position: absolute;
-  left: 4px;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  corner-shape: round !important;
-  background: color-mix(in srgb, currentColor 14%, transparent);
-  box-shadow: inset 0 0 0 var(--zia-shine-width, 0.5px) color-mix(in srgb, currentColor 16%, transparent);
-  pointer-events: none;
-  transition: top 0.32s cubic-bezier(0.34, 1.4, 0.6, 1);
-
-  &[zia-still] {
-    transition: none;
+/* on macOS the window's buttons sit at its head: the rail is as wide as
+   they need */
+@media (-moz-platform: macos) {
+  zen-library #zen-library-side {
+    width: 76px !important;
+    max-width: 76px !important;
   }
 }
 
-zen-library .zen-library-tab {
-  --zen-library-sprite-size: 16px;
+zen-library #zen-library-footer {
+  margin-top: auto;
+}
 
-  width: 32px !important;
-  height: 32px !important;
+zen-library .zen-library-section:not([data-section="spaces"]) {
+  max-width: calc(418px - 56px) !important;
+}
+
+zen-library #zen-library-sidebar-tabs {
+  gap: 4px !important;
+  margin-top: 10px;
+  padding: 5px !important;
+  border-radius: 14px;
+  corner-shape: round !important;
+  background: color-mix(in srgb, currentColor 5%, transparent);
+  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, currentColor 10%, transparent);
+}
+
+zen-library .zen-library-tab {
+  --zen-library-sprite-size: 17px !important;
+
+  width: 34px !important;
+  height: 34px !important;
   margin: 0 !important;
   padding: 0 !important;
   gap: 0 !important;
-  z-index: 1;
   color: color-mix(in srgb, currentColor 62%, transparent);
   transition: color 0.15s ease;
 
@@ -376,24 +373,34 @@ zen-library .zen-library-tab {
     color: currentColor;
   }
 
-  /* (the highlight shows the open one; the tile itself stays clear) */
+  &:hover::before {
+    background: color-mix(in srgb, currentColor 7%, transparent) !important;
+  }
+
   &[active] {
     color: var(--toolbar-color);
   }
 
-  &[active]::before,
-  &:hover::before {
-    background: transparent !important;
+  &[active]::before {
+    background: color-mix(in srgb, currentColor 14%, transparent) !important;
     box-shadow: none !important;
   }
 
-  &:not([active]):hover::before {
-    background: color-mix(in srgb, currentColor 6%, transparent) !important;
-  }
-
   &:hover:active::before {
-    transform: none;
+    transform: scale(0.94);
   }
+}
+
+zen-library :is(.zen-library-tab-icon, .zen-library-tab-icon-image) {
+  height: 17px !important;
+}
+
+zen-library .zen-library-tab-icon {
+  width: 17px !important;
+}
+
+zen-library .zen-library-tab-icon-image {
+  width: calc(36 * 17px) !important;
 }
 
 /* the name, in a small dark pill beside the icon */
@@ -437,7 +444,7 @@ zen-library .zen-library-tab:hover > .zia-library-tip {
 zen-library[zen-library-downloading] .zen-library-tab[data-section="downloads"]::after {
   top: 50% !important;
   translate: -50% -50% !important;
-  width: 24px !important;
-  height: 24px !important;
+  width: 25px !important;
+  height: 25px !important;
   border-width: 2px !important;
 }
