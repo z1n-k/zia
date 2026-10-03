@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- The archive box is the glass folder's width, so the icon stays the same
+  size when a folder passes three tabs.
+
 ## [2.87.1] — 2026-10-03
 
 ### Fixed

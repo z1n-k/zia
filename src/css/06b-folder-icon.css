@@ -224,10 +224,11 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 }
 
 /* the inside, in the folder's back's tint, the glass front's size so no
-   band shows round its edge */
+   band shows round its edge. The box is the folder's width: the lid all
+   of it, the box just inside the lid. */
 .zia-fb-back {
-  left: 0.08em;
-  right: 0.08em;
+  left: 0.03em;
+  right: 0.03em;
   bottom: 0;
   height: 0.62em;
   border-radius: 0.1em;
@@ -247,8 +248,8 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 }
 
 .zia-fb-sheet {
-  left: 0.21em;
-  right: 0.21em;
+  left: 0.17em;
+  right: 0.17em;
   top: calc(0.19em + var(--i) * 0.014em);
   height: 0.5em;
   border-radius: 0.04em;
@@ -293,8 +294,8 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 
 /* past eight: a sheet that drops in and out of sight, or comes out */
 .zia-fb-pass {
-  left: 0.21em;
-  right: 0.21em;
+  left: 0.17em;
+  right: 0.17em;
   top: 0.19em;
   height: 0.5em;
   border-radius: 0.04em;
@@ -322,8 +323,8 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 
 /* the glass front, as the folder's */
 .zia-fb-front {
-  left: 0.08em;
-  right: 0.08em;
+  left: 0.03em;
+  right: 0.03em;
   bottom: 0;
   height: 0.56em;
   border-radius: 0.1em;
@@ -334,8 +335,8 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 /* the lid, in the same glass; it rides a touch higher the fuller the box,
    and lifts and tips back while the folder's open or a sheet goes by */
 .zia-fb-lid {
-  left: 0.04em;
-  right: 0.04em;
+  left: 0;
+  right: 0;
   height: 0.13em;
   bottom: calc(0.53em + var(--fb-full, 0) * 0.05em);
   border-radius: 0.05em;
