@@ -6,6 +6,13 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- The glass folder and the archive box are a touch narrower, still the
+  same width as each other, and each edge is bowed out slightly, a
+  squircle's, so their lines aren't ruler-straight; the corners are as
+  they were.
+
 ### Fixed
 
 - Closing a folder ended in a snap, its glass icon's bright bottom edge
