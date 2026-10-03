@@ -11,8 +11,10 @@ Every release of Zia, newest first. The format follows
 - A folder given an icon of its own keeps the glass folder (and the
   archive box past three tabs), wearing its icon on the glass front; it
   tips with the front as the folder opens. Emoji icons keep their
-  colours. The glass folder is a touch larger for it. On by default; off,
-  the icon shows alone, as before (Settings → Sine Mods → Zia → Folders).
+  colours. The glass folder is a touch larger for it. Or choose a folder's
+  own icon alone, as before, or no glass folders at all (the icon alone,
+  or a plain folder) (Settings → Sine Mods → Zia → Folders → Folder
+  icons).
 
 ## [2.87.4] — 2026-10-03
 

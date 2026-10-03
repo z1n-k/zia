@@ -2842,14 +2842,15 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
    three (zia.uc.js counts them). An empty folder is just the folder. The
    front tips forward and the sheets rise as it opens; a tab dropped in
    drops a sheet in. Drawn in em from one 1em-wide box. A folder given an
-   icon of its own wears it on the glass front (zia.folders.icon-on-glass,
-   on by default; off, the icon alone, as before). */
+   icon of its own wears it on the glass front; or, by zia.folders.icon-style,
+   its icon shows alone, or there are no glass folders at all (the icon
+   alone, or Zia's plain folder mark). */
 .zia-fi {
   display: none;
 }
 
-:is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container .tab-group-folder-icon:not(:has(.icon image:not([href=""]))),
-:root[zia-fi-icons] :is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container .tab-group-folder-icon {
+:root:not([zia-fi-style="flat"]) :is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container .tab-group-folder-icon:not(:has(.icon image:not([href=""]))),
+:root[zia-fi-style="glass"] :is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container .tab-group-folder-icon {
   background-color: transparent !important;
   mask: none !important;
   display: flex !important;

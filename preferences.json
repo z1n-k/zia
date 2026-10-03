@@ -332,10 +332,24 @@
     "label": "Folders"
   },
   {
-    "type": "checkbox",
-    "label": "A folder's own icon sits on the glass folder (off: the icon alone)",
-    "property": "zia.folders.icon-on-glass",
-    "defaultValue": true
+    "type": "dropdown",
+    "label": "Folder icons",
+    "property": "zia.folders.icon-style",
+    "defaultValue": "glass",
+    "options": [
+      {
+        "label": "Glass folder, with a folder's own icon on its front",
+        "value": "glass"
+      },
+      {
+        "label": "A folder's own icon alone; glass folder for the rest",
+        "value": "icon"
+      },
+      {
+        "label": "No glass folders: a folder's own icon alone, or a plain folder",
+        "value": "flat"
+      }
+    ]
   },
   {
     "type": "checkbox",

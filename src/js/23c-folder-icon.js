@@ -65,8 +65,19 @@
   }
 
   // A folder's own icon (Zen keeps it in its folder picture, an SVG
-  // <image>), shown on the glass front when the option's on
-  const FOLDER_ICON_ON_GLASS_PREF = "zia.folders.icon-on-glass";
+  // <image>), shown on the glass front, or alone, or no glass folders at
+  // all (the icon alone, or a plain folder), by zia.folders.icon-style
+  const FOLDER_ICON_STYLE_PREF = "zia.folders.icon-style";
+  const FOLDER_ICON_STYLES = ["glass", "icon", "flat"];
+
+  function folderIconStyle() {
+    try {
+      const style = Services.prefs.getStringPref(FOLDER_ICON_STYLE_PREF, "glass");
+      return FOLDER_ICON_STYLES.includes(style) ? style : "glass";
+    } catch (err) {
+      return "glass";
+    }
+  }
 
   function syncFolderMark(folder) {
     const href = folderIconBox(folder)?.querySelector("svg .icon image")?.getAttribute("href") || "";
@@ -224,10 +235,10 @@
     // tabs moved in and out by Zen's own drag and drop, without an event;
     // and a folder given an icon, or its icon changed
     new MutationObserver(recount).observe(gBrowser.tabContainer, { subtree: true, childList: true, attributes: true, attributeFilter: ["href"] });
-    const markOption = () => setFlag("zia-fi-icons", Services.prefs.getBoolPref(FOLDER_ICON_ON_GLASS_PREF, true));
+    const markOption = () => root.setAttribute("zia-fi-style", folderIconStyle());
     markOption();
-    Services.prefs.addObserver(FOLDER_ICON_ON_GLASS_PREF, markOption);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(FOLDER_ICON_ON_GLASS_PREF, markOption));
+    Services.prefs.addObserver(FOLDER_ICON_STYLE_PREF, markOption);
+    window.addEventListener("unload", () => Services.prefs.removeObserver(FOLDER_ICON_STYLE_PREF, markOption));
     countAllFolderSheets();
     // folders restored at start-up
     setTimeout(countAllFolderSheets, 1500);
