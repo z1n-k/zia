@@ -27,6 +27,12 @@
   }
 }
 
+/* Zen 1.23's floating music notes, over playing tabs and the media card:
+   gone, as Zia's sound bars already show what's playing */
+.zen-media-notes {
+  display: none !important;
+}
+
 .tab-icon-overlay:not([crashed]):is([soundplaying], [muted], [activemedia-blocked]) {
   list-style-image: var(--zia-sound-wave, url("chrome://sine/content/zia/icons/sound-wave.svg")) !important;
   -moz-context-properties: fill !important;

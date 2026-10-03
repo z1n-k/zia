@@ -11,8 +11,9 @@ Every release of Zia, newest first. The format follows
 - Swiping back or forward with two fingers shows Dia's round arrow,
   sliding in from the page's edge level with the pointer, in place of
   Firefox's. Hold the swipe and it opens into a card of the pages it goes
-  through, the one you'll land on first (Settings → Sine Mods → Zia →
-  Page, on by default).
+  through, the one you'll land on first; swipe further, or scroll up and
+  down, to pick a page further back, and let go to go straight to it
+  (Settings → Sine Mods → Zia → Page, on by default).
 - Optional: hide the glow around the selected tab, keeping its highlight
   (Settings → Sine Mods → Zia → Tabs, off by default).
 - Optional: two essentials to a row, however wide the sidebar, so it can
@@ -32,6 +33,13 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- Zen 1.23: the address bar pop-up's rows were taller and further apart
+  (Zen gave each a least height and a clear border); they're Zia's size
+  again.
+- Zen 1.23: the floating music notes Zen added over playing tabs and the
+  media card are hidden; Zia's sound bars already show what's playing.
+- Zen 1.23: switching spaces could cut off the selected tab's glow again,
+  as Zen now marks the sidebar rather than the window while it switches.
 - Windows: a click in the top-right corner of a full-size window, just
   past the close button, landed in the gap beside the page and did
   nothing. Close's click area now reaches the screen's right edge and the
