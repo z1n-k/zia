@@ -1,14 +1,17 @@
 
-/* Folders without an icon of their own: a glass folder in the folder's
+/* Folders: a glass folder in the folder's
    colour (or the space's), holding a sheet for each thing in it, up to
    three (zia.uc.js counts them). An empty folder is just the folder. The
    front tips forward and the sheets rise as it opens; a tab dropped in
-   drops a sheet in. Drawn in em from one 1em-wide box. */
+   drops a sheet in. Drawn in em from one 1em-wide box. A folder given an
+   icon of its own wears it on the glass front (zia.folders.icon-on-glass,
+   on by default; off, the icon alone, as before). */
 .zia-fi {
   display: none;
 }
 
-:is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container .tab-group-folder-icon:not(:has(.icon image:not([href=""]))) {
+:is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container .tab-group-folder-icon:not(:has(.icon image:not([href=""]))),
+:root[zia-fi-icons] :is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container .tab-group-folder-icon {
   background-color: transparent !important;
   mask: none !important;
   display: flex !important;
@@ -25,7 +28,7 @@
     --fi-soft: cubic-bezier(0.32, 0.72, 0, 1);
     display: block;
     position: relative;
-    font-size: 17px;
+    font-size: 19px;
     width: 1em;
     height: 0.82em;
     flex: none;
@@ -356,4 +359,29 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
     transition-duration: 0.01s !important;
     animation: none !important;
   }
+}
+
+/* ---- a folder's own icon, on the glass front ---- */
+
+/* centred on the front, so it tips with it as the folder opens; on the
+   box, on its front. White over the tinted glass, with a soft shadow to
+   lift it; an emoji keeps its own colours. */
+.zia-fi-mark {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.4em;
+  height: 0.4em;
+  translate: -50% -50%;
+  object-fit: contain;
+  -moz-context-properties: fill, fill-opacity, stroke, stroke-opacity;
+  fill: rgba(255, 255, 255, 0.95);
+  stroke: rgba(255, 255, 255, 0.95);
+  filter: drop-shadow(0 0.02em 0.03em rgba(0, 0, 0, 0.3));
+  pointer-events: none;
+}
+
+:is(zen-folder, tab-group)[zia-fi-marked] > .tab-group-label-container .zia-fi-mark {
+  display: block;
 }

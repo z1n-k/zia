@@ -379,6 +379,7 @@ The first folder takes a little while as the model downloads and the icon names 
 | New tabs open your default search engine's page (off: Zen's new tab page, or an extension's if you use one) | on |
 | Cmd/Ctrl+T leaves the address bar ready to type in, the search page behind it (off: the page's own search box) | off |
 | **Folders** | |
+| A folder's own icon sits on the glass folder (off: the icon alone) | on |
 | Folders open and close with a gentle spring | on |
 | Coloured folders only show their colour when hovered or open | off |
 | A coloured folder's card (its tabs, shown on hover) takes the folder's colour | off |

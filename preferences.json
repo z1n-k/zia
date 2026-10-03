@@ -333,6 +333,12 @@
   },
   {
     "type": "checkbox",
+    "label": "A folder's own icon sits on the glass folder (off: the icon alone)",
+    "property": "zia.folders.icon-on-glass",
+    "defaultValue": true
+  },
+  {
+    "type": "checkbox",
     "label": "Folders open and close with a gentle spring",
     "property": "zia.folders.bounce",
     "defaultValue": true

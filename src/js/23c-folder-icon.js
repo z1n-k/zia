@@ -1,7 +1,8 @@
-  // Folders without an icon of their own show a glass folder in their colour
+  // Folders show a glass folder in their colour
   // (or the space's) holding a sheet of paper for each tab in it, up to
   // three: an empty folder is just the folder. It opens and closes with the
-  // folder, and a tab dropped in drops a sheet in with it.
+  // folder, and a tab dropped in drops a sheet in with it. A folder given
+  // an icon of its own wears it on the glass front.
   //
   // Past three it becomes a glass archive box: the folder shrinks and blurs
   // away and the box grows into focus. For each tab added the lid opens, a
@@ -41,6 +42,8 @@
     for (const part of ["back", "sheet zia-fi-s3", "sheet zia-fi-s2", "sheet zia-fi-s1", "front"]) {
       folderIconPart(fold, `zia-fi-${part}`);
     }
+    // the folder's own icon, on the front of each (it tips with the front)
+    folderIconMark(fold.querySelector(".zia-fi-front"));
     // the box, back to front: its inside, the pile, a passing sheet, the
     // glass front, the lid
     const archive = folderIconPart(icon, "zia-fb");
@@ -49,9 +52,36 @@
       folderIconPart(archive, "zia-fb-sheet").style.setProperty("--i", i);
     }
     folderIconPart(archive, "zia-fb-pass");
-    folderIconPart(archive, "zia-fb-front");
+    folderIconMark(folderIconPart(archive, "zia-fb-front"));
     folderIconPart(archive, "zia-fb-lid");
     box.append(icon);
+  }
+
+  function folderIconMark(front) {
+    const mark = document.createElementNS(HTML_NS, "img");
+    mark.className = "zia-fi-mark";
+    mark.alt = "";
+    front.append(mark);
+  }
+
+  // A folder's own icon (Zen keeps it in its folder picture, an SVG
+  // <image>), shown on the glass front when the option's on
+  const FOLDER_ICON_ON_GLASS_PREF = "zia.folders.icon-on-glass";
+
+  function syncFolderMark(folder) {
+    const href = folderIconBox(folder)?.querySelector("svg .icon image")?.getAttribute("href") || "";
+    const icon = folderIconBox(folder)?.querySelector(":scope > .zia-fi");
+    if (!icon) {
+      return;
+    }
+    folder.toggleAttribute("zia-fi-marked", !!href);
+    for (const mark of icon.querySelectorAll(".zia-fi-mark")) {
+      if (href && mark.getAttribute("src") !== href) {
+        mark.setAttribute("src", href);
+      } else if (!href) {
+        mark.removeAttribute("src");
+      }
+    }
   }
 
   // What's in a folder: its tabs (a split counts once) and folders
@@ -140,6 +170,7 @@
 
   function countFolderSheets(folder) {
     addFolderIcon(folder);
+    syncFolderMark(folder);
     const items = folderItemCount(folder);
     const itemsBefore = folder.ziaFolderItems ?? null;
     folder.ziaFolderItems = items;
@@ -190,8 +221,13 @@
       gBrowser.tabContainer.addEventListener(type, recount);
     }
     window.addEventListener("ZenWorkspacesUIUpdate", recount);
-    // tabs moved in and out by Zen's own drag and drop, without an event
-    new MutationObserver(recount).observe(gBrowser.tabContainer, { subtree: true, childList: true });
+    // tabs moved in and out by Zen's own drag and drop, without an event;
+    // and a folder given an icon, or its icon changed
+    new MutationObserver(recount).observe(gBrowser.tabContainer, { subtree: true, childList: true, attributes: true, attributeFilter: ["href"] });
+    const markOption = () => setFlag("zia-fi-icons", Services.prefs.getBoolPref(FOLDER_ICON_ON_GLASS_PREF, true));
+    markOption();
+    Services.prefs.addObserver(FOLDER_ICON_ON_GLASS_PREF, markOption);
+    window.addEventListener("unload", () => Services.prefs.removeObserver(FOLDER_ICON_ON_GLASS_PREF, markOption));
     countAllFolderSheets();
     // folders restored at start-up
     setTimeout(countAllFolderSheets, 1500);
