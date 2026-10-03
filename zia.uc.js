@@ -9065,7 +9065,8 @@
         watcher.observe(layer, { attributes: true, attributeFilter: ["style"] });
       }
     }
-    watcher.observe(root, { attributes: true, attributeFilter: ["zen-compact-mode"] });
+    // (a light space has its own, white music card)
+    watcher.observe(root, { attributes: true, attributeFilter: ["zen-compact-mode", "zen-should-be-dark-mode"] });
   }
 
   function keepWindowButtonsInSidebar() {

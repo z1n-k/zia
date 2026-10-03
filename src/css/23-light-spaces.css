@@ -11,6 +11,17 @@
   --zia-tab-hover-bg: rgba(0, 0, 0, 0.055);
   --zia-active-glow-color: rgba(0, 0, 0, 0.035);
   --zia-folder-mark-color: rgba(0, 0, 0, 0.6);
+  /* essentials a firmer white than the dark spaces' faint wash, and the
+     fine edge round tabs, folders and essentials a shade of black rather
+     than white, which went nowhere on cream */
+  --zia-essential-bg: rgba(255, 255, 255, 0.5);
+  --zia-folder-hover-bg: rgba(255, 255, 255, 0.42);
+  --zia-shine-layers:
+    linear-gradient(to right, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.08) 35%, rgba(0, 0, 0, 0.08) 65%, rgba(0, 0, 0, 0.04)),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.06) 35%, rgba(0, 0, 0, 0.06) 65%, rgba(0, 0, 0, 0.03));
+  --zia-tab-shine-layers: linear-gradient(rgba(0, 0, 0, 0.07), rgba(0, 0, 0, 0.07));
+  /* the music card a white card, as the selected tab is */
+  --zia-media-bg: rgba(255, 255, 255, 0.62);
 
   /* tab names: the rest a little softer, the open one full */
   & .tabbrowser-tab:not([zen-essential]) .tab-label-container {
@@ -119,6 +130,66 @@
 
     & > .tab-group-container::after {
       color: rgba(0, 0, 0, 0.45);
+    }
+  }
+
+  /* the buttons on tabs and folders (close, unload, reset) in the dark ink */
+  & :is(.tabbrowser-tab, zen-folder) .tab-reset-button,
+  & .tabbrowser-tab .tab-close-button {
+    fill: var(--zia-sidebar-ink) !important;
+    color: var(--zia-sidebar-ink) !important;
+  }
+
+  & :is(.tabbrowser-tab, zen-folder) :is(.tab-reset-button, .tab-close-button):hover {
+    background-color: rgba(0, 0, 0, 0.07) !important;
+  }
+
+  /* essentials: a fine dark edge round each tile */
+  & .tabbrowser-tab[zen-essential]:not([visuallyselected]) > .tab-stack > .tab-background {
+    box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.07) !important;
+  }
+
+  & .tabbrowser-tab[zen-essential]:not([visuallyselected]):hover > .tab-stack > .tab-background {
+    background: rgba(255, 255, 255, 0.72) !important;
+  }
+
+  /* the music card: white, with a fine edge and the dark ink */
+  & #zen-media-controls-toolbar {
+    & .zen-media-card {
+      box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    & .zen-media-title {
+      color: var(--zia-sidebar-ink) !important;
+    }
+
+    & :is(.zen-media-artist, .zen-media-current-time, .zen-media-duration) {
+      color: color-mix(in srgb, var(--zia-sidebar-ink) 58%, transparent) !important;
+    }
+
+    & .toolbarbutton-1,
+    & .zen-media-playpause-button > .toolbarbutton-icon {
+      color: color-mix(in srgb, var(--zia-sidebar-ink) 88%, transparent) !important;
+      fill: color-mix(in srgb, var(--zia-sidebar-ink) 88%, transparent) !important;
+    }
+
+    & .toolbarbutton-1:hover > .toolbarbutton-icon {
+      background-color: rgba(0, 0, 0, 0.07) !important;
+    }
+
+    & .zen-media-progress-bar {
+      &::-moz-range-track {
+        background: rgba(0, 0, 0, 0.14) !important;
+      }
+
+      &::-moz-range-progress,
+      &::-moz-range-thumb {
+        background: var(--zia-sidebar-ink) !important;
+      }
+    }
+
+    & .zia-ring-track {
+      stroke: rgba(0, 0, 0, 0.12);
     }
   }
 }
