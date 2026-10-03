@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Hiding a space's pinned tabs and folders, the line above its other tabs
+  no longer slides away with them and snaps back a moment later, pushing
+  the tabs down.
+
 ## [2.89.0] — 2026-10-03
 
 ### Changed
