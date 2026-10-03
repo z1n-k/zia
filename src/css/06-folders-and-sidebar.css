@@ -602,6 +602,8 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
 
   /* (a folder inside a closed folder keeps it hidden too: with a tab
      selected in the outer folder, Zen shows that tab alone) */
+  /* (its fade is quick: fading over the folder's whole closing time, the
+     edge of its dashes still showed under the folder's name as it shut) */
   &[collapsed] > .tab-group-container::after,
   :is(zen-folder, tab-group:not([split-view-group]))[collapsed] & > .tab-group-container::after {
     height: 0;
@@ -612,7 +614,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
       height 0s var(--zia-slot-time, 0.18s),
       margin 0s var(--zia-slot-time, 0.18s),
       border-width 0s var(--zia-slot-time, 0.18s),
-      opacity var(--zia-slot-time, 0.18s) ease-out,
+      opacity 90ms ease-out,
       translate 100ms ease-out;
   }
   /* (there it shrinks away with the rest Zen hides, rather than waiting

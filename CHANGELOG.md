@@ -11,6 +11,8 @@ Every release of Zia, newest first. The format follows
 - With Cmd/Ctrl+T set to leave the address bar ready to type in, the
   search page's address no longer appears in it as the page loads, so
   there's nothing to delete before typing.
+- An empty folder's dashed "Drag tabs here" box no longer shows its edge
+  under the folder's name as the folder closes.
 
 ## [2.90.0] — 2026-10-03
 
