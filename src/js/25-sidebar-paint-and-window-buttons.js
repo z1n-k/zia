@@ -37,10 +37,20 @@
       return;
     }
     const name = compact ? "--zen-main-browser-background-toolbar" : "--zen-main-browser-background";
-    const paint = paintColor(getComputedStyle(layer).getPropertyValue(name));
+    const value = getComputedStyle(layer).getPropertyValue(name);
     const rootStyle = getComputedStyle(root);
-    const tint = resolveColor(rootStyle.getPropertyValue("--zia-media-bg"));
-    const base = resolveColor(rootStyle.getPropertyValue("--zia-media-card-base"));
+    const tintText = rootStyle.getPropertyValue("--zia-media-bg");
+    const baseText = rootStyle.getPropertyValue("--zia-media-card-base");
+    // (only when one of them changed: worked out again for nothing, it
+    // wrote to the window's root each time, restyling the whole window)
+    const key = `${value}|${tintText}|${baseText}`;
+    if (key === syncSidebarPaint.key) {
+      return;
+    }
+    syncSidebarPaint.key = key;
+    const paint = paintColor(value);
+    const tint = resolveColor(tintText);
+    const base = resolveColor(baseText);
     if (!paint || !tint || !base) {
       root.style.removeProperty("--zia-media-rest");
       root.style.removeProperty("--zia-media-solid");
@@ -81,7 +91,26 @@
 
   function watchSidebarPaint() {
     syncSidebarPaint();
-    const watcher = new MutationObserver(syncSidebarPaint);
+    // Zen writes the backdrop's style on every frame of a swipe between
+    // spaces (fading one space's colour into the next), and each write ran
+    // this: style worked out several times over and the whole window
+    // restyled, every frame, which was much of a swipe's stutter. Once a
+    // frame at most now, and not mid-swipe or mid-switch (the colours are on
+    // their way somewhere else): once it's over.
+    let frame = 0;
+    const schedule = () => {
+      if (frame) {
+        return;
+      }
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        if (!root.hasAttribute("animating-background")) {
+          syncSidebarPaint();
+        }
+      });
+    };
+    const watcher = new MutationObserver(schedule);
+    watcher.observe(root, { attributes: true, attributeFilter: ["animating-background"] });
     for (const id of ["zen-browser-background", "zen-toolbar-background"]) {
       const layer = document.getElementById(id);
       if (layer) {

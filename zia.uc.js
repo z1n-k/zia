@@ -1668,6 +1668,7 @@
     };
     // the search page loading after can pull focus to its own box: put it
     // back, until something's been typed or clicked in the page
+    tab.ziaBlankAddress = true;
     tab.linkedBrowser?.addEventListener("mousedown", () => (tab.ziaTypedInPage = true), { once: true });
     requestAnimationFrame(focus);
     for (const ms of [250, 700, 1500]) {
@@ -1677,6 +1678,47 @@
         }
       }, ms);
     }
+  }
+
+  // The search page arriving in a new tab put its address in the address
+  // bar, already open to type in, so it had to be deleted first (Zen 1.23
+  // writes a page's address in as it loads, even with the bar in use). It's
+  // kept empty instead, until something's typed there or in the page.
+  function keepNewTabAddressEmpty(browser, location) {
+    const tab = gBrowser.getTabForBrowser?.(browser);
+    if (!tab?.ziaBlankAddress || !searchHomeUrl || !location) {
+      return;
+    }
+    if (tab.ziaTypedInPage || location.spec === "about:newtab" || location.spec === "about:blank") {
+      return;
+    }
+    let home = null;
+    try {
+      home = Services.io.newURI(searchHomeUrl);
+    } catch (err) {
+      return;
+    }
+    // (the search page itself: a search from it, or anywhere else, shows
+    // its address as usual from then on)
+    if (location.prePath !== home.prePath || location.filePath !== home.filePath) {
+      tab.ziaBlankAddress = false;
+      return;
+    }
+    const clear = () => {
+      if (gBrowser.selectedTab !== tab || tab.ziaTypedInPage || !tab.ziaBlankAddress) {
+        return;
+      }
+      // (what's in the bar is still the page's own address, not typing)
+      const shown = gURLBar.value || "";
+      if (shown && (gURLBar.valueIsTyped || !location.spec.includes(shown.replace(/^https?:\/\//, "").replace(/\/$/, "")))) {
+        tab.ziaBlankAddress = false;
+        return;
+      }
+      browser.userTypedValue = "";
+      gURLBar.value = "";
+    };
+    clear();
+    requestAnimationFrame(clear);
   }
 
   function closeNewTabUrlbar(tab) {
@@ -9202,10 +9244,20 @@
       return;
     }
     const name = compact ? "--zen-main-browser-background-toolbar" : "--zen-main-browser-background";
-    const paint = paintColor(getComputedStyle(layer).getPropertyValue(name));
+    const value = getComputedStyle(layer).getPropertyValue(name);
     const rootStyle = getComputedStyle(root);
-    const tint = resolveColor(rootStyle.getPropertyValue("--zia-media-bg"));
-    const base = resolveColor(rootStyle.getPropertyValue("--zia-media-card-base"));
+    const tintText = rootStyle.getPropertyValue("--zia-media-bg");
+    const baseText = rootStyle.getPropertyValue("--zia-media-card-base");
+    // (only when one of them changed: worked out again for nothing, it
+    // wrote to the window's root each time, restyling the whole window)
+    const key = `${value}|${tintText}|${baseText}`;
+    if (key === syncSidebarPaint.key) {
+      return;
+    }
+    syncSidebarPaint.key = key;
+    const paint = paintColor(value);
+    const tint = resolveColor(tintText);
+    const base = resolveColor(baseText);
     if (!paint || !tint || !base) {
       root.style.removeProperty("--zia-media-rest");
       root.style.removeProperty("--zia-media-solid");
@@ -9246,7 +9298,26 @@
 
   function watchSidebarPaint() {
     syncSidebarPaint();
-    const watcher = new MutationObserver(syncSidebarPaint);
+    // Zen writes the backdrop's style on every frame of a swipe between
+    // spaces (fading one space's colour into the next), and each write ran
+    // this: style worked out several times over and the whole window
+    // restyled, every frame, which was much of a swipe's stutter. Once a
+    // frame at most now, and not mid-swipe or mid-switch (the colours are on
+    // their way somewhere else): once it's over.
+    let frame = 0;
+    const schedule = () => {
+      if (frame) {
+        return;
+      }
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        if (!root.hasAttribute("animating-background")) {
+          syncSidebarPaint();
+        }
+      });
+    };
+    const watcher = new MutationObserver(schedule);
+    watcher.observe(root, { attributes: true, attributeFilter: ["animating-background"] });
     for (const id of ["zen-browser-background", "zen-toolbar-background"]) {
       const layer = document.getElementById(id);
       if (layer) {
@@ -16293,7 +16364,7 @@
   // everything from that one value, so the spaces, the essentials and the
   // colour move together, at the display's pace. Once the fingers lift,
   // Zen's own slide takes it from wherever it got to.
-  const SWIPE_EASE_MS = 45;
+  const SWIPE_EASE_MS = 28;
 
   function smoothSpaceSwipe() {
     const spaces = window.gZenWorkspaces;
@@ -16748,6 +16819,7 @@
           return;
         }
         redirectBlankNewTab(browser, location, flags);
+        keepNewTabAddressEmpty(browser, location);
 
         if (flags & LOCATION_CHANGE_ERROR_PAGE) {
           errorBrowsers.add(browser);

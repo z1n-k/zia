@@ -363,6 +363,7 @@
           return;
         }
         redirectBlankNewTab(browser, location, flags);
+        keepNewTabAddressEmpty(browser, location);
 
         if (flags & LOCATION_CHANGE_ERROR_PAGE) {
           errorBrowsers.add(browser);

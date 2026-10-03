@@ -20,7 +20,7 @@
   // everything from that one value, so the spaces, the essentials and the
   // colour move together, at the display's pace. Once the fingers lift,
   // Zen's own slide takes it from wherever it got to.
-  const SWIPE_EASE_MS = 45;
+  const SWIPE_EASE_MS = 28;
 
   function smoothSpaceSwipe() {
     const spaces = window.gZenWorkspaces;

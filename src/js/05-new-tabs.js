@@ -125,6 +125,7 @@
     };
     // the search page loading after can pull focus to its own box: put it
     // back, until something's been typed or clicked in the page
+    tab.ziaBlankAddress = true;
     tab.linkedBrowser?.addEventListener("mousedown", () => (tab.ziaTypedInPage = true), { once: true });
     requestAnimationFrame(focus);
     for (const ms of [250, 700, 1500]) {
@@ -134,6 +135,47 @@
         }
       }, ms);
     }
+  }
+
+  // The search page arriving in a new tab put its address in the address
+  // bar, already open to type in, so it had to be deleted first (Zen 1.23
+  // writes a page's address in as it loads, even with the bar in use). It's
+  // kept empty instead, until something's typed there or in the page.
+  function keepNewTabAddressEmpty(browser, location) {
+    const tab = gBrowser.getTabForBrowser?.(browser);
+    if (!tab?.ziaBlankAddress || !searchHomeUrl || !location) {
+      return;
+    }
+    if (tab.ziaTypedInPage || location.spec === "about:newtab" || location.spec === "about:blank") {
+      return;
+    }
+    let home = null;
+    try {
+      home = Services.io.newURI(searchHomeUrl);
+    } catch (err) {
+      return;
+    }
+    // (the search page itself: a search from it, or anywhere else, shows
+    // its address as usual from then on)
+    if (location.prePath !== home.prePath || location.filePath !== home.filePath) {
+      tab.ziaBlankAddress = false;
+      return;
+    }
+    const clear = () => {
+      if (gBrowser.selectedTab !== tab || tab.ziaTypedInPage || !tab.ziaBlankAddress) {
+        return;
+      }
+      // (what's in the bar is still the page's own address, not typing)
+      const shown = gURLBar.value || "";
+      if (shown && (gURLBar.valueIsTyped || !location.spec.includes(shown.replace(/^https?:\/\//, "").replace(/\/$/, "")))) {
+        tab.ziaBlankAddress = false;
+        return;
+      }
+      browser.userTypedValue = "";
+      gURLBar.value = "";
+    };
+    clear();
+    requestAnimationFrame(clear);
   }
 
   function closeNewTabUrlbar(tab) {

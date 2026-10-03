@@ -17,6 +17,16 @@ Every release of Zia, newest first. The format follows
   own setting for it, general.smoothScroll.msdPhysics.enabled, is only
   turned on if you hadn't set it, and back off with the option.)
 
+### Fixed
+
+- With Cmd/Ctrl+T set to leave the address bar ready to type in, the
+  search page's address no longer appears in it as the page loads, so
+  there's nothing to delete before typing.
+- Swiping between spaces is smoother: as Zen fades one space's colour into
+  the next, Zia worked out the music card's colours again on every frame
+  and restyled the whole window each time. It now waits until the swipe
+  is over (the colour still fades as before).
+
 ## [2.90.0] — 2026-10-03
 
 ### Changed
