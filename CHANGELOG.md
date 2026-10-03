@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.85.1] — 2026-10-03
+
+### Fixed
+
+- Updates: Sine could go on offering an older Zia, or none at all, as the
+  date Zia gives Sine for its last update hadn't moved since 2.72. It
+  moves with every release now.
+- The tap as the swipe arrow opens into its card of pages didn't play on
+  macOS, which only plays one while the trackpad's own events are being
+  handled; it plays with the swipe now.
+
 ## [2.85.0] — 2026-10-03
 
 ### Added
