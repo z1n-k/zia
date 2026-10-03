@@ -95,6 +95,16 @@
       height: 48px;
       -moz-window-dragging: no-drag;
     }
+
+    /* Close reaches the screen's right edge as well, and the corner above
+       it, so a flick into the top-right corner of a full-size window
+       closes it, as in Windows (and Dia) */
+    &.titlebar-close::after {
+      inset-inline: 0 -48px;
+      top: -48px;
+      bottom: 0;
+      height: auto;
+    }
   }
 
   @media -moz-pref("zia.window-buttons.hide") {

@@ -27,6 +27,10 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- Windows: a click in the top-right corner of a full-size window, just
+  past the close button, landed in the gap beside the page and did
+  nothing. Close's click area now reaches the screen's right edge and the
+  corner above it, as in Windows and Dia.
 - A video gone full screen inside the window (rather than taking over the
   screen) kept the page's rounded corners, with grey showing behind them.
   Zia now notices any page going full screen and shows it square, black
