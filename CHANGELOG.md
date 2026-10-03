@@ -10,8 +10,9 @@ Every release of Zia, newest first. The format follows
 
 - A folder given an icon of its own keeps the glass folder (and the
   archive box past three tabs), wearing its icon on the glass front; it
-  tips with the front as the folder opens. Emoji icons keep their
-  colours. The glass folder is a touch larger for it. To show a folder's
+  tips with the front as the folder opens, in a deep shade of the
+  folder's colour pressed into the glass, as macOS marks its folders.
+  Emoji icons keep their colours. The glass folder is a touch larger for it. To show a folder's
   icon alone instead, as before, right-click it and choose Show Icon
   Only.
 
