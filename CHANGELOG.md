@@ -15,6 +15,10 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- A video gone full screen inside the window (rather than taking over the
+  screen) kept the page's rounded corners, with grey showing behind them.
+  Zia now notices any page going full screen and shows it square, black
+  and edge to edge.
 - With Zen's single toolbar (the address bar in the sidebar), a dark strip
   ran across the top of the page: the bar there holds only the window
   buttons, but Zia drew it as a toolbar in the site's colour, with a line

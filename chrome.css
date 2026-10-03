@@ -335,6 +335,25 @@
     --zia-card-shadow: none;
   }
 }
+
+/* A page gone full screen inside the window (zia.uc.js): square, black and
+   edge to edge, as it is when it takes over the screen */
+:root[zia-page-fullscreen]:not(#zia-none):not(#zia-none-2):not(#zia-none-3) {
+  --zia-card-gap: 0px;
+  --zia-card-top-gap: 0px;
+  --zia-card-radius: 0px;
+  --zia-card-shadow: none;
+
+  & #tabbrowser-tabpanels :is(.browserSidebarContainer, .browserStack, browser) {
+    border-radius: 0 !important;
+    clip-path: none !important;
+    box-shadow: none !important;
+  }
+
+  & #tabbrowser-tabpanels browser[type="content"] {
+    background: #000 !important;
+  }
+}
 #urlbar:not(:hover):not([focused]):not([breakout-extend]) > .urlbar-background {
   background: transparent !important;
   box-shadow: none !important;
