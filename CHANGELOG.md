@@ -6,6 +6,11 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Light mode with no space colour gets the light look light spaces have
+  (dark text, white cards), rather than white text on the pale window.
+
 ### Fixed
 
 - Hiding a space's pinned tabs and folders, the line above its other tabs

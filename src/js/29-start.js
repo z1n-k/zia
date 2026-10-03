@@ -297,6 +297,7 @@
     safely("watchEmptyFolders", watchEmptyFolders);
     safely("watchEssentialRows", watchEssentialRows);
     safely("watchSplitEssentials", watchSplitEssentials);
+    safely("watchLightSpace", watchLightSpace);
     safely("watchSidebarPaint", watchSidebarPaint);
     safely("watchWindowButtonsSide", watchWindowButtonsSide);
     safely("addTabHoverCards", addTabHoverCards);

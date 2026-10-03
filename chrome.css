@@ -6903,8 +6903,10 @@ zen-folder .tab-reset-button {
    drew the sidebar for dark spaces only, white text and white-tinted
    surfaces, which on a pale space was white on cream. Here the sidebar's
    ink is dark and its surfaces light, as in Dia's light mode: the selected
-   tab a white card, hovers and edges a faint shade of black. */
-:root[zen-should-be-dark-mode="false"]:not(#zia-none):not(#zia-none-2) {
+   tab a white card, hovers and edges a faint shade of black. A window
+   with no space colour in light mode is drawn the same way (zia-light,
+   25-sidebar-paint-and-window-buttons.js). */
+:root[zia-light]:not(#zia-none):not(#zia-none-2) {
   --zia-sidebar-ink: rgb(28, 28, 32);
   --zia-active-tab-bg: rgba(255, 255, 255, 0.78);
   --zia-active-tab-bg-folder: rgba(255, 255, 255, 0.66);

@@ -9216,6 +9216,33 @@
     root.style.setProperty("--zia-media-solid", cssColor(colorOver(tint, colorOver(paint, base))));
   }
 
+  // Light spaces (23-light-spaces.css): a space whose colour is light, which
+  // Zen marks zen-should-be-dark-mode="false", and also a window with no
+  // space colour at all in light mode: Zen leaves the mark off then and
+  // goes by the window's own light or dark, so Zia drew its dark look, white
+  // text on the pale window. Mirrored to :root[zia-light].
+  function watchLightSpace() {
+    const update = () => {
+      const mark = root.getAttribute("zen-should-be-dark-mode");
+      let light = mark === "false";
+      if (mark === null) {
+        try {
+          light = window.gZenThemePicker ? !window.gZenThemePicker.isDarkMode : window.matchMedia("(prefers-color-scheme: light)").matches;
+        } catch (err) {
+          light = false;
+        }
+      }
+      if (root.hasAttribute("zia-light") !== light) {
+        root.toggleAttribute("zia-light", light);
+      }
+    };
+    update();
+    new MutationObserver(update).observe(root, { attributes: true, attributeFilter: ["zen-should-be-dark-mode", "zen-default-theme"] });
+    window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", update);
+    Services.obs.addObserver(update, "zen-theme-change");
+    window.addEventListener("unload", () => Services.obs.removeObserver(update, "zen-theme-change"), { once: true });
+  }
+
   function watchSidebarPaint() {
     syncSidebarPaint();
     const watcher = new MutationObserver(syncSidebarPaint);
@@ -9226,7 +9253,7 @@
       }
     }
     // (a light space has its own, white music card)
-    watcher.observe(root, { attributes: true, attributeFilter: ["zen-compact-mode", "zen-should-be-dark-mode"] });
+    watcher.observe(root, { attributes: true, attributeFilter: ["zen-compact-mode", "zen-should-be-dark-mode", "zia-light"] });
   }
 
   function keepWindowButtonsInSidebar() {
@@ -16542,6 +16569,7 @@
     safely("watchEmptyFolders", watchEmptyFolders);
     safely("watchEssentialRows", watchEssentialRows);
     safely("watchSplitEssentials", watchSplitEssentials);
+    safely("watchLightSpace", watchLightSpace);
     safely("watchSidebarPaint", watchSidebarPaint);
     safely("watchWindowButtonsSide", watchWindowButtonsSide);
     safely("addTabHoverCards", addTabHoverCards);
