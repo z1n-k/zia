@@ -387,7 +387,8 @@
   font-weight: var(--zia-tab-weight) !important;
 }
 
-#zen-copy-url-button {
+/* Zen's own copy button gives way to Zia's paperclip, once it's there */
+#urlbar:has(#zia-copy-link-button) #zen-copy-url-button {
   display: none !important;
 }
 

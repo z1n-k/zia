@@ -9114,9 +9114,27 @@
     showCopiedIcon(button, button.querySelector(button.localName === "button" ? "img" : "image"));
   }
 
+  // The paperclip goes beside Zen's site settings button, which Zen adds
+  // to the address bar itself, sometimes only after Zia has started (with
+  // Zia just installed into an open window, say); until then Zia waits for
+  // it, as Zen's own copy button is hidden for the paperclip (zia.css)
   function addCopyLinkButton() {
+    if (document.getElementById("zia-copy-link-button")) {
+      return;
+    }
     const siteData = document.getElementById("zen-site-data-icon-button");
-    if (!siteData || document.getElementById("zia-copy-link-button")) {
+    if (!siteData) {
+      const urlbar = document.getElementById("urlbar");
+      if (!urlbar || addCopyLinkButton.waiting) {
+        return;
+      }
+      addCopyLinkButton.waiting = new MutationObserver(() => {
+        if (document.getElementById("zen-site-data-icon-button")) {
+          addCopyLinkButton.waiting.disconnect();
+          safely("addCopyLinkButton", addCopyLinkButton);
+        }
+      });
+      addCopyLinkButton.waiting.observe(urlbar, { childList: true, subtree: true });
       return;
     }
     const button = document.createXULElement("hbox");

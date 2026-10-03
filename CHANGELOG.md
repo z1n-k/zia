@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- The copy link button (the paperclip shown when you hover over the address
+  bar) could go missing for good: Zia puts it beside Zen's site settings
+  button and gave up if Zen hadn't added that button yet when Zia started,
+  as could happen just after installing Zia. Zia now waits for it, and if
+  the paperclip still isn't there, Zen's own copy button stays instead of
+  being hidden. Thanks to $loth.
+
 ## [2.85.1] — 2026-10-03
 
 ### Fixed
