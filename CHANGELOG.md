@@ -10,7 +10,7 @@ Every release of Zia, newest first. The format follows
 
 - Hiding a space's pinned tabs and folders, the line above its other tabs
   no longer slides away with them and snaps back a moment later, pushing
-  the tabs down.
+  the tabs down, and the line and the tabs bounce together.
 
 ## [2.89.0] — 2026-10-03
 

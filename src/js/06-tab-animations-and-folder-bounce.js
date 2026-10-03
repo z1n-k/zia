@@ -211,6 +211,14 @@
     if (!container?.classList?.contains("tab-group-container") && !container?.classList?.contains("zen-workspace-pinned-tabs-section")) {
       return;
     }
+    // A space's pinned section keeps the line above its other tabs showing
+    // as it hides, so it never shrinks to nothing and the slide's own
+    // overshoot already moves the line and the tabs below together; this on
+    // top bounced the tabs further than the line
+    const line = container.querySelector(":scope > .pinned-tabs-container-separator");
+    if (line && line.getBoundingClientRect().height > 0) {
+      return;
+    }
     animate.call(
       container,
       pixelSteps("marginBottom", [[0, 0, null], [0.45, 0, EASE_OUT], [0.66, -FOLDER_CLOSE_BOUNCE_PX, EASE_IN_OUT], [1, 0]], FOLDER_SPRING_MS, 0),
