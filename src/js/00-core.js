@@ -19,21 +19,6 @@
     console.debug(`[Zia] ${where}:`, err);
   }
 
-  // Spaces switching: Zen marks it on the toolbar (1.23) or, before, the
-  // window. watchSpacesSwitching(callback) calls back as it starts and ends.
-  function spacesSwitching() {
-    return !!(window.gNavToolbox?.hasAttribute("animating-background") || root.hasAttribute("animating-background"));
-  }
-
-  function watchSpacesSwitching(callback) {
-    const watcher = new MutationObserver(callback);
-    for (const el of [window.gNavToolbox, root]) {
-      if (el) {
-        watcher.observe(el, { attributes: true, attributeFilter: ["animating-background"] });
-      }
-    }
-  }
-
   function setFlag(name, on) {
     if (on === root.hasAttribute(name)) {
       return;

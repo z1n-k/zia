@@ -61,21 +61,15 @@
     if (!essentials) {
       return;
     }
-    // (not while spaces are switching: Zen shows and hides each space's
-    // essentials as they slide, and working the rows out again then measured
-    // the grid every frame of the slide; once it's over instead)
     let frame = 0;
     const schedule = () => {
       if (!frame) {
         frame = requestAnimationFrame(() => {
           frame = 0;
-          if (!spacesSwitching()) {
-            fillEssentialRows();
-          }
+          fillEssentialRows();
         });
       }
     };
-    watchSpacesSwitching(schedule);
     new MutationObserver(schedule).observe(essentials, {
       childList: true,
       subtree: true,

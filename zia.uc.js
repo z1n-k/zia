@@ -19,21 +19,6 @@
     console.debug(`[Zia] ${where}:`, err);
   }
 
-  // Spaces switching: Zen marks it on the toolbar (1.23) or, before, the
-  // window. watchSpacesSwitching(callback) calls back as it starts and ends.
-  function spacesSwitching() {
-    return !!(window.gNavToolbox?.hasAttribute("animating-background") || root.hasAttribute("animating-background"));
-  }
-
-  function watchSpacesSwitching(callback) {
-    const watcher = new MutationObserver(callback);
-    for (const el of [window.gNavToolbox, root]) {
-      if (el) {
-        watcher.observe(el, { attributes: true, attributeFilter: ["animating-background"] });
-      }
-    }
-  }
-
   function setFlag(name, on) {
     if (on === root.hasAttribute(name)) {
       return;
@@ -8576,21 +8561,15 @@
     if (!essentials) {
       return;
     }
-    // (not while spaces are switching: Zen shows and hides each space's
-    // essentials as they slide, and working the rows out again then measured
-    // the grid every frame of the slide; once it's over instead)
     let frame = 0;
     const schedule = () => {
       if (!frame) {
         frame = requestAnimationFrame(() => {
           frame = 0;
-          if (!spacesSwitching()) {
-            fillEssentialRows();
-          }
+          fillEssentialRows();
         });
       }
     };
-    watchSpacesSwitching(schedule);
     new MutationObserver(schedule).observe(essentials, {
       childList: true,
       subtree: true,
@@ -9264,20 +9243,10 @@
       return;
     }
     const name = compact ? "--zen-main-browser-background-toolbar" : "--zen-main-browser-background";
-    const value = getComputedStyle(layer).getPropertyValue(name);
+    const paint = paintColor(getComputedStyle(layer).getPropertyValue(name));
     const rootStyle = getComputedStyle(root);
-    const tintText = rootStyle.getPropertyValue("--zia-media-bg");
-    const baseText = rootStyle.getPropertyValue("--zia-media-card-base");
-    // (only when one of them changed: worked out again for nothing, it
-    // wrote to the window's root each time, restyling the whole window)
-    const key = `${value}|${tintText}|${baseText}`;
-    if (key === syncSidebarPaint.key) {
-      return;
-    }
-    syncSidebarPaint.key = key;
-    const paint = paintColor(value);
-    const tint = resolveColor(tintText);
-    const base = resolveColor(baseText);
+    const tint = resolveColor(rootStyle.getPropertyValue("--zia-media-bg"));
+    const base = resolveColor(rootStyle.getPropertyValue("--zia-media-card-base"));
     if (!paint || !tint || !base) {
       root.style.removeProperty("--zia-media-rest");
       root.style.removeProperty("--zia-media-solid");
@@ -9318,26 +9287,7 @@
 
   function watchSidebarPaint() {
     syncSidebarPaint();
-    // Zen writes the backdrop's style on every frame of a swipe between
-    // spaces (fading one space's colour into the next), and each write ran
-    // this: style worked out several times over and the whole window
-    // restyled, every frame, which was much of a swipe's stutter. Once a
-    // frame at most now, and not mid-swipe or mid-switch (the colours are on
-    // their way somewhere else): once it's over.
-    let frame = 0;
-    const schedule = () => {
-      if (frame) {
-        return;
-      }
-      frame = requestAnimationFrame(() => {
-        frame = 0;
-        if (!spacesSwitching()) {
-          syncSidebarPaint();
-        }
-      });
-    };
-    const watcher = new MutationObserver(schedule);
-    watchSpacesSwitching(schedule);
+    const watcher = new MutationObserver(syncSidebarPaint);
     for (const id of ["zen-browser-background", "zen-toolbar-background"]) {
       const layer = document.getElementById(id);
       if (layer) {
