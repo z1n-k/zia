@@ -9,7 +9,12 @@
   // the tiles' least width). Its computed column list also holds the extra
   // columns a span wider than the grid creates; counting those grew the
   // span, which made more of them, until tiles were squeezed into slivers.
+  const TWO_PER_ROW_PREF = "zia.essentials.two-per-row";
+
   function gridColumns(grid) {
+    if (Services.prefs.getBoolPref(TWO_PER_ROW_PREF, false)) {
+      return 2;
+    }
     const style = getComputedStyle(grid);
     const width = grid.clientWidth - (parseFloat(style.paddingLeft) || 0) - (parseFloat(style.paddingRight) || 0);
     const gap = parseFloat(style.columnGap) || 0;
@@ -20,7 +25,7 @@
   function fillEssentialRows() {
     const on =
       Services.prefs.getBoolPref(FILL_ROW_PREF, false) &&
-      Services.prefs.getBoolPref(ZIA_WIDTH_PREF, true) &&
+      (Services.prefs.getBoolPref(ZIA_WIDTH_PREF, true) || Services.prefs.getBoolPref(TWO_PER_ROW_PREF, false)) &&
       root.getAttribute("zen-sidebar-expanded") === "true";
     const wanted = new Map();
     if (on) {
@@ -76,9 +81,11 @@
     window.addEventListener("ZenWorkspacesUIUpdate", schedule);
     Services.prefs.addObserver(FILL_ROW_PREF, schedule);
     Services.prefs.addObserver(ZIA_WIDTH_PREF, schedule);
+    Services.prefs.addObserver(TWO_PER_ROW_PREF, schedule);
     window.addEventListener("unload", () => {
       Services.prefs.removeObserver(FILL_ROW_PREF, schedule);
       Services.prefs.removeObserver(ZIA_WIDTH_PREF, schedule);
+      Services.prefs.removeObserver(TWO_PER_ROW_PREF, schedule);
     });
     schedule();
   }

@@ -1296,6 +1296,23 @@
   }
 }
 
+/* Optional: two essentials to a row, however wide the sidebar, so it can
+   be made as narrow as Zen's own allows with the tiles still a good size */
+@media -moz-pref("zia.essentials.two-per-row") {
+  :root[zen-sidebar-expanded="true"]:not(#zia-none) .zen-essentials-container {
+    &,
+    &[data-hack-type] {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    & > .tabbrowser-tab[zen-essential] {
+      min-width: 0 !important;
+      max-width: none !important;
+      width: 100% !important;
+    }
+  }
+}
+
 :is(
   .tabbrowser-tab[zen-essential]:not([visuallyselected]),
   .tabbrowser-tab:not([zen-essential])[visuallyselected]

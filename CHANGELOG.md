@@ -8,6 +8,8 @@ Every release of Zia, newest first. The format follows
 
 ### Added
 
+- Optional: two essentials to a row, however wide the sidebar, so it can
+  be made narrower (Settings → Sine Mods → Zia → Tabs, off by default).
 - Optional: the page edge to edge, with no gap, rounded corners or shadow
   around it (Settings → Sine Mods → Zia → Page, off by default). Zen's
   own `zen.theme.content-element-separation` set to 0 now does the same,

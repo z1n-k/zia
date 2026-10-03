@@ -151,6 +151,12 @@
   },
   {
     "type": "checkbox",
+    "label": "Two essentials to a row, so the sidebar can be made narrower",
+    "property": "zia.essentials.two-per-row",
+    "defaultValue": false
+  },
+  {
+    "type": "checkbox",
     "label": "The last essential stretches across the rest of its row",
     "property": "zia.essentials.fill-row",
     "defaultValue": false

@@ -349,6 +349,7 @@ The first folder takes a little while as the model downloads and the icon names 
 | Sound bars always move, even when your system asks for less motion | off |
 | Tint the selected tab's glow and the sound bars with the site's colours | off |
 | Essentials are Zia's narrower tiles (off: Zen's own widths) | on |
+| Two essentials to a row, so the sidebar can be made narrower | off |
 | The last essential stretches across the rest of its row | off |
 | Split essentials (experimental): drag a two-site split onto the essentials | on |
 | Asleep (unloaded) tabs, essentials and folders look dimmed | off |
