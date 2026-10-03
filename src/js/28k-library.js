@@ -88,6 +88,23 @@
       for (const section of library?.querySelectorAll("zen-library-downloads-section") || []) {
         addDownloadsClearButton(section);
       }
+      // the side's sections show just their icons (zia.css); each one's
+      // name comes up beside it on hover
+      for (const tab of library?.querySelectorAll(".zen-library-tab") || []) {
+        const name = tab.querySelector("label")?.textContent?.trim();
+        if (!name) {
+          continue;
+        }
+        let tip = tab.querySelector(":scope > .zia-library-tip");
+        if (!tip) {
+          tip = document.createElementNS(HTML_NS, "span");
+          tip.className = "zia-library-tip";
+          tab.append(tip);
+        }
+        if (tip.textContent !== name) {
+          tip.textContent = name;
+        }
+      }
     };
     const findLibrary = () => {
       const found = toolbox.parentElement.querySelector(":scope > zen-library");

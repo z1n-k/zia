@@ -29,7 +29,9 @@ Every release of Zia, newest first. The format follows
   corners and fine edge, the side rail flat with a fine edge, and its
   section icons (still Zen's animated ones) in plain white instead of
   the accent colour. Every rounded item in it has exactly the tabs'
-  corners, and a row under the pointer the tab's fine light edge.
+  corners, and a row under the pointer the tab's fine light edge. Its
+  side is a thin rail of icons, each section's name in a small pill
+  beside it on hover.
 
 - A white folder's icon has no shadow behind it; coloured folders keep
   theirs.
