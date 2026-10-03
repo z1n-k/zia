@@ -33,6 +33,7 @@
     }
     set("zia.tabs.favicon-glow", false);
     set("zia.swipe.dia-arrow", true);
+    set("zia.motion.smooth", true);
     // Dimming asleep tabs was on by default for a few releases and is now
     // off: switched off once for anyone who had it from then.
     set("zia.tabs.dim-asleep", false);

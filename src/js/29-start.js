@@ -427,6 +427,7 @@
     safely("watchUnloadable", watchUnloadable);
     safely("watchPageFullscreen", watchPageFullscreen);
     safely("watchSwipeArrow", watchSwipeArrow);
+    safely("watchSmoothMotion", watchSmoothMotion);
     safely("revertTypedTextOnLeave", () => revertTypedTextOnLeave(urlbar));
     safely("neverShowScheme", neverShowScheme);
 

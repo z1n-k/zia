@@ -4,6 +4,18 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Smoother scrolling and swipes between spaces (on by default, Settings →
+  Sine Mods → Zia → Features): a two-finger swipe between spaces glides
+  from one trackpad update to the next instead of moving in small jumps,
+  and pages scroll with Firefox's smoother easing, which eases out as a
+  flick does, closer to Chrome and macOS. (Firefox's own setting for it,
+  general.smoothScroll.msdPhysics.enabled, is only turned on if you
+  hadn't set it, and back off with the option.)
+
 ## [2.90.0] — 2026-10-03
 
 ### Changed
