@@ -1884,7 +1884,10 @@
       ...(spaceStart ? [] : [closing ? -zenTo : -zenFrom].filter(Number.isFinite))
     );
     const from = closing ? 0 : Number.isFinite(zenFrom) && zenFrom < 0 ? zenFrom : shut;
-    const to = closing ? (!spaceStart && Number.isFinite(zenTo) && zenTo < 0 ? Math.min(zenTo, shut) : shut) : 0;
+    // (a space's own end is where Zen leaves it once done: ended anywhere
+    // else, the tabs below jumped the difference as Zen's took over)
+    const zenShut = Number.isFinite(zenTo) && zenTo < 0;
+    const to = closing ? (spaceStart && zenShut ? zenTo : zenShut ? Math.min(zenTo, shut) : shut) : 0;
     let bounce = true;
     try {
       bounce = Services.prefs.getBoolPref("zia.folders.bounce", true);
