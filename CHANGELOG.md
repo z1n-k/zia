@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Optional: the space's name above the tabs, where Zen puts it, rather
+  than up at the top of the sidebar beside the window buttons (Settings →
+  Sine Mods → Zia → Sidebar, off by default). Thanks to $loth.
+
 ## [2.85.2] — 2026-10-03
 
 ### Fixed

@@ -69,7 +69,7 @@
   display: none !important;
 }
 
-:root[zen-sidebar-expanded] .zen-current-workspace-indicator:not(#zia-workspace-slot > .zen-current-workspace-indicator) {
+:root[zen-sidebar-expanded]:not([zia-space-name-in-list]) .zen-current-workspace-indicator:not(#zia-workspace-slot > .zen-current-workspace-indicator) {
   display: none !important;
 }
 

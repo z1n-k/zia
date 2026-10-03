@@ -3,6 +3,10 @@
   let movedFromSpace = null;
   let spaceAttrObserver = null;
   const MIRRORED_SPACE_ATTRS = ["haspinnedtabs", "collapsedpinnedtabs"];
+  // The space's name left where Zen puts it, above the tabs, rather than
+  // moved up beside the window buttons
+  const SPACE_NAME_IN_LIST_PREF = "zia.sidebar.space-name-in-list";
+  const spaceNameInList = () => Services.prefs.getBoolPref(SPACE_NAME_IN_LIST_PREF, false);
 
   function createWorkspaceSlot() {
     const topButtons = document.getElementById("zen-sidebar-top-buttons");
@@ -23,6 +27,8 @@
     }
 
     const onSpaceSwitch = () => setTimeout(placeWorkspaceIndicator, 0);
+    Services.prefs.addObserver(SPACE_NAME_IN_LIST_PREF, onSpaceSwitch);
+    window.addEventListener("unload", () => Services.prefs.removeObserver(SPACE_NAME_IN_LIST_PREF, onSpaceSwitch));
     Services.prefs.addObserver("zen.workspaces.active", onSpaceSwitch);
     window.addEventListener("unload", () => Services.prefs.removeObserver("zen.workspaces.active", onSpaceSwitch));
     gBrowser.tabContainer.addEventListener("TabSelect", onSpaceSwitch);
@@ -185,6 +191,14 @@
       return;
     }
 
+    const inList = spaceNameInList();
+    setFlag("zia-space-name-in-list", inList);
+    if (inList) {
+      indicator = null;
+      spaceAttrObserver?.disconnect();
+      mirrorSpaceAttributes(null);
+    }
+
     if (movedIndicator && movedIndicator !== indicator && movedFromSpace?.isConnected) {
       removeSpaceLabel(movedIndicator);
       movedFromSpace.prepend(movedIndicator);
@@ -196,6 +210,11 @@
       workspaceSlot.append(indicator);
       movedIndicator = indicator;
       movedFromSpace = space;
+    }
+
+    if (inList) {
+      setFlag("zia-workspace-slot", false);
+      return;
     }
 
     syncSpaceLabel(indicator);

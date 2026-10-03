@@ -357,6 +357,7 @@ The first folder takes a little while as the model downloads and the icon names 
 | Compact mode's sidebar is slightly see-through, with the page blurred behind it | on |
 | Compact mode hides the top toolbar while the sidebar is out (off: it stays, cut away under the sidebar) | off |
 | Hide the space's name at the top of the sidebar, keeping its icon (the sidebar no longer widens for a long name) | off |
+| Show the space's name above the tabs, where Zen puts it, rather than at the top of the sidebar | off |
 | **Page** | |
 | Toolbar takes the colour of the site (off: the theme's colour) | on |
 | Zia's rounded page corners (off: Zen's own) | on |

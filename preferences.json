@@ -198,6 +198,12 @@
     "defaultValue": false
   },
   {
+    "type": "checkbox",
+    "label": "Show the space's name above the tabs, where Zen puts it, rather than at the top of the sidebar",
+    "property": "zia.sidebar.space-name-in-list",
+    "defaultValue": false
+  },
+  {
     "type": "separator",
     "label": "Page"
   },
