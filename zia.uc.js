@@ -16279,7 +16279,8 @@
   }
 
   // Bookmarks, History or Synced Tabs (Cmd/Ctrl+B and the rest) opened
-  // with the Library open: the Library closes first. Zia's panel is laid
+  // with the Library open: the Library closes first (and the Library
+  // opening closes them, watchLibrary). Zia's panel is laid
   // out beside the page as the sidebar leaves it, and with the Library
   // over the sidebar it came out half off the window.
   function closeLibraryForSidebar() {
@@ -16326,6 +16327,17 @@
       sectionWatch = new MutationObserver(findSections);
       sectionWatch.observe(library, { childList: true, subtree: true });
       findSections();
+      // and the other way: the Library opening (from its button, a swipe,
+      // anything) closes the sidebar panel
+      new MutationObserver(() => {
+        if (library.hasAttribute("open") && window.SidebarController?.isOpen) {
+          try {
+            window.SidebarController.hide();
+          } catch (err) {
+            noteError("library: hide sidebar", err);
+          }
+        }
+      }).observe(library, { attributes: true, attributeFilter: ["open"] });
     };
     new MutationObserver(findLibrary).observe(toolbox.parentElement, { childList: true });
     findLibrary();
