@@ -39,9 +39,11 @@
       if (!library?.hasAttribute("open")) {
         return 0;
       }
+      // (none yet as it opens: Zen sets it from the first frame on, and
+      // reading that as all the way in emptied the sidebar for a moment)
       const match = /\(\s*1\s*-\s*([-\d.e]+)\s*\)/.exec(library.style.transform || "");
       if (!match) {
-        return 1;
+        return 0;
       }
       return Math.min(1, Math.max(0, parseFloat(match[1]) || 0));
     };
@@ -52,6 +54,23 @@
       }
     };
 
+    // Spaces sizes the Library as its side rail plus its columns; the rail
+    // is now the strip across its top, as wide as the Library itself, so
+    // each time it was measured it grew again, nearly to the window's width.
+    // The columns' part alone (what Zen asks for less the strip's width as it
+    // measured it) is its width here instead.
+    const fitSpaces = () => {
+      const asked = parseFloat(library.style.getPropertyValue("--zen-library-content-width"));
+      const side = library.querySelector("#zen-library-side");
+      if (!(asked > 0) || !side) {
+        return;
+      }
+      const columns = asked - window.windowUtils.getBoundsWithoutFlushing(side).width;
+      if (columns > 0) {
+        setVar("--zia-library-spaces-width", `${Math.round(Math.max(width, columns + 16))}px`);
+      }
+    };
+
     let sliding = false;
     const follow = () => {
       if (!library) {
@@ -59,11 +78,13 @@
       }
       const tabs = document.getElementById("tabbrowser-tabs");
       const header = library.querySelector("#zen-library-header");
+      fitSpaces();
       const p = progressOf();
       if (p <= 0) {
         if (sliding) {
           sliding = false;
           root.removeAttribute("zia-library-on");
+          root.style.removeProperty("--zia-library-p");
           tabs?.style.removeProperty("translate");
           header?.style.removeProperty("translate");
         }
@@ -71,6 +92,7 @@
       }
       sliding = true;
       root.setAttribute("zia-library-on", "true");
+      root.style.setProperty("--zia-library-p", p.toFixed(3));
       // the Library's part of the sidebar is where the tabs are
       if (tabs) {
         const own = library.getBoundingClientRect();

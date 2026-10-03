@@ -7127,6 +7127,10 @@ zen-library:not(:has(#zen-library-content > [data-section="spaces"][showing])) {
   width: var(--zia-library-width, 280px) !important;
 }
 
+zen-library:has(#zen-library-content > [data-section="spaces"][showing]) {
+  width: var(--zia-library-spaces-width, 418px) !important;
+}
+
 zen-library .zen-library-section:not([data-section="spaces"]) {
   max-width: none !important;
 }
@@ -7155,6 +7159,12 @@ zen-library #zen-library-panel {
 
 :root[zia-library-on] :has(> #tabbrowser-tabs) {
   clip-path: inset(0);
+}
+
+/* the space's name above the tabs goes as the Library comes in: it's not
+   in a space */
+:root[zia-library-on] :is(#zia-workspace-slot, #zia-space-label) {
+  opacity: max(0, 1 - 2 * var(--zia-library-p, 1));
 }
 
 zen-library #zen-library-side {
