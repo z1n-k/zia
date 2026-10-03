@@ -332,26 +332,6 @@
     "label": "Folders"
   },
   {
-    "type": "dropdown",
-    "label": "Folder icons",
-    "property": "zia.folders.icon-style",
-    "defaultValue": "glass",
-    "options": [
-      {
-        "label": "Glass folder, with a folder's own icon on its front",
-        "value": "glass"
-      },
-      {
-        "label": "A folder's own icon alone; glass folder for the rest",
-        "value": "icon"
-      },
-      {
-        "label": "No glass folders: a folder's own icon alone, or a plain folder",
-        "value": "flat"
-      }
-    ]
-  },
-  {
     "type": "checkbox",
     "label": "Folders open and close with a gentle spring",
     "property": "zia.folders.bounce",
