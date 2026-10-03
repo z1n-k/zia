@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- PDF viewer: the ⋮ menu was still PDF.js's own, a square grey box with a
+  caret and tall rows (taller still with the pen's row open). It's Zia's
+  dark rounded panel now, with rounded rows, a quieter icon beside each,
+  and the chosen cursor, scrolling and spread in Zia blue. The pen tools'
+  pop-ups get the same panel.
+
 ## [2.86.0] — 2026-10-03
 
 ### Added
