@@ -214,30 +214,6 @@
     "defaultValue": true
   },
   {
-    "type": "dropdown",
-    "label": "Page corners",
-    "property": "zia.page.corners",
-    "defaultValue": "zia",
-    "options": [
-      {
-        "label": "Zia's",
-        "value": "zia"
-      },
-      {
-        "label": "Follow the window's corner",
-        "value": "window"
-      },
-      {
-        "label": "Small",
-        "value": "small"
-      },
-      {
-        "label": "Square",
-        "value": "square"
-      }
-    ]
-  },
-  {
     "type": "checkbox",
     "label": "The page fills its space edge to edge, with no gap, rounded corners or shadow around it",
     "property": "zia.page.edge-to-edge",

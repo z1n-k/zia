@@ -425,7 +425,6 @@
     safely("watchHapticsMute", watchHapticsMute);
     safely("watchUnloadable", watchUnloadable);
     safely("watchPageFullscreen", watchPageFullscreen);
-    safely("watchPageCorners", watchPageCorners);
     safely("watchSwipeArrow", watchSwipeArrow);
     safely("revertTypedTextOnLeave", () => revertTypedTextOnLeave(urlbar));
     safely("neverShowScheme", neverShowScheme);

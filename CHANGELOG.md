@@ -8,10 +8,6 @@ Every release of Zia, newest first. The format follows
 
 ### Added
 
-- Page corners (Settings → Sine Mods → Zia → Page): Zia's, following the
-  window's own corner (its curve less the gap round the page, so the page
-  sits evenly inside it, as Windows 11's tighter corners want), small, or
-  square.
 - Swiping back or forward with two fingers shows Dia's round arrow,
   sliding in from the page's edge level with the pointer, in place of
   Firefox's. Hold the swipe and it opens into a card of the pages it goes
@@ -31,6 +27,10 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
+- Windows: the page's corners match the window's own. Windows 11's
+  corner is 8px and the page sits a few pixels inside it, so the page's
+  8px corners looked rounder than the window round them; they're the
+  window's curve less that gap now, the two sitting evenly together.
 - While a glance is open, the toolbar steps back: clear on the window's
   own background, in the sidebar's ink, rather than in the glanced site's
   colour across the whole window. The page behind it is a quieter card

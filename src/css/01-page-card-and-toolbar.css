@@ -150,34 +150,6 @@
   }
 }
 
-/* The page's corners (Settings, zia.uc.js). Following the window: its
-   corner (8px on Windows 11, about 10px on macOS, 16px on macOS 26) less
-   the gap round the page, so the two curves sit evenly one inside the
-   other. (Before edge to edge below, which goes square whatever this is.) */
-:root[zia-page-corners]:not(#zia-none):not(#zia-none-2) {
-  --zia-window-radius: 10px;
-
-  @media (-moz-platform: windows) {
-    --zia-window-radius: 8px;
-  }
-
-  @media (-moz-mac-tahoe-theme) {
-    --zia-window-radius: 16px;
-  }
-
-  &[zia-page-corners="window"] {
-    --zia-card-radius: max(2px, calc(var(--zia-window-radius) - var(--zia-card-gap)));
-  }
-
-  &[zia-page-corners="small"] {
-    --zia-card-radius: 4px;
-  }
-
-  &[zia-page-corners="square"] {
-    --zia-card-radius: 0px;
-  }
-}
-
 /* Optional: the page edge to edge, with no gap, rounded corners or shadow
    around it. Zen's own zen.theme.content-element-separation = 0 does the
    same, so that's followed too. */

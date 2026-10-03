@@ -131,11 +131,13 @@
   }
 }
 
-/* Windows: the page's corners follow Windows 11's own window corners
-   (8px) rather than Zia's rounder macOS ones. */
+/* Windows: the page's corners match Windows 11's own window corner (8px):
+   the page sits the gap inside the window, so its curve is the window's
+   less that gap, the two sitting evenly one inside the other. (8px of its
+   own looked rounder than the window round it.) */
 @media (-moz-platform: windows) and -moz-pref("zia.page.rounding") {
   :root:not(#zia-none) {
-    --zia-card-radius: 8px;
+    --zia-card-radius: max(2px, calc(8px - var(--zia-card-gap)));
   }
 }
 

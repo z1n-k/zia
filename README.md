@@ -360,7 +360,6 @@ The first folder takes a little while as the model downloads and the icon names 
 | **Page** | |
 | Toolbar takes the colour of the site (off: the theme's colour) | on |
 | Zia's rounded page corners (off: Zen's own) | on |
-| Page corners: Zia's, following the window's corner, small, or square | Zia's |
 | The page fills its space edge to edge, with no gap, rounded corners or shadow around it (Zen's `zen.theme.content-element-separation` = 0 does the same) | off |
 | Swiping back or forward shows Dia's round arrow, and holding it lists the pages (off: Firefox's arrow) | on |
 | Split view drop cards when dragging a tab onto the page (off: Zen's own) | on |
