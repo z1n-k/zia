@@ -6,7 +6,16 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- The Library's Downloads has a Clear button, beside the search, which
+  clears the finished downloads (and their history), as Firefox's own
+  downloads list does; any still going stay.
+
 ### Changed
+
+- Zen's donate button is gone, from the Library and from the note Zen
+  shows after an update.
 
 - Zen 1.23's Library (History, Downloads, Boosts, Spaces, Media) in
   Zia's look: its lists as the sidebar's tab rows (their height, corners,

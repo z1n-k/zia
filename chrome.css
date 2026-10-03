@@ -7406,3 +7406,17 @@ zen-library .zen-library-space-footer {
 #zen-library-footer .toolbarbutton-1 > .toolbarbutton-icon {
   border-radius: var(--zia-close-radius);
 }
+
+/* Zia's Clear button in Downloads: beside the search, as the filter
+   button is */
+zen-library .zia-library-clear {
+  flex: none;
+  cursor: default;
+}
+
+/* Zen's donate button goes: from the Library's foot, and from the note
+   it shows after an update */
+#zen-library-footer .toolbarbutton-1[image*="heart-circle"],
+.zen-sidebar-notification-link-container[data-l10n-id="zen-sidebar-notification-donate-tooltip"] {
+  display: none !important;
+}
