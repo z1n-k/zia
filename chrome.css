@@ -7477,8 +7477,14 @@ zen-library .zen-library-tab {
     background: color-mix(in srgb, currentColor 7%, transparent) !important;
   }
 
+  /* the open one: its icon white (the dark ink in a light space) */
   &[active] {
-    color: var(--toolbar-color);
+    color: light-dark(rgb(28, 28, 32), rgb(255, 255, 255));
+  }
+
+  &[active] .zen-library-tab-icon-image {
+    --stroke: light-dark(rgb(28, 28, 32), rgb(255, 255, 255)) !important;
+    --fill: light-dark(rgba(28, 28, 32, 0.16), rgba(255, 255, 255, 0.22)) !important;
   }
 
   &[active]::before {

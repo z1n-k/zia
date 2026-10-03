@@ -76,6 +76,49 @@
     controller.show = wrapped;
   }
 
+  // Zen moves the window's buttons into the Library's head while it's
+  // open, at its own spot; Zia keeps them where they sit in the sidebar
+  // (5px in, 3px down in its top row, 06-folders-and-sidebar.css), frame
+  // by frame as the Library slides, so they don't move at all.
+  function pinLibraryWindowButtons(library) {
+    const box = library.querySelector("#zen-library-header .titlebar-buttonbox-container");
+    const row = document.getElementById("zen-sidebar-top-buttons");
+    if (!box) {
+      return;
+    }
+    box.style.translate = "";
+    const rowBox = row?.getBoundingClientRect();
+    if (!rowBox?.width) {
+      return;
+    }
+    const style = getComputedStyle(row);
+    const x = rowBox.left + parseFloat(style.paddingLeft || 0) + 5;
+    const y = rowBox.top + parseFloat(style.paddingTop || 0) + 3;
+    const now = box.getBoundingClientRect();
+    box.style.translate = `${Math.round((x - now.left) * 2) / 2}px ${Math.round((y - now.top) * 2) / 2}px`;
+  }
+
+  function followLibraryWindowButtons(library) {
+    const until = performance.now() + 900;
+    const step = () => {
+      // back in the sidebar: as it was
+      for (const box of document.querySelectorAll(".titlebar-buttonbox-container")) {
+        if (!box.closest("#zen-library-header") && box.style.translate) {
+          box.style.translate = "";
+        }
+      }
+      try {
+        pinLibraryWindowButtons(library);
+      } catch (err) {
+        noteError("library: window buttons", err);
+      }
+      if (performance.now() < until) {
+        requestAnimationFrame(step);
+      }
+    };
+    requestAnimationFrame(step);
+  }
+
   function watchLibrary() {
     closeLibraryForSidebar();
     const toolbox = document.getElementById("navigator-toolbox");
@@ -119,6 +162,7 @@
       // and the other way: the Library opening (from its button, a swipe,
       // anything) closes the sidebar panel
       new MutationObserver(() => {
+        followLibraryWindowButtons(library);
         if (library.hasAttribute("open") && window.SidebarController?.isOpen) {
           try {
             window.SidebarController.hide();
@@ -126,7 +170,7 @@
             noteError("library: hide sidebar", err);
           }
         }
-      }).observe(library, { attributes: true, attributeFilter: ["open"] });
+      }).observe(library, { attributes: true, attributeFilter: ["open", "transitioning"] });
     };
     new MutationObserver(findLibrary).observe(toolbox.parentElement, { childList: true });
     findLibrary();

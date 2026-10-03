@@ -31,8 +31,9 @@ Every release of Zia, newest first. The format follows
   the accent colour. Every rounded item in it has exactly the tabs'
   corners, and a row under the pointer the tab's fine light edge. Its
   side is a thin rail with the sections' icons in a small rounded dock
-  at its top, the open one's tile filled, each name in a small pill
-  beside it on hover.
+  at its top, the open one's tile filled and its icon white, each name
+  in a small pill beside it on hover; on macOS the window's buttons stay
+  just where they sit in the sidebar as the Library opens and closes.
 
 - A white folder's icon has no shadow behind it; coloured folders keep
   theirs.
