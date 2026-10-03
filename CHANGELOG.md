@@ -8,10 +8,10 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
-- Closing a folder ended in a snap, its glass icon's bottom edge suddenly
-  turning white as the front landed. The front no longer blurs what's
-  behind it (which Firefox skips while it's tipped open and switched on
-  only as it landed), so it closes smoothly, as the archive box does.
+- Closing a folder ended in a snap, its glass icon's bright bottom edge
+  suddenly sharpening as the front landed: Firefox drew the front one way
+  while it tipped and another once it was shut. It's drawn the same way
+  throughout now, so it closes smoothly; the archive box's lid too.
 
 ## [2.87.2] — 2026-10-03
 
