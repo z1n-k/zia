@@ -121,9 +121,13 @@
           item = document.createXULElement("menuitem");
           item.id = "zia-folder-icon-only";
           item.setAttribute("type", "checkbox");
+          // (Zia ticks it from the folder, not the menu: a menu tick is
+          // there for any "checked", even "false")
+          item.setAttribute("autocheck", "false");
           item.setAttribute("label", "Show Icon Only");
           item.addEventListener("command", () => {
-            setIconOnly(item.ziaFolder, item.getAttribute("checked") === "true");
+            const folder = item.ziaFolder;
+            setIconOnly(folder, !folder?.hasAttribute("zia-icon-only"));
           });
           const after = document.getElementById("zia-folder-color-menu") || document.getElementById("context_zenFolderRename");
           if (after?.parentElement === menu) {
@@ -136,8 +140,10 @@
         const shown = !!folder?.isZenFolder && folderHasOwnIcon(folder);
         item.hidden = !shown;
         item.ziaFolder = shown ? folder : null;
-        if (shown) {
-          item.setAttribute("checked", String(folder.hasAttribute("zia-icon-only")));
+        if (shown && folder.hasAttribute("zia-icon-only")) {
+          item.setAttribute("checked", "true");
+        } else {
+          item.removeAttribute("checked");
         }
       },
       true
