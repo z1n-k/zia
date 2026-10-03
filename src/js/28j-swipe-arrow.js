@@ -47,6 +47,14 @@
     }
     swipe.ziaWrapped = true;
     const on = () => Services.prefs.getBoolPref(SWIPE_PREF, true);
+    // Firefox's own arrow is hidden while Zia's is on (zia.css)
+    const mark = () => setFlag("zia-swipe-arrow", on());
+    mark();
+    Services.prefs.addObserver(SWIPE_PREF, mark);
+    window.addEventListener("unload", () => Services.prefs.removeObserver(SWIPE_PREF, mark));
+    // between a swipe starting and ending; Firefox calls its animation's
+    // methods for every swipe, whether or not its own arrow is shown
+    let swiping = false;
 
     // where the pointer was over the page, so the arrow comes in level with it
     let pointerY = null;
@@ -129,11 +137,11 @@
     };
 
     const follow = (animation, update) => {
-      if (!on() || !animation.isAnimationRunning() || animation._isStoppingAnimation) {
+      if (!on() || !swiping) {
         return;
       }
-      const back = animation._prevBox && !animation._prevBox.collapsed;
-      const forward = animation._nextBox && !animation._nextBox.collapsed;
+      const back = !!animation._willGoBack?.(update);
+      const forward = !back && !!animation._willGoForward?.(update);
       if (!back && !forward) {
         if (el) {
           el.style.setProperty("--p", "0");
@@ -181,6 +189,7 @@
     const start = swipe.startAnimation;
     swipe.startAnimation = function () {
       discard();
+      swiping = true;
       return start.apply(this, arguments);
     };
     const update = swipe.updateAnimation;
@@ -195,6 +204,7 @@
     };
     const stop = swipe.stopAnimation;
     swipe.stopAnimation = function () {
+      swiping = false;
       try {
         leave();
       } catch (err) {

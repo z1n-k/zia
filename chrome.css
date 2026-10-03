@@ -6476,10 +6476,10 @@ zen-folder .tab-reset-button {
 /* Swiping back or forward (zia.uc.js): Dia's round arrow slides in from
    the page's edge at the pointer's height, in place of Firefox's, and held
    there it opens into a card of the pages the swipe goes through. */
-@media -moz-pref("zia.swipe.dia-arrow") {
-  #historySwipeAnimationContainer svg {
-    opacity: 0 !important;
-  }
+/* (Zia's arrow only exists while it's on; Firefox's is hidden then) */
+:root[zia-swipe-arrow] #historySwipeAnimationContainer svg {
+  opacity: 0 !important;
+}
 
   #zia-swipe {
     --p: 0;
@@ -6614,4 +6614,3 @@ zen-folder .tab-reset-button {
       transition-duration: 0.01s !important;
     }
   }
-}
