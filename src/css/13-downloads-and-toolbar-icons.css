@@ -147,6 +147,17 @@
   list-style-image: url("chrome://sine/content/zia/icons/chevron-down.svg") !important;
 }
 
+/* The buttons along the sidebar's foot (the library, the tab list) at
+   the toolbar's 16px, set here so a Zen update can't grow them (1.23 drew
+   the library's as a sprite of its own, and they came out bigger) */
+#zen-sidebar-foot-buttons {
+  --zen-toolbar-button-size: 16px !important;
+
+  & #zen-library-button {
+    --zen-library-sprite-size: 16px !important;
+  }
+}
+
 #zen-sidebar-foot-buttons toolbarbutton:not(#downloads-button) > .toolbarbutton-icon {
   opacity: 0.4;
   transition: none !important;

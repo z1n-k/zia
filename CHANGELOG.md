@@ -33,6 +33,9 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- Zen 1.23: the buttons along the sidebar's foot (the library, the tab
+  list) came out bigger; they're the toolbar's 16px again, set by Zia so a
+  Zen update can't change them.
 - Light spaces (a pale space colour, or light mode): the sidebar was
   drawn for dark spaces only, white text and white-tinted surfaces on a
   cream sidebar. Its text is dark there now, with the selected tab and
