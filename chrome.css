@@ -3209,8 +3209,8 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 0.4em;
-  height: 0.4em;
+  width: 0.5em;
+  height: 0.5em;
   translate: -50% -50%;
   object-fit: contain;
   -moz-context-properties: fill, fill-opacity, stroke, stroke-opacity;
