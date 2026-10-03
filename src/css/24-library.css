@@ -1,10 +1,12 @@
-/* Zen's Library (Zen 1.23) as a space of the sidebar. Swiped to past the
-   first space (or opened from its button), it slides in over the sidebar at
-   the sidebar's own width, so the page beside it doesn't move; only Spaces,
-   which shows each space as a column, widens it as Zen does. Its sections
-   are a strip of icons along the top instead of a side rail, and its lists
-   are the sidebar's tab rows. Everything in it is still Zen's: the
-   sections, their search, filters, rows, buttons and menus. */
+/* Zen's Library (Zen 1.23) as another space of the sidebar. Swiped to past
+   the first space (or opened from its button), it comes in where the tabs
+   are, as the next space's would: the tabs slide out, the Library slides in,
+   and the sidebar's top and foot stay put. It's the sidebar's width, so the
+   page beside it doesn't move; only Spaces, which shows each space as a
+   column, widens it as Zen does. Its sections are a strip of icons along its
+   top instead of a side rail, and its lists are the sidebar's tab rows.
+   Everything in it is still Zen's: the sections, their search, filters,
+   rows, buttons and menus. */
 
 zen-library {
   --zen-library-radius: var(--zia-tab-radius);
@@ -22,46 +24,65 @@ zen-library .zen-library-section:not([data-section="spaces"]) {
   max-width: none !important;
 }
 
-/* the panel: the top (window buttons, name, close, sections) over the list */
+/* Only the part where the tabs are is the Library's: the sidebar's top and
+   foot show through and take clicks, so the host lets the pointer through
+   and the panel sits between them (28k-library.js measures where) */
+zen-library[open] {
+  pointer-events: none !important;
+  -moz-window-dragging: no-drag !important;
+}
+
 zen-library #zen-library-panel {
+  inset: var(--zia-library-top, 0px) 0 var(--zia-library-bottom, 0px) 0 !important;
+  height: auto !important;
   flex-direction: column !important;
+  pointer-events: auto;
+}
+
+/* the sidebar stays as it is while the Library comes in (Zen fades and
+   shrinks it), and its tabs slide out within it, as a space's do */
+:root[zia-library-on]:not([zen-compact-mode="true"]) #navigator-toolbox {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+:root[zia-library-on] :has(> #tabbrowser-tabs) {
+  clip-path: inset(0);
 }
 
 zen-library #zen-library-side {
   display: grid !important;
   grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
+  align-items: center;
   min-width: 0 !important;
   height: auto !important;
   padding: 0 8px;
   background: none !important;
   box-shadow: none !important;
-}
 
-zen-library #zen-library-header {
-  grid-column: 1;
-  grid-row: 1;
-  min-height: 28px;
-
-  &::after {
+  &::before {
     content: "Library";
-    padding: 10px 8px 2px;
+    grid-column: 1;
+    grid-row: 1;
+    padding: 4px 8px 0;
     font-size: 15px;
     font-weight: 600;
   }
 }
 
-@media (-moz-platform: macos) {
-  zen-library #zen-library-header {
-    padding: 12px 0 0 1px !important;
-  }
+/* the window buttons, which Zen moves in as it opens: kept just where they
+   were, above the Library's part */
+zen-library #zen-library-header {
+  position: absolute;
+  top: calc(-1 * var(--zia-library-top, 0px));
+  left: 0;
+  pointer-events: auto;
 }
 
 /* Zen's footer (close, donate) sits top right, just its close button */
 zen-library #zen-library-footer {
   grid-column: 2;
   grid-row: 1;
-  align-self: end;
   padding: 0 !important;
 
   & .toolbarbutton-1[image*="heart-circle"] {
