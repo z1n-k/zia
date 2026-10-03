@@ -354,6 +354,55 @@
     background: #000 !important;
   }
 }
+
+/* A glance open: the toolbar steps back, clear on the window's own
+   background in the sidebar's ink rather than the glanced site's colour
+   (it spanned the window while the glance is narrower). The page behind
+   is a quieter card, 8px corners and no shadow, and the glance in front a
+   rounder one, 16px. (Thanks to meteulku for the design.) */
+:root:not(#zia-none):not([inDOMFullscreen="true"]):not([popup-window]) #zen-appcontent-wrapper:has(.browserSidebarContainer.zen-glance-background) {
+  --zia-glance-ink: light-dark(rgb(40, 40, 44), rgb(251, 251, 254));
+  background: transparent !important;
+  box-shadow: none !important;
+
+  & #zen-appcontent-navbar-wrapper {
+    background-color: transparent !important;
+    border-bottom-color: transparent !important;
+    color-scheme: inherit !important;
+    color: var(--zia-glance-ink) !important;
+    --toolbox-textcolor: var(--zia-glance-ink) !important;
+    --toolbar-color: var(--zia-glance-ink) !important;
+    --toolbar-field-color: var(--zia-glance-ink) !important;
+    --toolbarbutton-icon-fill: var(--zia-glance-ink) !important;
+    --zia-toolbar-ink: var(--zia-glance-ink);
+
+    & toolbarbutton:not(.webextension-browser-action, [id$="-browser-action"], [id$="-BAP"]) {
+      color: var(--zia-glance-ink) !important;
+      fill: var(--zia-glance-ink) !important;
+    }
+  }
+
+  & #tabbrowser-tabpanels .browserSidebarContainer.zen-glance-background {
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    clip-path: inset(0 round 8px) !important;
+
+    & :is(.browserStack, browser) {
+      clip-path: inset(0 round 8px) !important;
+    }
+  }
+
+  & #tabbrowser-tabpanels .browserSidebarContainer.zen-glance-overlay {
+    & .browserContainer:not([fade-out="true"]),
+    & .browserStack {
+      border-radius: 16px !important;
+    }
+
+    & :is(.browserStack, browser) {
+      clip-path: inset(0 round 16px) !important;
+    }
+  }
+}
 #urlbar:not(:hover):not([focused]):not([breakout-extend]) > .urlbar-background {
   background: transparent !important;
   box-shadow: none !important;

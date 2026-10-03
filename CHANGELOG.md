@@ -13,6 +13,14 @@ Every release of Zia, newest first. The format follows
   own `zen.theme.content-element-separation` set to 0 now does the same,
   where before Zia kept its gap.
 
+### Changed
+
+- While a glance is open, the toolbar steps back: clear on the window's
+  own background, in the sidebar's ink, rather than in the glanced site's
+  colour across the whole window. The page behind it is a quieter card
+  (8px corners, no shadow) and the glance a rounder one (16px). Thanks to
+  meteulku for the design.
+
 ### Fixed
 
 - A video gone full screen inside the window (rather than taking over the
