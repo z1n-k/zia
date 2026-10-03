@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Closing a folder ended in a snap, its glass icon's bottom edge suddenly
+  turning white as the front landed. The front no longer blurs what's
+  behind it (which Firefox skips while it's tipped open and switched on
+  only as it landed), so it closes smoothly, as the archive box does.
+
 ## [2.87.2] — 2026-10-03
 
 ### Changed
