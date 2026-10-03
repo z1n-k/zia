@@ -221,6 +221,12 @@
   },
   {
     "type": "checkbox",
+    "label": "Swiping back or forward shows Dia's round arrow, and holding it lists the pages (off: Firefox's arrow)",
+    "property": "zia.swipe.dia-arrow",
+    "defaultValue": true
+  },
+  {
+    "type": "checkbox",
     "label": "Split view drop cards when dragging a tab onto the page (off: Zen's own)",
     "property": "zia.split.drop-cards",
     "defaultValue": true

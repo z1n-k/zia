@@ -1,0 +1,142 @@
+/* Swiping back or forward (zia.uc.js): Dia's round arrow slides in from
+   the page's edge at the pointer's height, in place of Firefox's, and held
+   there it opens into a card of the pages the swipe goes through. */
+@media -moz-pref("zia.swipe.dia-arrow") {
+  #historySwipeAnimationContainer svg {
+    opacity: 0 !important;
+  }
+
+  #zia-swipe {
+    --p: 0;
+    --zia-swipe-in: calc(-56px + var(--p) * 72px);
+    position: absolute;
+    top: var(--zia-swipe-y, 50%);
+    left: 0;
+    z-index: 10;
+    width: 46px;
+    height: 46px;
+    border-radius: 23px;
+    overflow: hidden;
+    pointer-events: none;
+    translate: var(--zia-swipe-in) -50%;
+    opacity: calc(var(--p) * 1.6);
+    background: rgba(30, 30, 32, 0.84);
+    backdrop-filter: blur(18px) saturate(1.4);
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.14), 0 6px 18px rgba(0, 0, 0, 0.32);
+    color: rgba(255, 255, 255, 0.92);
+    transition:
+      width 0.34s cubic-bezier(0.32, 0.72, 0, 1),
+      height 0.34s cubic-bezier(0.32, 0.72, 0, 1),
+      border-radius 0.34s cubic-bezier(0.32, 0.72, 0, 1),
+      opacity 0.12s linear;
+
+    &[side="forward"] {
+      left: auto;
+      right: 0;
+      --zia-swipe-in: calc(56px - var(--p) * 72px);
+    }
+
+    &[open] {
+      width: 236px;
+      height: var(--zia-swipe-h, 46px);
+      border-radius: 14px;
+      --zia-swipe-in: 16px;
+      opacity: 1;
+    }
+
+    &[side="forward"][open] {
+      --zia-swipe-in: -16px;
+    }
+
+    &[leaving] {
+      opacity: 0 !important;
+      transition: opacity 0.22s ease, translate 0.26s cubic-bezier(0.4, 0, 1, 1);
+      --zia-swipe-in: -56px;
+    }
+
+    &[side="forward"][leaving] {
+      --zia-swipe-in: 56px;
+    }
+  }
+
+  #zia-swipe .zia-swipe-arrow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    color: rgba(255, 255, 255, 0.55);
+    transition: color 0.18s ease, opacity 0.15s ease, scale 0.25s cubic-bezier(0.34, 1.5, 0.6, 1);
+
+    & svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  #zia-swipe[side="forward"] .zia-swipe-arrow svg {
+    scale: -1 1;
+  }
+
+  /* past the point where letting go navigates: the arrow full white */
+  #zia-swipe[will] .zia-swipe-arrow {
+    color: rgb(255, 255, 255);
+    scale: 1.06;
+  }
+
+  #zia-swipe[open] .zia-swipe-arrow {
+    opacity: 0;
+  }
+
+  #zia-swipe .zia-swipe-pages {
+    position: absolute;
+    inset: 6px;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transition: opacity 0.18s ease 0.06s;
+  }
+
+  #zia-swipe[open] .zia-swipe-pages {
+    opacity: 1;
+  }
+
+  #zia-swipe .zia-swipe-page {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex: none;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 9px;
+    font: 500 12.5px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    color: rgba(255, 255, 255, 0.72);
+
+    /* the page the swipe lands on */
+    &:first-child {
+      background: rgba(255, 255, 255, 0.09);
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    & img {
+      flex: none;
+      width: 16px;
+      height: 16px;
+    }
+
+    & span {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #zia-swipe,
+    #zia-swipe * {
+      transition-duration: 0.01s !important;
+    }
+  }
+}
