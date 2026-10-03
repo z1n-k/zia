@@ -10,12 +10,12 @@ Every release of Zia, newest first. The format follows
 
 - Smoother scrolling and swipes between spaces, an experimental option
   (off by default, Settings → Sine Mods → Zia → Features): a two-finger
-  swipe between spaces moves as one, the tabs, the essentials and the
-  space's colour together, easing every frame toward where your fingers
-  are instead of jumping with each trackpad update; and pages scroll with
-  Firefox's smoother easing, which eases out as a flick does. (Firefox's
-  own setting for it, general.smoothScroll.msdPhysics.enabled, is only
-  turned on if you hadn't set it, and back off with the option.)
+  swipe between spaces moves at the display's own rate (120Hz on a
+  ProMotion Mac) instead of in tiny steps at the trackpad's 60 updates a
+  second, the tabs, the essentials and the space's colour together; and
+  pages scroll with Firefox's smoother easing, which eases out as a flick
+  does. (Firefox's own setting for it, general.smoothScroll.msdPhysics.enabled,
+  is only turned on if you hadn't set it, and back off with the option.)
 
 ### Fixed
 

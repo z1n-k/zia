@@ -104,13 +104,13 @@
       }
       frame = requestAnimationFrame(() => {
         frame = 0;
-        if (!root.hasAttribute("animating-background")) {
+        if (!spacesSwitching()) {
           syncSidebarPaint();
         }
       });
     };
     const watcher = new MutationObserver(schedule);
-    watcher.observe(root, { attributes: true, attributeFilter: ["animating-background"] });
+    watchSpacesSwitching(schedule);
     for (const id of ["zen-browser-background", "zen-toolbar-background"]) {
       const layer = document.getElementById(id);
       if (layer) {

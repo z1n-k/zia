@@ -69,13 +69,13 @@
       if (!frame) {
         frame = requestAnimationFrame(() => {
           frame = 0;
-          if (!root.hasAttribute("animating-background")) {
+          if (!spacesSwitching()) {
             fillEssentialRows();
           }
         });
       }
     };
-    new MutationObserver(schedule).observe(root, { attributes: true, attributeFilter: ["animating-background"] });
+    watchSpacesSwitching(schedule);
     new MutationObserver(schedule).observe(essentials, {
       childList: true,
       subtree: true,

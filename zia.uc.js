@@ -19,6 +19,21 @@
     console.debug(`[Zia] ${where}:`, err);
   }
 
+  // Spaces switching: Zen marks it on the toolbar (1.23) or, before, the
+  // window. watchSpacesSwitching(callback) calls back as it starts and ends.
+  function spacesSwitching() {
+    return !!(window.gNavToolbox?.hasAttribute("animating-background") || root.hasAttribute("animating-background"));
+  }
+
+  function watchSpacesSwitching(callback) {
+    const watcher = new MutationObserver(callback);
+    for (const el of [window.gNavToolbox, root]) {
+      if (el) {
+        watcher.observe(el, { attributes: true, attributeFilter: ["animating-background"] });
+      }
+    }
+  }
+
   function setFlag(name, on) {
     if (on === root.hasAttribute(name)) {
       return;
@@ -8570,13 +8585,13 @@
       if (!frame) {
         frame = requestAnimationFrame(() => {
           frame = 0;
-          if (!root.hasAttribute("animating-background")) {
+          if (!spacesSwitching()) {
             fillEssentialRows();
           }
         });
       }
     };
-    new MutationObserver(schedule).observe(root, { attributes: true, attributeFilter: ["animating-background"] });
+    watchSpacesSwitching(schedule);
     new MutationObserver(schedule).observe(essentials, {
       childList: true,
       subtree: true,
@@ -9317,13 +9332,13 @@
       }
       frame = requestAnimationFrame(() => {
         frame = 0;
-        if (!root.hasAttribute("animating-background")) {
+        if (!spacesSwitching()) {
           syncSidebarPaint();
         }
       });
     };
     const watcher = new MutationObserver(schedule);
-    watcher.observe(root, { attributes: true, attributeFilter: ["animating-background"] });
+    watchSpacesSwitching(schedule);
     for (const id of ["zen-browser-background", "zen-toolbar-background"]) {
       const layer = document.getElementById(id);
       if (layer) {
@@ -16350,8 +16365,8 @@
   }
   // Smoother motion (Settings → Sine Mods → Zia → Features, experimental,
   // off by default):
-  // a swipe between spaces moves as one (smoothSpaceSwipe, below) rather
-  // than in jumps, and pages scroll with Firefox's smoother
+  // a swipe between spaces moves at the display's own rate (smoothSpaceSwipe,
+  // below), and pages scroll with Firefox's smoother
   // easing, closer to Chrome's and macOS's own: it eases out as a flick
   // does, where Firefox's usual one stops short. Firefox's easing is a
   // setting of its own (general.smoothScroll.msdPhysics.enabled); Zia only
@@ -16361,17 +16376,15 @@
   const SCROLL_PHYSICS_PREF = "general.smoothScroll.msdPhysics.enabled";
   const SCROLL_PHYSICS_OURS = "zia.motion.smooth-scroll-set";
 
-  // Swiping between spaces: Zen moves the spaces, the essentials and the
-  // space colour's fade straight to each trackpad update as it comes, from
-  // one call (_organizeWorkspaceStripLocations), so they moved in jumps, at
-  // whatever pace the updates came. While the fingers are down, that call
-  // is taken over: each update only sets where the strip is heading, and
-  // every frame the strip eases a little of the way there and Zen places
-  // everything from that one value, so the spaces, the essentials and the
-  // colour move together, at the display's pace. Once the fingers lift,
-  // Zen's own slide takes it from wherever it got to.
-  const SWIPE_EASE_MS = 28;
-
+  // Swiping between spaces: Zen places the spaces, the essentials and the
+  // space colour's fade (all from one call, _organizeWorkspaceStripLocations)
+  // as each trackpad update comes, about 60 a second, so on a faster display
+  // each place showed for two frames or more: a slow swipe moved in tiny
+  // steps. While the fingers are down, each update instead becomes the end
+  // of a short glide from where the strip is shown, as long as the updates
+  // are apart, and every frame Zen places everything at that glide's point:
+  // the strip moves evenly at the display's own rate, one update behind.
+  // Once the fingers lift, Zen's own slide takes it from where it got to.
   function smoothSpaceSwipe() {
     const spaces = window.gZenWorkspaces;
     const place = spaces?._organizeWorkspaceStripLocations;
@@ -16386,50 +16399,44 @@
     if (place.ziaSmooth) {
       return;
     }
-    let target = 0;
-    let shown = 0;
     let space = null;
+    let from = 0;
+    let to = 0;
+    let shown = 0;
+    let at = 0;
+    let gap = 16;
     let frame = 0;
-    let last = 0;
-    const stop = () => {
-      cancelAnimationFrame(frame);
-      frame = 0;
-    };
-    const swiping = () => !!spaces._swipeManager?.isGestureActive && !spaces._animatingChange && !spaces.isChangingWorkspace;
+    const swiping = () => !!spaces._swipeManager?.isGestureActive && !spaces._animatingChange;
     const step = (now) => {
       frame = 0;
       if (!swiping() || !space) {
         return;
       }
-      const dt = Math.min(64, now - (last || now - 16));
-      last = now;
-      shown += (target - shown) * (1 - Math.exp(-dt / SWIPE_EASE_MS));
-      if (Math.abs(target - shown) < 0.3) {
-        shown = target;
-      }
+      const t = Math.min(1, Math.max(0, (now - at) / gap));
+      shown = from + (to - from) * t;
       place.call(spaces, space, true, shown);
-      if (shown !== target) {
+      if (t < 1) {
         frame = requestAnimationFrame(step);
       }
     };
     const smooth = function (workspace, justMove = false, offsetPixels = 0, ...rest) {
-      let on = false;
-      try {
-        on = Services.prefs.getBoolPref(SMOOTH_PREF, false);
-      } catch (err) {
-        on = false;
-      }
-      if (!on || !justMove || !swiping()) {
-        stop();
-        shown = target = offsetPixels || 0;
-        last = 0;
+      if (!justMove || !swiping() || !Services.prefs.getBoolPref(SMOOTH_PREF, false)) {
+        cancelAnimationFrame(frame);
+        frame = 0;
+        space = null;
+        shown = to = offsetPixels || 0;
         return place.call(this, workspace, justMove, offsetPixels, ...rest);
       }
-      // (another space, or back across the middle: from where it's shown)
+      const now = performance.now();
+      // (the time between updates, steadied: the glide lasts one of them)
+      if (space) {
+        gap = gap * 0.6 + Math.min(40, Math.max(6, now - at)) * 0.4;
+      }
       space = workspace;
-      target = offsetPixels || 0;
+      from = shown;
+      to = offsetPixels || 0;
+      at = now;
       if (!frame) {
-        last = 0;
         frame = requestAnimationFrame(step);
       }
       return undefined;
