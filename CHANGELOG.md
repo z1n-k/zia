@@ -8,8 +8,26 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
+- Zen 1.23's Library (History, Downloads, Boosts, Spaces, Media) in
+  Zia's look: its lists as the sidebar's tab rows (their height, corners,
+  hover and type size), the open section and active filters as the
+  selected tab, search and filters as Zia's pills, media and boost tiles
+  as the essentials, the spaces and the media card with the hover cards'
+  corners and fine edge, the side rail flat with a fine edge, and its
+  section icons (still Zen's animated ones) in plain white instead of
+  the accent colour.
+
 - A white folder's icon has no shadow behind it; coloured folders keep
   theirs.
+
+### Fixed
+
+- Zen 1.23 turned its "acrylic" look on for everyone, drawing the
+  sidebar part see-through under Zia's own, so it came out far too
+  transparent (and the compact sidebar and address bar pop-up changed
+  too). Zia switches it back off once, for anyone who hadn't chosen it
+  themselves; it takes from the next start. (It's
+  zen.theme.acrylic-elements in about:config, to turn back on.)
 
 ## [2.88.0] — 2026-10-03
 

@@ -1,0 +1,308 @@
+/* Zen's Library (Zen 1.23: History, Downloads, Boosts, Spaces, Media) in
+   Zia's look: the sidebar's tab rows, hover and selected states and type
+   size for its lists; the hover cards' surface for its cards; pills as
+   rounded as Zia's tabs; and its section icons (still Zen's animated
+   ones) in plain white rather than the accent colour. Sizes follow the
+   sidebar's, so the Library reads as part of it. */
+
+zen-library {
+  --zen-library-radius: var(--zia-tab-radius);
+  --zen-library-pill-bg: color-mix(in srgb, currentColor 7%, transparent);
+  --zen-library-pill-hover-bg: var(--zia-tab-hover-bg);
+
+  font-size: var(--zia-text-size);
+
+  /* the side rail: flat, with a fine edge instead of a gradient and shadow */
+  & #zen-library-side {
+    background: color-mix(in srgb, currentColor 3%, transparent);
+    box-shadow: inset -0.5px 0 0 color-mix(in srgb, currentColor 10%, transparent);
+  }
+}
+
+:root[zen-right-side="true"] zen-library #zen-library-side {
+  background: color-mix(in srgb, currentColor 3%, transparent);
+  box-shadow: inset 0.5px 0 0 color-mix(in srgb, currentColor 10%, transparent);
+}
+
+/* ---- the sections down the side: Zia's tab rows, a touch more compact ---- */
+
+#zen-library-sidebar-tabs {
+  gap: 2px;
+  padding-top: 4px;
+}
+
+zen-library .zen-library-tab {
+  --zen-library-sprite-size: 24px;
+
+  margin: 2px 8px;
+  padding: 10px 0 8px;
+  gap: 5px;
+  font-weight: 500;
+  font-size: 11.5px;
+  color: color-mix(in srgb, currentColor 72%, transparent);
+  transition: color 0.15s ease;
+
+  &::before {
+    border-radius: var(--zia-tab-radius);
+  }
+
+  &:hover {
+    color: currentColor;
+  }
+
+  &:hover::before {
+    background: var(--zia-tab-hover-bg);
+  }
+
+  /* the open section: as the selected tab, its fill and fine light edge */
+  &[active] {
+    color: var(--toolbar-color);
+  }
+
+  &[active]::before {
+    background: var(--zia-active-tab-bg);
+    box-shadow: inset 0 0 0 var(--zia-shine-width, 0.5px) color-mix(in srgb, currentColor 16%, transparent);
+  }
+
+  &:hover:active::before {
+    transform: scale(0.97);
+  }
+}
+
+/* Zen's animated section icons, drawn in the text colour: a white line,
+   lightly filled while the section is open */
+zen-library :is(.zen-library-tab-icon-image, .empty-state-icon-image) {
+  --stroke: currentColor;
+  --fill: color-mix(in srgb, currentColor 22%, transparent);
+}
+
+/* ---- search and filters: Zia's pills ---- */
+
+zen-library .zen-library-search-top {
+  padding: 12px 12px 8px;
+}
+
+zen-library :is(.zen-library-search-box, .zen-library-filter-button) {
+  height: 34px;
+  padding-inline: 11px;
+  border-radius: var(--zia-tab-radius);
+  background: var(--zen-library-pill-bg);
+  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, currentColor 8%, transparent);
+}
+
+zen-library .zen-library-search-box:focus-within {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 22%, transparent);
+}
+
+zen-library :is(.zen-library-search-box, .zen-library-filter-button, .zen-library-filter-chip) img {
+  width: 15px;
+  height: 15px;
+}
+
+zen-library .zen-library-filter-button {
+  font-weight: 500;
+}
+
+zen-library :is(.zen-library-filter-done, .zen-library-filter-chip) {
+  border-radius: var(--zia-tab-radius);
+  font-weight: 500;
+}
+
+zen-library .zen-library-filter-chip {
+  padding: 7px 12px;
+
+  &[active] {
+    background: var(--zia-active-tab-bg);
+    box-shadow: inset 0 0 0 var(--zia-shine-width, 0.5px) color-mix(in srgb, currentColor 18%, transparent);
+  }
+}
+
+zen-library .zen-library-filter-group h3 {
+  margin: 14px 2px 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  opacity: 0.55;
+}
+
+/* ---- the lists: rows as Zia's tabs ---- */
+
+zen-library .zen-library-search-results {
+  padding: 0 8px 10px;
+
+  &[scrolled] {
+    border-top-color: color-mix(in srgb, currentColor 10%, transparent);
+  }
+}
+
+/* day and group headings: small and quiet, as Dia's */
+zen-library .zen-library-group h3 {
+  margin: 12px 10px 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  opacity: 0.5;
+}
+
+zen-library .zen-library-row {
+  gap: 10px;
+  min-height: var(--zia-pop-row-height);
+  box-sizing: border-box;
+  padding: 6px 10px;
+  border-radius: var(--zia-tab-radius);
+  transition: background-color 0.12s ease;
+
+  &:hover {
+    background: var(--zia-tab-hover-bg);
+  }
+}
+
+zen-library .zen-library-row-title {
+  font-size: var(--zia-text-size);
+  font-weight: var(--zia-tab-weight, 400);
+}
+
+zen-library .zen-library-row-subtitle {
+  font-size: 11.5px;
+  opacity: 0.55;
+}
+
+zen-library .zen-library-row-text {
+  gap: 1px;
+}
+
+/* a row's buttons (open, show in folder, delete...): Zia's small square
+   buttons */
+#zen-library-panel .zen-library-row-actions .toolbarbutton-1 > .toolbarbutton-icon {
+  width: 16px;
+  height: 16px;
+  padding: 6px;
+  border-radius: var(--zia-close-radius);
+}
+
+#zen-library-panel .toolbarbutton-1:not([disabled]):hover > .toolbarbutton-icon {
+  background-color: color-mix(in srgb, currentColor 11%, transparent);
+}
+
+#zen-library-panel .toolbarbutton-1:not([disabled]):is(:hover:active, [open]) > .toolbarbutton-icon {
+  background-color: color-mix(in srgb, currentColor 16%, transparent);
+}
+
+zen-library .zen-library-empty {
+  padding: 28px 0;
+  font-size: var(--zia-text-size);
+  opacity: 0.5;
+}
+
+/* downloads: the progress line in Zia blue, rounder */
+zen-library .zen-library-row[pending]:not(:hover) .zen-library-row-subtitle::before {
+  height: 3px;
+  margin-block: calc((1lh - 3px) / 2);
+  border-radius: 2px;
+  --color-accent-primary: rgb(90, 185, 245);
+}
+
+/* boosts: the site's tile as Zia's essential tiles */
+zen-library .zen-library-boost-row {
+  padding: 5px 10px 5px 5px;
+  border-radius: var(--zia-tab-radius);
+}
+
+zen-library .zen-library-boost-icon {
+  width: 38px;
+  height: 38px;
+
+  &::before {
+    border: none;
+    border-radius: var(--zia-tab-radius);
+    background: var(--zia-essential-bg, rgba(255, 255, 255, 0.13));
+    box-shadow: inset 0 0 0 0.5px color-mix(in srgb, currentColor 12%, transparent);
+  }
+
+  & img {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* ---- media: tiles as Zia's essentials, a gentler hover ---- */
+
+zen-library .zen-library-media-grid {
+  gap: 8px;
+}
+
+zen-library .zen-library-media-item {
+  border-radius: var(--zia-essential-radius, 12px);
+  padding: 10px;
+  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, currentColor 8%, transparent);
+  transition:
+    background 0.12s ease,
+    scale 0.2s cubic-bezier(0.34, 1.5, 0.6, 1);
+
+  &:hover {
+    scale: 1.02;
+  }
+}
+
+zen-library .zen-library-media-thumb {
+  border-radius: 7px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.22);
+}
+
+/* the opt-in card: the hover cards' surface */
+zen-library .zen-library-media-opt-in {
+  border-radius: var(--zia-tab-card-radius);
+  background: var(--zia-tab-card-bg);
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.12), 0 12px 32px rgba(0, 0, 0, 0.35);
+
+  & h3 {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  & p {
+    font-size: 12.5px;
+    opacity: 0.7;
+  }
+}
+
+/* ---- spaces: cards with the hover cards' corners and fine edge ---- */
+
+zen-library .zen-library-space {
+  border-radius: var(--zia-tab-card-radius);
+
+  &::before {
+    border-radius: var(--zia-tab-card-radius);
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.1), 0 2px 10px rgba(0, 0, 0, 0.12);
+  }
+
+  &[dragging]::before {
+    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.14), 0 10px 24px rgba(0, 0, 0, 0.3);
+  }
+}
+
+zen-library .zen-library-space-header {
+  font-size: var(--zia-text-size);
+  font-weight: 600;
+
+  &::before {
+    border-radius: var(--zia-tab-radius);
+  }
+
+  &:hover::before {
+    background: var(--zia-tab-hover-bg);
+  }
+}
+
+zen-library .zen-library-space-footer {
+  opacity: 0.55;
+}
+
+/* ---- the footer's buttons ---- */
+
+#zen-library-footer {
+  padding: 8px 10px;
+}
+
+#zen-library-footer .toolbarbutton-1 > .toolbarbutton-icon {
+  border-radius: var(--zia-close-radius);
+}
