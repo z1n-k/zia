@@ -14,6 +14,7 @@ Every release of Zia, newest first. The format follows
   each one taken out a sheet rises back out. The pile shows up to eight;
   past that a sheet still goes in or out each time. The lid stays open
   while the folder is, and back at three it turns into the folder again.
+  Closed, both sit centred on the folder's row.
 
 ### Changed
 
