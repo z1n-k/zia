@@ -6686,9 +6686,10 @@ zen-folder .tab-reset-button {
     pointer-events: none;
     translate: var(--zia-swipe-in) -50%;
     opacity: calc(var(--p) * 1.6);
-    background: rgba(36, 37, 39, 0.88);
-    backdrop-filter: blur(18px) saturate(1.4);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15), 0 6px 18px rgba(0, 0, 0, 0.32);
+    /* the tab and folder hover cards' surface: their background (see-through
+       and blurred with theirs, below), their hairline edge (::after) */
+    background: var(--zia-tab-card-bg);
+    box-shadow: var(--zia-hover-card-shadow);
     color: rgba(255, 255, 255, 0.92);
     transition:
       width 0.34s cubic-bezier(0.32, 0.72, 0, 1),
@@ -6702,10 +6703,19 @@ zen-folder .tab-reset-button {
       --zia-swipe-in: calc(92px - var(--p) * 112px);
     }
 
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border: 0.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: inherit;
+      pointer-events: none;
+    }
+
     &[open] {
       width: 236px;
       height: var(--zia-swipe-h, 80px);
-      border-radius: 14px;
+      border-radius: var(--zia-tab-card-radius);
       --zia-swipe-in: 20px;
       opacity: 1;
     }
@@ -6823,6 +6833,14 @@ zen-folder .tab-reset-button {
       transition-duration: 0.01s !important;
     }
   }
+
+/* see-through like the hover cards, when they are */
+@media -moz-pref("zia.cards.blur") {
+  :root[zia-swipe-arrow] #zia-swipe {
+    background: color-mix(in srgb, var(--zia-tab-card-bg) 76%, transparent);
+    backdrop-filter: blur(24px) saturate(1.6);
+  }
+}
 /* Light spaces: a space whose colour is light (Zen marks the window
    zen-should-be-dark-mode="false" and gives its sidebar dark text). Zia
    drew the sidebar for dark spaces only, white text and white-tinted

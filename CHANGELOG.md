@@ -15,6 +15,14 @@ Every release of Zia, newest first. The format follows
   past that a sheet still goes in or out each time. The lid stays open
   while the folder is, and back at three it turns into the folder again.
 
+### Changed
+
+- The swipe card (the round arrow, and the list of pages it opens into)
+  is drawn like the tab and folder hover cards: their background, their
+  hairline edge rather than a thicker outline, their corners, and
+  see-through with them when they are.
+
+
 ## [2.86.2] — 2026-10-03
 
 ### Fixed
