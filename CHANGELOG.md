@@ -4,29 +4,18 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Added
-
-- Smoother scrolling and swipes between spaces, an experimental option
-  (off by default, Settings → Sine Mods → Zia → Features): a two-finger
-  swipe between spaces moves at the display's own rate (120Hz on a
-  ProMotion Mac) instead of in tiny steps at the trackpad's 60 updates a
-  second, the tabs, the essentials and the space's colour together; and
-  pages scroll with Firefox's smoother easing, which eases out as a flick
-  does. (Firefox's own setting for it, general.smoothScroll.msdPhysics.enabled,
-  is only turned on if you hadn't set it, and back off with the option.)
+## [2.90.1] — 2026-10-03
 
 ### Fixed
 
 - With Cmd/Ctrl+T set to leave the address bar ready to type in, the
   search page's address no longer appears in it as the page loads, so
   there's nothing to delete before typing.
-- Swiping between spaces is smoother: as Zen fades one space's colour into
+- Switching spaces does less work: as Zen fades one space's colour into
   the next, Zia worked out the music card's colours again on every frame
-  and restyled the whole window each time. It now waits until the swipe
-  is over (the colour still fades as before). The essentials' rows aren't
-  measured again on every frame of the slide either.
+  and restyled the whole window each time, and measured the essentials'
+  rows again too. Both now wait until the switch is over (the colour
+  still fades as before).
 
 ## [2.90.0] — 2026-10-03
 

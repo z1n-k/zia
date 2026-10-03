@@ -122,12 +122,6 @@
     "defaultValue": false
   },
   {
-    "type": "checkbox",
-    "label": "Smoother scrolling and swipes between spaces (experimental)",
-    "property": "zia.motion.smooth",
-    "defaultValue": false
-  },
-  {
     "type": "separator",
     "label": "Tabs"
   },
