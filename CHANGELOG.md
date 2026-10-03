@@ -9,13 +9,13 @@ Every release of Zia, newest first. The format follows
 ### Added
 
 - Swiping back or forward with two fingers shows Dia's round arrow,
-  sliding in from the page's edge level with the pointer, in place of
-  Firefox's. Hold the swipe and it opens into a card of the pages it goes
-  through, the one you'll land on first. Let go and the card stays: two
-  fingers up and down (or the arrow keys, or the pointer) pick a page,
-  and a click or Return goes straight to it; Escape or a click elsewhere
-  closes it. A quick swipe goes back a page as before (Settings → Sine
-  Mods → Zia → Page, on by default).
+  sliding in from the page's edge, level with its middle, in place of
+  Firefox's, with a tap on the trackpad as it comes fully in. Hold the
+  swipe and it opens, with another tap, into a card of the pages it goes
+  through, the next one first; it stays when you let go, to click the
+  page you want, and a click anywhere round it (or Escape) closes it. A
+  quick swipe goes back a page as before (Settings → Sine Mods → Zia →
+  Page, on by default).
 - Optional: hide the glow around the selected tab, keeping its highlight
   (Settings → Sine Mods → Zia → Tabs, off by default).
 - Optional: two essentials to a row, however wide the sidebar, so it can

@@ -10,7 +10,7 @@
     --p: 0;
     --zia-swipe-in: calc(-92px + var(--p) * 112px);
     position: absolute;
-    top: var(--zia-swipe-y, 50%);
+    top: 50%;
     left: 0;
     z-index: 10;
     width: 80px;
@@ -48,8 +48,8 @@
       --zia-swipe-in: -20px;
     }
 
-    /* left open to pick from */
-    &[pinned] {
+    /* open, it stays to pick from */
+    &[open]:not([leaving]) {
       pointer-events: auto;
     }
 
@@ -120,8 +120,8 @@
     color: rgba(255, 255, 255, 0.72);
     transition: background-color 0.12s ease, color 0.12s ease;
 
-    /* the page the swipe lands on: the next one, or the one picked */
-    &[selected] {
+    /* the next page, until the pointer picks another */
+    &:is([selected], :hover) {
       background: rgba(255, 255, 255, 0.09);
       color: rgba(255, 255, 255, 0.95);
     }
@@ -137,6 +137,18 @@
       white-space: nowrap;
       text-overflow: ellipsis;
     }
+  }
+
+  #zia-swipe .zia-swipe-pages:hover .zia-swipe-page[selected]:not(:hover) {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  /* behind the open card, over the page: a click anywhere round it closes it */
+  #zia-swipe-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 9;
   }
 
   @media (prefers-reduced-motion: reduce) {
