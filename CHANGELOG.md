@@ -8,6 +8,12 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
+- Zen's Library is part of the sidebar: swiped to past your first space
+  (or opened from its button), it slides in over the sidebar at the
+  sidebar's own width, so the page stays put, with its sections as a strip
+  of icons along the top and its lists as the sidebar's tab rows. Spaces
+  still shows each space as a column, widening it as before. Every
+  section, filter and button is Zen's own.
 - A tab without its own icon shows just a translucent square, without
   Zen's logo in it.
 - Hiding or showing a space's pinned tabs and folders by clicking its

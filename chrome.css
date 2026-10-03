@@ -7105,3 +7105,257 @@ zen-folder .tab-reset-button {
     filter: drop-shadow(0 0 0.5px rgba(0, 0, 0, 0.32)) drop-shadow(0 0.5px 1px rgba(0, 0, 0, 0.1));
   }
 }
+/* Zen's Library (Zen 1.23) as a space of the sidebar. Swiped to past the
+   first space (or opened from its button), it slides in over the sidebar at
+   the sidebar's own width, so the page beside it doesn't move; only Spaces,
+   which shows each space as a column, widens it as Zen does. Its sections
+   are a strip of icons along the top instead of a side rail, and its lists
+   are the sidebar's tab rows. Everything in it is still Zen's: the
+   sections, their search, filters, rows, buttons and menus. */
+
+zen-library {
+  --zen-library-radius: var(--zia-tab-radius);
+  --zen-library-pill-bg: color-mix(in srgb, currentColor 6%, transparent);
+  --zen-library-pill-hover-bg: var(--zia-tab-hover-bg);
+
+  font-size: var(--zia-text-size);
+}
+
+zen-library:not(:has(#zen-library-content > [data-section="spaces"][showing])) {
+  width: var(--zia-library-width, 280px) !important;
+}
+
+zen-library .zen-library-section:not([data-section="spaces"]) {
+  max-width: none !important;
+}
+
+/* the panel: the top (window buttons, name, close, sections) over the list */
+zen-library #zen-library-panel {
+  flex-direction: column !important;
+}
+
+zen-library #zen-library-side {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  min-width: 0 !important;
+  height: auto !important;
+  padding: 0 8px;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+zen-library #zen-library-header {
+  grid-column: 1;
+  grid-row: 1;
+  min-height: 28px;
+
+  &::after {
+    content: "Library";
+    padding: 10px 8px 2px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+}
+
+@media (-moz-platform: macos) {
+  zen-library #zen-library-header {
+    padding: 12px 0 0 1px !important;
+  }
+}
+
+/* Zen's footer (close, donate) sits top right, just its close button */
+zen-library #zen-library-footer {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: end;
+  padding: 0 !important;
+
+  & .toolbarbutton-1[image*="heart-circle"] {
+    display: none !important;
+  }
+}
+
+/* the sections: a strip of icons, the open one drawn as the selected tab */
+zen-library #zen-library-sidebar-tabs {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  flex-direction: row !important;
+  gap: 2px !important;
+  margin-top: 8px;
+  padding: 3px;
+  border-radius: calc(var(--zia-tab-radius) + 1.5px);
+  background: color-mix(in srgb, currentColor 6%, transparent);
+}
+
+zen-library .zen-library-tab {
+  --zen-library-sprite-size: 18px;
+
+  flex: 1;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 30px;
+  gap: 0 !important;
+
+  & label {
+    display: none;
+  }
+
+  &::before {
+    border-radius: calc(var(--zia-tab-radius) - 1.5px) !important;
+  }
+
+  &:hover::before {
+    background: var(--zia-tab-hover-bg) !important;
+  }
+
+  &[active]::before {
+    background: color-mix(in srgb, currentColor 14%, transparent) !important;
+    box-shadow: inset 0 0 0 var(--zia-shine-width, 0.5px) color-mix(in srgb, currentColor 18%, transparent);
+  }
+}
+
+/* Zen's animated section icons in the text colour, filled while open */
+zen-library :is(.zen-library-tab-icon-image, .empty-state-icon-image) {
+  --stroke: currentColor;
+  --fill: color-mix(in srgb, currentColor 22%, transparent);
+}
+
+zen-library[zen-library-downloading] .zen-library-tab[data-section="downloads"]::after {
+  top: 50%;
+  translate: -50% -50%;
+  border-width: 2px;
+}
+
+/* ---- search and filters: Zia's pills ---- */
+
+zen-library .zen-library-search-top {
+  padding: 8px 8px 6px;
+}
+
+zen-library :is(.zen-library-search-box, .zen-library-filter-button) {
+  height: 34px;
+  padding-inline: 10px;
+  border-radius: var(--zia-tab-radius);
+}
+
+zen-library .zen-library-search-box:focus-within {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 20%, transparent);
+}
+
+zen-library :is(.zen-library-search-box, .zen-library-filter-button, .zen-library-filter-chip) img {
+  width: 15px;
+  height: 15px;
+}
+
+/* the filter button as a square icon: the list is narrow */
+zen-library .zen-library-filter-button {
+  padding-inline: 0;
+  width: 34px;
+  justify-content: center;
+
+  & span {
+    display: none;
+  }
+}
+
+zen-library :is(.zen-library-filter-done, .zen-library-filter-chip) {
+  border-radius: calc(var(--zia-tab-radius) - 1.5px);
+  font-weight: 500;
+}
+
+zen-library .zen-library-filter-chip {
+  padding: 5px 10px;
+  font-size: 12px;
+
+  &[active] {
+    background: color-mix(in srgb, currentColor 16%, transparent);
+    box-shadow: inset 0 0 0 var(--zia-shine-width, 0.5px) color-mix(in srgb, currentColor 20%, transparent);
+  }
+}
+
+zen-library .zen-library-filter-options {
+  gap: 5px;
+}
+
+zen-library .zen-library-filter-group h3 {
+  margin: 10px 2px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.5;
+}
+
+/* ---- the lists: rows as the sidebar's tabs ---- */
+
+zen-library .zen-library-search-results {
+  padding: 0 8px 10px;
+}
+
+zen-library .zen-library-group h3 {
+  margin: 12px 10px 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  opacity: 0.45;
+}
+
+zen-library .zen-library-row {
+  gap: 10px;
+  min-height: 44px;
+  box-sizing: border-box;
+  margin-block: 1px;
+  padding: 5px 6px 5px 10px;
+  border-radius: var(--zia-tab-radius);
+
+  &:hover,
+  &[menu-open] {
+    background: var(--zia-tab-hover-bg);
+  }
+}
+
+zen-library .zen-library-row-icon {
+  border-radius: 4px;
+}
+
+zen-library .zen-library-row-title {
+  font-size: var(--zia-text-size);
+  font-weight: var(--zia-tab-weight, 400);
+}
+
+zen-library .zen-library-row-subtitle {
+  font-size: 11.5px;
+  opacity: 0.45;
+}
+
+zen-library .zen-library-row-text {
+  gap: 1px;
+  min-width: 0;
+}
+
+/* a row's buttons show as the pointer comes onto it, as a tab's close does */
+zen-library .zen-library-row:not(:hover, [menu-open]) .zen-library-row-actions:not(:has(moz-toggle)) {
+  opacity: 0;
+}
+
+zen-library .zen-library-row-actions .toolbarbutton-1 > .toolbarbutton-icon {
+  width: 14px;
+  height: 14px;
+  padding: 6px;
+  border-radius: var(--zia-close-radius);
+}
+
+zen-library .zen-library-row-actions .toolbarbutton-1:not([disabled]):hover > .toolbarbutton-icon {
+  background-color: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+/* media: two to a row in the narrow list */
+zen-library .zen-library-media-grid {
+  grid-template-columns: repeat(auto-fill, minmax(116px, 1fr));
+  gap: 6px;
+  padding: 0;
+}
+
+zen-library .zen-library-media-item {
+  border-radius: 12px;
+  padding: 8px;
+}
