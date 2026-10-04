@@ -1,286 +1,183 @@
-/* Tidy Downloads, by Bxthesda and Zylaah (github.com/Vertex-Mods/Zen-Tidy-Downloads),
-   used in Zia with their permission: its rename card, drawn only while
-   "Rename finished downloads with AI" is on (tidy-downloads/). */
-/* Rename tooltip. In the sidebar column, right after the media toolbar, so it
-   takes height and pushes that toolbar up. JS only moves the tail. */
-#userchrome-download-cards-container {
-  --tidy-tooltip-radius: 10px;
-  position: relative;
-  z-index: 5;
-  display: none;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0;
-  pointer-events: none;
-  box-sizing: border-box;
-  -moz-window-dragging: no-drag;
-  width: 100%;
-  min-width: 0;
-  margin-top: 10px;
-  overflow: visible;
-}
+/* The rename card (tidy-downloads/tidy-downloads.js; Tidy Downloads, by
+   Bxthesda and Zylaah, with their permission): a small copy of Zia's glass
+   address pop-up just above the sidebar's foot. A heading says what the
+   file was called, with Undo and close as Zia's small buttons; under it the
+   file, as a highlighted pop-up row, with its picture, new name and size.
+   Out of the way while the Library or its download stack is open. */
+#zia-rename-card {
+  --zia-rc-glass: color-mix(in srgb, var(--zia-urlbar-open-bg) 78%, transparent);
+  --zia-rc-ink: var(--zia-sidebar-ink, rgb(255, 255, 255));
+  --zia-rc-row: rgba(255, 255, 255, 0.08);
+  --zia-rc-edge: rgba(255, 255, 255, 0.14);
 
-/* Hidden until a rename succeeds. JS then sets display and pins the card to the badge. */
-#userchrome-download-cards-container > .details-tooltip.master-tooltip {
-  display: none;
-}
-
-/* Zen multiplies radii by --zen-squircle-value to suit its superellipse curve,
-   while mods such as Zia force round corners on everything. Pin both here so
-   the card keeps the same corner either way. The id beats those mod selectors. */
-#userchrome-download-cards-container > .details-tooltip.master-tooltip,
-#userchrome-download-cards-container > .details-tooltip.master-tooltip > .ai-sparkle-layer {
-  border-radius: var(--tidy-tooltip-radius) !important;
-  corner-shape: round !important;
-}
-
-/* Master tooltip - relative positioning for toolbar integration */
-.details-tooltip {
-  position: relative;
-  order: 0;
-  width: 100%;
-  box-sizing: border-box;
-  background: color-mix(in srgb, var(--zen-primary-color) 40%, black 60%);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 8px 10px;
-  color: white;
-  z-index: 51;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  pointer-events: none;
+  gap: 4px;
+  margin: 0 2px 8px;
+  padding: 6px;
+  border-radius: calc(var(--zia-pop-row-radius, 8px) + 6px);
+  background: var(--zia-rc-glass);
+  backdrop-filter: blur(24px) saturate(1.6);
+  box-shadow: inset 0 0 0 var(--zia-shine-width) var(--zia-rc-edge), 0 10px 30px rgba(0, 0, 0, 0.3);
+  color: var(--zia-rc-ink);
+  font-size: var(--zia-text-size);
+  -moz-window-dragging: no-drag;
   opacity: 0;
-  transform: scaleY(0.8) translateY(10px);
-  transform-origin: bottom left;
-  transition: opacity 0.3s ease-out 0.15s,
-    transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.1) 0.15s, width 0.2s ease-out;
-  margin-bottom: 6px;
-  min-width: 0;
+  transform: translateY(6px) scale(0.98);
+  transform-origin: bottom center;
+  transition: opacity 0.2s ease, transform var(--zia-spring-time) var(--zia-spring);
+
+  &[hidden] {
+    display: none;
+  }
+
+  &[zia-shown] {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-/* Tooltip content elements */
-.card-status {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.3) !important;
-  line-height: 1.2;
-  padding-right: 28px;
-}
-
-.card-title {
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.3;
-  color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  padding-right: 28px;
-  box-sizing: border-box;
-  margin-top: 1px;
-  margin-bottom: 1px;
-  mask-image: linear-gradient(to right, black calc(100% - 16px), transparent 100%);
-  mask-size: 100% 100%;
-  mask-position: left;
-  mask-repeat: no-repeat;
-  mask-origin: content-box;
-  mask-clip: content-box;
-}
-
-.card-original-filename {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.3);
-  text-decoration: line-through;
-  white-space: nowrap;
-  overflow: hidden;
-  display: none;
-  margin-bottom: 2px;
-  padding-right: 52px;
-  box-sizing: border-box;
-  mask-image: linear-gradient(to right, black calc(100% - 16px), transparent 100%);
-  mask-size: 100% 100%;
-  mask-position: left;
-  mask-repeat: no-repeat;
-  mask-origin: content-box;
-  mask-clip: content-box;
-}
-
-.card-progress {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.3);
-}
-
-.card-filesize {
-  position: absolute;
-  bottom: 8px;
-  right: 10px;
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.3);
+:root:is(:has(zen-library[open]), :has(#zen-sidebar-foot-buttons[zen-library-stack-open])) #zia-rename-card {
   display: none;
 }
 
-/* Tooltip buttons container */
-.tooltip-buttons-container {
-  position: absolute;
-  top: 8px;
-  right: 10px;
+.zia-rc-head {
   display: flex;
   align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 2px 2px 0 8px;
+  font-size: 11.5px;
+  color: color-mix(in srgb, var(--zia-rc-ink) 60%, transparent);
 }
 
-.card-undo-button {
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.3);
-  cursor: pointer;
-  padding: 2px 2px 2px 0px;
-  line-height: 1;
-  display: none;
-  pointer-events: auto;
-  width: 10px;
-  height: 10px;
-  vertical-align: middle;
-}
-
-.card-close-button {
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.3);
-  font-size: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  padding: 2px 0px 2px 6px;
-  line-height: 1;
-  pointer-events: auto;
-  vertical-align: middle;
-}
-
-.tooltip-tail {
-  position: absolute;
-  width: 0;
-  height: 0;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 8px solid color-mix(in srgb, var(--zen-primary-color) 40%, black 60%);
-  bottom: -6px;
-  right: auto;
-  left: 15px;
-}
-
-.card-close-button:hover,
-.card-undo-button:hover {
-  color: #fff;
-}
-
-/* Animation states */
-.master-tooltip[data-visible="true"] {
-  opacity: 1;
-  transform: scaleY(1) translateY(0);
-  pointer-events: auto;
-}
-
-@media (max-width: 400px) {
-  .details-tooltip.master-tooltip {
-    width: 100%;
-  }
-}
-
-/* Right-side sidebar adjustments - align to right */
-#main-window[zen-right-side] #userchrome-download-cards-container,
-:root[zen-right-side] #userchrome-download-cards-container {
-  align-items: flex-end;
-}
-
-#main-window[zen-right-side] #userchrome-download-cards-container .details-tooltip,
-:root[zen-right-side] #userchrome-download-cards-container .details-tooltip {
-  transform-origin: bottom right;
-}
-
-/* AI Sparkle Effect */
-.ai-sparkle-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: -1;
-  /* Behind content but in front of background if possible, or just use mix-blend-mode */
-  overflow: hidden;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-}
-
-.ai-sparkle-layer.visible {
-  opacity: 1;
-}
-
-.sparkle-icon {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAABzklEQVR4nO2ZS04CQRRFzwh06HcJfuIS1IEaXI3AAhR/Iyc4MA4UTDRAdB9+UOI+YCwEVExs08nrxJiyrYb+VBlOcidNQt/bqXpVrwpG/F/yQEuUwzJWAeeHVrCIHUUA95k1FBUBjrGImiKA+8wanhUBGlhCGugpAvTkN+PZVJj3tIEFXPgEKGE400DHJ0AbmMJgTn3MezrBUBaAvkaAD2AJw0gDdQ3znh5Mq0jlAOY9VTCEgwHMezpM0rg7BC6HMO/pBhiP2/xiwDH/l+ryn5EzCRwB7yGad75Vp3NgNoqhkpEV1m+RCksdeVdmkErldlIF2btXZVep2pjFpVfxUBNPu36dXT5Bo05AZVUBWgYYczTVVAVo2h4ga4AxR0OfwNZv82BZJnFRlvonoJug2a54qIingngMRApYlxrdjsH0C3Am73TfHSoTspC9RWC8Lx9phhiYB+5DNH8LzBEzqZA2c9fAGAmyP4T5PQyhNID5KwwiLW2irvm7KCpMGBNbp6nvJzFhdTnRCGD0KfWUxsGW2xQZTdkngLvCGk/GJ8AaFh+vd02sPL/RUAR4xPIrpiqWX/IVsfyadRuLWFG0gYE7qaTJSfPd9OthR2A5XyXfjAnQ4fRwAAAAAElFTkSuQmCC");
-  background-size: contain;
+.zia-rc-mark,
+.zia-rc-button {
+  flex: none;
+  background-position: center;
   background-repeat: no-repeat;
-  opacity: 0;
-  /* Make icon white using brightness(0) invert(1) and add glow */
-  filter: brightness(0) invert(1) drop-shadow(0 0 1px rgba(255, 255, 255, 0.5));
-  animation: sparkle-shine 3s infinite ease-in-out;
+  -moz-context-properties: fill, fill-opacity;
+  fill: currentColor;
 }
 
-@keyframes sparkle-shine {
-  0% {
-    transform: scale(0) rotate(0deg);
-    opacity: 0;
-  }
-
-  50% {
-    transform: scale(1) rotate(180deg);
-    opacity: 0.5;
-  }
-
-  100% {
-    transform: scale(0) rotate(360deg);
-    opacity: 0;
-  }
-}
-
-/* Specific positions for sparkles to look random but composed */
-.sparkle-icon:nth-child(1) {
-  top: 10%;
-  left: 10%;
-  animation-delay: 0s;
-  width: 9px;
-  height: 9px;
-}
-
-.sparkle-icon:nth-child(2) {
-  top: 25%;
-  right: 25%;
-  animation-delay: 0.5s;
-  width: 11px;
-  height: 11px;
-}
-
-.sparkle-icon:nth-child(3) {
-  bottom: 15%;
-  left: 20%;
-  animation-delay: 1.2s;
-  width: 8px;
-  height: 8px;
-}
-
-.sparkle-icon:nth-child(4) {
-  bottom: 25%;
-  right: 10%;
-  animation-delay: 1.8s;
+.zia-rc-mark {
   width: 12px;
   height: 12px;
+  background-image: url("chrome://sine/content/zia/icons/ui/check.svg");
+  background-size: 12px;
 }
 
-.sparkle-icon:nth-child(5) {
-  top: 50%;
-  left: 50%;
-  animation-delay: 2.5s;
-  width: 6px;
-  height: 6px;
+.zia-rc-status {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  & s {
+    text-decoration-thickness: 1px;
+  }
+}
+
+/* Undo and close, as Zia's small buttons: a block behind them on hover */
+.zia-rc-button {
+  appearance: none;
+  width: var(--zia-close-size, 22px);
+  height: var(--zia-close-size, 22px);
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--zia-close-radius, 6px);
+  background-color: transparent;
+  background-size: 14px;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--zia-close-hover-bg);
+    color: var(--zia-rc-ink);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--zia-loading-color);
+    outline-offset: -2px;
+  }
+}
+
+.zia-rc-undo {
+  background-image: url("chrome://sine/content/zia/icons/ui/arrow-back-up.svg");
+}
+
+.zia-rc-close {
+  background-image: url("chrome://sine/content/zia/icons/ui/x.svg");
+}
+
+/* the file, as one of the pop-up's rows, lit */
+.zia-rc-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--zia-pop-row-height, 36px);
+  padding: 0 10px;
+  border-radius: var(--zia-pop-row-radius, 8px);
+  background: var(--zia-rc-row);
+}
+
+.zia-rc-icon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.zia-rc-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.zia-rc-size {
+  flex: none;
+  font-size: 11px;
+  color: color-mix(in srgb, var(--zia-rc-ink) 45%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* light: the light pop-up's glass, a dark edge and row */
+:root[zia-light] #zia-rename-card {
+  --zia-rc-glass: rgba(250, 250, 251, 0.84);
+  --zia-rc-row: rgba(0, 0, 0, 0.05);
+  --zia-rc-edge: rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 0 0 var(--zia-shine-width) var(--zia-rc-edge), 0 10px 30px rgba(0, 0, 0, 0.14);
+}
+
+/* In compact mode it's one of Zen's toasts instead, with an Undo */
+.zia-rc-toast {
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 14px !important;
+
+  & label {
+    margin: 0;
+  }
+}
+
+.zia-rc-toast-undo {
+  appearance: none;
+  border: none;
+  border-radius: var(--zia-close-radius, 6px);
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.14);
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.22);
+  }
 }

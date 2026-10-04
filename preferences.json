@@ -728,16 +728,9 @@
   {
     "property": "extensions.downloads.enable_debug",
     "type": "checkbox",
-    "label": "Enable debugging logs in the browser console (Ctrl + Shift + J)",
+    "label": "Log what renaming does in the Browser Console (Cmd/Ctrl+Shift+J)",
     "defaultValue": false,
     "description": "Writes Tidy Downloads diagnostic messages to the browser toolbox console."
-  },
-  {
-    "property": "extensions.downloads.debug_ai_only",
-    "type": "checkbox",
-    "label": "Show only AI renaming debug logs",
-    "defaultValue": true,
-    "description": "When debug logging is on, limit output to AI renaming messages."
   },
   {
     "type": "separator",

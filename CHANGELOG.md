@@ -15,7 +15,12 @@ Every release of Zia, newest first. The format follows
   **Rename finished downloads with AI** in settings and add a key for
   Mistral, OpenAI, Anthropic, Google, OpenRouter or any OpenAI-compatible
   endpoint, or use Ollama on your own machine. Remove Tidy Downloads if
-  you have it as its own mod; Zia's copy uses the same settings.
+  you have it as its own mod; Zia's copy uses the same settings. Its code
+  is slimmed for Zia (about 4,800 lines to 1,300, leftovers of an older
+  download pile gone), and its card is a small glass pop-up in Zia's look
+  above the sidebar's foot, out of the way while the Library is open; in
+  compact mode a toast says it, with an Undo. Downloads from private
+  windows are never sent to an AI service.
 
 ### Fixed
 

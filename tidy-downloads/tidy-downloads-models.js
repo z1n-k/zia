@@ -1,19 +1,14 @@
-// ==UserScript==
-// @include   main
-// @loadOrder 99999999999999
-// @ignorecache
-// ==/UserScript==
-
-// tidy-downloads-ai-models.uc.js
-// Live provider model catalogs for Sine settings (same approach as urlbar-ai).
+// Tidy Downloads' model lists (by Bxthesda and Zylaah, in Zia with their
+// permission): each AI service's model dropdown in Zia's settings is filled
+// with the models that service actually offers, read live.
 (function () {
   "use strict";
 
   // Settings pages ship a `default-src chrome:` CSP that blocks provider requests, so the
   // fetching has to happen from the browser window and reach into the settings document.
   if (location.href !== "chrome://browser/content/browser.xhtml") return;
-  if (window.__zenTidyDownloadsAiModelsSetup) return;
-  window.__zenTidyDownloadsAiModelsSetup = true;
+  if (window.__ziaTidyDownloadsModels) return;
+  window.__ziaTidyDownloadsModels = true;
 
   const { classes: Cc, interfaces: Ci } = Components;
   const prefsService = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch);
@@ -21,23 +16,22 @@
   const PREF_INT = Ci.nsIPrefBranch.PREF_INT;
   const PREF_BOOL = Ci.nsIPrefBranch.PREF_BOOL;
 
-  const Utils = window.zenTidyDownloadsUtils;
-  const AI_PROVIDER_PREF = Utils?.AI_PROVIDER_PREF || "extensions.downloads.ai_provider";
-  const MISTRAL_API_KEY_PREF = Utils?.MISTRAL_API_KEY_PREF || "extensions.downloads.mistral_api_key";
-  const MISTRAL_MODEL_PREF = Utils?.MISTRAL_MODEL_PREF || "extensions.downloads.mistral_model";
-  const OPENAI_API_KEY_PREF = Utils?.OPENAI_API_KEY_PREF || "extensions.downloads.openai_api_key";
-  const OPENAI_MODEL_PREF = Utils?.OPENAI_MODEL_PREF || "extensions.downloads.openai_model";
-  const ANTHROPIC_API_KEY_PREF = Utils?.ANTHROPIC_API_KEY_PREF || "extensions.downloads.anthropic_api_key";
-  const ANTHROPIC_MODEL_PREF = Utils?.ANTHROPIC_MODEL_PREF || "extensions.downloads.anthropic_model";
-  const GOOGLE_API_KEY_PREF = Utils?.GOOGLE_API_KEY_PREF || "extensions.downloads.google_api_key";
-  const GOOGLE_MODEL_PREF = Utils?.GOOGLE_MODEL_PREF || "extensions.downloads.google_model";
-  const OLLAMA_BASE_URL_PREF = Utils?.OLLAMA_BASE_URL_PREF || "extensions.downloads.ollama_base_url";
-  const OLLAMA_MODEL_PREF = Utils?.OLLAMA_MODEL_PREF || "extensions.downloads.ollama_model";
-  const OPENROUTER_API_KEY_PREF = Utils?.OPENROUTER_API_KEY_PREF || "extensions.downloads.openrouter_api_key";
-  const OPENROUTER_MODEL_PREF = Utils?.OPENROUTER_MODEL_PREF || "extensions.downloads.openrouter_model";
-  const OPENAI_COMPAT_API_KEY_PREF = Utils?.OPENAI_COMPAT_API_KEY_PREF || "extensions.downloads.openai_compat_api_key";
-  const OPENAI_COMPAT_BASE_URL_PREF = Utils?.OPENAI_COMPAT_BASE_URL_PREF || "extensions.downloads.openai_compat_base_url";
-  const OPENAI_COMPAT_MODEL_PREF = Utils?.OPENAI_COMPAT_MODEL_PREF || "extensions.downloads.openai_compat_model";
+  const AI_PROVIDER_PREF = "extensions.downloads.ai_provider";
+  const MISTRAL_API_KEY_PREF = "extensions.downloads.mistral_api_key";
+  const MISTRAL_MODEL_PREF = "extensions.downloads.mistral_model";
+  const OPENAI_API_KEY_PREF = "extensions.downloads.openai_api_key";
+  const OPENAI_MODEL_PREF = "extensions.downloads.openai_model";
+  const ANTHROPIC_API_KEY_PREF = "extensions.downloads.anthropic_api_key";
+  const ANTHROPIC_MODEL_PREF = "extensions.downloads.anthropic_model";
+  const GOOGLE_API_KEY_PREF = "extensions.downloads.google_api_key";
+  const GOOGLE_MODEL_PREF = "extensions.downloads.google_model";
+  const OLLAMA_BASE_URL_PREF = "extensions.downloads.ollama_base_url";
+  const OLLAMA_MODEL_PREF = "extensions.downloads.ollama_model";
+  const OPENROUTER_API_KEY_PREF = "extensions.downloads.openrouter_api_key";
+  const OPENROUTER_MODEL_PREF = "extensions.downloads.openrouter_model";
+  const OPENAI_COMPAT_API_KEY_PREF = "extensions.downloads.openai_compat_api_key";
+  const OPENAI_COMPAT_BASE_URL_PREF = "extensions.downloads.openai_compat_base_url";
+  const OPENAI_COMPAT_MODEL_PREF = "extensions.downloads.openai_compat_model";
 
   const CACHE_TTL_MS = 5 * 60 * 1000;
   const FAILURE_CACHE_TTL_MS = 60 * 1000;
@@ -729,11 +723,6 @@
     }
 
     scanOpenPreferencesDocuments();
-    Object.keys(PROVIDER_MODEL_PREFS).forEach((key) => {
-      getProviderModels(key).catch((e) => {
-        logWarnOnce(`prefetch:${key}`, `Could not prefetch ${key} models:`, e.message);
-      });
-    });
   }
 
   setupModelListSync();
