@@ -6,6 +6,12 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- On Windows, compact mode's sidebar has the same corners as the page
+  card, rather than far rounder ones: Zen sizes them for its squarer
+  Windows curve, which Zia draws as a circle.
+
 ### Added
 
 - Zen's Library (Zen 1.23) is drawn like the rest of Zia, kept in Zen's

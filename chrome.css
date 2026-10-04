@@ -5647,6 +5647,21 @@ tooltip[default="true"] {
   }
 }
 
+/* Windows: Zen sizes the flyout sidebar's corners for its squarer Windows
+   curve (2.3 times the length), and Zia draws every corner as a circle, so
+   the sidebar came out far rounder than the page card and the window's own
+   corners. It takes the page card's corner instead, as Zen's curve is
+   divided back out of that. */
+@media (-moz-platform: windows) {
+  :root[zen-compact-mode="true"]:not(#zia-none) .zen-toolbar-background {
+    &,
+    &::before,
+    &::after {
+      border-radius: max(0px, calc(var(--zia-card-radius) - var(--zen-compact-mode-no-padding-radius-fix, 0px) / var(--zen-squircle-value, 1))) !important;
+    }
+  }
+}
+
 :root[zen-compact-mode="true"] #zen-appcontent-wrapper {
   position: relative !important;
   z-index: 0 !important;
