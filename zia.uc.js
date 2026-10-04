@@ -5616,6 +5616,13 @@
   const POP_SCROLL_TRIM = 10;
   let popBottomTrim = null;
 
+  // The pop-up's bottom edge. Its background is scaled up from 0.8 (from the
+  // top) as the pop-up opens, so measured mid-way its bottom read short and
+  // the fit came out wrong: its top and unscaled height don't move.
+  function popUpBottom(background) {
+    return background.getBoundingClientRect().top + background.offsetHeight;
+  }
+
   function fitPopoverBottom(passesLeft = 8) {
     const urlbar = gURLBar.textbox || document.getElementById("urlbar");
     if (!urlbar?.hasAttribute("breakout-extend") || urlbarAtBottom()) {
@@ -5632,11 +5639,37 @@
       return;
     }
 
-    const scrolls = [view, ...view.querySelectorAll("*")].some((el) => el.scrollHeight > el.clientHeight + 1);
-    if (scrolls) {
+    const scroller = [view, ...view.querySelectorAll("*")].find((el) => el.scrollHeight > el.clientHeight + 1);
+    if (scroller) {
       root.setAttribute("zia-pop-scrolls", "true");
-      popBottomTrim = POP_SCROLL_TRIM;
-      urlbar.style.setProperty("--zia-pop-bottom-trim", `${POP_SCROLL_TRIM}px`);
+      // A list that scrolls is cut off at the pop-up's edge, and how far down
+      // that falls is up to Zen (it changed with Zen 1.23). Trimmed by a set
+      // amount, the last whole row could end well above the edge, or the next
+      // one start just short of it. The pop-up ends instead under the last
+      // row that fits whole, at rest, with the same gap as at the sides; the
+      // space added at the list's end (the trim again) gives the last row the
+      // same gap once it's scrolled to.
+      const trim = popBottomTrim ?? (parseFloat(getComputedStyle(urlbar).getPropertyValue("--zia-pop-bottom-trim")) || 0);
+      const untrimmed = popUpBottom(background) + trim;
+      let end = null;
+      for (const row of rows) {
+        const box = row.getBoundingClientRect();
+        // (where it sits with the list scrolled to the top)
+        const bottom = box.bottom + scroller.scrollTop + POP_BOTTOM_WANT;
+        if (box.height && bottom <= untrimmed + 0.5) {
+          end = Math.max(end ?? bottom, bottom);
+        }
+      }
+      const want = end === null ? POP_SCROLL_TRIM : Math.max(0, untrimmed - end);
+      if (Math.abs(want - trim) > 0.3) {
+        popBottomTrim = want;
+        urlbar.style.setProperty("--zia-pop-bottom-trim", `${want}px`);
+        if (passesLeft > 0) {
+          requestAnimationFrame(() => fitPopoverBottom(passesLeft - 1));
+        }
+      } else {
+        popBottomTrim = trim;
+      }
       return;
     }
     root.removeAttribute("zia-pop-scrolls");
@@ -5644,7 +5677,7 @@
     if (popBottomTrim === null) {
       popBottomTrim = parseFloat(getComputedStyle(urlbar).getPropertyValue("--zia-pop-bottom-trim")) || 0;
     }
-    const error = background.getBoundingClientRect().bottom - last.getBoundingClientRect().bottom - POP_BOTTOM_WANT;
+    const error = popUpBottom(background) - last.getBoundingClientRect().bottom - POP_BOTTOM_WANT;
     if (Math.abs(error) > 0.3 && passesLeft > 0) {
       popBottomTrim += error * POP_STEP;
       urlbar.style.setProperty("--zia-pop-bottom-trim", `${popBottomTrim}px`);

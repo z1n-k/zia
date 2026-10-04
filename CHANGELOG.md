@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- The address bar pop-up's last row has the same gap below it as at the
+  sides again, with the list scrolling or not, rather than the extra
+  space at the bottom since Zen's update. The pop-up ends under the last
+  row that fits whole, and the list scrolls on from there.
+
 ## [2.90.4] — 2026-10-04
 
 ### Fixed
