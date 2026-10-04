@@ -7947,6 +7947,7 @@ zen-folder .tab-reset-button {
   --zia-rc-ink: var(--zia-sidebar-ink, rgb(255, 255, 255));
   --zia-rc-row: rgba(255, 255, 255, 0.08);
   --zia-rc-edge: rgba(255, 255, 255, 0.14);
+  --zia-rc-hover: rgba(255, 255, 255, 0.1);
 
   display: flex;
   flex-direction: column;
@@ -8032,7 +8033,7 @@ zen-folder .tab-reset-button {
   cursor: pointer;
 
   &:hover {
-    background-color: var(--zia-close-hover-bg);
+    background-color: var(--zia-rc-hover);
     color: var(--zia-rc-ink);
   }
 
@@ -8090,10 +8091,12 @@ zen-folder .tab-reset-button {
   --zia-rc-glass: rgba(250, 250, 251, 0.84);
   --zia-rc-row: rgba(0, 0, 0, 0.05);
   --zia-rc-edge: rgba(0, 0, 0, 0.1);
+  --zia-rc-hover: rgba(0, 0, 0, 0.06);
   box-shadow: inset 0 0 0 var(--zia-shine-width) var(--zia-rc-edge), 0 10px 30px rgba(0, 0, 0, 0.14);
 }
 
-/* In compact mode it's one of Zen's toasts instead, with an Undo */
+/* In compact mode it's one of Zen's toasts instead, with an Undo, a pill
+   like the ✕ Zia adds to Zen's toasts (18-light-pop-up-and-late-overrides) */
 .zia-rc-toast {
   align-items: center;
   gap: 10px;
@@ -8107,15 +8110,17 @@ zen-folder .tab-reset-button {
 .zia-rc-toast-undo {
   appearance: none;
   border: none;
-  border-radius: var(--zia-close-radius, 6px);
-  padding: 4px 10px;
-  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  padding: 3px 10px 3px 24px;
+  background: rgba(255, 255, 255, 0.12) url("chrome://sine/content/zia/icons/ui/arrow-back-up.svg") 8px center / 12px no-repeat;
+  -moz-context-properties: fill, fill-opacity;
+  fill: currentColor;
   color: inherit;
   font: inherit;
   font-weight: 600;
   cursor: pointer;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.22);
+    background-color: rgba(255, 255, 255, 0.2);
   }
 }
