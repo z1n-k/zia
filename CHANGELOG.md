@@ -6,6 +6,13 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- On Windows, a window that isn't full size keeps the gap down the right
+  of the page again, so the page no longer looks to have lost its right
+  border. It meets the right edge only in a full-size window, where the
+  edge is the screen's and the scrollbar is wanted there.
+
 ### Changed
 
 - The Library's sliding section tile, Filter and Clear, and Media's tiles
