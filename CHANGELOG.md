@@ -37,6 +37,9 @@ Every release of Zia, newest first. The format follows
   icons, rather than in its middle in Zen's illustrated ones, and the list
   beside them runs to the Library's edge (it stopped short, leaving a gap
   at the right).
+- The Library button at the foot of the sidebar is as faint as the tab
+  list's arrow beside it, at full strength while hovered, and no longer
+  keeps a small picture of the last download on it.
 
 ### Changed
 

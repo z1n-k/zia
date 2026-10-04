@@ -5440,6 +5440,23 @@ findbar {
   opacity: 0.7;
 }
 
+/* The library's drawing as faint as the buttons beside it (the tab list's
+   arrow), at full strength while hovered */
+#zen-sidebar-foot-buttons #zen-library-button .zen-library-sprite {
+  opacity: 0.4;
+}
+
+#zen-sidebar-foot-buttons #zen-library-button:is(:hover, [open]) .zen-library-sprite {
+  opacity: 1;
+}
+
+/* After a download, Zen left a small picture of the file sitting on the
+   library button, until its list was next opened. Gone: the file shows in
+   that list. (A download under way keeps its ring.) */
+#zen-sidebar-foot-buttons #library-button-badge:not([downloading]) {
+  display: none !important;
+}
+
 #alltabs-button .toolbarbutton-icon {
   opacity: 0.4 !important;
 }
