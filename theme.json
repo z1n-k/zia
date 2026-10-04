@@ -15,6 +15,66 @@
       "include": [
         "chrome://browser/content/browser.xhtml"
       ]
+    },
+    "tidy-downloads/tidy-downloads-utils.uc.js": {
+      "include": [
+        "chrome://browser/content/browser.xhtml"
+      ],
+      "loadOrder": 1
+    },
+    "tidy-downloads/tidy-downloads-store.uc.js": {
+      "include": [
+        "chrome://browser/content/browser.xhtml"
+      ],
+      "loadOrder": 2
+    },
+    "tidy-downloads/tidy-downloads-downloads-adapter.uc.js": {
+      "include": [
+        "chrome://browser/content/browser.xhtml"
+      ],
+      "loadOrder": 3
+    },
+    "tidy-downloads/tidy-downloads-toasts.uc.js": {
+      "include": [
+        "chrome://browser/content/browser.xhtml"
+      ],
+      "loadOrder": 4
+    },
+    "tidy-downloads/tidy-downloads-fileops.uc.js": {
+      "include": [
+        "chrome://browser/content/browser.xhtml"
+      ],
+      "loadOrder": 5
+    },
+    "tidy-downloads/tidy-downloads-ai-rename.uc.js": {
+      "include": [
+        "chrome://browser/content/browser.xhtml"
+      ],
+      "loadOrder": 6
+    },
+    "tidy-downloads/tidy-downloads-download-ui.uc.js": {
+      "include": [
+        "chrome://browser/content/browser.xhtml"
+      ],
+      "loadOrder": 7
+    },
+    "tidy-downloads/tidy-downloads-tooltip.uc.js": {
+      "include": [
+        "chrome://browser/content/browser.xhtml"
+      ],
+      "loadOrder": 8
+    },
+    "tidy-downloads/tidy-downloads.uc.js": {
+      "include": [
+        "chrome://browser/content/browser.xhtml"
+      ],
+      "loadOrder": 9
+    },
+    "tidy-downloads/tidy-downloads-ai-models.uc.js": {
+      "include": [
+        "chrome://browser/content/browser.xhtml"
+      ],
+      "loadOrder": 10
     }
   },
   "tags": [

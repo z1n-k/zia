@@ -357,6 +357,390 @@
   },
   {
     "type": "separator",
+    "label": "Rename downloads with AI"
+  },
+  {
+    "type": "checkbox",
+    "label": "Rename finished downloads with AI, with an undo (Tidy Downloads; needs an API key below, or Ollama on your machine; restart after turning on)",
+    "property": "zia.features.tidy-downloads",
+    "defaultValue": false
+  },
+  {
+    "property": "extensions.downloads.ai_provider",
+    "label": "AI service",
+    "type": "dropdown",
+    "defaultValue": "mistral",
+    "description": "Cloud providers first, then Ollama, OpenRouter, or any OpenAI-compatible endpoint.",
+    "options": [
+      {
+        "label": "Mistral AI",
+        "value": "mistral"
+      },
+      {
+        "label": "OpenAI",
+        "value": "openai"
+      },
+      {
+        "label": "Anthropic",
+        "value": "anthropic"
+      },
+      {
+        "label": "Google Gemini",
+        "value": "google"
+      },
+      {
+        "label": "Ollama (local)",
+        "value": "ollama"
+      },
+      {
+        "label": "OpenRouter",
+        "value": "openrouter"
+      },
+      {
+        "label": "OpenAI-compatible endpoint",
+        "value": "openai_compat"
+      }
+    ]
+  },
+  {
+    "property": "extensions.downloads.mistral_api_key",
+    "label": "Mistral API key",
+    "type": "string",
+    "placeholder": "Enter your Mistral API key",
+    "defaultValue": "",
+    "description": "Your API key from console.mistral.ai. The model list loads once this is set.",
+    "conditions": [
+      {
+        "if": {
+          "property": "extensions.downloads.ai_provider",
+          "value": "mistral"
+        }
+      }
+    ]
+  },
+  {
+    "property": "extensions.downloads.mistral_model",
+    "label": "Mistral model",
+    "type": "dropdown",
+    "defaultValue": "mistral-small-latest",
+    "description": "Models available for your Mistral key. The list is fetched from Mistral when a key is set.",
+    "options": [
+      {
+        "value": "mistral-small-latest",
+        "label": "Mistral Small Latest"
+      },
+      {
+        "value": "mistral-medium-latest",
+        "label": "Mistral Medium Latest"
+      },
+      {
+        "value": "mistral-large-latest",
+        "label": "Mistral Large Latest"
+      }
+    ],
+    "conditions": [
+      {
+        "if": {
+          "property": "extensions.downloads.ai_provider",
+          "value": "mistral"
+        }
+      }
+    ]
+  },
+  {
+    "property": "extensions.downloads.openai_api_key",
+    "label": "OpenAI API key",
+    "type": "string",
+    "placeholder": "Enter your OpenAI API key",
+    "defaultValue": "",
+    "description": "Your API key from platform.openai.com. The model list loads once this is set.",
+    "conditions": [
+      {
+        "if": {
+          "property": "extensions.downloads.ai_provider",
+          "value": "openai"
+        }
+      }
+    ]
+  },
+  {
+    "property": "extensions.downloads.openai_model",
+    "label": "OpenAI model",
+    "type": "dropdown",
+    "defaultValue": "gpt-4.1-mini",
+    "description": "Models available for your OpenAI key. The list is fetched from OpenAI when a key is set.",
+    "options": [
+      {
+        "value": "gpt-4.1-mini",
+        "label": "GPT-4.1 Mini"
+      },
+      {
+        "value": "gpt-4.1",
+        "label": "GPT-4.1"
+      },
+      {
+        "value": "gpt-4o",
+        "label": "GPT-4o"
+      }
+    ],
+    "conditions": [
+      {
+        "if": {
+          "property": "extensions.downloads.ai_provider",
+          "value": "openai"
+        }
+      }
+    ]
+  },
+  {
+    "property": "extensions.downloads.anthropic_api_key",
+    "label": "Anthropic API key",
+    "type": "string",
+    "placeholder": "Enter your Anthropic API key",
+    "defaultValue": "",
+    "description": "Your API key from console.anthropic.com. The model list loads once this is set.",
+    "conditions": [
+      {
+        "if": {
+          "property": "extensions.downloads.ai_provider",
+          "value": "anthropic"
+        }
+      }
+    ]
+  },
+  {
+    "property": "extensions.downloads.anthropic_model",
+    "label": "Anthropic model",
+    "type": "dropdown",
+    "defaultValue": "claude-sonnet-4-0",
+    "description": "Models available for your Anthropic key. The list is fetched from Anthropic when a key is set.",
+    "options": [
+      {
+        "value": "claude-sonnet-4-0",
+        "label": "Claude Sonnet 4"
+      },
+      {
+        "value": "claude-opus-4-0",
+        "label": "Claude Opus 4"
+      },
+      {
+        "value": "claude-3-5-haiku-latest",
+        "label": "Claude 3.5 Haiku Latest"
+      }
+    ],
+    "conditions": [
+      {
+        "if": {
+          "property": "extensions.downloads.ai_provider",
+          "value": "anthropic"
+        }
+      }
+    ]
+  },
+  {
+    "property": "extensions.downloads.google_api_key",
+    "label": "Google AI API key",
+    "type": "string",
+    "placeholder": "Enter your Google AI Studio API key",
+    "defaultValue": "",
+    "description": "Your API key from aistudio.google.com. The model list loads once this is set.",
+    "conditions": [
+      {
+        "if": {
+          "property": "extensions.downloads.ai_provider",
+          "value": "google"
+        }
+      }
+    ]
+  },
+  {
+    "property": "extensions.downloads.google_model",
+    "label": "Gemini model",
+    "type": "dropdown",
+    "defaultValue": "gemini-2.5-flash",
+    "description": "Models available for your Google key. The list is fetched from Google when a key is set.",
+    "options": [
+      {
+        "value": "gemini-2.5-flash",
+        "label": "Gemini 2.5 Flash"
+      },
+      {
+        "value": "gemini-2.5-pro",
+        "label": "Gemini 2.5 Pro"
+      },
+      {
+        "value": "gemini-2.0-flash",
+        "label": "Gemini 2.0 Flash"
+      }
+    ],
+    "conditions": [
+      {
+        "if": {
+          "property": "extensions.downloads.ai_provider",
+          "value": "google"
+        }
+      }
+    ]
+  },
+  {
+    "property": "extensions.downloads.ollama_base_url",
+    "label": "Ollama base URL",
+    "type": "string",
+    "placeholder": "http://localhost:11434",
+    "defaultValue": "http://localhost:11434",
+    "description": "Your local Ollama server. No API key required. Installed models are listed from this host.",
+    "conditions": [
+      {
+        "if": {
+          "property": "extensions.downloads.ai_provider",
+          "value": "ollama"
+        }
+      }
+    ]
+  },
+  {
+    "property": "extensions.downloads.ollama_model",
+    "label": "Ollama model",
+    "type": "dropdown",
+    "defaultValue": "llama3.2",
+    "description": "Models installed in your local Ollama instance. The list loads when Ollama is running.",
+    "options": [
+      {
+        "value": "llama3.2",
+        "label": "llama3.2"
+      },
+      {
+        "value": "mistral",
+        "label": "mistral"
+      },
+      {
+        "value": "qwen2.5",
+        "label": "qwen2.5"
+      }
+    ],
+    "conditions": [
+      {
+        "if": {
+          "property": "extensions.downloads.ai_provider",
+          "value": "ollama"
+        }
+      }
+    ]
+  },
+  {
+    "property": "extensions.downloads.openrouter_api_key",
+    "label": "OpenRouter API key",
+    "type": "string",
+    "placeholder": "Enter your OpenRouter API key",
+    "defaultValue": "",
+    "description": "Your API key from openrouter.ai. The model list loads once this is set.",
+    "conditions": [
+      {
+        "if": {
+          "property": "extensions.downloads.ai_provider",
+          "value": "openrouter"
+        }
+      }
+    ]
+  },
+  {
+    "property": "extensions.downloads.openrouter_model",
+    "label": "OpenRouter model",
+    "type": "dropdown",
+    "defaultValue": "openai/gpt-4.1-mini",
+    "description": "Models available for your OpenRouter key. The list is fetched from OpenRouter when a key is set.",
+    "options": [
+      {
+        "value": "openai/gpt-4.1-mini",
+        "label": "OpenAI GPT-4.1 Mini"
+      },
+      {
+        "value": "anthropic/claude-sonnet-4",
+        "label": "Anthropic Claude Sonnet 4"
+      },
+      {
+        "value": "google/gemini-2.5-flash",
+        "label": "Google Gemini 2.5 Flash"
+      }
+    ],
+    "conditions": [
+      {
+        "if": {
+          "property": "extensions.downloads.ai_provider",
+          "value": "openrouter"
+        }
+      }
+    ]
+  },
+  {
+    "property": "extensions.downloads.openai_compat_api_key",
+    "label": "Endpoint API key",
+    "type": "string",
+    "placeholder": "Paste your compatible API key",
+    "defaultValue": "",
+    "description": "API key for a custom OpenAI-compatible server. The model list loads once this is set.",
+    "conditions": [
+      {
+        "if": {
+          "property": "extensions.downloads.ai_provider",
+          "value": "openai_compat"
+        }
+      }
+    ]
+  },
+  {
+    "property": "extensions.downloads.openai_compat_base_url",
+    "label": "Endpoint base URL",
+    "type": "string",
+    "placeholder": "https://api.example.com/v1",
+    "defaultValue": "https://openrouter.ai/api/v1",
+    "description": "Base URL ending in /v1. Chat and model list use this host.",
+    "conditions": [
+      {
+        "if": {
+          "property": "extensions.downloads.ai_provider",
+          "value": "openai_compat"
+        }
+      }
+    ]
+  },
+  {
+    "property": "extensions.downloads.openai_compat_model",
+    "label": "Endpoint model",
+    "type": "dropdown",
+    "defaultValue": "openai/gpt-4.1-mini",
+    "description": "Models advertised by your endpoint. The list is fetched when an API key is set.",
+    "options": [
+      {
+        "value": "openai/gpt-4.1-mini",
+        "label": "openai/gpt-4.1-mini"
+      }
+    ],
+    "conditions": [
+      {
+        "if": {
+          "property": "extensions.downloads.ai_provider",
+          "value": "openai_compat"
+        }
+      }
+    ]
+  },
+  {
+    "property": "extensions.downloads.enable_debug",
+    "type": "checkbox",
+    "label": "Enable debugging logs in the browser console (Ctrl + Shift + J)",
+    "defaultValue": false,
+    "description": "Writes Tidy Downloads diagnostic messages to the browser toolbox console."
+  },
+  {
+    "property": "extensions.downloads.debug_ai_only",
+    "type": "checkbox",
+    "label": "Show only AI renaming debug logs",
+    "defaultValue": true,
+    "description": "When debug logging is on, limit output to AI renaming messages."
+  },
+  {
+    "type": "separator",
     "label": "Loading bar"
   },
   {

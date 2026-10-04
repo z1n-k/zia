@@ -233,6 +233,10 @@ Firefox's Bookmarks, History and Synced Tabs panels become a second sidebar on t
 
 Zen's Library keeps Zen's layout, drawn the way Zia draws the sidebar. Its sections are tiles like essentials, the chosen one lit by a tile that slides between them. History, downloads and boosts are rows measured off your tabs, with the tabs' padding and hover, and the search field and filters are Zia's. Downloads and History get a **Clear** button (Downloads' empties the list, the files staying on disk; History's opens Firefox's Clear browsing data dialog). Turn on **Zen's own Library look** in settings to keep Zen's.
 
+### Rename downloads with AI
+
+Zia includes [Tidy Downloads](https://github.com/Vertex-Mods/Zen-Tidy-Downloads) by Bxthesda and Zylaah: as a download finishes, an AI service gives it a clearer name, shown in a card above the Library button with an **Undo**. It's off until you turn on **Rename finished downloads with AI** in settings and add a key for one of the services (Mistral, OpenAI, Anthropic, Google, OpenRouter or any OpenAI-compatible endpoint), or point it at Ollama on your own machine; then restart. Each finished download's name, and the site, title and heading of the page it came from, are sent to the service you choose (the file itself isn't). If you already use Tidy Downloads as its own mod, remove it: Zia's copy takes its place, with the same settings.
+
 ### Music
 
 Playing music brings up a card with the track's artwork and a soft glow in its colours, for live streams as well as ordinary videos. Playing tabs and essentials get sound bars instead of Zen's speaker: dots when muted, and a click toggles the sound.
@@ -387,6 +391,26 @@ The first folder takes a little while as the model downloads and the icon names 
 | Folders open and close with a gentle spring | on |
 | Coloured folders only show their colour when hovered or open | off |
 | A coloured folder's card (its tabs, shown on hover) takes the folder's colour | off |
+| **Rename downloads with AI** | |
+| Rename finished downloads with AI, with an undo (Tidy Downloads; needs an API key below, or Ollama on your machine; restart after turning on) | off |
+| AI service | mistral |
+| Mistral API key | (empty) |
+| Mistral model | mistral-small-latest |
+| OpenAI API key | (empty) |
+| OpenAI model | gpt-4.1-mini |
+| Anthropic API key | (empty) |
+| Anthropic model | claude-sonnet-4-0 |
+| Google AI API key | (empty) |
+| Gemini model | gemini-2.5-flash |
+| Ollama base URL | http://localhost:11434 |
+| Ollama model | llama3.2 |
+| OpenRouter API key | (empty) |
+| OpenRouter model | openai/gpt-4.1-mini |
+| Endpoint API key | (empty) |
+| Endpoint base URL | https://openrouter.ai/api/v1 |
+| Endpoint model | openai/gpt-4.1-mini |
+| Enable debugging logs in the browser console (Ctrl + Shift + J) | off |
+| Show only AI renaming debug logs | on |
 | **Loading bar** | |
 | Use Zen's accent colour for the loading bar (off: Zia blue) | off |
 | **Picture-in-picture** | |
@@ -449,8 +473,9 @@ The icons ship as one compact file, `icons/tabler-bundle.js`, from which Zia mak
 ## Credits
 
 - Icons: [Tabler Icons](https://tabler.io/icons) (MIT, licence in `icons/tabler-LICENSE`), recoloured to follow Zen's icon colour and otherwise unchanged.
+- Renaming downloads with AI is [Tidy Downloads](https://github.com/Vertex-Mods/Zen-Tidy-Downloads) by Bxthesda and Zylaah, in `tidy-downloads/`, used in Zia with their permission. Those files are theirs and aren't covered by Zia's MIT licence.
 - The bleeding-corners technique was inspired by [Bleeding Corners Fix](https://github.com/rsiebertdev/zen-themes/tree/main/bleeding-corners-fix) by rsiebertdev; Zia uses its own implementation, matched to its card shape.
 
-Zia is an independent, unofficial project. It isn't affiliated with or endorsed by any other browser or its makers, and contains no code or assets from one. It's a Zen Browser theme, designed and built from scratch.
+Zia is an independent, unofficial project. It isn't affiliated with or endorsed by any other browser or its makers, and contains no code or assets from one. It's a Zen Browser theme, designed and built from scratch, apart from the credits above.
 
 **Licence:** [MIT](LICENSE)

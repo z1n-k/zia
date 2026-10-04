@@ -4,6 +4,19 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Rename finished downloads with AI: [Tidy Downloads](https://github.com/Vertex-Mods/Zen-Tidy-Downloads)
+  by Bxthesda and Zylaah is part of Zia, with their permission. As a
+  download finishes, an AI service gives it a clearer name, shown in a
+  card above the Library button with an Undo. Off until you turn on
+  **Rename finished downloads with AI** in settings and add a key for
+  Mistral, OpenAI, Anthropic, Google, OpenRouter or any OpenAI-compatible
+  endpoint, or use Ollama on your own machine. Remove Tidy Downloads if
+  you have it as its own mod; Zia's copy uses the same settings.
+
 ## [2.93.4] — 2026-10-04
 
 ### Removed
