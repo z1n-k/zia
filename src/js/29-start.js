@@ -291,6 +291,7 @@
     safely("watchOldIcons", watchOldIcons);
     safely("watchNewFolders", watchNewFolders);
     safely("watchReopenedFolders", watchReopenedFolders);
+    safely("keepRoomForEssentials", keepRoomForEssentials);
     safely("watchFolderColors", watchFolderColors);
     safely("watchFolderIcon", watchFolderIcon);
     safely("addFolderColorPicker", addFolderColorPicker);
