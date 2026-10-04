@@ -81,6 +81,16 @@
   overflow-clip-margin: var(--zen-toolbox-padding) !important;
 }
 
+/* The tab list draws a little past its edges for the selected tab's glow,
+   which let the space beside the one shown peek in at the sidebar's edge:
+   its coloured folders showed as thin coloured slivers down the side (seen
+   on Windows, where the spaces sit closer). A space Zen has put to one side
+   (not shown, at a whole step away) is hidden while it rests there; while
+   it slides in or follows a swipe it's somewhere in between, and shows. */
+zen-workspace:not([active]):is([style*="translateX(1"], [style*="translateX(2"], [style*="translateX(3"], [style*="translateX(4"], [style*="translateX(5"], [style*="translateX(6"], [style*="translateX(7"], [style*="translateX(8"], [style*="translateX(9"], [style*="translateX(-"])[style*="00%)"] {
+  visibility: hidden !important;
+}
+
 /* Room at the end of the tab list for the last tab's glow, which the list
    would otherwise cut off. The list's inner scroll box ends where the last
    row does and doesn't take padding of its own, so the room goes at the end

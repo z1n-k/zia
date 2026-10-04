@@ -6,6 +6,12 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- The space beside the one shown no longer peeks in at the sidebar's edge:
+  its coloured folders showed as thin coloured slivers down the side (seen
+  on Windows).
+
 ### Added
 
 - A Clear button in the Library's History too, the eraser beside the
