@@ -1032,53 +1032,37 @@
 
   // Zen asks a tab for its media's position as it makes the card, and drops
   // the card if that fails. A stream that never says where it is (Kick's
-  // live player) fails it, so Kick got no card at all. Such a controller is
-  // given an empty position instead (no length: the card then shows no
-  // progress line, as for any live stream), and a tab already playing is
+  // live player) fails it, so since Zen 1.23 Kick got no card at all. The
+  // question is answered for every controller in this window: an active
+  // one with no position gives an empty one (no length: the card shows no
+  // progress line, as for any live stream). A tab already playing is
   // offered to Zen again.
   function cardForPositionlessMedia() {
-    const manager = window.gZenMediaController;
-    if (!manager || typeof manager.activateMediaControls !== "function" || manager.activateMediaControls.__zia) {
+    const proto = window.MediaController?.prototype;
+    const own = proto?.getPositionState;
+    if (typeof own !== "function" || own.__zia) {
       return;
     }
-    const lendPosition = (controller) => {
-      if (!controller || controller.__ziaPosition) {
-        return;
-      }
-      const own = controller.getPositionState;
-      if (typeof own !== "function") {
-        return;
-      }
-      controller.__ziaPosition = true;
-      controller.getPositionState = function () {
-        try {
-          return own.call(this);
-        } catch (err) {
-          if (!this.isActive) {
-            throw err;
-          }
-          return { duration: 0, playbackRate: 1, position: 0 };
-        }
-      };
-    };
-    const original = manager.activateMediaControls;
-    const patched = function (controller, browser) {
+    const patched = function () {
       try {
-        lendPosition(controller);
+        return own.call(this);
       } catch (err) {
-        noteError("music and sound bars: lendPosition", err);
+        if (!this.isActive) {
+          throw err;
+        }
+        return { duration: 0, playbackRate: 1, position: 0 };
       }
-      return original.call(this, controller, browser);
     };
     patched.__zia = true;
-    manager.activateMediaControls = patched;
+    Object.defineProperty(proto, "getPositionState", { value: patched, writable: true, configurable: true, enumerable: true });
 
+    const manager = window.gZenMediaController;
     for (const tab of gBrowser.tabs) {
       if (!tab.hasAttribute("soundplaying")) {
         continue;
       }
       try {
-        manager.activateMediaControls(tab.linkedBrowser.browsingContext?.mediaController, tab.linkedBrowser);
+        manager?.activateMediaControls?.(tab.linkedBrowser.browsingContext?.mediaController, tab.linkedBrowser);
       } catch (err) {
         noteError("music and sound bars: cardForPositionlessMedia", err);
       }
