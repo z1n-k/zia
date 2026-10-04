@@ -332,7 +332,8 @@
 
       /* the edge, lit nearest the cursor */
       &::after {
-        padding: 1px;
+        /* (Zia's own fine edge, no thicker) */
+        padding: var(--zia-shine-width);
         background: radial-gradient(circle at var(--zia-lift-mx, 50%) var(--zia-lift-my, 50%), color-mix(in srgb, var(--zia-lib-ink) 70%, transparent), transparent 45%);
         mask:
           linear-gradient(#000 0 0) content-box exclude,
