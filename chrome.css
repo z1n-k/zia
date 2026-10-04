@@ -2902,7 +2902,8 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
     --fi-soft: cubic-bezier(0.32, 0.72, 0, 1);
     display: block;
     position: relative;
-    font-size: 19px;
+    /* (a touch smaller than the 19px it was) */
+    font-size: 17.5px;
     width: 1em;
     height: 0.82em;
     flex: none;
@@ -3827,10 +3828,9 @@ zen-folder:is(:not([zia-folder-color]), [zia-folder-color="white"]) > .tab-group
 #zen-workspaces-button {
   gap: 0 !important;
 
+  /* a space with no icon is a dot, in a button as wide as the others: a
+     narrow one sat squashed against the icon before it */
   & toolbarbutton:has(> .zen-workspace-icon[no-icon="true"]) {
-    min-width: 0 !important;
-    width: 12px !important;
-    max-width: 12px !important;
     height: 20px !important;
     filter: none !important;
     opacity: 1 !important;

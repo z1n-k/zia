@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- A space with no icon, a dot at the foot of the sidebar, is spaced like
+  the spaces beside it, rather than squashed against the one before.
+
+### Changed
+
+- Folder icons, and the box they turn into, are a touch smaller.
+
 ## [2.93.0] — 2026-10-04
 
 ### Fixed

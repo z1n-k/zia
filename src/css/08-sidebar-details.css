@@ -26,10 +26,9 @@
 #zen-workspaces-button {
   gap: 0 !important;
 
+  /* a space with no icon is a dot, in a button as wide as the others: a
+     narrow one sat squashed against the icon before it */
   & toolbarbutton:has(> .zen-workspace-icon[no-icon="true"]) {
-    min-width: 0 !important;
-    width: 12px !important;
-    max-width: 12px !important;
     height: 20px !important;
     filter: none !important;
     opacity: 1 !important;

@@ -28,7 +28,8 @@
     --fi-soft: cubic-bezier(0.32, 0.72, 0, 1);
     display: block;
     position: relative;
-    font-size: 19px;
+    /* (a touch smaller than the 19px it was) */
+    font-size: 17.5px;
     width: 1em;
     height: 0.82em;
     flex: none;
