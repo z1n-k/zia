@@ -7371,7 +7371,7 @@ zen-folder .tab-reset-button {
     }
 
     & #zen-library-sidebar-tabs {
-      gap: var(--zia-essential-gap) !important;
+      gap: 8px !important;
       padding-inline: 4px !important;
     }
 

@@ -17,7 +17,8 @@ Every release of Zia, newest first. The format follows
   leave, and stays still for anyone whose system asks for less motion.
 - The Library's chosen section is lit by one tile that slides along the
   column to the section you choose, with Zia's spring, rather than one
-  going out and another coming on.
+  going out and another coming on. The sections are a little further apart,
+  in Zen's own animated icons.
 
 ### Changed
 
