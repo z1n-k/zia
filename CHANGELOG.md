@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.90.4] — 2026-10-04
+
+### Fixed
+
+- Showing the sidebar again by clicking (leaving compact mode), it no
+  longer slides in a little high and drops into place as it settles.
+
 ## [2.90.3] — 2026-10-04
 
 ### Fixed
