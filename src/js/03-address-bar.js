@@ -227,9 +227,36 @@
       "mousedown",
       (event) => {
         pressedAt = holdWholeSelection ? { x: event.screenX, y: event.screenY } : null;
+        lastPointer = null;
       },
       true
     );
+    // While that click is held, a drag Firefox reads into the moving text is
+    // undone as it happens, before it's drawn (only fixed on release, the
+    // part-selection showed for a moment first). A real drag moves the
+    // pointer, and is left alone.
+    let lastPointer = null;
+    window.addEventListener(
+      "mousemove",
+      (event) => {
+        lastPointer = pressedAt ? { x: event.screenX, y: event.screenY } : null;
+      },
+      true
+    );
+    const holdWhole = () => {
+      const press = pressedAt;
+      if (!press || !gURLBar.focused || urlbarTyping) {
+        return;
+      }
+      if (lastPointer && Math.hypot(lastPointer.x - press.x, lastPointer.y - press.y) > 4) {
+        return;
+      }
+      if (input.selectionStart !== 0 || input.selectionEnd !== input.value.length) {
+        input.select();
+      }
+    };
+    input.addEventListener("selectionchange", holdWhole);
+    input.addEventListener("select", holdWhole);
     window.addEventListener(
       "mouseup",
       (event) => {
