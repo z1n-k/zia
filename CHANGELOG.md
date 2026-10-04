@@ -6,6 +6,11 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- A folder's hover card (the card listing its tabs) has the same space
+  above and below its tabs as at their sides.
+
 ### Fixed
 
 - The address bar pop-up's last row has the same gap below it as at the
