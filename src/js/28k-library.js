@@ -103,6 +103,32 @@
     }
   }
 
+  // ---------- The Library button's picture of the last download clears itself
+  // Zen leaves a small picture of the last download on the Library button
+  // until the button is next hovered. It shows as the file flies in, then
+  // clears a few seconds later (a download under way keeps its ring).
+  function clearLibraryBadgeSoon() {
+    const foot = document.getElementById("zen-sidebar-foot-buttons");
+    if (!foot) {
+      return;
+    }
+    let timer = null;
+    const check = () => {
+      clearTimeout(timer);
+      if (!foot.hasAttribute("zen-library-badge")) {
+        return;
+      }
+      timer = setTimeout(() => {
+        const badge = document.getElementById("library-button-badge");
+        if (!badge?.hasAttribute("downloading") && !foot.hasAttribute("zen-library-stack-open")) {
+          foot.removeAttribute("zen-library-badge");
+        }
+      }, 4000);
+    };
+    new MutationObserver(check).observe(foot, { attributes: true, attributeFilter: ["zen-library-badge"] });
+    check();
+  }
+
   // ---------- Clear in the Library's Downloads and History
   // Zen's Library lists every download but has no way to empty the list,
   // only to remove them one by one. A Clear button beside the filter does

@@ -434,6 +434,7 @@
     safely("revertTypedTextOnLeave", () => revertTypedTextOnLeave(urlbar));
     safely("neverShowScheme", neverShowScheme);
     safely("dressLibrary", dressLibrary);
+    safely("clearLibraryBadgeSoon", clearLibraryBadgeSoon);
     safely("loadTidyDownloads", loadTidyDownloads);
 
     updateColor();

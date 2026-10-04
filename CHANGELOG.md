@@ -27,6 +27,9 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- The small picture of the last download on the Library button clears
+  itself a few seconds after the download finishes, rather than staying
+  until the button is next hovered (a download under way keeps its ring).
 - The last downloads fan out above the Library button again, as tab rows,
   and the Library button shows the picture of the latest one again: 2.92.0
   and 2.93.4 hid them by mistake.
