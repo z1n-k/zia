@@ -20,7 +20,8 @@ Every release of Zia, newest first. The format follows
   download pile gone), and its card is a small glass pop-up in Zia's look
   above the sidebar's foot, out of the way while the Library is open; in
   compact mode a toast says it, with an Undo. Downloads from private
-  windows are never sent to an AI service.
+  windows are never sent to an AI service. The card has a glowing edge in
+  the loading line's colour, which can be turned off in settings.
 
 ### Fixed
 
