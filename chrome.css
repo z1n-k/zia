@@ -5639,6 +5639,13 @@ tooltip[default="true"] {
 }
 }
 
+
+/* Remove icon, shown while an icon is chosen: Zia's trash (Tabler, as the
+   picker's icons are) rather than Zen's */
+#PanelUI-zen-emojis-picker-none,
+#zen-emojis-picker-none {
+  list-style-image: url("chrome://sine/content/zia/icons/ui/trash.svg") !important;
+}
 :root[zen-compact-mode="true"] .zen-toolbar-background {
   &::before,
   &::after {
@@ -7695,4 +7702,34 @@ zen-library {
 zen-library .zia-library-clear {
   flex: none;
   padding-inline: 12px !important;
+}
+
+/* The rows' buttons in Zia's icons (Tabler, as the rest of Zia): forget
+   and reopen in History, cancel and retry in Downloads. Zen's icons are
+   pictures in the page, so each is moved out of its box and Zia's drawn
+   behind it. */
+zen-library .zen-library-row-actions img.toolbarbutton-icon:is([src$="/trash.svg"], [src$="/u-turn-to-left.svg"], [src$="/close.svg"], [src$="/reload.svg"]) {
+  object-position: -999px 0 !important;
+  background: var(--zia-lib-icon) center / 16px no-repeat !important;
+  -moz-context-properties: fill, fill-opacity !important;
+  fill: currentColor !important;
+  fill-opacity: 0.85 !important;
+}
+
+zen-library .zen-library-row-actions img.toolbarbutton-icon {
+  &[src$="/trash.svg"] {
+    --zia-lib-icon: url("chrome://sine/content/zia/icons/ui/trash.svg");
+  }
+
+  &[src$="/u-turn-to-left.svg"] {
+    --zia-lib-icon: url("chrome://sine/content/zia/icons/ui/arrow-back-up.svg");
+  }
+
+  &[src$="/close.svg"] {
+    --zia-lib-icon: url("chrome://sine/content/zia/icons/ui/x.svg");
+  }
+
+  &[src$="/reload.svg"] {
+    --zia-lib-icon: url("chrome://sine/content/zia/icons/ui/refresh.svg");
+  }
 }

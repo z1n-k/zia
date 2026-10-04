@@ -26,6 +26,9 @@ Every release of Zia, newest first. The format follows
 - A Clear button in the Library's Downloads, beside the filter. It empties
   the list as Firefox's Clear Downloads does: the files stay on disk, and a
   download still under way stays in the list.
+- The Library's row buttons use Zia's icons: forget and reopen in
+  History, cancel and retry in Downloads. So does the icon picker's remove
+  button, shown while an icon is chosen.
 
 ### Changed
 
