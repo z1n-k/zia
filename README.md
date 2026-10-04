@@ -231,7 +231,7 @@ Firefox's Bookmarks, History and Synced Tabs panels become a second sidebar on t
 
 ### Library
 
-Zen's Library keeps Zen's layout, drawn the way Zia draws the sidebar. Its sections are tiles like essentials, in Zia's line icons, the chosen one lit. History, downloads and boosts are rows measured off your tabs, with the tabs' padding and hover, and the search field and filters are Zia's. Downloads and History get a **Clear** button (Downloads' empties the list, the files staying on disk; History's opens Firefox's Clear browsing data dialog), and the last downloads that fan out above the Library button are tab rows too. Turn on **Zen's own Library look** in settings to keep Zen's.
+Zen's Library keeps Zen's layout, drawn the way Zia draws the sidebar. Its sections are tiles like essentials, in Zia's line icons, the chosen one lit. History, downloads and boosts are rows measured off your tabs, with the tabs' padding and hover, and the search field and filters are Zia's. Downloads and History get a **Clear** button (Downloads' empties the list, the files staying on disk; History's opens Firefox's Clear browsing data dialog). Turn on **Zen's own Library look** in settings to keep Zen's.
 
 ### Music
 
