@@ -7377,7 +7377,7 @@ zen-folder .tab-reset-button {
 
     & .zen-library-tab {
       /* (Zen's animated icons at the 18px of Zia's line icons) */
-      --zen-library-sprite-size: 18px;
+      --zen-library-sprite-size: 18px !important;
       margin: 0 !important;
       padding: 10px 0 9px !important;
       gap: 3px !important;
