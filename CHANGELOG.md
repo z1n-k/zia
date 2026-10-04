@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- On Windows, the page meets the window's right edge, so its scrollbar is
+  at the edge: a flick of the mouse to the right of the screen, in a
+  full-size window, lands on it. Not with the tabs on the right, a panel
+  open on the right, or a split.
+
 ## [2.91.5] — 2026-10-04
 
 ### Fixed
