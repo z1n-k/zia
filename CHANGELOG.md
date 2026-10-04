@@ -13,7 +13,7 @@ Every release of Zia, newest first. The format follows
   cookies dialog, to choose what goes.
 - In the Library's Media, a tile catches the light: it leans
   towards the cursor, its fine edge lights up nearest it, and its picture
-  lifts, the shadow falling the other way. It springs back as you
+  lifts, its soft layered shadow falling the other way. It springs back as you
   leave, and stays still for anyone whose system asks for less motion.
 - The Library's chosen section is lit by one tile that slides along the
   column to the section you choose, with Zia's spring, rather than one

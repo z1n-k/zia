@@ -292,7 +292,12 @@
 
     & .zen-library-media-thumb {
       border-radius: 6px !important;
-      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25) !important;
+      /* a soft shadow of a few thin layers, each fainter and wider, as a
+         real one falls, rather than one dark blur */
+      box-shadow:
+        0 0.5px 1px rgba(0, 0, 0, 0.1),
+        0 1px 2px rgba(0, 0, 0, 0.08),
+        0 3px 6px -2px rgba(0, 0, 0, 0.1) !important;
     }
 
     & .zen-library-media-file {
@@ -348,7 +353,12 @@
       transition: transform 0.08s linear, background-color 0.12s ease !important;
 
       & .zen-library-media-thumb:not(.zen-library-media-file) {
-        box-shadow: var(--zia-lift-sx, 0px) calc(4px + var(--zia-lift-sy, 0px)) 14px rgba(0, 0, 0, 0.4) !important;
+        /* lifted: the same soft layers reaching further, falling away from
+           the cursor */
+        box-shadow:
+          calc(var(--zia-lift-sx, 0px) * 0.15) calc(0.5px + var(--zia-lift-sy, 0px) * 0.15) 1px rgba(0, 0, 0, 0.08),
+          calc(var(--zia-lift-sx, 0px) * 0.4) calc(2px + var(--zia-lift-sy, 0px) * 0.4) 4px -1px rgba(0, 0, 0, 0.08),
+          var(--zia-lift-sx, 0px) calc(6px + var(--zia-lift-sy, 0px)) 14px -4px rgba(0, 0, 0, 0.14) !important;
       }
     }
 
