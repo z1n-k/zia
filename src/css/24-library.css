@@ -357,3 +357,9 @@ zen-library {
     }
   }
 }
+
+/* Clear, beside the downloads' filter (zia.uc.js): as the filter is drawn */
+zen-library .zia-library-clear {
+  flex: none;
+  padding-inline: 12px !important;
+}

@@ -433,6 +433,7 @@
     safely("watchSwipeArrow", watchSwipeArrow);
     safely("revertTypedTextOnLeave", () => revertTypedTextOnLeave(urlbar));
     safely("neverShowScheme", neverShowScheme);
+    safely("addLibraryClearDownloads", addLibraryClearDownloads);
 
     updateColor();
     updateTitle();

@@ -17,6 +17,9 @@ Every release of Zia, newest first. The format follows
 - The last downloads that fan out above the Library button are tab rows:
   a tab's height and hover, the file's icon at a favicon's size, and its
   size or state beside the name. Zen's were half as tall again as a tab.
+- A Clear button in the Library's Downloads, beside the filter. It empties
+  the list as Firefox's Clear Downloads does: the files stay on disk, and a
+  download still under way stays in the list.
 
 ### Changed
 
