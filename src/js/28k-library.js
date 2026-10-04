@@ -25,7 +25,7 @@
   // asks for less motion.
   function liftMediaUnderCursor(library) {
     const still = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const TILT = 3;
+    const TILT = 8;
     let current = null;
     const settle = (item) => {
       if (!item) {

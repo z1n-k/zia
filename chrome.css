@@ -7646,7 +7646,7 @@ zen-folder .tab-reset-button {
        it leaves */
     & .zen-library-media-item {
       position: relative;
-      transform: perspective(600px) rotateX(var(--zia-lift-rx, 0deg)) rotateY(var(--zia-lift-ry, 0deg));
+      transform: perspective(500px) rotateX(var(--zia-lift-rx, 0deg)) rotateY(var(--zia-lift-ry, 0deg));
       transition: transform 0.45s var(--zia-spring), background-color 0.12s ease !important;
 
       &::before,
@@ -7680,7 +7680,7 @@ zen-folder .tab-reset-button {
     }
 
     & .zen-library-media-frame {
-      transform: scale(calc(1 + var(--zia-lift, 0) * 0.025));
+      transform: scale(calc(1 + var(--zia-lift, 0) * 0.04));
       transition: transform 0.45s var(--zia-spring);
     }
 
