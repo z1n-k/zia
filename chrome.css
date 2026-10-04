@@ -4559,7 +4559,11 @@ zen-workspace arrowscrollbox::part(scrollbox) {
 
 :root:not([inDOMFullscreen="true"]) #tabbrowser-tabbox[zen-split-view="true"] {
   --zia-split-pad: 3px;
-  --zia-split-radius: 8px;
+  /* each pane's corners sit evenly inside the frame round them (the page's
+     corner, less the gap): a set 8px only matched it on macOS, and on
+     Windows, where the page takes its corner from the window's, the
+     focused pane's outline curved tighter than the frame */
+  --zia-split-radius: max(0px, calc(var(--zia-card-radius) - var(--zia-split-pad)));
   margin-right: 0 !important;
 
   & #tabbrowser-tabpanels[zen-split-view="true"] {

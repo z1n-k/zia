@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- In a split, each pane's corners (and the focused pane's outline) sit
+  evenly inside the frame round them. On Windows they were rounder or
+  tighter than the page's corners, which take the window's.
+
 ## [2.91.2] — 2026-10-04
 
 ### Fixed
