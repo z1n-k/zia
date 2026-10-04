@@ -53,9 +53,8 @@ Every release of Zia, newest first. The format follows
   sections' column is narrower, with the others' icons as faint as their
   names and no fill on the chosen one; Filter and Clear are icon buttons,
   so the search field keeps its room; and the footer has no Donate.
-- The Library's sections are in Zia's line icons rather than Zen's
-  illustrated ones, and the list beside them runs to the Library's edge
-  (it stopped short, leaving a gap at the right).
+- The list beside the Library's sections runs to the Library's edge (it
+  stopped short, leaving a gap at the right).
 - The Library's rows, and the downloads above its button, have the tabs'
   own padding before the icon and gap after it, measured off a tab, with
   each icon at a favicon's size.

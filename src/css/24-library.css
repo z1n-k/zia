@@ -532,40 +532,8 @@
     }
   }
 
-  /* The sections in Zia's line icons (Tabler, as the rest of Zia) rather
-     than Zen's illustrated ones: Zen's own drawing is hidden and Zia's drawn
-     in its place, in the ink */
+  /* The list beside the sections */
   zen-library {
-    & .zen-library-tab .zen-library-tab-icon {
-      background: var(--zia-lib-section-icon) center / 18px no-repeat;
-      -moz-context-properties: fill, fill-opacity;
-      fill: currentColor;
-
-      & .zen-library-tab-icon-image {
-        visibility: hidden !important;
-      }
-    }
-
-    & .zen-library-tab[data-section="media"] {
-      --zia-lib-section-icon: url("chrome://sine/content/zia/icons/ui/photo.svg");
-    }
-
-    & .zen-library-tab[data-section="downloads"] {
-      --zia-lib-section-icon: url("chrome://sine/content/zia/icons/ui/download.svg");
-    }
-
-    & .zen-library-tab[data-section="boosts"] {
-      --zia-lib-section-icon: url("chrome://sine/content/zia/icons/ui/wand.svg");
-    }
-
-    & .zen-library-tab[data-section="spaces"] {
-      --zia-lib-section-icon: url("chrome://sine/content/zia/icons/ui/layout-grid.svg");
-    }
-
-    & .zen-library-tab[data-section="history"] {
-      --zia-lib-section-icon: url("chrome://sine/content/zia/icons/ui/history.svg");
-    }
-
     /* the list runs to the Library's edge: Zen capped it at its own width
        less its wider column, which left a gap at the right */
     & .zen-library-section:not([data-section="spaces"]) {
