@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.90.3] — 2026-10-04
+
+### Fixed
+
+- In a split, the sidebar button at the start of each pane's toolbar
+  shows and hides the sidebar again.
+
 ## [2.90.2] — 2026-10-04
 
 ### Changed

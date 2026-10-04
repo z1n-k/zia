@@ -37,6 +37,25 @@
     return button;
   }
 
+  // The pane's own sidebar button. Zen's button sits in the main toolbar,
+  // which a split hides, and calling doCommand on a hidden toolbarbutton
+  // does nothing, so this goes to Zen's command (or its manager) instead.
+  function toggleCompactMode() {
+    const command = document.getElementById("cmd_zenCompactModeToggle");
+    if (command) {
+      command.doCommand();
+      return;
+    }
+    const manager = window.gZenCompactModeManager;
+    if (typeof manager?.toggle === "function") {
+      manager.toggle();
+    } else if (manager && "preference" in manager) {
+      manager.preference = !manager.preference;
+    } else {
+      document.getElementById("zen-toggle-compact-mode")?.click();
+    }
+  }
+
   function createPaneBar(container) {
     const bar = document.createElementNS(HTML_NS, "div");
     bar.className = "zia-pane-bar";
@@ -50,9 +69,7 @@
     });
 
     bar.appendChild(
-      paneButton("sidebar", "Toggle sidebar", () => {
-        document.getElementById("zen-toggle-compact-mode")?.doCommand?.();
-      })
+      paneButton("sidebar", "Toggle sidebar", toggleCompactMode)
     );
     bar.appendChild(paneButton("back", "Back", () => paneBrowser(container)?.goBack()));
     bar.appendChild(paneButton("forward", "Forward", () => paneBrowser(container)?.goForward()));
