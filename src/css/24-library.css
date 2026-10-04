@@ -449,78 +449,11 @@
     }
   }
 
-  /* The last downloads that fan out above the Library button, as tab rows:
-     a tab's height, corners and hover, the file's icon at a favicon's size,
-     and its size or state beside the name rather than under it (Zen's were
-     52px tall, half as tall again as a tab) */
-  :root:not(#zia-none) #zen-library-download-list {
-    gap: var(--zia-tab-gap) !important;
-
-    & .zen-library-download-list-download {
-      height: var(--zia-tab-height) !important;
-      border-radius: var(--zia-tab-radius) !important;
-      padding: 0 !important;
-
-      &:hover {
-        background: var(--zia-tab-hover-bg) !important;
-      }
-
-      & .zen-library-download-badge {
-        margin: auto var(--zia-lib-icon-gap, 8px) auto var(--zia-lib-row-pad, 10px) !important;
-      }
-
-      & .zen-library-download-badge:not([downloading]) {
-        width: 16px !important;
-        height: 16px !important;
-        border-radius: 4px !important;
-        scale: 1 !important;
-      }
-
-      /* in progress: Zia's ring in its loading blue */
-      & .zen-library-download-badge[downloading] {
-        align-self: center !important;
-        transform: none !important;
-        width: 18px !important;
-        height: 18px !important;
-        border-width: 2px !important;
-        margin-inline: calc(var(--zia-lib-row-pad, 10px) - 1px) calc(var(--zia-lib-icon-gap, 8px) - 1px) !important;
-        background-color: transparent !important;
-        box-shadow: none !important;
-
-        & .zen-library-download-progress {
-          --thickness: 2px;
-          --progress: var(--zia-loading-color);
-          --border-color: color-mix(in srgb, currentColor 18%, transparent);
-        }
-      }
-
-      & .zen-library-download-list-title-container {
-        flex-direction: row !important;
-        align-items: center !important;
-        gap: 8px !important;
-      }
-
-      & .zen-library-download-list-title {
-        flex: 0 1 auto;
-        min-width: 0;
-        font-size: var(--zia-text-size) !important;
-        font-weight: var(--zia-tab-weight) !important;
-        opacity: 1 !important;
-      }
-
-      & .zen-library-download-list-subtitle {
-        flex: 0 1 auto;
-        max-width: 55%;
-        margin-inline-start: auto;
-        padding-inline-end: 10px;
-        font-size: 11.5px !important;
-        opacity: 0.5 !important;
-      }
-
-      & .zen-library-download-action {
-        margin: auto 6px auto 0 !important;
-      }
-    }
+  /* The last downloads Zen fans out above the Library button (as one
+     finishes, and on hovering it) don't show: they're in the Library's
+     Downloads */
+  #zen-library-download-list {
+    display: none !important;
   }
 
   /* Clear, beside the downloads' filter (zia.uc.js): as the filter is drawn */
