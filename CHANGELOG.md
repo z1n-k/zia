@@ -22,6 +22,8 @@ Every release of Zia, newest first. The format follows
 ### Changed
 
 - Folder icons, and the box they turn into, are a touch smaller.
+- The Library's empty-list notes ("No boosts yet" and the like) are at
+  the tabs' text size.
 
 ## [2.93.0] — 2026-10-04
 
