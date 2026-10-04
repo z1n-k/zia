@@ -9882,7 +9882,10 @@
     try {
       const tab = gBrowser.visibleTabs.find((t) => !t.pinned && !t.hasAttribute("zen-essential") && t.getBoundingClientRect().width);
       const edge = tab?.querySelector(".tab-background")?.getBoundingClientRect();
-      const icon = tab?.querySelector(".tab-icon-stack")?.getBoundingClientRect();
+      // (the icon itself: the box it sits in can reach further out)
+      const icon = [".tab-icon-image", ".tab-icon-stack"]
+        .map((selector) => tab?.querySelector(selector)?.getBoundingClientRect())
+        .find((box) => box?.width);
       const inset = edge && icon?.width ? Math.round((icon.left - edge.left) * 2) / 2 : 0;
       return inset >= 4 && inset <= 16 ? inset : 0;
     } catch (err) {
