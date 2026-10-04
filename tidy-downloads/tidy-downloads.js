@@ -364,11 +364,16 @@ Instructions:
     const extension = extensionOf(name);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30000);
+    // (only an outline on the Library button while it's asked: the card
+    // comes once the file has its new name)
+    const button = document.getElementById("zen-library-button");
+    button?.setAttribute("zia-renaming", "true");
     let suggestion;
     try {
       suggestion = await suggestName(pageContext(download, name), controller.signal);
     } finally {
       clearTimeout(timeout);
+      button?.removeAttribute("zia-renaming");
     }
     const wanted = cleanName(suggestion || "", extension);
     // (the AI thought the name was fine, or gave nothing usable)
@@ -440,16 +445,15 @@ Instructions:
     card.addEventListener("mouseleave", scheduleHide);
   }
 
-  // in the sidebar, just above its foot (above the music card, if there is one)
+  // floating just above the sidebar's foot, as Zen's own download list does,
+  // so nothing in the sidebar moves for it
   function placeCard() {
-    const media = document.getElementById("zen-media-controls-toolbar");
     const foot = document.getElementById("zen-sidebar-foot-buttons");
-    if (media?.parentNode) {
-      media.after(card);
-    } else if (foot?.parentNode) {
-      foot.before(card);
-    } else {
+    if (!foot) {
       return false;
+    }
+    if (card.parentNode !== foot) {
+      foot.appendChild(card);
     }
     return true;
   }

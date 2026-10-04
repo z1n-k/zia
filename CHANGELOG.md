@@ -17,9 +17,11 @@ Every release of Zia, newest first. The format follows
   endpoint, or use Ollama on your own machine. Remove Tidy Downloads if
   you have it as its own mod; Zia's copy uses the same settings. Its code
   is slimmed for Zia (about 4,800 lines to 1,300, leftovers of an older
-  download pile gone), and its card is a small glass pop-up in Zia's look
-  above the sidebar's foot, out of the way while the Library is open; in
-  compact mode a toast says it, with an Undo. Downloads from private
+  download pile gone). While a file's being renamed, only a glowing
+  outline shows round the Library button; once it has its new name, a
+  small glass pop-up in Zia's look floats above the sidebar's foot,
+  moving nothing, out of the way while the Library is open; in compact
+  mode a toast says it, with an Undo. Downloads from private
   windows are never sent to an AI service. The card has a glowing edge in
   the loading line's colour, which can be turned off in settings.
 
