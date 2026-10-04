@@ -388,7 +388,12 @@ Instructions:
     await moveDownload(download, newName);
     renamed.set(download, { originalName: name, newName });
     log(`Renamed ${name} → ${newName}`);
-    showCard(download);
+    // (the file's renamed either way: a card that won't show is only logged)
+    try {
+      showCard(download);
+    } catch (err) {
+      console.error("[Zia · Tidy Downloads] Couldn't show the rename card:", err);
+    }
   }
 
   async function undo(download) {
@@ -423,7 +428,7 @@ Instructions:
         <button class="zia-rc-button zia-rc-close" title="Close" aria-label="Close"></button>
       </div>
       <div class="zia-rc-row">
-        <img class="zia-rc-icon" alt="">
+        <img class="zia-rc-icon" alt="" />
         <span class="zia-rc-name"></span>
         <span class="zia-rc-size"></span>
       </div>`;
