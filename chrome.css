@@ -7376,9 +7376,10 @@ zen-folder .tab-reset-button {
     }
 
     & .zen-library-tab {
-      --zen-library-sprite-size: 22px;
+      /* (Zen's animated icons at the 18px of Zia's line icons) */
+      --zen-library-sprite-size: 18px;
       margin: 0 !important;
-      padding: 8px 0 7px !important;
+      padding: 10px 0 9px !important;
       gap: 3px !important;
       font-size: 11.5px !important;
       font-weight: 500 !important;
@@ -7448,7 +7449,7 @@ zen-folder .tab-reset-button {
 
     /* a download under way: Zia's progress ring round its icon */
     &[zen-library-downloading] .zen-library-tab[data-section="downloads"]::after {
-      top: 8px !important;
+      top: 10px !important;
       border-width: 2px !important;
       background:
         conic-gradient(var(--zia-loading-color) var(--zen-library-download-progress, 0%), color-mix(in srgb, var(--zia-lib-ink) 18%, transparent) 0) border-box,
