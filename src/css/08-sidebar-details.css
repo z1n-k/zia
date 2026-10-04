@@ -26,9 +26,13 @@
 #zen-workspaces-button {
   gap: 0 !important;
 
-  /* a space with no icon is a dot, in a button as wide as the others: a
-     narrow one sat squashed against the icon before it */
+  /* a space with no icon is a dot in a narrow button, so a row of dots
+     sits close together; beside a space with an icon it keeps a little
+     room from it (it sat squashed against the icon) */
   & toolbarbutton:has(> .zen-workspace-icon[no-icon="true"]) {
+    min-width: 0 !important;
+    width: 12px !important;
+    max-width: 12px !important;
     height: 20px !important;
     filter: none !important;
     opacity: 1 !important;
@@ -47,6 +51,14 @@
     &:hover:not([active="true"]) > .zen-workspace-icon[no-icon="true"] {
       background: rgba(255, 255, 255, 0.5) !important;
     }
+  }
+
+  & toolbarbutton:not(:has(> .zen-workspace-icon[no-icon="true"])) + toolbarbutton:has(> .zen-workspace-icon[no-icon="true"]) {
+    margin-inline-start: 6px !important;
+  }
+
+  & toolbarbutton:has(> .zen-workspace-icon[no-icon="true"]) + toolbarbutton:not(:has(> .zen-workspace-icon[no-icon="true"])) {
+    margin-inline-start: 6px !important;
   }
 }
 
