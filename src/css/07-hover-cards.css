@@ -481,3 +481,54 @@
     }
   }
 }
+
+/* Light mode (a light space, or no space colour in light mode): the tab,
+   folder and essential cards are light cards with dark ink, like the
+   sidebar they come out of */
+:root[zia-light]:not(#zia-none) {
+  --zia-tab-card-bg: rgb(250, 250, 251);
+  --zia-tab-card-sub: rgba(28, 28, 32, 0.55);
+
+  & :is(#zia-tab-card, #zia-folder-card) {
+    color: rgb(28, 28, 32);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
+
+    &::after {
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  & .zia-tab-card-action img {
+    fill: rgb(28, 28, 32);
+  }
+
+  & .zia-tab-card-action:hover {
+    background-color: rgba(0, 0, 0, 0.06);
+  }
+
+  & .zia-folder-card-row {
+    color: rgba(28, 28, 32, 0.78);
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.055);
+    }
+
+    /* (the sidebar's white for the open tab went nowhere on a white card) */
+    &[zia-selected] {
+      background-color: rgba(0, 0, 0, 0.07);
+      color: rgb(28, 28, 32);
+    }
+
+    &[zia-new-tab] {
+      color: rgba(28, 28, 32, 0.55);
+    }
+  }
+
+  & .zia-folder-card-act {
+    color: rgb(28, 28, 32) !important;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.08);
+    }
+  }
+}

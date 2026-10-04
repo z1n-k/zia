@@ -159,5 +159,35 @@ findbar {
     }
   }
 }
+
+/* Light mode (a light space, or no space colour in light mode): a pale
+   frosted bar with dark ink, as the sidebar and the page are */
+:root[zia-light] findbar {
+  background: rgba(248, 248, 250, 0.82) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16), inset 0 0 0 0.5px rgba(0, 0, 0, 0.1);
+  color: rgba(28, 28, 32, 0.92) !important;
+  color-scheme: light;
+
+  & .findbar-textbox::placeholder {
+    color: rgba(28, 28, 32, 0.45);
+  }
+
+  & .findbar-textbox[status="notfound"] {
+    color: rgb(200, 40, 50) !important;
+  }
+
+  & .found-matches {
+    color: rgba(28, 28, 32, 0.65);
+  }
+
+  & :is(.findbar-find-previous, .findbar-find-next):hover:not([disabled]),
+  & .findbar-closebutton:hover {
+    background: rgba(0, 0, 0, 0.06) !important;
+  }
+
+  & .findbar-closebutton::before {
+    background: rgba(0, 0, 0, 0.12);
+  }
+}
 }
 

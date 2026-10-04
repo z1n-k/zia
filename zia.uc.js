@@ -3355,15 +3355,37 @@
   const SOUND_BARS_ALWAYS_PREF = "zia.sound-bars.always-move";
   const soundBarsAlwaysMove = () => Services.prefs.getBoolPref(SOUND_BARS_ALWAYS_PREF, false);
 
+  // Plain bars are the sidebar's ink: white, or dark in light mode (a light
+  // space, or no space colour in light mode), where white ones went missing
+  // on the white selected tab. They're redrawn as that changes.
+  const plainBarInk = () => (root.hasAttribute("zia-light") ? "rgb(28, 28, 32)" : "rgb(255, 255, 255)");
+  let barInkWatched = false;
+  function watchBarInk() {
+    if (barInkWatched) {
+      return;
+    }
+    barInkWatched = true;
+    new MutationObserver(() => {
+      for (const card of soundBarCards) {
+        if (card.isConnected) {
+          applyCardSoundBars(card);
+        }
+      }
+      repaintSoundTabs();
+    }).observe(root, { attributes: true, attributeFilter: ["zia-light"] });
+  }
+
   function soundBarImages(colors) {
+    watchBarInk();
     const always = soundBarsAlwaysMove();
-    const key = `${colors ? colors.join("|") : "white"}|${always}`;
+    const ink = plainBarInk();
+    const key = `${colors ? colors.join("|") : ink}|${always}`;
     let images = soundBarCache.get(key);
     if (images) {
       return images;
     }
-    const a = colors ? lighten(colors[0]) : "rgb(255, 255, 255)";
-    const b = colors ? lighten(colors[1]) : "rgb(255, 255, 255)";
+    const a = colors ? lighten(colors[0]) : ink;
+    const b = colors ? lighten(colors[1]) : ink;
     const gradient = `<defs><linearGradient id="g" gradientUnits="userSpaceOnUse" x1="1.6" y1="0" x2="14.4" y2="0"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs>`;
     const moving = [[0.55], [0.68], [0.5], [0.74]];
     const wave =
@@ -3480,7 +3502,7 @@
     const essential = tab.hasAttribute("zen-essential");
     const tinted = !essential && Services.prefs.getBoolPref("zia.tabs.favicon-glow", false);
     const colors = tinted ? tabMediaColors(tab) || tabFallbackColors(tab) : null;
-    const key = `${colors ? colors.join("|") : "white"}|${essential}|${tab.hasAttribute("soundplaying")}|${tab.hasAttribute("muted")}|${soundBarsAlwaysMove()}`;
+    const key = `${colors ? colors.join("|") : plainBarInk()}|${essential}|${tab.hasAttribute("soundplaying")}|${tab.hasAttribute("muted")}|${soundBarsAlwaysMove()}`;
     if (tab.__ziaSoundKey === key) {
       return;
     }

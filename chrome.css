@@ -3715,6 +3715,57 @@ zen-folder:is(:not([zia-folder-color]), [zia-folder-color="white"]) > .tab-group
     }
   }
 }
+
+/* Light mode (a light space, or no space colour in light mode): the tab,
+   folder and essential cards are light cards with dark ink, like the
+   sidebar they come out of */
+:root[zia-light]:not(#zia-none) {
+  --zia-tab-card-bg: rgb(250, 250, 251);
+  --zia-tab-card-sub: rgba(28, 28, 32, 0.55);
+
+  & :is(#zia-tab-card, #zia-folder-card) {
+    color: rgb(28, 28, 32);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
+
+    &::after {
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  & .zia-tab-card-action img {
+    fill: rgb(28, 28, 32);
+  }
+
+  & .zia-tab-card-action:hover {
+    background-color: rgba(0, 0, 0, 0.06);
+  }
+
+  & .zia-folder-card-row {
+    color: rgba(28, 28, 32, 0.78);
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.055);
+    }
+
+    /* (the sidebar's white for the open tab went nowhere on a white card) */
+    &[zia-selected] {
+      background-color: rgba(0, 0, 0, 0.07);
+      color: rgb(28, 28, 32);
+    }
+
+    &[zia-new-tab] {
+      color: rgba(28, 28, 32, 0.55);
+    }
+  }
+
+  & .zia-folder-card-act {
+    color: rgb(28, 28, 32) !important;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.08);
+    }
+  }
+}
 #urlbar:not([breakout-extend]) .urlbar-input {
   color: rgb(255, 255, 255) !important;
 }
@@ -4839,6 +4890,36 @@ findbar {
     }
   }
 }
+
+/* Light mode (a light space, or no space colour in light mode): a pale
+   frosted bar with dark ink, as the sidebar and the page are */
+:root[zia-light] findbar {
+  background: rgba(248, 248, 250, 0.82) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16), inset 0 0 0 0.5px rgba(0, 0, 0, 0.1);
+  color: rgba(28, 28, 32, 0.92) !important;
+  color-scheme: light;
+
+  & .findbar-textbox::placeholder {
+    color: rgba(28, 28, 32, 0.45);
+  }
+
+  & .findbar-textbox[status="notfound"] {
+    color: rgb(200, 40, 50) !important;
+  }
+
+  & .found-matches {
+    color: rgba(28, 28, 32, 0.65);
+  }
+
+  & :is(.findbar-find-previous, .findbar-find-next):hover:not([disabled]),
+  & .findbar-closebutton:hover {
+    background: rgba(0, 0, 0, 0.06) !important;
+  }
+
+  & .findbar-closebutton::before {
+    background: rgba(0, 0, 0, 0.12);
+  }
+}
 }
 
 :root[zia-split="true"]:not([inDOMFullscreen="true"]):not([popup-window]) {
@@ -5438,13 +5519,16 @@ tooltip[default="true"] {
   box-sizing: border-box;
 }
 
+/* (colours follow the panel's own light or dark, as Zen's do: white text
+   showed on a light panel) */
 #zia-icons-search {
   flex: 1;
   min-width: 0;
   padding: 4px;
+  color: light-dark(rgb(28, 28, 32), rgb(255, 255, 255));
 
   &::placeholder {
-    color: rgba(255, 255, 255, 0.4);
+    color: light-dark(rgba(0, 0, 0, 0.4), rgba(255, 255, 255, 0.4));
   }
 
   &:focus,
@@ -5459,7 +5543,7 @@ tooltip[default="true"] {
   flex: none;
   padding: 2px;
   border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.07);
+  background-color: light-dark(rgba(0, 0, 0, 0.05), rgba(255, 255, 255, 0.07));
 }
 
 .zia-icons-style-option {
@@ -5469,26 +5553,27 @@ tooltip[default="true"] {
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.55);
+  color: light-dark(rgba(0, 0, 0, 0.55), rgba(255, 255, 255, 0.55));
   font: inherit;
   font-size: 11.5px;
   font-weight: 500;
   cursor: default;
 
   &:hover {
-    color: rgba(255, 255, 255, 0.85);
+    color: light-dark(rgba(0, 0, 0, 0.85), rgba(255, 255, 255, 0.85));
   }
 
   &[selected] {
-    background-color: rgba(255, 255, 255, 0.14);
-    color: rgb(255, 255, 255);
+    background-color: light-dark(rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.14));
+    color: light-dark(rgb(28, 28, 32), rgb(255, 255, 255));
+    box-shadow: light-dark(0 0 0 0.5px rgba(0, 0, 0, 0.08), none);
   }
 }
 
 #zia-icons-empty {
   padding: 18px 10px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.45);
+  color: light-dark(rgba(0, 0, 0, 0.45), rgba(255, 255, 255, 0.45));
   font-size: 12px;
 }
 
@@ -5510,7 +5595,7 @@ tooltip[default="true"] {
 
 .zia-icon-item {
   -moz-context-properties: fill, fill-opacity, stroke;
-  fill: rgba(255, 255, 255, 0.85);
+  fill: light-dark(rgba(0, 0, 0, 0.8), rgba(255, 255, 255, 0.85));
 }
 }
 
@@ -5758,6 +5843,55 @@ zen-folder .tab-reset-button {
     & .urlbarView-row[selected] {
       background-color: rgba(28, 28, 30, 0.09) !important;
     }
+  }
+}
+
+/* Light mode in Zen (a light space, or no space colour in light mode) gives
+   the pop-up the same light look, whatever the websites' own appearance
+   setting: it stayed dark there, under a light sidebar. */
+:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar[breakout-extend]:not([zia-classic]) {
+  color-scheme: light !important;
+  color: rgb(28, 28, 30) !important;
+  --zia-urlbar-open-bg: rgb(248, 249, 250) !important;
+  --toolbar-field-color: rgb(28, 28, 30) !important;
+  --toolbar-field-focus-color: rgb(28, 28, 30) !important;
+  --urlbarView-highlight-background: rgba(28, 28, 30, 0.09) !important;
+  --urlbarView-highlight-color: rgb(28, 28, 30) !important;
+
+  & > .urlbar-background {
+    background: rgb(248, 249, 250) !important;
+    outline: 1px solid rgba(28, 28, 30, 0.12) !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  & .urlbar-input,
+  & .urlbarView,
+  & .urlbarView-title,
+  & .urlbarView-title strong {
+    color: rgb(28, 28, 30) !important;
+  }
+
+  & .urlbar-input::placeholder {
+    color: rgb(100, 103, 108) !important;
+    opacity: 1 !important;
+  }
+
+  & :is(.urlbarView-url, .urlbarView-action, .urlbarView-title-separator, .urlbarView-tags) {
+    color: rgb(90, 94, 100) !important;
+  }
+
+  & .urlbar-icon,
+  & .urlbarView-shortcutContent {
+    color: rgb(28, 28, 30) !important;
+    fill: currentColor !important;
+  }
+
+  & .urlbarView-row:hover {
+    background-color: rgba(28, 28, 30, 0.05) !important;
+  }
+
+  & .urlbarView-row[selected] {
+    background-color: rgba(28, 28, 30, 0.09) !important;
   }
 }
 
