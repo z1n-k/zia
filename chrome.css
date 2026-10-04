@@ -7435,6 +7435,13 @@ zen-folder .tab-reset-button {
 
     & .zen-library-search-box {
       height: 34px !important;
+      /* the typing and its placeholder at the tabs' text size */
+      font-size: var(--zia-text-size) !important;
+
+      & input {
+        font-size: inherit !important;
+      }
+
       background: var(--zia-lib-field) !important;
       border-radius: var(--zia-tab-radius) !important;
     }

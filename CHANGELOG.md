@@ -12,6 +12,10 @@ Every release of Zia, newest first. The format follows
   filter, as in Downloads. It opens Firefox's own Clear browsing data and
   cookies dialog, to choose what goes.
 
+### Changed
+
+- The Library's search fields are at the tabs' text size.
+
 ## [2.92.0] — 2026-10-04
 
 ### Fixed
