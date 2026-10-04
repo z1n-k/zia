@@ -17,14 +17,16 @@
     root.style.setProperty("--zia-lib-icon-gap", sizes["--zia-row-icon-gap"]);
   }
 
-  // ---------- Clear in the Library's Downloads
+  // ---------- Clear in the Library's Downloads and History
   // Zen's Library lists every download but has no way to empty the list,
   // only to remove them one by one. A Clear button beside the filter does
   // what Firefox's own Clear Downloads does: the finished, failed and
   // cancelled ones leave the list and history (the files stay on disk,
   // and one still downloading stays). The section is drawn by Zen when
   // first shown and again after it's been put away, so the button is put
-  // back whenever it's missing.
+  // back whenever it's missing. History's Clear opens Firefox's own Clear
+  // browsing data and cookies dialog, browsing history ticked, to choose
+  // what goes.
   function dressLibrary() {
     const XHTML = "http://www.w3.org/1999/xhtml";
 
@@ -41,6 +43,23 @@
       }
     };
 
+    const clearHistory = () => {
+      try {
+        if (window.Sanitizer?.showUI) {
+          window.Sanitizer.showUI(window);
+        } else {
+          document.getElementById("Tools:Sanitize")?.doCommand();
+        }
+      } catch (err) {
+        console.warn("[Zia] Couldn't open Clear browsing data:", err);
+      }
+    };
+
+    const CLEARS = [
+      ["zen-library-downloads-section", "Clear downloads", "Clear downloads (the files stay)", clearDownloads],
+      ["zen-library-history-section", "Clear history", "Clear history…", clearHistory],
+    ];
+
     const addButtons = (library) => {
       if (libraryZenLook()) {
         for (const button of library.querySelectorAll(".zia-library-clear")) {
@@ -48,16 +67,18 @@
         }
         return;
       }
-      for (const header of library.querySelectorAll("zen-library-downloads-section .zen-library-search-header")) {
-        if (header.querySelector(".zia-library-clear")) {
-          continue;
+      for (const [section, label, title, clear] of CLEARS) {
+        for (const header of library.querySelectorAll(`${section} .zen-library-search-header`)) {
+          if (header.querySelector(".zia-library-clear")) {
+            continue;
+          }
+          const button = document.createElementNS(XHTML, "button");
+          button.className = "zen-library-filter-button zia-library-clear";
+          button.setAttribute("aria-label", label);
+          button.title = title;
+          button.addEventListener("click", clear);
+          header.appendChild(button);
         }
-        const button = document.createElementNS(XHTML, "button");
-        button.className = "zen-library-filter-button zia-library-clear";
-        button.setAttribute("aria-label", "Clear downloads");
-        button.title = "Clear downloads (the files stay)";
-        button.addEventListener("click", clearDownloads);
-        header.appendChild(button);
       }
     };
 

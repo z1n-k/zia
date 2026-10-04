@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- A Clear button in the Library's History too, the eraser beside the
+  filter, as in Downloads. It opens Firefox's own Clear browsing data and
+  cookies dialog, to choose what goes.
+
 ## [2.92.0] — 2026-10-04
 
 ### Fixed
