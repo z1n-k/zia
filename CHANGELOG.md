@@ -10,6 +10,10 @@ Every release of Zia, newest first. The format follows
 
 - A space with no icon, a dot at the foot of the sidebar, is spaced like
   the spaces beside it, rather than squashed against the one before.
+- The space beside the one shown really no longer peeks in at the
+  sidebar's edge on Windows: 2.93.0 hid it, but its folders' names set
+  themselves visible again, so the coloured slivers stayed. It's faded out
+  whole while it rests to one side.
 
 ### Changed
 
