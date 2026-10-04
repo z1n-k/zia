@@ -14,6 +14,10 @@ Every release of Zia, newest first. The format follows
   sidebar's edge on Windows: 2.93.0 hid it, but its folders' names set
   themselves visible again, so the coloured slivers stayed. It's faded out
   whole while it rests to one side.
+- No more "XML Parsing Error: syntax error" in the Browser Console for
+  each space with an icon: two of Zia's functions shared a name, so the
+  space icons went through the one meant for your own extension icons'
+  files, which tried to read the icon as text.
 
 ### Changed
 

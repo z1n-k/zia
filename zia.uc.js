@@ -36,6 +36,18 @@
     return root.getAttribute("zia-urlbar-position") === "bottom" && root.getAttribute("zen-single-toolbar") !== "true";
   }
 
+  // An SVG file's text, ready to parse, or null if it isn't one. Firefox's
+  // own icon sources can open with build lines (#filter, #include) that
+  // aren't XML, and anything that isn't an SVG at all made the parser log
+  // an XML parsing error to the console.
+  function svgSourceOf(text) {
+    if (typeof text !== "string") {
+      return null;
+    }
+    const body = text.replace(/^\uFEFF/, "").replace(/^(?:[ \t]*#[^\n]*\n)+/, "").trimStart();
+    return /^<(?:\?xml|!--|!DOCTYPE|svg)[\s>]/i.test(body) && /<svg[\s>]/i.test(body) ? body : null;
+  }
+
   // Every reading looks at the same band at the top of the page, 24px deep.
   // The checker below used to read deeper than the rest, so on a page with
   // a thin strip of another colour along its top edge the two disagreed,
@@ -1491,7 +1503,14 @@
         if (svgSlot.dataset.src !== icon) {
           return;
         }
-        const colored = source
+        // (only a real SVG is parsed: anything else, or a file still
+        // carrying the build's # lines, logged an XML parsing error for
+        // every space)
+        const svgText = svgSourceOf(source);
+        if (!svgText) {
+          return;
+        }
+        const colored = svgText
           .replace(/context-fill-opacity/g, "1")
           .replace(/context-stroke-opacity/g, "1")
           .replace(/context-fill/g, "currentColor")
@@ -14542,8 +14561,12 @@
 
   // Only the drawing is kept: no scripts, links out, embedded pages or
   // pictures, or event handlers
-  function cleanSvg(text) {
-    const doc = new DOMParser().parseFromString(text, "image/svg+xml");
+  function cleanSvgText(text) {
+    const svgText = svgSourceOf(text);
+    if (!svgText) {
+      return null;
+    }
+    const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
     const svg = doc.documentElement;
     if (!svg || svg.localName !== "svg" || doc.getElementsByTagName("parsererror").length) {
       return null;
@@ -14673,7 +14696,7 @@
           then(null);
           return;
         }
-        const svg = cleanSvg(await IOUtils.readUTF8(path));
+        const svg = cleanSvgText(await IOUtils.readUTF8(path));
         if (!svg) {
           Services.prompt.alert(window, "That isn't an SVG Zia can read", "Choose another .svg file.");
         }

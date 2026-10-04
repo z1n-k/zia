@@ -36,3 +36,15 @@
     return root.getAttribute("zia-urlbar-position") === "bottom" && root.getAttribute("zen-single-toolbar") !== "true";
   }
 
+  // An SVG file's text, ready to parse, or null if it isn't one. Firefox's
+  // own icon sources can open with build lines (#filter, #include) that
+  // aren't XML, and anything that isn't an SVG at all made the parser log
+  // an XML parsing error to the console.
+  function svgSourceOf(text) {
+    if (typeof text !== "string") {
+      return null;
+    }
+    const body = text.replace(/^\uFEFF/, "").replace(/^(?:[ \t]*#[^\n]*\n)+/, "").trimStart();
+    return /^<(?:\?xml|!--|!DOCTYPE|svg)[\s>]/i.test(body) && /<svg[\s>]/i.test(body) ? body : null;
+  }
+

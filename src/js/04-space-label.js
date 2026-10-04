@@ -116,7 +116,14 @@
         if (svgSlot.dataset.src !== icon) {
           return;
         }
-        const colored = source
+        // (only a real SVG is parsed: anything else, or a file still
+        // carrying the build's # lines, logged an XML parsing error for
+        // every space)
+        const svgText = svgSourceOf(source);
+        if (!svgText) {
+          return;
+        }
+        const colored = svgText
           .replace(/context-fill-opacity/g, "1")
           .replace(/context-stroke-opacity/g, "1")
           .replace(/context-fill/g, "currentColor")

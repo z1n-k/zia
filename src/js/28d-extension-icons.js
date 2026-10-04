@@ -111,8 +111,12 @@
 
   // Only the drawing is kept: no scripts, links out, embedded pages or
   // pictures, or event handlers
-  function cleanSvg(text) {
-    const doc = new DOMParser().parseFromString(text, "image/svg+xml");
+  function cleanSvgText(text) {
+    const svgText = svgSourceOf(text);
+    if (!svgText) {
+      return null;
+    }
+    const doc = new DOMParser().parseFromString(svgText, "image/svg+xml");
     const svg = doc.documentElement;
     if (!svg || svg.localName !== "svg" || doc.getElementsByTagName("parsererror").length) {
       return null;
@@ -242,7 +246,7 @@
           then(null);
           return;
         }
-        const svg = cleanSvg(await IOUtils.readUTF8(path));
+        const svg = cleanSvgText(await IOUtils.readUTF8(path));
         if (!svg) {
           Services.prompt.alert(window, "That isn't an SVG Zia can read", "Choose another .svg file.");
         }
