@@ -13035,7 +13035,12 @@
         }
       }
       if (listRoom.button && listRoom.buttonBottom != null) {
-        const delta = listRoom.buttonBottom > y ? listRoom.pitch : 0;
+        // New Tab at the top of the tabs (Zen's option) sits under the
+        // separator and can't have a tab dropped above it: it moves with the
+        // separator, as for a tab dragged within the list, rather than making
+        // way as New Tab at the foot of the list does.
+        const onTop = Services.prefs.getBoolPref("zen.view.show-newtab-button-top", false);
+        const delta = onTop ? listRoom.sepDelta : listRoom.buttonBottom > y ? listRoom.pitch : 0;
         if (listRoom.buttonDelta !== delta) {
           listRoom.buttonDelta = delta;
           place(listRoom.button, delta, false);
