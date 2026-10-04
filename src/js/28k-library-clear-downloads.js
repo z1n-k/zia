@@ -29,8 +29,8 @@
         }
         const button = document.createElementNS(XHTML, "button");
         button.className = "zen-library-filter-button zia-library-clear";
-        button.textContent = "Clear";
-        button.title = "Clear the list (the files stay)";
+        button.setAttribute("aria-label", "Clear downloads");
+        button.title = "Clear downloads (the files stay)";
         button.addEventListener("click", clearDownloads);
         header.appendChild(button);
       }

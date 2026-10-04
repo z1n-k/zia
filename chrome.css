@@ -7363,23 +7363,28 @@ zen-library {
     border-inline-end: 1px solid color-mix(in srgb, var(--zia-lib-ink) 7%, transparent) !important;
   }
 
-  /* the sections, as essentials */
+  /* the sections, as essentials, in a narrower column than Zen's */
+  & #zen-library-side {
+    min-width: 84px !important;
+  }
+
   & #zen-library-sidebar-tabs {
     gap: var(--zia-essential-gap) !important;
     padding-inline: 4px !important;
   }
 
   & .zen-library-tab {
-    --zen-library-sprite-size: 24px;
+    --zen-library-sprite-size: 22px;
     margin: 0 !important;
-    padding: 12px 0 10px !important;
-    gap: 5px !important;
-    font-size: 12px !important;
+    padding: 8px 0 7px !important;
+    gap: 3px !important;
+    font-size: 11.5px !important;
     font-weight: 500 !important;
 
     &::before {
       border-radius: var(--zia-essential-radius) !important;
-      transition: background-color 0.15s ease, scale 0.15s ease !important;
+      /* (a hover snaps on and off, as on a tab) */
+      transition: none !important;
     }
 
     &:hover::before {
@@ -7397,7 +7402,8 @@ zen-library {
       box-shadow: inset 0 0 0 var(--zia-shine-width) color-mix(in srgb, var(--zia-lib-ink) 16%, transparent) !important;
     }
 
-    &:not([active]) label {
+    /* the others' icons as faint as their names */
+    &:not([active]) :is(label, .zen-library-tab-icon) {
       opacity: 0.7;
     }
   }
@@ -7405,12 +7411,14 @@ zen-library {
   /* the drawn icons in the ink, not Zen's accent */
   & :is(.zen-library-tab-icon-image, .empty-state-icon-image) {
     --stroke: var(--zia-lib-ink) !important;
-    --fill: color-mix(in srgb, var(--zia-lib-ink) 22%, transparent) !important;
+    /* (outline only: no fill when chosen, or while downloading) */
+    --fill: transparent !important;
+    fill: transparent !important;
   }
 
   /* a download under way: Zia's progress ring round its icon */
   &[zen-library-downloading] .zen-library-tab[data-section="downloads"]::after {
-    top: 12px !important;
+    top: 8px !important;
     border-width: 2px !important;
     background:
       conic-gradient(var(--zia-loading-color) var(--zen-library-download-progress, 0%), color-mix(in srgb, var(--zia-lib-ink) 18%, transparent) 0) border-box,
@@ -7483,7 +7491,8 @@ zen-library {
     min-height: var(--zia-tab-height);
     padding: 6px 10px !important;
     border-radius: var(--zia-tab-radius) !important;
-    transition: background-color 0.12s ease;
+    /* (the hover snaps on and off, as on a tab) */
+    transition: none !important;
 
     &:is(:hover, [menu-open]) {
       background: var(--zia-tab-hover-bg) !important;
@@ -7699,9 +7708,34 @@ zen-library {
 }
 
 /* Clear, beside the downloads' filter (zia.uc.js): as the filter is drawn */
-zen-library .zia-library-clear {
-  flex: none;
-  padding-inline: 12px !important;
+/* With Clear beside it, Filter's name squeezed the search field until its
+   placeholder was cut off: both are square icon buttons, named on hover */
+zen-library .zen-library-search-header :is(.zen-library-filter-button, .zia-library-clear) {
+  flex: none !important;
+  width: 34px !important;
+  padding: 0 !important;
+  justify-content: center !important;
+
+  & > span {
+    display: none !important;
+  }
+}
+
+zen-library .zia-library-clear,
+zen-library .zia-library-clear:hover {
+  background-image: url("chrome://sine/content/zia/icons/ui/eraser.svg") !important;
+  background-position: center !important;
+  background-size: 16px !important;
+  background-repeat: no-repeat !important;
+  -moz-context-properties: fill, fill-opacity;
+  fill: currentColor;
+  fill-opacity: 0.8;
+}
+
+/* no Donate in the Library's footer, as Zia drops Zen's donate button
+   elsewhere; Back stays */
+#zen-library-footer toolbarbutton[image*="heart"] {
+  display: none !important;
 }
 
 /* The rows' buttons in Zia's icons (Tabler, as the rest of Zia): forget
