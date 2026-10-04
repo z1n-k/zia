@@ -15,6 +15,10 @@ Every release of Zia, newest first. The format follows
   the screens were measured in mixed units: only the left side was
   offered, and with a second screen on the left the tuck button was gone
   altogether.
+- Kick streams get their music card again. Zen sets a card up once, as
+  a tab starts to play, and drops it if anything goes wrong; something in
+  Zia fetching the Kick channel's picture could do that, leaving Kick
+  with no card at all.
 
 ## [2.91.3] — 2026-10-04
 

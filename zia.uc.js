@@ -3844,15 +3844,19 @@
       kickAvatars.delete(slug);
       return "";
     }
-    actor
-      .sendQuery("Zia:KickAvatar", { slug })
-      .then((pic) => {
-        kickAvatars.set(slug, pic || "");
-        if (pic && kickSlug(card.browser) === slug) {
-          card.updateIcon();
-        }
-      })
-      .catch(() => kickAvatars.delete(slug));
+    try {
+      actor
+        .sendQuery("Zia:KickAvatar", { slug })
+        .then((pic) => {
+          kickAvatars.set(slug, pic || "");
+          if (pic && kickSlug(card.browser) === slug) {
+            card.updateIcon();
+          }
+        })
+        .catch(() => kickAvatars.delete(slug));
+    } catch (err) {
+      kickAvatars.delete(slug);
+    }
     return "";
   }
 
@@ -3999,41 +4003,16 @@
     }
 
     const original = proto.updateIcon;
+    // Zen sets a card up once, as its tab starts to play, and drops it if
+    // anything in that fails, so nothing of Zia's here is let throw: a slip
+    // over a Kick stream's picture had left Kick with no card at all.
     const patched = function () {
       original.call(this);
-      if (this.element && this.element.__ziaCard !== this) {
-        this.element.__ziaCard = this;
-        repaintSoundTabs();
-      }
-      const button = this.focusButton;
-      let art = "";
       try {
-        art = bestArtwork(this.controller?.getMetadata?.()?.artwork);
+        dressCardIcon(this);
       } catch (err) {
-        noteError("music and sound bars: useMediaArtwork (2)", err);
+        noteError("music and sound bars: updateIcon", err);
       }
-      art = youTubeAvatar(this) || art;
-      if (!art) {
-        art = kickAvatar(this);
-      }
-      if (!button) {
-        return;
-      }
-      ensureRing(button);
-      if (art) {
-        const previous = button.getAttribute("zia-art");
-        button.setAttribute("zia-art", art);
-        const showArt = () => button.style.setProperty("--zia-media-art", `url("${art.replace(/"/g, "%22")}")`);
-        if (previous && previous !== art) {
-          flipArtwork(button, showArt);
-        } else {
-          showArt();
-        }
-      } else {
-        button.removeAttribute("zia-art");
-        button.style.removeProperty("--zia-media-art");
-      }
-      showFaviconTile(this, button, art);
     };
     patched.__zia = true;
     proto.updateIcon = patched;
@@ -4044,6 +4023,42 @@
       noteError("music and sound bars: showArt", err);
     }
     return true;
+  }
+
+  function dressCardIcon(card) {
+    if (card.element && card.element.__ziaCard !== card) {
+      card.element.__ziaCard = card;
+      repaintSoundTabs();
+    }
+    const button = card.focusButton;
+    let art = "";
+    try {
+      art = bestArtwork(card.controller?.getMetadata?.()?.artwork);
+    } catch (err) {
+      noteError("music and sound bars: useMediaArtwork (2)", err);
+    }
+    art = youTubeAvatar(card) || art;
+    if (!art) {
+      art = kickAvatar(card);
+    }
+    if (!button) {
+      return;
+    }
+    ensureRing(button);
+    if (art) {
+      const previous = button.getAttribute("zia-art");
+      button.setAttribute("zia-art", art);
+      const showArt = () => button.style.setProperty("--zia-media-art", `url("${art.replace(/"/g, "%22")}")`);
+      if (previous && previous !== art) {
+        flipArtwork(button, showArt);
+      } else {
+        showArt();
+      }
+    } else {
+      button.removeAttribute("zia-art");
+      button.style.removeProperty("--zia-media-art");
+    }
+    showFaviconTile(card, button, art);
   }
 
   function watchMediaGlow() {
