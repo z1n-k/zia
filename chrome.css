@@ -284,41 +284,6 @@
     }
   }
 
-  /* The page's scrollbar sat inside the card, with the gap beyond it, so a
-     flick to the window's (or a full-size window's, the screen's) right
-     edge missed it. The card meets the window's right edge, square there,
-     so the scrollbar is at the edge, as in Windows itself. Only in a
-     full-size window, where the edge is the screen's: in a smaller one the
-     card keeps its gap all round, which looked like a missing border. Not with the
-     tabs on the right, a panel open on the right or a split, where the
-     page doesn't end at the window's edge. */
-  :root[sizemode="maximized"]:not(#zia-none):not(#zia-none-2):not([inDOMFullscreen="true"]):not([popup-window]):not([zen-right-side="true"]):not(:has(#sidebar-box[sidebar-positionend]:not([hidden]))):not(:has(#tabbrowser-tabbox[zen-split-view="true"])) {
-    & #zen-appcontent-wrapper {
-      margin-right: 0 !important;
-      border-start-end-radius: 0 !important;
-      border-end-end-radius: 0 !important;
-    }
-
-    & #zen-appcontent-navbar-wrapper {
-      border-start-end-radius: 0 !important;
-    }
-
-    & #tabbrowser-tabbox,
-    & #tabbrowser-tabbox #tabbrowser-tabpanels .browserSidebarContainer {
-      border-start-end-radius: 0 !important;
-      border-end-end-radius: 0 !important;
-    }
-
-    & #tabbrowser-tabpanels :is(.browserSidebarContainer, .browserStack, browser) {
-      clip-path: inset(0 round 0 0 0 var(--zia-card-radius)) !important;
-    }
-
-    /* (Zen's single toolbar: the page's own top-left corner is round) */
-    &[zen-single-toolbar="true"] #tabbrowser-tabpanels :is(.browserSidebarContainer, .browserStack, browser) {
-      clip-path: inset(0 round var(--zia-card-radius) 0 0 var(--zia-card-radius)) !important;
-    }
-  }
-
   @media -moz-pref("zia.window-buttons.hide"), -moz-pref("zia.window-buttons.dim") {
     :root:not(#zia-none):not(#zia-none-2):not([inDOMFullscreen="true"]):not([popup-window]) #nav-bar {
       padding-inline-end: var(--zia-toolbar-end-gap) !important;

@@ -8,10 +8,9 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
-- On Windows, a window that isn't full size keeps the gap down the right
-  of the page again, so the page no longer looks to have lost its right
-  border. It meets the right edge only in a full-size window, where the
-  edge is the screen's and the scrollbar is wanted there.
+- On Windows, the page keeps its gap down the right again: 2.92.0 ran it
+  to the window's right edge for the scrollbar's sake, which looked like
+  the page had lost its right border.
 
 ### Changed
 
