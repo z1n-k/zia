@@ -261,36 +261,63 @@
   } catch (err) {
     console.debug("[Zia] picture-in-picture: screens", err);
   }
-  const otherScreenAt = (x, y) => {
-    if (!screenManager) {
-      return false;
-    }
+  // All in the screen list's own units (desktop pixels: device pixels over
+  // the screen's scale). Probed from the page's own measures, which are in
+  // CSS pixels, the probes landed on the wrong screen wherever Windows
+  // scales the display: the right side read as facing another screen, and
+  // with one on the left as well, no side was left to tuck into.
+  const desktopRect = (screen) => {
+    const left = {};
+    const top = {};
+    const width = {};
+    const height = {};
+    screen.GetRect(left, top, width, height);
+    const f = screen.contentsScaleFactor || 1;
+    return { L: left.value / f, T: top.value / f, R: (left.value + width.value) / f, B: (top.value + height.value) / f };
+  };
+  const screenAt = (x, y) => {
     try {
-      const other = screenManager.screenForRect(Math.round(x), Math.round(y), 1, 1);
-      const left = {};
-      const top = {};
-      const width = {};
-      const height = {};
-      other.GetRectDisplayPix(left, top, width, height);
-      return x >= left.value && x < left.value + width.value && y >= top.value && y < top.value + height.value;
+      const screen = screenManager.screenForRect(Math.round(x), Math.round(y), 1, 1);
+      const r = desktopRect(screen);
+      return x >= r.L && x < r.R && y >= r.T && y < r.B ? r : null;
     } catch (err) {
-      return false;
+      return null;
+    }
+  };
+  // the screen the window's middle is on
+  const ownScreen = () => {
+    const dpr = window.devicePixelRatio || 1;
+    const cx = (window.screenX + W() / 2) * dpr;
+    const cy = (window.screenY + H() / 2) * dpr;
+    try {
+      let screen = screenManager.screenForRect(Math.round(cx), Math.round(cy), 1, 1);
+      const f = screen.contentsScaleFactor || 1;
+      if (f !== 1) {
+        screen = screenManager.screenForRect(Math.round(cx / f), Math.round(cy / f), 1, 1);
+      }
+      return desktopRect(screen);
+    } catch (err) {
+      return null;
     }
   };
   const openSides = () => {
-    const s = window.screen;
-    const L = s.left;
-    const T = s.top;
-    const R = s.left + s.width;
-    const B = s.top + s.height;
+    const own = screenManager ? ownScreen() : null;
+    if (!own) {
+      return { left: true, right: true, top: true, bottom: true, corner: () => true };
+    }
+    const { L, T, R, B } = own;
+    const other = (x, y) => {
+      const r = screenAt(x, y);
+      return !!r && (r.L !== L || r.T !== T);
+    };
     const xs = [0.15, 0.5, 0.85].map((f) => L + (R - L) * f);
     const ys = [0.15, 0.5, 0.85].map((f) => T + (B - T) * f);
     return {
-      left: !ys.some((y) => otherScreenAt(L - 2, y)),
-      right: !ys.some((y) => otherScreenAt(R + 1, y)),
-      top: !xs.some((x) => otherScreenAt(x, T - 2)),
-      bottom: !xs.some((x) => otherScreenAt(x, B + 1)),
-      corner: (v, h) => !otherScreenAt(h === "left" ? L - 2 : R + 1, v === "top" ? T - 2 : B + 1),
+      left: !ys.some((y) => other(L - 2, y)),
+      right: !ys.some((y) => other(R + 1, y)),
+      top: !xs.some((x) => other(x, T - 2)),
+      bottom: !xs.some((x) => other(x, B + 1)),
+      corner: (v, h) => !other(h === "left" ? L - 2 : R + 1, v === "top" ? T - 2 : B + 1),
     };
   };
   const spotOpen = (name, open = openSides()) => {

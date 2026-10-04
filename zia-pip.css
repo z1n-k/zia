@@ -145,6 +145,7 @@
     position: relative;
     width: 27px;
     padding: 0;
+    gap: 0;
     justify-content: center;
     font-size: 0;
   }
@@ -168,9 +169,12 @@
 }
 
 @media (max-width: 319px) {
+  /* (no gap either: kept beside the hidden word, it pushed the icon off
+     centre) */
   #controls .zia-pip-pill {
     width: 27px;
     padding: 0;
+    gap: 0;
     justify-content: center;
     font-size: 0;
   }

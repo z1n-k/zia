@@ -4,6 +4,18 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Picture-in-picture's buttons, shrunk to just their icons in a small
+  window, have their icons centred rather than a little to the left.
+- With more than one screen, picture-in-picture tucks into every side
+  that has no other screen beyond it. Where Windows scales the display,
+  the screens were measured in mixed units: only the left side was
+  offered, and with a second screen on the left the tuck button was gone
+  altogether.
+
 ## [2.91.3] — 2026-10-04
 
 ### Fixed
