@@ -33,6 +33,10 @@ Every release of Zia, newest first. The format follows
   sections' column is narrower, with the others' icons as faint as their
   names and no fill on the chosen one; Filter and Clear are icon buttons,
   so the search field keeps its room; and the footer has no Donate.
+- The Library's sections sit at the top of their column in Zia's line
+  icons, rather than in its middle in Zen's illustrated ones, and the list
+  beside them runs to the Library's edge (it stopped short, leaving a gap
+  at the right).
 
 ### Changed
 
