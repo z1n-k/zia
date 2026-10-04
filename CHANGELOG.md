@@ -15,10 +15,11 @@ Every release of Zia, newest first. The format follows
   the screens were measured in mixed units: only the left side was
   offered, and with a second screen on the left the tuck button was gone
   altogether.
-- Kick streams get their music card again. Since Zen's update, a card
-  is dropped as it's made if the stream doesn't say where it's up to,
-  which Kick's live player doesn't; such a stream now gets its card, with
-  no progress line, like any live stream.
+- Kick streams get their music card again, reading LIVE. Since Zen's
+  update, a card was dropped as it was made if the stream didn't say
+  where it was up to, which Kick's live player doesn't; and Kick's player
+  then gives a few seconds' position at a time, which showed as a
+  progress line looping round every three seconds.
 
 ## [2.91.3] — 2026-10-04
 

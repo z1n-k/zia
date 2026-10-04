@@ -3935,10 +3935,10 @@
   // of the stream it keeps to go back through), so Zen shows it as a video,
   // with a progress line that jumps about. Asked of YouTube's own player (it
   // marks a live stream) every so often, the card shows LIVE instead, as it
-  // does for Twitch and Kick.
+  // does for Twitch. Kick, below, is told by its address.
   const youTubeLiveChecked = new WeakMap();
 
-  function markYouTubeLive(card) {
+  function markLiveStream(card) {
     const element = card.element;
     const browser = card.browser;
     if (!element || !browser) {
@@ -3949,6 +3949,19 @@
       host = browser.currentURI?.host || "";
     } catch (err) {
       host = "";
+    }
+    // A Kick channel's own page is its live stream. Kick's player gives the
+    // card a few seconds' position at a time, so it showed a progress line
+    // looping round every three seconds instead of LIVE.
+    if (/^(www\.)?kick\.com$/.test(host)) {
+      let path = "";
+      try {
+        path = browser.currentURI.filePath;
+      } catch (err) {
+        path = "";
+      }
+      element.toggleAttribute("zia-live", /^\/[\w-]+\/?$/.test(path));
+      return;
     }
     if (!/(^|\.)youtube\.com$/.test(host)) {
       element.removeAttribute("zia-live");
@@ -3991,7 +4004,7 @@
           this.element.__ziaCard = this;
           watchTimeLeft(this);
           showTimeLeft(this);
-          markYouTubeLive(this);
+          markLiveStream(this);
           if (!known) {
             repaintSoundTabs();
           }
@@ -4118,7 +4131,9 @@
           if (!this.isActive) {
             throw err;
           }
-          return { duration: 0, playbackRate: 1, position: 0 };
+          // (an endless length: Zen hides the progress line and the card
+          // reads LIVE)
+          return { duration: Infinity, playbackRate: 1, position: 0 };
         }
       };
       patched.__zia = true;
