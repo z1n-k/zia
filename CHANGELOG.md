@@ -23,9 +23,9 @@ Every release of Zia, newest first. The format follows
 - The last downloads that fan out above the Library button are tab rows:
   a tab's height and hover, the file's icon at a favicon's size, and its
   size or state beside the name. Zen's were half as tall again as a tab.
-- A Clear button in the Library's Downloads, an eraser beside the filter. It empties
-  the list as Firefox's Clear Downloads does: the files stay on disk, and a
-  download still under way stays in the list.
+- A Clear button in the Library's Downloads, an eraser beside the
+  filter. It empties the list as Firefox's Clear Downloads does: the files
+  stay on disk, and a download still under way stays in the list.
 - The Library's row buttons use Zia's icons: forget and reopen in
   History, cancel and retry in Downloads. So does the icon picker's remove
   button, shown while an icon is chosen.
@@ -33,10 +33,14 @@ Every release of Zia, newest first. The format follows
   sections' column is narrower, with the others' icons as faint as their
   names and no fill on the chosen one; Filter and Clear are icon buttons,
   so the search field keeps its room; and the footer has no Donate.
-- The Library's sections sit at the top of their column in Zia's line
-  icons, rather than in its middle in Zen's illustrated ones, and the list
-  beside them runs to the Library's edge (it stopped short, leaving a gap
-  at the right).
+- The Library's sections are in Zia's line icons rather than Zen's
+  illustrated ones, and the list beside them runs to the Library's edge
+  (it stopped short, leaving a gap at the right).
+- The Library's rows, and the downloads above its button, have the tabs'
+  own padding before the icon and gap after it, measured off a tab, with
+  each icon at a favicon's size.
+- A setting, **Zen's own Library look**, off by default, to keep Zen's
+  Library as Zen draws it.
 - The Library button at the foot of the sidebar is as faint as the tab
   list's arrow beside it, at full strength while hovered, and no longer
   keeps a small picture of the last download on it.

@@ -105,6 +105,12 @@
   },
   {
     "type": "checkbox",
+    "label": "Zen's own Library look (off: Zia's)",
+    "property": "zia.library.zen-look",
+    "defaultValue": false
+  },
+  {
+    "type": "checkbox",
     "label": "Tab and folder hover cards",
     "property": "zia.features.tab-hover-cards",
     "defaultValue": true

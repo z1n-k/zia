@@ -229,6 +229,10 @@ Firefox's Bookmarks, History and Synced Tabs panels become a second sidebar on t
 
 ![The Bookmarks panel as a second sidebar beside the page](https://raw.githubusercontent.com/z1n-k/zia/readme-images/sidebar-panels.webp)
 
+### Library
+
+Zen's Library keeps Zen's layout, drawn the way Zia draws the sidebar. Its sections are tiles like essentials, in Zia's line icons, the chosen one lit. History, downloads and boosts are rows measured off your tabs, with the tabs' padding and hover, and the search field and filters are Zia's. Downloads gets a **Clear** button (the files stay on disk), and the last downloads that fan out above the Library button are tab rows too. Turn on **Zen's own Library look** in settings to keep Zen's.
+
 ### Music
 
 Playing music brings up a card with the track's artwork and a soft glow in its colours, for live streams as well as ordinary videos. Playing tabs and essentials get sound bars instead of Zen's speaker: dots when muted, and a click toggles the sound.
@@ -341,6 +345,7 @@ The first folder takes a little while as the model downloads and the icon names 
 | A glance shows on its tab as a small picture of the page, as in Dia | on |
 | Bookmarks, History and Synced Tabs panels in Zia's look | on |
 | Bookmarks, History and Synced Tabs panels beside the page, full height, as a second sidebar | on |
+| Zen's own Library look (off: Zia's) | off |
 | Tab and folder hover cards | on |
 | Hover cards are slightly see-through, with what's behind them blurred | on |
 | Name new folders and choose their icons with a local model ([see above](#folder-names-and-icons)) | off |
