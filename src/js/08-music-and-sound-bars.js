@@ -1030,6 +1030,61 @@
   }
 
 
+  // Zen asks a tab for its media's position as it makes the card, and drops
+  // the card if that fails. A stream that never says where it is (Kick's
+  // live player) fails it, so Kick got no card at all. Such a controller is
+  // given an empty position instead (no length: the card then shows no
+  // progress line, as for any live stream), and a tab already playing is
+  // offered to Zen again.
+  function cardForPositionlessMedia() {
+    const manager = window.gZenMediaController;
+    if (!manager || typeof manager.activateMediaControls !== "function" || manager.activateMediaControls.__zia) {
+      return;
+    }
+    const lendPosition = (controller) => {
+      if (!controller || controller.__ziaPosition) {
+        return;
+      }
+      const own = controller.getPositionState;
+      if (typeof own !== "function") {
+        return;
+      }
+      controller.__ziaPosition = true;
+      controller.getPositionState = function () {
+        try {
+          return own.call(this);
+        } catch (err) {
+          if (!this.isActive) {
+            throw err;
+          }
+          return { duration: 0, playbackRate: 1, position: 0 };
+        }
+      };
+    };
+    const original = manager.activateMediaControls;
+    const patched = function (controller, browser) {
+      try {
+        lendPosition(controller);
+      } catch (err) {
+        noteError("music and sound bars: lendPosition", err);
+      }
+      return original.call(this, controller, browser);
+    };
+    patched.__zia = true;
+    manager.activateMediaControls = patched;
+
+    for (const tab of gBrowser.tabs) {
+      if (!tab.hasAttribute("soundplaying")) {
+        continue;
+      }
+      try {
+        manager.activateMediaControls(tab.linkedBrowser.browsingContext?.mediaController, tab.linkedBrowser);
+      } catch (err) {
+        noteError("music and sound bars: cardForPositionlessMedia", err);
+      }
+    }
+  }
+
   // A music player card could be dragged out of the sidebar like a toolbar
   // button, which took it away from Zen's media player and left the player
   // broken until Zen restarted. Nothing on the card is meant to be dragged

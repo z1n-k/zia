@@ -264,6 +264,7 @@
     safely("hideWwwInUrlbar", hideWwwInUrlbar);
     safely("watchRightEdges", watchRightEdges);
     ifOn("media-player", "watchMediaGlow", watchMediaGlow);
+    ifOn("media-player", "cardForPositionlessMedia", cardForPositionlessMedia);
     safely("keepMediaCardsInPlace", keepMediaCardsInPlace);
     safely("watchTabSoundBars", watchTabSoundBars);
     safely("watchSelectedTabGlow", watchSelectedTabGlow);
