@@ -14,6 +14,9 @@ Every release of Zia, newest first. The format follows
   field and filters are Zia's tiles; pictures and boost icons sit on
   essential-shaped tiles; download progress is Zia's loading blue; and it
   follows light spaces and light mode.
+- The last downloads that fan out above the Library button are tab rows:
+  a tab's height and hover, the file's icon at a favicon's size, and its
+  size or state beside the name. Zen's were half as tall again as a tab.
 
 ### Changed
 
