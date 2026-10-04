@@ -14,6 +14,10 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- Clicking the address bar now always selects the whole address. Now
+  and then it selected only the start ("youtub"), because the text
+  moved under the pointer as the bar opened while the button was still
+  down.
 - The address bar pop-up's last row has the same gap below it as at the
   sides again, with the list scrolling or not, rather than the extra
   space at the bottom since Zen's update. The pop-up ends under the last
