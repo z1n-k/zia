@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- The Library's sliding section tile, Filter and Clear, and Media's tiles
+  have the essentials' fine edge, brightest along the middle of each side
+  and fading into the corners, rather than an even line all round.
+
 ## [2.93.1] — 2026-10-04
 
 ### Fixed
