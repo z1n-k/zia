@@ -16756,6 +16756,46 @@
     });
   }
 
+  // ---------- The chosen section's tile slides between sections
+  // One lit tile behind the section buttons, moved to the chosen one, so
+  // choosing another slides it there along the column, with Zia's spring,
+  // rather than one going out and the other coming on (24-library.css).
+  function railLibrarySections(library) {
+    const column = library.querySelector("#zen-library-sidebar-tabs");
+    if (!column) {
+      return;
+    }
+    let rail = column.querySelector(":scope > .zia-library-rail");
+    if (!rail) {
+      rail = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+      rail.className = "zia-library-rail";
+      column.appendChild(rail);
+      new ResizeObserver(() => placeRail(column, rail, true)).observe(column);
+    }
+    placeRail(column, rail, !rail.hasAttribute("placed"));
+  }
+
+  function placeRail(column, rail, instantly) {
+    const tab = column.querySelector(".zen-library-tab[active]");
+    if (!tab) {
+      rail.hidden = true;
+      return;
+    }
+    const box = tab.getBoundingClientRect();
+    const top = box.top - column.getBoundingClientRect().top + column.scrollTop;
+    if (!box.height) {
+      return;
+    }
+    rail.hidden = false;
+    rail.toggleAttribute("instant", instantly);
+    rail.style.height = `${box.height}px`;
+    rail.style.transform = `translateY(${top}px)`;
+    rail.setAttribute("placed", "true");
+    if (instantly) {
+      requestAnimationFrame(() => rail.removeAttribute("instant"));
+    }
+  }
+
   // ---------- Clear in the Library's Downloads and History
   // Zen's Library lists every download but has no way to empty the list,
   // only to remove them one by one. A Clear button beside the filter does
@@ -16825,6 +16865,9 @@
     let watched = null;
     const sectionWatcher = new MutationObserver((records) => {
       addButtons(watched);
+      if (!records.every((record) => record.target.classList?.contains("zia-library-rail"))) {
+        safely("library: rail", () => railLibrarySections(watched));
+      }
       if (records.some((record) => record.target === watched && record.attributeName === "open") && watched.hasAttribute("open")) {
         safely("library: rows", matchLibraryRowsToTabs);
       }
@@ -16836,7 +16879,7 @@
       }
       watched = library;
       sectionWatcher.disconnect();
-      sectionWatcher.observe(library, { childList: true, subtree: true, attributes: true, attributeFilter: ["open"] });
+      sectionWatcher.observe(library, { childList: true, subtree: true, attributes: true, attributeFilter: ["open", "active"] });
       addButtons(library);
       safely("library: lift media", () => liftMediaUnderCursor(library));
     };

@@ -7398,10 +7398,11 @@ zen-folder .tab-reset-button {
         scale: 0.96;
       }
 
+      /* (the chosen one is lit by the tile that slides between them,
+         below) */
       &[active]::before {
-        background: var(--zia-lib-tile) !important;
-        /* Zia's shine round its edge, as on an essential */
-        box-shadow: inset 0 0 0 var(--zia-shine-width) color-mix(in srgb, var(--zia-lib-ink) 16%, transparent) !important;
+        background: none !important;
+        box-shadow: none !important;
       }
 
       /* the others' icons as faint as their names */
@@ -7411,6 +7412,33 @@ zen-folder .tab-reset-button {
     }
 
     /* the drawn icons in the ink, not Zen's accent */
+    /* The lit tile behind the chosen section, one for them all, sliding
+       to the one chosen with Zia's spring (28k-library.js places it) */
+    & #zen-library-sidebar-tabs {
+      position: relative !important;
+    }
+
+    & .zen-library-tab {
+      z-index: 1;
+    }
+
+    & .zia-library-rail {
+      position: absolute;
+      top: 0;
+      inset-inline: 4px;
+      z-index: 0;
+      border-radius: var(--zia-essential-radius);
+      background: var(--zia-lib-tile);
+      /* Zia's shine round its edge, as on an essential */
+      box-shadow: inset 0 0 0 var(--zia-shine-width) color-mix(in srgb, var(--zia-lib-ink) 16%, transparent);
+      pointer-events: none;
+      transition: transform var(--zia-spring-time) var(--zia-spring), height var(--zia-spring-time) var(--zia-spring);
+
+      &[instant] {
+        transition: none;
+      }
+    }
+
     & :is(.zen-library-tab-icon-image, .empty-state-icon-image) {
       --stroke: var(--zia-lib-ink) !important;
       /* (outline only: no fill when chosen, or while downloading) */
@@ -7458,6 +7486,11 @@ zen-folder .tab-reset-button {
 
     & .zen-library-filter-button {
       height: 34px !important;
+    }
+
+    /* the filters' buttons at the tabs' text size */
+    & :is(.zen-library-filter-chip, .zen-library-filter-done) {
+      font-size: var(--zia-text-size) !important;
     }
 
     & .zen-library-filter-chip {

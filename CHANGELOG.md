@@ -15,10 +15,14 @@ Every release of Zia, newest first. The format follows
   towards the cursor, its fine edge lights up nearest it, and its picture
   lifts a touch, the shadow falling the other way. It springs back as you
   leave, and stays still for anyone whose system asks for less motion.
+- The Library's chosen section is lit by one tile that slides along the
+  column to the section you choose, with Zia's spring, rather than one
+  going out and another coming on.
 
 ### Changed
 
-- The Library's search fields are at the tabs' text size.
+- The Library's search fields, and the filters' buttons, are at the tabs'
+  text size.
 
 ## [2.92.0] — 2026-10-04
 
