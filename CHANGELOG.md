@@ -17,6 +17,12 @@ Every release of Zia, newest first. The format follows
   endpoint, or use Ollama on your own machine. Remove Tidy Downloads if
   you have it as its own mod; Zia's copy uses the same settings.
 
+### Fixed
+
+- The last downloads fan out above the Library button again, as tab rows,
+  and the Library button shows the picture of the latest one again: 2.92.0
+  and 2.93.4 hid them by mistake.
+
 ## [2.93.4] — 2026-10-04
 
 ### Removed
