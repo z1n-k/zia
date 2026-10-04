@@ -289,6 +289,7 @@
     safely("watchCompactTopRow", watchCompactTopRow);
     safely("watchOldIcons", watchOldIcons);
     safely("watchNewFolders", watchNewFolders);
+    safely("watchReopenedFolders", watchReopenedFolders);
     safely("watchFolderColors", watchFolderColors);
     safely("watchFolderIcon", watchFolderIcon);
     safely("addFolderColorPicker", addFolderColorPicker);

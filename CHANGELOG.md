@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- A deleted folder brought back with Reopen Closed Tab (Cmd/Ctrl+Shift+T,
+  or Cmd/Ctrl+Z) comes back as a folder again, with its name, icon and
+  colour: it collapses and animates like any other, rather than staying
+  open for good, and the local model no longer tries to name it afresh.
+
 ## [2.91.1] — 2026-10-04
 
 ### Fixed

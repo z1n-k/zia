@@ -715,7 +715,7 @@
       settle();
     }
     gBrowser.tabContainer.addEventListener("TabGroupCreate", (event) => {
-      if (!ready || Date.now() < (window.ziaReopeningUntil || 0)) {
+      if (!ready || Date.now() < (window.ziaReopeningUntil || 0) || wasDeletedFolder(event.target)) {
         return;
       }
       requestAnimationFrame(() => requestAnimationFrame(() => applySuggestedFolderIcon(event.target)));
