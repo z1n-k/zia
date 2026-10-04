@@ -266,6 +266,28 @@
       box-shadow: none !important;
     }
 
+    /* Over a picture the tile stays put and the picture lifts and leans
+       towards the cursor, its shadow falling the other way (28k-library.js
+       says where the cursor is), springing back as it leaves */
+    & .zen-library-media-item:hover {
+      scale: 1 !important;
+    }
+
+    & .zen-library-media-frame {
+      transform: perspective(500px) rotateX(var(--zia-lift-rx, 0deg)) rotateY(var(--zia-lift-ry, 0deg)) translateZ(calc(var(--zia-lift, 0) * 14px));
+      transition: transform 0.45s var(--zia-spring);
+    }
+
+    & .zen-library-media-item[zia-lifting] {
+      & .zen-library-media-frame {
+        transition: transform 0.08s linear;
+      }
+
+      & .zen-library-media-thumb:not(.zen-library-media-file) {
+        box-shadow: var(--zia-lift-sx, 0px) calc(6px + var(--zia-lift-sy, 0px)) 18px rgba(0, 0, 0, 0.45) !important;
+      }
+    }
+
     /* the media opt-in, as one of Zia's hover cards */
     & .zen-library-media-opt-in {
       border-radius: var(--zia-tab-card-radius) !important;

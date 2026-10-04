@@ -16710,6 +16710,49 @@
     root.style.setProperty("--zia-lib-icon-gap", sizes["--zia-row-icon-gap"]);
   }
 
+  // ---------- Media's pictures lift towards the cursor
+  // Over a picture in the Library's Media, the tile stays put and the
+  // picture on it lifts and leans towards the cursor, its shadow falling
+  // the other way (24-library.css draws it from where the cursor is, set
+  // here). Still for anyone whose system asks for less motion.
+  function liftMediaUnderCursor(library) {
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const TILT = 6;
+    let current = null;
+    const settle = (item) => {
+      if (!item) {
+        return;
+      }
+      item.removeAttribute("zia-lifting");
+      for (const name of ["--zia-lift-rx", "--zia-lift-ry", "--zia-lift-sx", "--zia-lift-sy", "--zia-lift"]) {
+        item.style.removeProperty(name);
+      }
+    };
+    library.addEventListener("pointermove", (event) => {
+      const item = event.target.closest?.(".zen-library-media-item");
+      if (item !== current) {
+        settle(current);
+        current = item;
+      }
+      if (!item || still.matches || libraryZenLook()) {
+        return;
+      }
+      const box = item.getBoundingClientRect();
+      const x = Math.min(1, Math.max(0, (event.clientX - box.left) / box.width));
+      const y = Math.min(1, Math.max(0, (event.clientY - box.top) / box.height));
+      item.setAttribute("zia-lifting", "true");
+      item.style.setProperty("--zia-lift", "1");
+      item.style.setProperty("--zia-lift-ry", `${((x - 0.5) * 2 * TILT).toFixed(2)}deg`);
+      item.style.setProperty("--zia-lift-rx", `${((0.5 - y) * 2 * TILT).toFixed(2)}deg`);
+      item.style.setProperty("--zia-lift-sx", `${(-(x - 0.5) * 12).toFixed(1)}px`);
+      item.style.setProperty("--zia-lift-sy", `${(-(y - 0.5) * 12).toFixed(1)}px`);
+    });
+    library.addEventListener("pointerleave", () => {
+      settle(current);
+      current = null;
+    });
+  }
+
   // ---------- Clear in the Library's Downloads and History
   // Zen's Library lists every download but has no way to empty the list,
   // only to remove them one by one. A Clear button beside the filter does
@@ -16792,6 +16835,7 @@
       sectionWatcher.disconnect();
       sectionWatcher.observe(library, { childList: true, subtree: true, attributes: true, attributeFilter: ["open"] });
       addButtons(library);
+      safely("library: lift media", () => liftMediaUnderCursor(library));
     };
     const toolbox = document.getElementById("navigator-toolbox");
     if (toolbox?.parentNode) {

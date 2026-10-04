@@ -11,6 +11,9 @@ Every release of Zia, newest first. The format follows
 - A Clear button in the Library's History too, the eraser beside the
   filter, as in Downloads. It opens Firefox's own Clear browsing data and
   cookies dialog, to choose what goes.
+- In the Library's Media, a picture lifts and leans towards the cursor,
+  its shadow falling the other way, and springs back as you leave. Still
+  for anyone whose system asks for less motion.
 
 ### Changed
 
