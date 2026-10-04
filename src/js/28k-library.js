@@ -17,21 +17,22 @@
     root.style.setProperty("--zia-lib-icon-gap", sizes["--zia-row-icon-gap"]);
   }
 
-  // ---------- Media's pictures lift towards the cursor
-  // Over a picture in the Library's Media, the tile stays put and the
-  // picture on it lifts and leans towards the cursor, its shadow falling
-  // the other way (24-library.css draws it from where the cursor is, set
-  // here). Still for anyone whose system asks for less motion.
+  // ---------- Media's tiles catch the light
+  // Over a picture in the Library's Media, the tile leans a little towards
+  // the cursor, its fine edge lights up nearest it, and the picture on it
+  // lifts a touch, its shadow falling the other way (24-library.css draws
+  // it from where the cursor is, set here). Still for anyone whose system
+  // asks for less motion.
   function liftMediaUnderCursor(library) {
     const still = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const TILT = 6;
+    const TILT = 3;
     let current = null;
     const settle = (item) => {
       if (!item) {
         return;
       }
       item.removeAttribute("zia-lifting");
-      for (const name of ["--zia-lift-rx", "--zia-lift-ry", "--zia-lift-sx", "--zia-lift-sy", "--zia-lift"]) {
+      for (const name of ["--zia-lift-rx", "--zia-lift-ry", "--zia-lift-sx", "--zia-lift-sy", "--zia-lift-mx", "--zia-lift-my", "--zia-lift"]) {
         item.style.removeProperty(name);
       }
     };
@@ -51,8 +52,10 @@
       item.style.setProperty("--zia-lift", "1");
       item.style.setProperty("--zia-lift-ry", `${((x - 0.5) * 2 * TILT).toFixed(2)}deg`);
       item.style.setProperty("--zia-lift-rx", `${((0.5 - y) * 2 * TILT).toFixed(2)}deg`);
-      item.style.setProperty("--zia-lift-sx", `${(-(x - 0.5) * 12).toFixed(1)}px`);
-      item.style.setProperty("--zia-lift-sy", `${(-(y - 0.5) * 12).toFixed(1)}px`);
+      item.style.setProperty("--zia-lift-sx", `${(-(x - 0.5) * 8).toFixed(1)}px`);
+      item.style.setProperty("--zia-lift-sy", `${(-(y - 0.5) * 8).toFixed(1)}px`);
+      item.style.setProperty("--zia-lift-mx", `${(x * 100).toFixed(1)}%`);
+      item.style.setProperty("--zia-lift-my", `${(y * 100).toFixed(1)}%`);
     });
     library.addEventListener("pointerleave", () => {
       settle(current);

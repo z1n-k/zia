@@ -266,25 +266,56 @@
       box-shadow: none !important;
     }
 
-    /* Over a picture the tile stays put and the picture lifts and leans
-       towards the cursor, its shadow falling the other way (28k-library.js
-       says where the cursor is), springing back as it leaves */
+    /* Over a picture the tile catches the light: it leans a little towards
+       the cursor, its fine edge lights up nearest it with a faint glow
+       beneath, and the picture lifts a touch, its shadow falling the other
+       way (28k-library.js says where the cursor is), all springing back as
+       it leaves */
+    & .zen-library-media-item {
+      position: relative;
+      transform: perspective(600px) rotateX(var(--zia-lift-rx, 0deg)) rotateY(var(--zia-lift-ry, 0deg));
+      transition: transform 0.45s var(--zia-spring), background-color 0.12s ease !important;
+
+      &::before,
+      &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        opacity: var(--zia-lift, 0);
+        transition: opacity 0.3s ease;
+      }
+
+      /* the faint glow */
+      &::before {
+        background: radial-gradient(circle at var(--zia-lift-mx, 50%) var(--zia-lift-my, 50%), color-mix(in srgb, var(--zia-lib-ink) 8%, transparent), transparent 55%);
+      }
+
+      /* the edge, lit nearest the cursor */
+      &::after {
+        padding: 1px;
+        background: radial-gradient(circle at var(--zia-lift-mx, 50%) var(--zia-lift-my, 50%), color-mix(in srgb, var(--zia-lib-ink) 70%, transparent), transparent 45%);
+        mask:
+          linear-gradient(#000 0 0) content-box exclude,
+          linear-gradient(#000 0 0);
+      }
+    }
+
     & .zen-library-media-item:hover {
       scale: 1 !important;
     }
 
     & .zen-library-media-frame {
-      transform: perspective(500px) rotateX(var(--zia-lift-rx, 0deg)) rotateY(var(--zia-lift-ry, 0deg)) translateZ(calc(var(--zia-lift, 0) * 14px));
+      transform: scale(calc(1 + var(--zia-lift, 0) * 0.025));
       transition: transform 0.45s var(--zia-spring);
     }
 
     & .zen-library-media-item[zia-lifting] {
-      & .zen-library-media-frame {
-        transition: transform 0.08s linear;
-      }
+      transition: transform 0.08s linear, background-color 0.12s ease !important;
 
       & .zen-library-media-thumb:not(.zen-library-media-file) {
-        box-shadow: var(--zia-lift-sx, 0px) calc(6px + var(--zia-lift-sy, 0px)) 18px rgba(0, 0, 0, 0.45) !important;
+        box-shadow: var(--zia-lift-sx, 0px) calc(4px + var(--zia-lift-sy, 0px)) 14px rgba(0, 0, 0, 0.4) !important;
       }
     }
 
