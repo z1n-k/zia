@@ -4103,31 +4103,50 @@
   // progress line, as for any live stream). A tab already playing is
   // offered to Zen again.
   function cardForPositionlessMedia() {
-    const proto = window.MediaController?.prototype;
-    const own = proto?.getPositionState;
-    if (typeof own !== "function" || own.__zia) {
-      return;
-    }
-    const patched = function () {
-      try {
-        return own.call(this);
-      } catch (err) {
-        if (!this.isActive) {
-          throw err;
-        }
-        return { duration: 0, playbackRate: 1, position: 0 };
+    // (on the controller's own type: the one this window knows by name
+    // isn't the one tabs' controllers are made from)
+    const answerPosition = (controller) => {
+      const proto = controller && Object.getPrototypeOf(controller);
+      const own = proto?.getPositionState;
+      if (typeof own !== "function" || own.__zia) {
+        return;
       }
+      const patched = function () {
+        try {
+          return own.call(this);
+        } catch (err) {
+          if (!this.isActive) {
+            throw err;
+          }
+          return { duration: 0, playbackRate: 1, position: 0 };
+        }
+      };
+      patched.__zia = true;
+      Object.defineProperty(proto, "getPositionState", { value: patched, writable: true, configurable: true, enumerable: true });
     };
-    patched.__zia = true;
-    Object.defineProperty(proto, "getPositionState", { value: patched, writable: true, configurable: true, enumerable: true });
 
     const manager = window.gZenMediaController;
+    if (!manager || typeof manager.activateMediaControls !== "function" || manager.activateMediaControls.__zia) {
+      return;
+    }
+    const original = manager.activateMediaControls;
+    const activate = function (controller, browser) {
+      try {
+        answerPosition(controller);
+      } catch (err) {
+        noteError("music and sound bars: answerPosition", err);
+      }
+      return original.call(this, controller, browser);
+    };
+    activate.__zia = true;
+    manager.activateMediaControls = activate;
+
     for (const tab of gBrowser.tabs) {
       if (!tab.hasAttribute("soundplaying")) {
         continue;
       }
       try {
-        manager?.activateMediaControls?.(tab.linkedBrowser.browsingContext?.mediaController, tab.linkedBrowser);
+        manager.activateMediaControls(tab.linkedBrowser.browsingContext?.mediaController, tab.linkedBrowser);
       } catch (err) {
         noteError("music and sound bars: cardForPositionlessMedia", err);
       }
