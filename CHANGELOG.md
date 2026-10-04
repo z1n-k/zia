@@ -17,6 +17,13 @@ Every release of Zia, newest first. The format follows
     white on the white selected tab.
   - The icon picker's search text, its placeholder and the Outline and
     Solid switch are dark on the light panel.
+  - The find in page bar's close button is the same grey as its arrows.
+  - The address bar pop-up's site and result icons are dark.
+  - The toolbar no longer flashes black while a site loads.
+  - An open folder is a shade darker, and its selected tab stays a white
+    card rather than fading into it.
+- The space name is less washed out by the space colour, in light and
+  dark mode.
 
 ## [2.91.4] — 2026-10-04
 

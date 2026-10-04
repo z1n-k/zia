@@ -9,7 +9,9 @@
 :root[zia-light]:not(#zia-none):not(#zia-none-2) {
   --zia-sidebar-ink: rgb(28, 28, 32);
   --zia-active-tab-bg: rgba(255, 255, 255, 0.78);
-  --zia-active-tab-bg-folder: rgba(255, 255, 255, 0.66);
+  /* an open folder a shade darker than the sidebar, as in Dia, with its
+     open tab the same white card as anywhere else (it went lighter) */
+  --zia-active-tab-bg-folder: rgba(255, 255, 255, 0.82);
   --zia-tab-hover-bg: rgba(0, 0, 0, 0.055);
   --zia-active-glow-color: rgba(0, 0, 0, 0.035);
   --zia-folder-mark-color: rgba(0, 0, 0, 0.6);
@@ -17,11 +19,16 @@
      fine edge round tabs, folders and essentials a shade of black rather
      than white, which went nowhere on cream */
   --zia-essential-bg: rgba(255, 255, 255, 0.5);
-  --zia-folder-hover-bg: rgba(255, 255, 255, 0.42);
+  --zia-folder-hover-bg: rgba(0, 0, 0, 0.05);
   --zia-shine-layers:
     linear-gradient(to right, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.08) 35%, rgba(0, 0, 0, 0.08) 65%, rgba(0, 0, 0, 0.04)),
     linear-gradient(to bottom, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.06) 35%, rgba(0, 0, 0, 0.06) 65%, rgba(0, 0, 0, 0.03));
   --zia-tab-shine-layers: linear-gradient(rgba(0, 0, 0, 0.07), rgba(0, 0, 0, 0.07));
+  /* before a site's colour is known, the toolbar (and a page still
+     loading) are light rather than near-black, which flashed on every load */
+  --zia-fallback-bg: #f6f6f8;
+  --zia-page-loading-bg: #ffffff;
+
   /* the music card a white card, as the selected tab is */
   --zia-media-bg: rgba(255, 255, 255, 0.62);
 
@@ -64,7 +71,7 @@
   }
 
   &[zia-space-colored="true"] :is(#zia-workspace-slot .zen-current-workspace-indicator-name, #zia-space-label) {
-    color: color-mix(in srgb, var(--zen-primary-color, var(--zia-sidebar-ink)) 45%, var(--zia-sidebar-ink)) !important;
+    color: color-mix(in srgb, var(--zen-primary-color, var(--zia-sidebar-ink)) var(--zia-space-name-tint), var(--zia-sidebar-ink)) !important;
   }
 
   & #zia-workspace-slot > .zen-current-workspace-indicator > #zia-space-label:hover {

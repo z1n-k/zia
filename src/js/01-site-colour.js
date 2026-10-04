@@ -34,7 +34,9 @@
     if (!siteColorOn()) {
       rgb = null;
     }
-    const key = rgb ? rgb.join(",") : "fallback";
+    // (the fallback is light in light mode, so it takes dark ink then)
+    const fallback = rgb ? null : fallbackColor();
+    const key = rgb ? rgb.join(",") : `fallback:${fallback.join(",")}`;
     if (key === appliedColorKey) {
       return;
     }
@@ -42,12 +44,13 @@
     if (!rgb) {
       root.style.removeProperty("--zia-site-bg");
       updateInkTint(null);
-      setFlag("zia-site-light", false);
-      setFlag("zia-site-dark", true);
+      const lightFallback = wantsDarkInk(fallback);
+      setFlag("zia-site-light", lightFallback);
+      setFlag("zia-site-dark", !lightFallback);
       setFlag("zia-site-mid", false);
-
-      const fallback = fallbackColor();
-      updateDarkSiteInk(fallback, brightnessOf(fallback),  true);
+      if (!lightFallback) {
+        updateDarkSiteInk(fallback, brightnessOf(fallback), true);
+      }
       return;
     }
     root.style.setProperty("--zia-site-bg", cssColor(rgb));

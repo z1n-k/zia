@@ -108,7 +108,7 @@
   --zia-urlbar-height: 31px;
   --zia-active-tab-bg: rgba(0, 0, 0, 0.1);
   --zia-active-tab-bg-folder: rgba(0, 0, 0, 0.4);
-  --zia-space-name-tint: 42%;
+  --zia-space-name-tint: 25%;
   --zia-card-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.16), 0 1px 4px rgba(0, 0, 0, 0.18);
   --zia-hover-card-shadow: none;
   --zia-color-fade: 0.15s;
@@ -4911,6 +4911,13 @@ findbar {
     color: rgba(28, 28, 32, 0.65);
   }
 
+  /* (the close button the same grey as the arrows: it was full black) */
+  & :is(.findbar-find-previous, .findbar-find-next, .findbar-closebutton) {
+    color: rgba(28, 28, 32, 0.55) !important;
+    fill: currentColor !important;
+    fill-opacity: 1 !important;
+  }
+
   & :is(.findbar-find-previous, .findbar-find-next):hover:not([disabled]),
   & .findbar-closebutton:hover {
     background: rgba(0, 0, 0, 0.06) !important;
@@ -5892,6 +5899,21 @@ zen-folder .tab-reset-button {
 
   & .urlbarView-row[selected] {
     background-color: rgba(28, 28, 30, 0.09) !important;
+  }
+}
+
+/* The pop-up's icons in its light look: the search glass by the typing and
+   the rows' globes and glasses stayed white */
+:is(:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar, #urlbar#urlbar[zia-pop-site="light"])[breakout-extend]:not([zia-classic]) :is(#identity-icon, .urlbarView-favicon, .urlbarView-type-icon) {
+  fill: rgba(28, 28, 30, 0.72) !important;
+  fill-opacity: 1 !important;
+}
+
+@media -moz-pref("layout.css.prefers-color-scheme.content-override", 1),
+       (-moz-pref("layout.css.prefers-color-scheme.content-override", 2)) and (not (-moz-system-dark-theme)) {
+  :root:not([privatebrowsingmode="temporary"]) #urlbar#urlbar[breakout-extend]:not([zia-classic]):not([zia-pop-site="dark"]) :is(#identity-icon, .urlbarView-favicon, .urlbarView-type-icon) {
+    fill: rgba(28, 28, 30, 0.72) !important;
+    fill-opacity: 1 !important;
   }
 }
 
@@ -7054,7 +7076,9 @@ zen-folder .tab-reset-button {
 :root[zia-light]:not(#zia-none):not(#zia-none-2) {
   --zia-sidebar-ink: rgb(28, 28, 32);
   --zia-active-tab-bg: rgba(255, 255, 255, 0.78);
-  --zia-active-tab-bg-folder: rgba(255, 255, 255, 0.66);
+  /* an open folder a shade darker than the sidebar, as in Dia, with its
+     open tab the same white card as anywhere else (it went lighter) */
+  --zia-active-tab-bg-folder: rgba(255, 255, 255, 0.82);
   --zia-tab-hover-bg: rgba(0, 0, 0, 0.055);
   --zia-active-glow-color: rgba(0, 0, 0, 0.035);
   --zia-folder-mark-color: rgba(0, 0, 0, 0.6);
@@ -7062,11 +7086,16 @@ zen-folder .tab-reset-button {
      fine edge round tabs, folders and essentials a shade of black rather
      than white, which went nowhere on cream */
   --zia-essential-bg: rgba(255, 255, 255, 0.5);
-  --zia-folder-hover-bg: rgba(255, 255, 255, 0.42);
+  --zia-folder-hover-bg: rgba(0, 0, 0, 0.05);
   --zia-shine-layers:
     linear-gradient(to right, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.08) 35%, rgba(0, 0, 0, 0.08) 65%, rgba(0, 0, 0, 0.04)),
     linear-gradient(to bottom, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.06) 35%, rgba(0, 0, 0, 0.06) 65%, rgba(0, 0, 0, 0.03));
   --zia-tab-shine-layers: linear-gradient(rgba(0, 0, 0, 0.07), rgba(0, 0, 0, 0.07));
+  /* before a site's colour is known, the toolbar (and a page still
+     loading) are light rather than near-black, which flashed on every load */
+  --zia-fallback-bg: #f6f6f8;
+  --zia-page-loading-bg: #ffffff;
+
   /* the music card a white card, as the selected tab is */
   --zia-media-bg: rgba(255, 255, 255, 0.62);
 
@@ -7109,7 +7138,7 @@ zen-folder .tab-reset-button {
   }
 
   &[zia-space-colored="true"] :is(#zia-workspace-slot .zen-current-workspace-indicator-name, #zia-space-label) {
-    color: color-mix(in srgb, var(--zen-primary-color, var(--zia-sidebar-ink)) 45%, var(--zia-sidebar-ink)) !important;
+    color: color-mix(in srgb, var(--zen-primary-color, var(--zia-sidebar-ink)) var(--zia-space-name-tint), var(--zia-sidebar-ink)) !important;
   }
 
   & #zia-workspace-slot > .zen-current-workspace-indicator > #zia-space-label:hover {
