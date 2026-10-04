@@ -6,6 +6,15 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Zen's Library (Zen 1.23) is drawn like the rest of Zia, kept in Zen's
+  layout: its sections are essentials-style tiles, the chosen one lit;
+  history, downloads and boosts are tab rows with Zia's hover; the search
+  field and filters are Zia's tiles; pictures and boost icons sit on
+  essential-shaped tiles; download progress is Zia's loading blue; and it
+  follows light spaces and light mode.
+
 ### Changed
 
 - On Windows, the page meets the window's right edge, so its scrollbar is

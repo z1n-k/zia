@@ -7316,3 +7316,288 @@ zen-folder .tab-reset-button {
     filter: drop-shadow(0 0 0.5px rgba(0, 0, 0, 0.32)) drop-shadow(0 0.5px 1px rgba(0, 0, 0, 0.1));
   }
 }
+/* Zen's Library (Zen 1.23), kept as Zen lays it out, the sections down its
+   side and the chosen one beside them, but drawn the way Zia draws the
+   sidebar: the sections as essentials (the chosen one lit like an
+   essential), the lists as tab rows with their hover, the search field and
+   filters as Zia's tiles, pictures and boosts as essential-shaped tiles,
+   and progress in Zia's loading blue. Light spaces and light mode follow,
+   from the same tokens (23-light-spaces.css). */
+zen-library {
+  --zia-lib-ink: var(--zia-sidebar-ink, rgb(255, 255, 255));
+  --zia-lib-tile: var(--zia-essential-bg);
+  --zia-lib-tile-hover: color-mix(in srgb, var(--zia-lib-ink) 8%, var(--zia-essential-bg));
+  --zia-lib-field: rgba(0, 0, 0, 0.16);
+  --zen-library-pill-bg: var(--zia-lib-tile) !important;
+  --zen-library-pill-hover-bg: var(--zia-lib-tile-hover) !important;
+  --zen-library-radius: var(--zia-tab-radius) !important;
+
+  color: var(--zia-lib-ink) !important;
+
+  /* the side: no gradient or shadow, a quiet hairline from the list */
+  & #zen-library-side {
+    background: none !important;
+    box-shadow: none !important;
+    border-inline-end: 1px solid color-mix(in srgb, var(--zia-lib-ink) 7%, transparent) !important;
+  }
+
+  /* the sections, as essentials */
+  & #zen-library-sidebar-tabs {
+    gap: var(--zia-essential-gap) !important;
+    padding-inline: 4px !important;
+  }
+
+  & .zen-library-tab {
+    --zen-library-sprite-size: 24px;
+    margin: 0 !important;
+    padding: 12px 0 10px !important;
+    gap: 5px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+
+    &::before {
+      border-radius: var(--zia-essential-radius) !important;
+      transition: background-color 0.15s ease, scale 0.15s ease !important;
+    }
+
+    &:hover::before {
+      background: var(--zia-tab-hover-bg) !important;
+    }
+
+    &:hover:active::before {
+      transform: none !important;
+      scale: 0.96;
+    }
+
+    &[active]::before {
+      background: var(--zia-lib-tile) !important;
+      /* Zia's shine round its edge, as on an essential */
+      box-shadow: inset 0 0 0 var(--zia-shine-width) color-mix(in srgb, var(--zia-lib-ink) 16%, transparent) !important;
+    }
+
+    &:not([active]) label {
+      opacity: 0.7;
+    }
+  }
+
+  /* the drawn icons in the ink, not Zen's accent */
+  & :is(.zen-library-tab-icon-image, .empty-state-icon-image) {
+    --stroke: var(--zia-lib-ink) !important;
+    --fill: color-mix(in srgb, var(--zia-lib-ink) 22%, transparent) !important;
+  }
+
+  /* a download under way: Zia's progress ring round its icon */
+  &[zen-library-downloading] .zen-library-tab[data-section="downloads"]::after {
+    top: 12px !important;
+    border-width: 2px !important;
+    background:
+      conic-gradient(var(--zia-loading-color) var(--zen-library-download-progress, 0%), color-mix(in srgb, var(--zia-lib-ink) 18%, transparent) 0) border-box,
+      transparent padding-box !important;
+    box-shadow: none !important;
+  }
+
+  /* search and filters: Zia's field and tiles */
+  & .zen-library-search-top {
+    padding: 10px 10px 6px !important;
+  }
+
+  & .zen-library-search-box {
+    height: 34px !important;
+    background: var(--zia-lib-field) !important;
+    border-radius: var(--zia-tab-radius) !important;
+  }
+
+  & :is(.zen-library-filter-button, .zen-library-filter-done) {
+    border-radius: var(--zia-tab-radius) !important;
+    background: var(--zia-lib-tile) !important;
+    font-weight: 500 !important;
+
+    &:hover {
+      background: var(--zia-lib-tile-hover) !important;
+    }
+  }
+
+  & .zen-library-filter-button {
+    height: 34px !important;
+  }
+
+  & .zen-library-filter-chip {
+    padding: 7px 12px !important;
+    border-radius: var(--zia-tab-radius) !important;
+    background: var(--zia-lib-tile) !important;
+
+    &:hover {
+      background: var(--zia-lib-tile-hover) !important;
+    }
+
+    &[active] {
+      background: var(--zia-lib-ink) !important;
+      color: rgb(28, 28, 32) !important;
+    }
+  }
+
+  & .zen-library-filter-group h3,
+  & .zen-library-group h3 {
+    font-size: 11.5px !important;
+    font-weight: 500 !important;
+    opacity: 0.55 !important;
+  }
+
+  & .zen-library-group h3 {
+    margin: 12px 10px 4px !important;
+  }
+
+  & .zen-library-search-results {
+    padding: 0 6px 8px !important;
+
+    &[scrolled] {
+      border-top-color: color-mix(in srgb, var(--zia-lib-ink) 10%, transparent) !important;
+    }
+  }
+
+  /* the lists, as tab rows */
+  & .zen-library-row {
+    gap: 10px !important;
+    min-height: var(--zia-tab-height);
+    padding: 6px 10px !important;
+    border-radius: var(--zia-tab-radius) !important;
+    transition: background-color 0.12s ease;
+
+    &:is(:hover, [menu-open]) {
+      background: var(--zia-tab-hover-bg) !important;
+    }
+  }
+
+  & .zen-library-row + .zen-library-row {
+    margin-top: var(--zia-tab-gap);
+  }
+
+  & .zen-library-row-title {
+    font-size: var(--zia-text-size) !important;
+    font-weight: var(--zia-tab-weight) !important;
+  }
+
+  & .zen-library-row-subtitle {
+    font-size: 11.5px !important;
+    opacity: 0.55 !important;
+  }
+
+  & .zen-library-row-actions .toolbarbutton-1 > .toolbarbutton-icon {
+    width: 16px !important;
+    height: 16px !important;
+    padding: 5px !important;
+    border-radius: var(--zia-close-radius) !important;
+  }
+
+  & #zen-library-panel .toolbarbutton-1:not([disabled]):hover > .toolbarbutton-icon {
+    background-color: var(--zia-close-hover-bg) !important;
+  }
+
+  /* a download's progress line in Zia's loading blue */
+  & .zen-library-row[pending]:not(:hover) .zen-library-row-subtitle::before {
+    height: 3px !important;
+    background:
+      linear-gradient(var(--zia-loading-color), var(--zia-loading-color)) 0 0 / var(--zen-library-download-progress, 0%) 100% no-repeat,
+      color-mix(in srgb, var(--zia-lib-ink) 14%, transparent) !important;
+  }
+
+  & .zen-library-row[paused] .zen-library-row-subtitle::before {
+    background-image: linear-gradient(color-mix(in srgb, var(--zia-loading-color) 50%, transparent), color-mix(in srgb, var(--zia-loading-color) 50%, transparent)) !important;
+  }
+
+  /* boosts: their icon on an essential-shaped tile */
+  & .zen-library-boost-row {
+    padding: 5px 10px 5px 5px !important;
+    border-radius: var(--zia-essential-radius) !important;
+  }
+
+  & .zen-library-boost-icon {
+    width: 40px !important;
+    height: 40px !important;
+    color-scheme: inherit !important;
+
+    &::before {
+      border: none !important;
+      border-radius: var(--zia-essential-radius) !important;
+      background: var(--zia-lib-tile) !important;
+      box-shadow: inset 0 0 0 var(--zia-shine-width) color-mix(in srgb, var(--zia-lib-ink) 16%, transparent) !important;
+    }
+  }
+
+  & .zen-library-row-actions moz-toggle {
+    --toggle-background-color: color-mix(in srgb, var(--zia-lib-ink) 14%, transparent) !important;
+    --toggle-background-color-hover: color-mix(in srgb, var(--zia-lib-ink) 20%, transparent) !important;
+    --toggle-background-color-pressed: rgb(52, 199, 89) !important;
+    --toggle-background-color-pressed-hover: rgb(48, 186, 83) !important;
+  }
+
+  /* media: essential-shaped tiles */
+  & .zen-library-media-grid {
+    gap: 8px !important;
+  }
+
+  & .zen-library-media-item {
+    padding: 10px !important;
+    border-radius: var(--zia-essential-radius) !important;
+    background: var(--zia-lib-tile) !important;
+    box-shadow: inset 0 0 0 var(--zia-shine-width) color-mix(in srgb, var(--zia-lib-ink) 12%, transparent);
+
+    &:hover {
+      background: var(--zia-lib-tile-hover) !important;
+      scale: 1.02 !important;
+    }
+  }
+
+  & .zen-library-media-thumb {
+    border-radius: 6px !important;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  & .zen-library-media-file {
+    box-shadow: none !important;
+  }
+
+  /* the media opt-in, as one of Zia's hover cards */
+  & .zen-library-media-opt-in {
+    border-radius: var(--zia-tab-card-radius) !important;
+    background: var(--zia-tab-card-bg) !important;
+    box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.1), 0 16px 40px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  /* spaces: each card rounded as the page is */
+  & .zen-library-space,
+  & .zen-library-space::before {
+    border-radius: var(--zia-card-radius) !important;
+  }
+
+  & .zen-library-space-header {
+    font-weight: 600 !important;
+  }
+
+  /* the footer's Back and Donate, as Zia's small buttons */
+  & #zen-library-footer {
+    padding: 6px 8px !important;
+  }
+
+  & #zen-library-footer .toolbarbutton-1 > .toolbarbutton-icon {
+    border-radius: var(--zia-close-radius) !important;
+  }
+}
+
+/* light: a darker field, and the opt-in a light card */
+:root[zia-light]:not(#zia-none) zen-library {
+  --zia-lib-field: rgba(0, 0, 0, 0.05);
+
+  & .zen-library-filter-chip[active] {
+    color: rgb(255, 255, 255) !important;
+  }
+
+  & .zen-library-media-opt-in {
+    background: rgb(250, 250, 251) !important;
+    box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.1), 0 16px 40px rgba(0, 0, 0, 0.18) !important;
+  }
+
+  & .zen-library-media-thumb {
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.14) !important;
+  }
+}
