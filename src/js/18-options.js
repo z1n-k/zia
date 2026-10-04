@@ -19,6 +19,18 @@
     window.addEventListener("unload", () => Services.prefs.removeObserver(URLBAR_POSITION_PREF, apply));
   }
 
+  // Options in Sine's settings that are on by default (the rest are set
+  // one by one in applyZenDefaults), and the ones watched as they change.
+  const ZIA_OPTIONS = [
+    "zia.urlbar.dia-style",
+    "zia.newtab.real-tab",
+    "zia.tabs.sound-bars",
+    "zia.toolbar.site-color",
+    "zia.split.drop-cards",
+    "zia.page.rounding",
+  ];
+  const WATCHED_OPTIONS = ["zia.urlbar.dia-style", "zia.newtab.real-tab", "zia.toolbar.site-color", "zia.split.drop-cards"];
+
   function watchOptions() {
     const urlbar = gURLBar?.textbox || document.getElementById("urlbar");
     const apply = () => {
@@ -49,7 +61,7 @@
     });
   }
 
-  const FEATURES = ["media-player", "find-bar", "icon-picker", "undo-close", "folder-icon-suggest", "tab-hover-cards"];
+  const FEATURES = ["media-player", "find-bar", "icon-picker", "undo-close", "folder-icon-suggest", "tab-hover-cards", "tab-numbers"];
 
   function featureOn(name) {
     try {

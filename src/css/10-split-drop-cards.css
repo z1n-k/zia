@@ -1,5 +1,4 @@
 #zia-split-drop {
-  --zia-drop-pull: 0px;
   position: fixed;
   left: var(--zia-drop-left, 0px);
   top: var(--zia-drop-top, 0px);

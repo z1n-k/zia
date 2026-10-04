@@ -5746,18 +5746,6 @@
     }
   }
 
-  // Options in Sine's settings. All on, except the favicon glow.
-  const ZIA_OPTIONS = [
-    "zia.urlbar.dia-style",
-    "zia.newtab.real-tab",
-    "zia.tabs.sound-bars",
-    "zia.toolbar.site-color",
-    "zia.split.drop-cards",
-    "zia.page.rounding",
-  ];
-  const WATCHED_OPTIONS = ["zia.urlbar.dia-style", "zia.newtab.real-tab", "zia.toolbar.site-color", "zia.split.drop-cards"];
-
-
   // ---------- Picture-in-picture: Dia's look, and tucking into the screen edge
   const PIP_PLAYER_URL = "chrome://global/content/pictureinpicture/player.xhtml";
   const PIP_SCRIPT_URL = "chrome://sine/content/zia/zia-pip.js";
@@ -6171,6 +6159,18 @@
     window.addEventListener("unload", () => Services.prefs.removeObserver(URLBAR_POSITION_PREF, apply));
   }
 
+  // Options in Sine's settings that are on by default (the rest are set
+  // one by one in applyZenDefaults), and the ones watched as they change.
+  const ZIA_OPTIONS = [
+    "zia.urlbar.dia-style",
+    "zia.newtab.real-tab",
+    "zia.tabs.sound-bars",
+    "zia.toolbar.site-color",
+    "zia.split.drop-cards",
+    "zia.page.rounding",
+  ];
+  const WATCHED_OPTIONS = ["zia.urlbar.dia-style", "zia.newtab.real-tab", "zia.toolbar.site-color", "zia.split.drop-cards"];
+
   function watchOptions() {
     const urlbar = gURLBar?.textbox || document.getElementById("urlbar");
     const apply = () => {
@@ -6201,7 +6201,7 @@
     });
   }
 
-  const FEATURES = ["media-player", "find-bar", "icon-picker", "undo-close", "folder-icon-suggest", "tab-hover-cards"];
+  const FEATURES = ["media-player", "find-bar", "icon-picker", "undo-close", "folder-icon-suggest", "tab-hover-cards", "tab-numbers"];
 
   function featureOn(name) {
     try {
@@ -10888,21 +10888,6 @@
         }
         clearTimeout(node.ziaMorphOutTimer);
         node.ziaMorphOutTimer = setTimeout(() => node.removeAttribute("zia-morph-out"), 450);
-      }
-    };
-
-    const unmorphWidth = (tab) => {
-      for (const node of [tab, tab?.group?.hasAttribute("split-view-group") ? tab.group : null]) {
-        if (!node?.hasAttribute("zia-morph")) {
-          continue;
-        }
-        node.setAttribute("zia-morph-done", "true");
-        node.removeAttribute("zia-morph");
-        for (const name of ["--zia-morph-bg-start", "--zia-morph-bg-end", "--zia-morph-content-start", "--zia-morph-content-end"]) {
-          node.style.removeProperty(name);
-        }
-        node.getBoundingClientRect();
-        node.removeAttribute("zia-morph-done");
       }
     };
 

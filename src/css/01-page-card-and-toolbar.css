@@ -107,13 +107,7 @@
     }
   }
 
-  @media -moz-pref("zia.window-buttons.hide") {
-    :root:not(#zia-none):not(#zia-none-2):not([inDOMFullscreen="true"]):not([popup-window]) #nav-bar {
-      padding-inline-end: var(--zia-toolbar-end-gap) !important;
-    }
-  }
-
-  @media -moz-pref("zia.window-buttons.dim") {
+  @media -moz-pref("zia.window-buttons.hide"), -moz-pref("zia.window-buttons.dim") {
     :root:not(#zia-none):not(#zia-none-2):not([inDOMFullscreen="true"]):not([popup-window]) #nav-bar {
       padding-inline-end: var(--zia-toolbar-end-gap) !important;
     }

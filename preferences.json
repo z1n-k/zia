@@ -355,7 +355,7 @@
   },
   {
     "type": "checkbox",
-    "label": "Use Zen's accent color for the loading bar (default: Zia blue)",
+    "label": "Use Zen's accent colour for the loading bar (off: Zia blue)",
     "property": "zia.loading-bar.accent-color",
     "defaultValue": false
   },
@@ -428,7 +428,7 @@
         "value": "zia"
       },
       {
-        "label": "Space colour",
+        "label": "The space's colour",
         "value": "space"
       }
     ]

@@ -4,6 +4,24 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.90.2] — 2026-10-04
+
+### Changed
+
+- In Settings → Sine Mods → Zia, the loading bar option reads "colour"
+  and "(off: Zia blue)" like the rest, and the Multiview icon's choices
+  match the tab numbers' ("The space's colour").
+- The readme's settings table follows the order of the settings
+  themselves, and its list of Zen settings Zia changes is complete:
+  Zen's tab drop on the page, Zen's acrylic look, picture-in-picture's
+  improved controls and the address bar's `https://` trimming are listed
+  with the rest.
+
+### Removed
+
+- Leftover code, a style and two icons nothing used any more, so the
+  download is a little smaller. Nothing looks or works differently.
+
 ## [2.90.1] — 2026-10-03
 
 ### Fixed

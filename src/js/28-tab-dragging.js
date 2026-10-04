@@ -757,21 +757,6 @@
       }
     };
 
-    const unmorphWidth = (tab) => {
-      for (const node of [tab, tab?.group?.hasAttribute("split-view-group") ? tab.group : null]) {
-        if (!node?.hasAttribute("zia-morph")) {
-          continue;
-        }
-        node.setAttribute("zia-morph-done", "true");
-        node.removeAttribute("zia-morph");
-        for (const name of ["--zia-morph-bg-start", "--zia-morph-bg-end", "--zia-morph-content-start", "--zia-morph-content-end"]) {
-          node.style.removeProperty(name);
-        }
-        node.getBoundingClientRect();
-        node.removeAttribute("zia-morph-done");
-      }
-    };
-
     const newTabButton = () =>
       window.gZenWorkspaces?.activeWorkspaceElement?.newTabButton ||
       document.querySelector("#tabs-newtab-button, #vertical-tabs-newtab-button");

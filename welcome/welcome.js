@@ -1,7 +1,5 @@
 // Zia's welcome tour (index.html)
 (() => {
-
-  const IMG = "https://raw.githubusercontent.com/z1n-k/zia/readme-images/";
   const rows = (n, colors = ["#ececef", "#9d9da3", "#c9c9ce", "#7f7f86", "#b4b4ba"], extra = () => "") =>
     Array.from({ length: n }, (_, i) => `<div class="w-row ${extra(i)}"><span class="w-ico" style="--c:${colors[i % colors.length]}"></span><span class="w-line"></span>${i < 9 ? `<span class="w-key">${i + 1}</span>` : ""}</div>`).join("");
 

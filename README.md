@@ -335,12 +335,12 @@ The first folder takes a little while as the model downloads and the icon names 
 | Hold Cmd/Ctrl to show each tab's number, and go to it by number | on |
 | Tab numbers show all the time | off |
 | Colour of the tab number you type: Zia blue or the space's colour | Zia blue |
-| A glance shows on its tab as a small picture of the page, as in Dia | on |
-| Bookmarks, History and Synced Tabs panels in Zia's look | on |
-| Bookmarks, History and Synced Tabs panels beside the page, full height, as a second sidebar | on |
 | Show the welcome tour after updates that bring something new | on |
 | Show the welcome tour again (turns itself back off) | off |
 | Show what's new in this version again (turns itself back off) | off |
+| A glance shows on its tab as a small picture of the page, as in Dia | on |
+| Bookmarks, History and Synced Tabs panels in Zia's look | on |
+| Bookmarks, History and Synced Tabs panels beside the page, full height, as a second sidebar | on |
 | Tab and folder hover cards | on |
 | Hover cards are slightly see-through, with what's behind them blurred | on |
 | Name new folders and choose their icons with a local model ([see above](#folder-names-and-icons)) | off |
@@ -397,10 +397,14 @@ The first folder takes a little while as the model downloads and the icon names 
 <details>
 <summary>Zen settings Zia changes</summary>
 
-Only at the default level: if you've set either yourself in `about:config`, your choice is kept.
+Most only at the default level: if you've set one yourself in `about:config`, your choice is kept.
 
 - `zen.widget.mac.mono-window-controls` → off, for native macOS window buttons.
 - `zen.urlbar.replace-newtab` → off, so **+ New Tab** and Cmd+T open a real tab. Turn off **Cmd/Ctrl+T and + New Tab open a real tab** to get Zen's floating address bar back.
+- `zen.splitView.enable-tab-drop` → off, so dropping a tab on the page uses Zia's drop cards. Turn off **Split view drop cards** to get Zen's own back.
+- `zen.theme.acrylic-elements` → off, once, if you hadn't set it yourself: Zen 1.23 turned it on for everyone, which makes Zia's sidebar far too see-through. Set it back to `true` to turn it on again.
+- `media.videocontrols.picture-in-picture.improved-video-controls.enabled` → on, for picture-in-picture's skip buttons and progress line.
+- `browser.urlbar.trimHttps` → on and `browser.urlbar.untrimOnUserInteraction` → off, so the address never shows `https://`.
 
 </details>
 
