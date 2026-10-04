@@ -9866,10 +9866,29 @@
 
     const list = document.createElementNS(XHTML_NS, "div");
     list.className = "zia-folder-card-list";
+    const inset = tabEdgeInset();
+    if (inset) {
+      list.style.setProperty("--zia-folder-card-inset", `${inset}px`);
+    }
     const scrolled = card.querySelector(".zia-folder-card-list")?.scrollTop || 0;
     list.append(...rows);
     card.replaceChildren(list);
     list.scrollTop = scrolled;
+  }
+
+  // How far a tab's icon sits in from the tab's edge in the sidebar: the
+  // folder card keeps its tabs that far in from its own edges, all round.
+  function tabEdgeInset() {
+    try {
+      const tab = gBrowser.visibleTabs.find((t) => !t.pinned && !t.hasAttribute("zen-essential") && t.getBoundingClientRect().width);
+      const edge = tab?.querySelector(".tab-background")?.getBoundingClientRect();
+      const icon = tab?.querySelector(".tab-icon-stack")?.getBoundingClientRect();
+      const inset = edge && icon?.width ? Math.round((icon.left - edge.left) * 2) / 2 : 0;
+      return inset >= 4 && inset <= 16 ? inset : 0;
+    } catch (err) {
+      noteError("hover cards: tab inset", err);
+      return 0;
+    }
   }
 
   function newTabButtonIcon() {

@@ -67,9 +67,10 @@
 }
 
 .zia-folder-card-list {
-  /* the rows sit as far in from the card's top and bottom as from its
-     sides: the side space, less the margin each row already has */
-  --zia-folder-card-inset: 6px;
+  /* the rows sit as far in from the card's edges, all round, as a tab's
+     icon sits in from the tab's edge (measured off a tab: zia.uc.js); at
+     the top and bottom, less the margin each row already has */
+  --zia-folder-card-inset: 9.5px;
   padding: calc(var(--zia-folder-card-inset) - var(--zia-folder-card-gap)) var(--zia-folder-card-inset);
   /* ten rows exactly: each is the tab's height with a margin above and
      below, and between two rows those margins are one, so ten take ten

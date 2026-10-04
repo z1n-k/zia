@@ -8,8 +8,9 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
-- A folder's hover card (the card listing its tabs) has the same space
-  above and below its tabs as at their sides.
+- A folder's hover card (the card listing its tabs) keeps its tabs as
+  far in from its edges, all round, as a tab's icon sits in from the
+  tab's edge in the sidebar.
 
 ### Fixed
 
