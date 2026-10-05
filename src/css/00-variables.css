@@ -36,7 +36,7 @@
   --zia-essential-min-width: 54px;
   --zia-essential-height: 41px;
   --zia-essential-inner-tighten: 1;
-  --zia-essential-radius: 12px;
+  --zia-essential-radius: 22px;
   --zia-essential-gap: 3px;
   --zia-essential-bottom-space: 8px;
   --zia-essential-bg: rgba(255, 255, 255, 0.13);
@@ -46,7 +46,6 @@
   --zia-close-size: 22px;
 
   --zia-close-radius: 6px;
-  --zia-close-corner: squircle;
 
   --zia-close-hover-bg: rgba(255, 255, 255, 0.1);
 
@@ -78,10 +77,22 @@
 
   --zia-tab-card-bg: rgb(38, 38, 38);
   --zia-tab-card-sub: rgba(255, 255, 255, 0.55);
-  --zia-tab-card-radius: 13px;
+  --zia-tab-card-radius: 24px;
   --zia-tab-card-width: 230px;
   --zia-media-card-base: light-dark(rgb(235, 235, 235), #1b1b1b);
   --zia-split-gap: 5px;
+
+  /* Zia's squircle, Tahoe's corner: on everything with the glass edge and
+     every small icon button, one shape (below, and wherever a part sets
+     corner-shape: var(--zia-squircle)). Their radii (these, and the
+     essentials' and hover cards' above) are larger than a circle's would
+     be, as a squircle of the same radius looks squarer. */
+  --zia-squircle: squircle;
+  --zia-folder-radius: 18px;
+  --zia-glass-button-radius: 18px;
+  --zia-pop-radius: 30px;
+  --zia-split-card-radius: 26px;
+
   --zia-split-backdrop: rgb(23, 23, 23);
   --zia-media-bg: rgba(0, 0, 0, 0.225);
   --zia-media-card-height: 64px;
@@ -116,16 +127,21 @@
 /* Zen paints superellipse(var(--zen-squircle-value)) onto every element
    (1.3 on macOS, 2.3 on Windows). A Zia length drawn with that curve looks
    squarer on Windows than the same length on macOS. Zia's corners are
-   circular. Menus, panels and dialogs keep Zen's curve, because their
-   radii are stretched for it. Close buttons set their own shape later,
-   and anything else that's a squircle has to beat this rule: !important,
-   and a selector at least as specific (an id, two classes, or :root and a
-   class). */
+   circular, but for its squircles (--zia-squircle): those have to beat
+   this rule, so they're !important, with a selector at least as specific
+   (an id, two classes, or :root and a class). Menus, panels and dialogs
+   keep Zen's curve, because their radii are stretched for it. */
 :root,
 :root *:not(menupopup, menupopup *, panel, panel *, dialog, dialog *),
 :root *:not(menupopup, menupopup *, panel, panel *, dialog, dialog *)::before,
 :root *:not(menupopup, menupopup *, panel, panel *, dialog, dialog *)::after {
   corner-shape: round !important;
+}
+
+/* Every small icon button's background, in toolbars and the sidebar (the
+   workspaces' icons among them), is Zia's squircle */
+:root :is(toolbarbutton, toolbarbutton > :is(.toolbarbutton-icon, .toolbarbutton-badge-stack, .toolbarbutton-text)):not(menupopup *, panel *, dialog *) {
+  corner-shape: var(--zia-squircle) !important;
 }
 
 /* The fine edge round essentials, folders and cards is half a pixel: one

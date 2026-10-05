@@ -50,6 +50,7 @@
       width: 236px;
       height: var(--zia-swipe-h, 80px);
       border-radius: var(--zia-tab-card-radius);
+      corner-shape: var(--zia-squircle) !important;
       --zia-swipe-in: 20px;
       opacity: 1;
     }

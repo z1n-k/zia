@@ -33,7 +33,7 @@
   --zia-folder-box-bottom: 0px;
   --zia-folder-box-right: var(--zia-folder-right-fix, 0px);
   --zia-folder-box-left: var(--zia-folder-left-fix, 0px);
-  --zia-folder-box-radius: var(--zia-tab-radius);
+  --zia-folder-box-radius: var(--zia-folder-radius);
 
   position: relative;
   isolation: isolate;
@@ -49,7 +49,6 @@
     inset: var(--zia-folder-box-top) var(--zia-folder-box-right) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) var(--zia-folder-box-left);
     z-index: -1;
     border-radius: var(--zia-folder-box-radius);
-    corner-shape: round;
     pointer-events: none;
     background-color: transparent;
   }
@@ -62,7 +61,6 @@
     position: absolute;
     inset: var(--zia-folder-box-top) var(--zia-folder-box-right) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) var(--zia-folder-box-left);
     border-radius: var(--zia-folder-box-radius);
-    corner-shape: round;
     pointer-events: none;
     box-shadow: var(--zia-glass-edge-inside);
     opacity: 0;
@@ -290,13 +288,16 @@
   opacity: 1 !important;
 }
 
-:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group]))::before {
-  corner-shape: round !important;
+:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) {
+  &::before,
+  &::after {
+    corner-shape: var(--zia-squircle) !important;
+  }
 }
 
 .tabbrowser-tab[zen-essential] > .tab-stack > .tab-background {
   border-radius: var(--zia-essential-radius) !important;
-  corner-shape: round !important;
+  corner-shape: var(--zia-squircle) !important;
 }
 
 :root[zen-sidebar-expanded="true"] #zen-essentials {
@@ -526,7 +527,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close {
   min-width: var(--zia-close-size);
   padding: 4px;
   border-radius: var(--zia-close-radius);
-  corner-shape: round !important;
+  corner-shape: var(--zia-squircle) !important;
   flex-shrink: 0;
 
   margin-inline-start: auto;
@@ -539,13 +540,6 @@ zen-folder[zia-hover-held] > .tab-group-label-container > .zia-folder-close {
 
 zen-folder > .tab-group-label-container > .zia-folder-close:hover {
   background-color: var(--zia-close-hover-bg);
-}
-
-/* A tab's own close and unload buttons use the squircle close corner.
-   Inside a folder that rule is the more specific one, so these stay
-   circular with the rest of the folder. */
-:is(zen-folder, tab-group:not([split-view-group])) .tabbrowser-tab :is(.tab-close-button, .tab-reset-button) {
-  corner-shape: round !important;
 }
 
 

@@ -113,7 +113,8 @@
 }
 
 #urlbar[breakout-extend]:not([zia-classic])[zen-floating-urlbar="true"] {
-  border-radius: 16.5px !important;
+  border-radius: var(--zia-pop-radius) !important;
+  corner-shape: var(--zia-squircle) !important;
   --urlbarview-separator-color: transparent !important;
   --urlbarView-separator-color: transparent !important;
 }

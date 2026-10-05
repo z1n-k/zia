@@ -61,12 +61,14 @@
    its colour, corners, edge and shadow, at its own height (the toolbar's
    31px squeezed it, its text sitting low) */
 #urlbar[zen-floating-urlbar="true"]:not([breakout-extend]):not([zia-classic]) {
-  border-radius: 16.5px !important;
+  border-radius: var(--zia-pop-radius) !important;
+  corner-shape: var(--zia-squircle) !important;
 
   & > .urlbar-background {
     background: var(--zia-urlbar-open-bg) !important;
     border: none !important;
-    border-radius: 16.5px !important;
+    border-radius: var(--zia-pop-radius) !important;
+    corner-shape: var(--zia-squircle) !important;
     box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
   }
 
@@ -76,14 +78,16 @@
 }
 
 #urlbar[breakout-extend]:not([zia-classic]):not([zen-floating-urlbar="true"]) {
-  border-radius: 16.5px !important;
+  border-radius: var(--zia-pop-radius) !important;
+  corner-shape: var(--zia-squircle) !important;
   translate: var(--zia-urlbar-open-offset-x, 0px) var(--zia-urlbar-open-offset) !important;
   --urlbarview-separator-color: transparent !important;
   --urlbarView-separator-color: transparent !important;
 
   & > .urlbar-background {
     background: var(--zia-urlbar-open-bg) !important;
-    border-radius: 16.5px !important;
+    border-radius: var(--zia-pop-radius) !important;
+    corner-shape: var(--zia-squircle) !important;
     box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
     backdrop-filter: none !important;
 

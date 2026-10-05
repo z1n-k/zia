@@ -15,7 +15,7 @@
   height: var(--zia-space-pill-height) !important;
   min-height: var(--zia-space-pill-height) !important;
   border-radius: 10px !important;
-  corner-shape: round;
+  corner-shape: var(--zia-squircle) !important;
   background-color: transparent !important;
   background-image: none !important;
 
@@ -70,7 +70,6 @@
     min-width: var(--zia-space-pill-height) !important;
     max-width: var(--zia-space-pill-height) !important;
     padding: 0 !important;
-    corner-shape: round !important;
 
     & > :is(.toolbarbutton-badge-stack, #downloads-indicator-anchor, .toolbarbutton-icon) {
       padding: 0 !important;

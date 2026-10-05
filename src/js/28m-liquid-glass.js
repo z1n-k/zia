@@ -76,7 +76,7 @@
         if (lens.glass) {
           lens.glass.update(optics);
         } else {
-          lens.glass = window.__ziaLiquidGlass.createGlass(copy, { ...LIQUID_GLASS_OPTICS, ...optics, fit: true, clip: true });
+          lens.glass = window.__ziaLiquidGlass.createGlass(copy, { ...LIQUID_GLASS_OPTICS, ...optics, fit: true });
         }
       }
     };

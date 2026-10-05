@@ -25,7 +25,8 @@
   width: min(var(--zia-zone-w), 45%);
   height: min(var(--zia-zone-h), 86%);
   translate: var(--zia-zone-tx) calc(-50% + var(--zia-zone-ty));
-  border-radius: 14px;
+  border-radius: var(--zia-split-card-radius);
+  corner-shape: var(--zia-squircle) !important;
   background: #1f1f1f;
   box-shadow: var(--zia-glass-edge), 0 16px 44px rgba(0, 0, 0, 0.5);
   opacity: 0;

@@ -1,7 +1,8 @@
 #zia-tab-card,
 #zia-folder-card {
-  /* (a pixel wide of the corner, to keep the glass edge's dark sides) */
-  clip-path: inset(-1px round calc(var(--zia-tab-card-radius) + 1px));
+  /* (clipped to its own squircle; its shadows, the glass edge's dark
+     sides among them, fall outside the clip) */
+  overflow: clip;
   position: fixed;
   z-index: 2147483647;
   width: var(--zia-tab-card-width);
@@ -9,7 +10,7 @@
   padding: 12px 14px 10px;
   background-color: var(--zia-tab-card-bg);
   border-radius: var(--zia-tab-card-radius);
-  corner-shape: round;
+  corner-shape: var(--zia-squircle) !important;
   box-shadow: var(--zia-glass-edge);
   color: rgb(255, 255, 255);
   pointer-events: auto;
@@ -123,7 +124,7 @@
   margin-inline-start: auto;
   padding: 4px;
   border-radius: var(--zia-close-radius);
-  corner-shape: round !important;
+  corner-shape: var(--zia-squircle) !important;
   opacity: 0;
   -moz-context-properties: fill, fill-opacity;
   fill: currentColor;
@@ -237,7 +238,7 @@
 
 /* (with :root, to beat the rule that rounds every corner, 00-variables) */
 :root .zia-tab-card-action {
-  corner-shape: squircle !important;
+  corner-shape: var(--zia-squircle) !important;
 }
 
 /* (faded as a whole, not each shape: where an icon's strokes overlap, the
@@ -282,7 +283,7 @@
   min-width: var(--zia-close-size) !important;
   border-radius: var(--zia-close-radius) !important;
   /* (the same squircle as the unload button beside it, 17-tab-buttons) */
-  corner-shape: var(--zia-close-corner) !important;
+  corner-shape: var(--zia-squircle) !important;
   margin-inline-end: 0 !important;
   padding: 4px !important;
 }
