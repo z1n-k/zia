@@ -142,9 +142,11 @@
         pressed.style.setProperty("--zia-press-y", `${event.clientY - box.top}px`);
       }
     };
-    // (held, the light follows the pointer, even off the button)
+    // (held, the light follows the pointer, even off the button, and on
+    // through a drag: holding and moving a tab or essential starts one,
+    // which cancels the pointer, so the light waits for the real release)
     const follow = (event) => {
-      if (pressed) {
+      if (pressed && (event.clientX || event.clientY)) {
         placeLight(event);
       }
     };
@@ -202,9 +204,14 @@
     const PRESS_EVENTS = [
       ["pointerdown", press],
       ["pointermove", follow],
+      ["mousemove", follow],
+      ["dragover", follow],
       ["pointerup", letGo],
-      ["pointercancel", letGo],
-      ["dragstart", letGo],
+      ["mouseup", letGo],
+      ["dragend", letGo],
+      ["drop", letGo],
+      // (the window losing focus mid-press; not a field inside it)
+      ["blur", (event) => event.target === window && letGo()],
     ];
 
     const start = () => {
