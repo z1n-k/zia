@@ -12,7 +12,7 @@ Every release of Zia, newest first. The format follows
   settings for macOS Tahoe's glass edge, matched pixel by pixel to its
   toolbar buttons (a soft light grey hairline along the top and bottom
   glowing into the fill, and a dark one down the sides) on essentials, the
-  selected tab (its soft glow only), folders as you hover or press them,
+  folders as you hover or press them,
   the tab and folder cards, the split cards, the address pop-up, the
   sidebar as it flies out in compact mode, and the Library's buttons.
   Pressing an essential, a tab, a folder or a Library button lights it
