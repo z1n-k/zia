@@ -6,7 +6,9 @@
    file, as a highlighted pop-up row, with its picture, new name and size.
    Out of the way while the Library or its download stack is open. */
 #zia-rename-card {
-  --zia-rc-glass: color-mix(in srgb, var(--zia-urlbar-open-bg) 78%, transparent);
+  /* (the space's own colour, as the music card's is, rather than a fixed
+     grey that looked off on a coloured space) */
+  --zia-rc-glass: var(--zia-media-solid, color-mix(in srgb, var(--zia-urlbar-open-bg) 78%, transparent));
   --zia-rc-ink: var(--zia-sidebar-ink, rgb(255, 255, 255));
   --zia-rc-row: rgba(255, 255, 255, 0.08);
   --zia-rc-hover: rgba(255, 255, 255, 0.1);
@@ -159,7 +161,7 @@
 
 /* light: the light pop-up's glass, a dark edge and row */
 :root[zia-light] #zia-rename-card {
-  --zia-rc-glass: rgba(250, 250, 251, 0.84);
+  --zia-rc-glass: var(--zia-media-solid, rgba(250, 250, 251, 0.84));
   --zia-rc-row: rgba(0, 0, 0, 0.05);
   --zia-rc-hover: rgba(0, 0, 0, 0.06);
   box-shadow: var(--zia-glass-edge), 0 10px 30px rgba(0, 0, 0, 0.14);

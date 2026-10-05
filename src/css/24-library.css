@@ -468,6 +468,22 @@
         border-radius: 4px !important;
         scale: 1 !important;
       }
+    }
+  }
+
+  /* ...and the badge that flies there from the Library button as they fan
+     out the same 16px all the way: Zen grows it to twice its 20px on the
+     way, for its own list's big icons, so it landed huge over the name and
+     then snapped small */
+  :root:not(#zia-none) #zen-library-button > .toolbarbutton-badge-stack #library-button-badge:not([downloading]) {
+    width: 16px !important;
+    height: 16px !important;
+    border-radius: 4px !important;
+    transform: translate(var(--zen-library-badge-tx), var(--zen-library-badge-ty)) !important;
+  }
+
+  :root:not(#zia-none) #zen-library-download-list {
+    & .zen-library-download-list-download {
 
       /* in progress: Zia's ring in its loading blue */
       & .zen-library-download-badge[downloading] {
