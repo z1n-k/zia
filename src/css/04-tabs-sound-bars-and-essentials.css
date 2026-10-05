@@ -38,7 +38,7 @@
    offset side lines left gaps on a circle), its fill reaching right to
    the ring, and a soft shadow lifting it. */
 .tab-icon-overlay:not([crashed]):is([soundplaying], [muted], [activemedia-blocked]) {
-  --zia-badge-glass: rgba(22, 22, 22, 0.86);
+  --zia-badge-glass: rgba(48, 48, 48, 0.92);
   --zia-badge-rim: rgba(255, 255, 255, 0.29);
   --zia-badge-ring: rgba(0, 0, 0, 0.55);
   list-style-image: var(--zia-sound-wave, url("chrome://sine/content/zia/icons/sound-wave.svg")) !important;
@@ -76,8 +76,9 @@
     }
   }
 
+  /* (hovered, a shade lighter) */
   &:hover {
-    --zia-badge-glass: rgba(48, 48, 48, 0.92);
+    --zia-badge-glass: rgba(64, 64, 66, 0.94);
   }
 }
 
