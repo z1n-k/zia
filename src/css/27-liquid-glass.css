@@ -63,12 +63,20 @@
     --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.2);
   }
 
-  /* Essentials (the chosen one keeps Zen's picture-coloured look) */
+  /* Essentials (the chosen one keeps Zen's picture-coloured look, below) */
   .tabbrowser-tab[zen-essential]:not([visuallyselected]) > .tab-stack > .tab-background {
     box-shadow: var(--zia-glass-edge) !important;
 
     &::after {
       display: none !important;
+    }
+  }
+
+  /* The chosen essential, in Zen's picture-coloured look: its inner tile
+     inside the coloured border keeps its colour and takes the same edge */
+  @media -moz-pref("zen.theme.essentials-favicon-bg") {
+    :root:not(#zia-none) .tabbrowser-tab[zen-essential][visuallyselected] > .tab-stack > .tab-background::before {
+      box-shadow: var(--zia-glass-edge) !important;
     }
   }
 
