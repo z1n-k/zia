@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.94.1] — 2026-10-05
+
+### Fixed
+
+- The find bar's close button is the same grey as its arrows, brighter on
+  hover, rather than white beside them.
+
 ## [2.94.0] — 2026-10-05
 
 ### Added
