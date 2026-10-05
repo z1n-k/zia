@@ -36,7 +36,7 @@
   --zia-essential-min-width: 54px;
   --zia-essential-height: 41px;
   --zia-essential-inner-tighten: 1;
-  --zia-essential-radius: 18px;
+  --zia-essential-radius: 12px;
   --zia-essential-gap: 3px;
   --zia-essential-bottom-space: 8px;
   --zia-essential-bg: rgba(255, 255, 255, 0.13);
@@ -77,21 +77,21 @@
 
   --zia-tab-card-bg: rgb(38, 38, 38);
   --zia-tab-card-sub: rgba(255, 255, 255, 0.55);
-  --zia-tab-card-radius: 20px;
+  --zia-tab-card-radius: 13px;
   --zia-tab-card-width: 230px;
   --zia-media-card-base: light-dark(rgb(235, 235, 235), #1b1b1b);
   --zia-split-gap: 5px;
 
-  /* Zia's squircle, Tahoe's corner: on everything with the glass edge and
-     every small icon button, one shape (below, and wherever a part sets
-     corner-shape: var(--zia-squircle)). Their radii (these, and the
-     essentials' and hover cards' above) are larger than a circle's would
-     be, as a squircle of the same radius looks squarer. */
-  --zia-squircle: superellipse(1.7);
-  --zia-folder-radius: 15px;
-  --zia-glass-button-radius: 15px;
-  --zia-pop-radius: 25px;
-  --zia-split-card-radius: 22px;
+  /* Zia's squircle: on everything with the glass edge and every small icon
+     button, one shape (below, and wherever a part sets corner-shape:
+     var(--zia-squircle)). Dia's, measured off its essentials: only a touch
+     squarer than a circle, its corner about a third of the tile's height,
+     so the radii are the round corners' own. */
+  --zia-squircle: superellipse(1.35);
+  --zia-folder-radius: var(--zia-tab-radius);
+  --zia-glass-button-radius: var(--zia-tab-radius);
+  --zia-pop-radius: 16.5px;
+  --zia-split-card-radius: 14px;
 
   --zia-split-backdrop: rgb(23, 23, 23);
   --zia-media-bg: rgba(0, 0, 0, 0.225);

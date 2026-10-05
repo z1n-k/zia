@@ -22,12 +22,12 @@ Every release of Zia, newest first. The format follows
   Essentials also bend the space's colours at their rim, with
   [liquidglass](https://github.com/gentpan/liquidglass) by gentpan (MIT),
   an SVG lens that Firefox draws, unlike most web liquid glass.
-- A squircle corner, as Tahoe's, one shape for everything with the glass edge
-  and every small icon button (the workspaces' icons, toolbar and sidebar
-  buttons, close and unload buttons, tab number keys, the cards' buttons,
-  even the blank icon of a tab without its own), each sized up a little
-  so it looks as round as before. Tab rows, the page and menus keep their
-  round corners.
+- A squircle corner, as Dia's (only a touch squarer than a circle), one
+  shape for everything with the glass edge and every small icon button
+  (the workspaces' icons, toolbar and sidebar buttons, close and unload
+  buttons, tab number keys, the cards' buttons, even the blank icon of a
+  tab without its own), at the sizes their round corners had. Tab rows,
+  the page and menus keep their round corners.
 - Rename finished downloads with AI: [Tidy Downloads](https://github.com/Vertex-Mods/Zen-Tidy-Downloads)
   by Bxthesda and Zylaah is part of Zia, with their permission. As a
   download finishes, an AI service gives it a clearer name, shown in a
