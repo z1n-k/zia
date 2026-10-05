@@ -4,6 +4,20 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.94.6] — 2026-10-05
+
+### Changed
+
+- The tab and folder hover cards' glass has faint light sides, as the
+  find bar's does, rather than dark ones.
+
+### Fixed
+
+- A page glanced at from an essential no longer sometimes shows a thin
+  line of colour down the left of its card.
+- The Library's Filter and Clear buttons look square; they were a touch
+  taller than wide.
+
 ## [2.94.5] — 2026-10-05
 
 ### Changed

@@ -521,7 +521,18 @@
      placeholder was cut off: both are square icon buttons, named on hover */
   zen-library .zen-library-search-header :is(.zen-library-filter-button, .zia-library-clear) {
     flex: none !important;
-    width: 34px !important;
+    /* (square to the eye: a pixel wider than tall, as the glass edge's
+       light top and bottom and dark sides made a true square look taller;
+       and fixed, as the row stretched them and their borders added on) */
+    box-sizing: border-box !important;
+    width: 35px !important;
+    min-width: 35px !important;
+    max-width: 35px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    align-self: center !important;
+    margin-block: 0 !important;
     padding: 0 !important;
     justify-content: center !important;
 

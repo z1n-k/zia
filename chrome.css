@@ -3244,8 +3244,8 @@ zen-folder:is(:not([zia-folder-color]), [zia-folder-color="white"]) > .tab-group
 }
 #zia-tab-card,
 #zia-folder-card {
-  /* (clipped to its own squircle; its shadows, the glass edge's dark
-     sides among them, fall outside the clip) */
+  /* (clipped to its own squircle; its shadows, the glass edge's sides
+     among them, fall outside the clip) */
   overflow: clip;
   position: fixed;
   z-index: 2147483647;
@@ -3255,7 +3255,9 @@ zen-folder:is(:not([zia-folder-color]), [zia-folder-color="white"]) > .tab-group
   background-color: var(--zia-tab-card-bg);
   border-radius: var(--zia-tab-card-radius);
   corner-shape: var(--zia-squircle) !important;
-  box-shadow: var(--zia-glass-edge);
+  /* (its sides a faint light line, as on the find bar, rather than dark
+     ones, which went nowhere against a dark sidebar or page) */
+  box-shadow: var(--zia-glass-edge-lit);
   color: rgb(255, 255, 255);
   pointer-events: auto;
   -moz-window-dragging: no-drag;
@@ -3625,10 +3627,11 @@ zen-folder:is(:not([zia-folder-color]), [zia-folder-color="white"]) > .tab-group
     border: none !important;
     border-radius: 9px !important;
     /* Zia's glass, as on the essential it sits on: its edge and squircle,
-       what's behind it blurred, and a soft lift off it */
+       and a soft lift off it (no blur behind it: tilted, it drew a line of
+       the colour behind down the side of its box) */
     corner-shape: var(--zia-squircle) !important;
     background: rgba(255, 255, 255, 0.16) !important;
-    backdrop-filter: blur(8px) saturate(1.6) !important;
+    backdrop-filter: none !important;
     box-shadow: var(--zia-glass-edge-thick), 0 1px 4px rgba(0, 0, 0, 0.2) !important;
   }
 
@@ -3664,7 +3667,6 @@ zen-folder:is(:not([zia-folder-color]), [zia-folder-color="white"]) > .tab-group
   justify-content: center;
   border-radius: 9px;
   background: rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(8px) saturate(1.6);
   box-shadow: var(--zia-glass-edge-thick), 0 1px 4px rgba(0, 0, 0, 0.2);
 
   & > .zia-glance-ghost-icon {
@@ -7919,7 +7921,18 @@ zen-folder .tab-reset-button {
      placeholder was cut off: both are square icon buttons, named on hover */
   zen-library .zen-library-search-header :is(.zen-library-filter-button, .zia-library-clear) {
     flex: none !important;
-    width: 34px !important;
+    /* (square to the eye: a pixel wider than tall, as the glass edge's
+       light top and bottom and dark sides made a true square look taller;
+       and fixed, as the row stretched them and their borders added on) */
+    box-sizing: border-box !important;
+    width: 35px !important;
+    min-width: 35px !important;
+    max-width: 35px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    align-self: center !important;
+    margin-block: 0 !important;
     padding: 0 !important;
     justify-content: center !important;
 
