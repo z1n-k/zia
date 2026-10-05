@@ -12,6 +12,11 @@ Every release of Zia, newest first. The format follows
   shine border it had before, with round corners, and no light where
   it's pressed.
 
+### Fixed
+
+- AI renaming's "Renamed from" card shows again on newer Zen, which
+  left it empty, so it never appeared (the file was still renamed).
+
 ## [2.94.6] — 2026-10-05
 
 ### Changed

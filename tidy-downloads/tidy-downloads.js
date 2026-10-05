@@ -487,18 +487,36 @@ Instructions:
     card = document.createElementNS(XHTML, "div");
     card.id = CARD_ID;
     card.hidden = true;
-    card.innerHTML = `
-      <div class="zia-rc-head">
-        <span class="zia-rc-mark"></span>
-        <span class="zia-rc-status">Renamed from <s class="zia-rc-was"></s></span>
-        <button class="zia-rc-button zia-rc-undo" title="Undo" aria-label="Undo the rename"></button>
-        <button class="zia-rc-button zia-rc-close" title="Close" aria-label="Close"></button>
-      </div>
-      <div class="zia-rc-row">
-        <img class="zia-rc-icon" alt="" />
-        <span class="zia-rc-name"></span>
-        <span class="zia-rc-size"></span>
-      </div>`;
+    // (made element by element: newer Zen sanitises markup set with
+    // innerHTML in the browser window, and the card came out empty)
+    const part = (tag, className, attrs = {}, ...children) => {
+      const node = document.createElementNS(XHTML, tag);
+      node.className = className;
+      for (const [name, value] of Object.entries(attrs)) {
+        node.setAttribute(name, value);
+      }
+      node.append(...children);
+      return node;
+    };
+    card.append(
+      part(
+        "div",
+        "zia-rc-head",
+        {},
+        part("span", "zia-rc-mark"),
+        part("span", "zia-rc-status", {}, "Renamed from ", part("s", "zia-rc-was")),
+        part("button", "zia-rc-button zia-rc-undo", { title: "Undo", "aria-label": "Undo the rename" }),
+        part("button", "zia-rc-button zia-rc-close", { title: "Close", "aria-label": "Close" })
+      ),
+      part(
+        "div",
+        "zia-rc-row",
+        {},
+        part("img", "zia-rc-icon", { alt: "" }),
+        part("span", "zia-rc-name"),
+        part("span", "zia-rc-size")
+      )
+    );
     card.querySelector(".zia-rc-close").addEventListener("click", hideCard);
     card.querySelector(".zia-rc-undo").addEventListener("click", async () => {
       const download = cardDownload;
