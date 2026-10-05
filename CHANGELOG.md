@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- An empty folder's dashed "Drag tabs here" slot is the height of a tab
+  again: it could be measured off a tab that was springing, pressed,
+  being dragged or in a split, and come out taller.
+
 ## [2.94.4] — 2026-10-05
 
 ### Changed
