@@ -302,10 +302,14 @@ tooltip[default="true"] {
     height: 16px;
   }
 
+  /* (room under the line, or the name's clip cut off the tails of its
+     g, p and y) */
   & .zia-df-name {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.35;
+    padding-block: 1px;
   }
 }
 
