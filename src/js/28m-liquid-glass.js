@@ -103,6 +103,38 @@
     let pressed = null;
     let pressedBox = null;
     let pressedAt = 0;
+    // The light's strength, eased here rather than by a CSS transition: that
+    // needs the colours registered with @property, which Zen's stylesheets
+    // for mods don't take, so the light only ever snapped off.
+    const shines = new Map();
+    const rgba = (name) => {
+      const parts = getComputedStyle(root).getPropertyValue(name).match(/[\d.]+/g)?.map(Number) || [255, 255, 255, 0];
+      return parts.length > 3 ? parts : [...parts, 1];
+    };
+    const shine = (owner, to, ms, done) => {
+      const run = shines.get(owner) || { level: 0, frame: 0 };
+      cancelAnimationFrame(run.frame);
+      shines.set(owner, run);
+      const light = rgba("--zia-glass-press-light");
+      const wash = rgba("--zia-glass-press-wash");
+      const from = run.level;
+      const start = performance.now();
+      const step = (now) => {
+        const t = Math.min(1, (now - start) / ms);
+        // (ease out)
+        run.level = from + (to - from) * (1 - (1 - t) ** 3);
+        const paint = ([r, g, b, a]) => `rgba(${r}, ${g}, ${b}, ${a * run.level})`;
+        owner.style.setProperty("--zia-press-light", paint(light));
+        owner.style.setProperty("--zia-press-wash", paint(wash));
+        if (t < 1) {
+          run.frame = requestAnimationFrame(step);
+        } else {
+          run.frame = 0;
+          done?.();
+        }
+      };
+      run.frame = requestAnimationFrame(step);
+    };
     const placeLight = (event) => {
       const box = pressedBox?.getBoundingClientRect();
       if (box) {
@@ -138,6 +170,7 @@
         placeLight(event);
         owner.setAttribute("zia-glass-press", "in");
         pressedAt = performance.now();
+        shine(owner, 1, 60);
         return;
       }
     };
@@ -155,13 +188,15 @@
           return;
         }
         owner.setAttribute("zia-glass-press", "out");
-        setTimeout(() => {
+        shine(owner, 0, 280, () => {
           if (owner.getAttribute("zia-glass-press") === "out") {
             owner.removeAttribute("zia-glass-press");
-            owner.style.removeProperty("--zia-press-x");
-            owner.style.removeProperty("--zia-press-y");
+            for (const name of ["--zia-press-x", "--zia-press-y", "--zia-press-light", "--zia-press-wash"]) {
+              owner.style.removeProperty(name);
+            }
+            shines.delete(owner);
           }
-        }, 400);
+        });
       }, lit);
     };
     const PRESS_EVENTS = [

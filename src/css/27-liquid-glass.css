@@ -8,20 +8,6 @@
   isolation: isolate;
 }
 
-/* (the light a press leaves, registered so it can fade: below, and
-   zia.uc.js) */
-@property --zia-press-light {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: transparent;
-}
-
-@property --zia-press-wash {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: transparent;
-}
-
 .zia-glass-copy {
   position: absolute;
   z-index: -1;
@@ -149,19 +135,8 @@
      white right under it, fading out across the button to a faint wash, so
      it's clear where it's pressed even on a small tile; on in a couple of
      frames, following the pointer while held, fading a quarter of a second
-     after it's let go (zia.uc.js marks the press and where it is) */
-  [zia-glass-press] {
-    --zia-press-light: var(--zia-glass-press-light);
-    --zia-press-wash: var(--zia-glass-press-wash);
-    transition: --zia-press-light 0.06s ease-out, --zia-press-wash 0.06s ease-out;
-  }
-
-  [zia-glass-press="out"] {
-    --zia-press-light: transparent;
-    --zia-press-wash: transparent;
-    transition: --zia-press-light 0.28s ease-out, --zia-press-wash 0.28s ease-out;
-  }
-
+     after it's let go (zia.uc.js marks the press, sets where it is and
+     eases its strength) */
   :root {
     --zia-glass-press-light: rgba(255, 255, 255, 0.18);
     --zia-glass-press-wash: rgba(255, 255, 255, 0.04);
@@ -175,10 +150,10 @@
   /* (Clear's icon is its background picture, so it goes without) */
   :root:not(#zia-none) .tabbrowser-tab[zia-glass-press] > .tab-stack > .tab-background,
   :root:not(#zia-none) zen-library [zia-glass-press]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip, .zia-library-rail) {
-    background-image: radial-gradient(circle 48px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light), var(--zia-press-wash)) !important;
+    background-image: radial-gradient(circle 48px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), var(--zia-press-wash, transparent)) !important;
   }
 
   :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group]))[zia-glass-press]::before {
-    background-image: radial-gradient(circle 48px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light), var(--zia-press-wash));
+    background-image: radial-gradient(circle 48px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), var(--zia-press-wash, transparent));
   }
 }
