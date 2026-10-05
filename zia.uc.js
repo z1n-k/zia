@@ -17065,10 +17065,10 @@
       [".tabbrowser-tab[zen-essential]", (hit) => hit, (owner) => owner.querySelector(":scope > .tab-stack > .tab-background")],
       [":is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container", (hit) => hit.parentNode, (owner) => owner],
       ["zen-library :is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip)", (hit) => hit, (owner) => owner],
-      // (a Library section lights the tile that slides behind the chosen
-      // one, where the press is on the section, so the chosen one shines
-      // too, and a newly chosen one's tile arrives lit)
-      ["zen-library .zen-library-tab", (hit) => hit.parentNode.querySelector(":scope > .zia-library-rail"), (owner, hit) => hit],
+      // (the chosen Library section lights the tile that slides behind it,
+      // so it shines too; another lights its own hover tile, as the sliding
+      // one's still behind the old section until the press is let go)
+      ["zen-library .zen-library-tab", (hit) => (hit.hasAttribute("active") ? hit.parentNode.querySelector(":scope > .zia-library-rail") : hit), (owner, hit) => hit],
     ];
     let pressed = null;
     let pressedBox = null;
