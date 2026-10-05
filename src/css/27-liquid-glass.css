@@ -8,6 +8,14 @@
   isolation: isolate;
 }
 
+/* (the light a press leaves, registered so it can fade: below, and
+   zia.uc.js) */
+@property --zia-press-light {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
 .zia-glass-copy {
   position: absolute;
   z-index: -1;
@@ -36,6 +44,16 @@
       inset 0 -3.5px 2.5px -2.5px var(--zia-glass-glow-bottom),
       -0.5px 0 0 var(--zia-glass-side),
       0.5px 0 0 var(--zia-glass-side);
+    /* the same with its dark sides drawn just inside, for a folder running
+       to the edge of the tab list, which cut the outside ones off dead
+       straight */
+    --zia-glass-edge-inside:
+      inset 0 1px 0.75px -0.5px var(--zia-glass-rim-top),
+      inset 0 -1px 0.75px -0.5px var(--zia-glass-rim-bottom),
+      inset 0 3.5px 2.5px -2.5px var(--zia-glass-glow-top),
+      inset 0 -3.5px 2.5px -2.5px var(--zia-glass-glow-bottom),
+      inset 1px 0 0 -0.5px var(--zia-glass-side),
+      inset -1px 0 0 -0.5px var(--zia-glass-side);
     --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.5);
   }
 
@@ -57,24 +75,23 @@
     }
   }
 
-  /* The selected tab: its dark stays, its shine ring becomes the edge,
-     under its glow */
+  /* The selected tab: its dark, see-through fill is darker than the
+     sidebar, where the edge's dark sides only made it look heavy and boxed
+     in, so it keeps Zia's own ring and takes just Tahoe's soft glow inside
+     its top and bottom, under its glow */
   :root:not(#zia-none) .tabbrowser-tab:not([zen-essential])[visuallyselected] > .tab-stack > .tab-background {
     box-shadow:
-      var(--zia-glass-edge),
+      inset 0 3.5px 2.5px -2.5px var(--zia-glass-glow-top),
+      inset 0 -3.5px 2.5px -2.5px var(--zia-glass-glow-bottom),
       0 0 var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color),
       0 calc(-1 * var(--zia-active-glow-reach)) var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color),
       0 var(--zia-active-glow-reach) var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color) !important;
-
-    &::after {
-      display: none !important;
-    }
   }
 
   /* A folder's box, hovered, held after a drop, or pressed */
   :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])):is(:hover, :active, [zia-hover-held]) {
     &::before {
-      box-shadow: var(--zia-glass-edge);
+      box-shadow: var(--zia-glass-edge-inside);
     }
 
     &::after {
@@ -117,11 +134,6 @@
     }
   }
 
-  /* The music player */
-  #zen-media-controls-toolbar .zen-media-card {
-    box-shadow: var(--zia-glass-edge) !important;
-  }
-
   /* The Library's icon buttons (Filter, Clear, the filters) and the tile
      under its chosen section */
   @media not -moz-pref("zia.library.zen-look") {
@@ -133,5 +145,36 @@
         display: none !important;
       }
     }
+  }
+
+  /* Pressed, a soft light under the pointer, as Tahoe's buttons light up
+     where they're pressed, fading away once let go (zia.uc.js marks the
+     press and where it is) */
+  [zia-glass-press] {
+    --zia-press-light: var(--zia-glass-press-light);
+    transition: --zia-press-light 0.12s ease-out;
+  }
+
+  [zia-glass-press="out"] {
+    --zia-press-light: transparent;
+    transition: --zia-press-light 0.45s ease-out;
+  }
+
+  :root {
+    --zia-glass-press-light: rgba(255, 255, 255, 0.14);
+  }
+
+  :root[zia-light] {
+    --zia-glass-press-light: rgba(255, 255, 255, 0.6);
+  }
+
+  /* (Clear's icon is its background picture, so it goes without) */
+  :root:not(#zia-none) .tabbrowser-tab[zia-glass-press] > .tab-stack > .tab-background,
+  :root:not(#zia-none) zen-library [zia-glass-press]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip) {
+    background-image: radial-gradient(70px circle at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light), transparent) !important;
+  }
+
+  :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group]))[zia-glass-press]::before {
+    background-image: radial-gradient(70px circle at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light), transparent);
   }
 }

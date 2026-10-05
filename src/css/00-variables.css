@@ -118,7 +118,10 @@
    (1.3 on macOS, 2.3 on Windows). A Zia length drawn with that curve looks
    squarer on Windows than the same length on macOS. Zia's corners are
    circular. Menus, panels and dialogs keep Zen's curve, because their
-   radii are stretched for it. Close buttons set their own shape later. */
+   radii are stretched for it. Close buttons set their own shape later,
+   and anything else that's a squircle has to beat this rule: !important,
+   and a selector at least as specific (an id, two classes, or :root and a
+   class). */
 :root,
 :root *:not(menupopup, menupopup *, panel, panel *, dialog, dialog *),
 :root *:not(menupopup, menupopup *, panel, panel *, dialog, dialog *)::before,

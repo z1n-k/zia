@@ -24,7 +24,7 @@
     padding: 8px !important;
     background: transparent !important;
     border-radius: 9px !important;
-    corner-shape: superellipse(var(--zen-squircle-value, 1));
+    corner-shape: var(--zia-close-corner) !important;
     box-shadow: none !important;
     color: rgb(255, 255, 255) !important;
     -moz-context-properties: fill, fill-opacity;

@@ -430,7 +430,7 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   margin: 0 0 0 6px;
   padding: 0;
   border-radius: 5.5px;
-  corner-shape: squircle;
+  corner-shape: squircle !important;
   background-color: transparent;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
   color: rgba(255, 255, 255, 0.62);

@@ -17056,6 +17056,61 @@
       }
     };
 
+    // Pressed: a soft light under the pointer, as on Tahoe's buttons, fading
+    // once let go (27-liquid-glass.css). Marked on the tab, folder or button,
+    // with where the press is inside the box that lights up.
+    const PRESSABLE = [
+      [".tabbrowser-tab", (hit) => hit, (owner) => owner.querySelector(":scope > .tab-stack > .tab-background")],
+      [":is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container", (hit) => hit.parentNode, (owner) => owner],
+      ["zen-library :is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip)", (hit) => hit, (owner) => owner],
+    ];
+    let pressed = null;
+    const press = (event) => {
+      if (event.button !== 0) {
+        return;
+      }
+      for (const node of event.composedPath()) {
+        if (node.nodeType !== Node.ELEMENT_NODE) {
+          continue;
+        }
+        const match = PRESSABLE.find(([selector]) => node.matches(selector));
+        if (!match) {
+          continue;
+        }
+        const owner = match[1](node);
+        const box = match[2](owner)?.getBoundingClientRect();
+        if (!box) {
+          return;
+        }
+        owner.style.setProperty("--zia-press-x", `${event.clientX - box.left}px`);
+        owner.style.setProperty("--zia-press-y", `${event.clientY - box.top}px`);
+        owner.setAttribute("zia-glass-press", "in");
+        pressed = owner;
+        return;
+      }
+    };
+    const letGo = () => {
+      const owner = pressed;
+      pressed = null;
+      if (!owner) {
+        return;
+      }
+      owner.setAttribute("zia-glass-press", "out");
+      setTimeout(() => {
+        if (owner.getAttribute("zia-glass-press") === "out") {
+          owner.removeAttribute("zia-glass-press");
+          owner.style.removeProperty("--zia-press-x");
+          owner.style.removeProperty("--zia-press-y");
+        }
+      }, 500);
+    };
+    const PRESS_EVENTS = [
+      ["pointerdown", press],
+      ["pointerup", letGo],
+      ["pointercancel", letGo],
+      ["dragstart", letGo],
+    ];
+
     const start = () => {
       if (watchers) {
         return;
@@ -17085,6 +17140,9 @@
       const toolbox = document.getElementById("navigator-toolbox");
       toolbox?.addEventListener("transitionend", alignSoon);
       window.addEventListener("resize", alignSoon);
+      for (const [type, handler] of PRESS_EVENTS) {
+        window.addEventListener(type, handler, true);
+      }
       watchers = { resized, changed, toolbox };
       root.setAttribute("zia-liquid-glass", "true");
       align();
@@ -17098,6 +17156,10 @@
       watchers.changed.disconnect();
       watchers.toolbox?.removeEventListener("transitionend", alignSoon);
       window.removeEventListener("resize", alignSoon);
+      for (const [type, handler] of PRESS_EVENTS) {
+        window.removeEventListener(type, handler, true);
+      }
+      letGo();
       watchers = null;
       cancelAnimationFrame(frame);
       frame = 0;

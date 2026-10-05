@@ -12,9 +12,11 @@ Every release of Zia, newest first. The format follows
   settings for macOS Tahoe's glass edge, matched pixel by pixel to its
   toolbar buttons (a soft light grey hairline along the top and bottom
   glowing into the fill, and a dark one down the sides) on essentials, the
-  selected tab, folders as you hover or press them, the tab and folder
-  cards, the split cards, the address pop-up, the sidebar as it flies out
-  in compact mode, the music player and the Library's buttons. Essentials
+  selected tab (its soft glow only), folders as you hover or press them,
+  the tab and folder cards, the split cards, the address pop-up, the
+  sidebar as it flies out in compact mode, and the Library's buttons.
+  Pressing an essential, a tab, a folder or a Library button lights it
+  softly under the pointer, as Tahoe's buttons do. Essentials
   also bend the space's colours at their rim, with
   [liquidglass](https://github.com/gentpan/liquidglass) by gentpan (MIT),
   an SVG lens that Firefox draws, unlike most web liquid glass.
@@ -43,6 +45,10 @@ Every release of Zia, newest first. The format follows
 - The last downloads fan out above the Library button again, as tab rows,
   and the Library button shows the picture of the latest one again: 2.92.0
   and 2.93.4 hid them by mistake.
+- Shapes meant to be squircles drawn as circles: the tab number keys, the
+  hover cards' buttons and the Glance buttons lost to the rule that rounds
+  every other corner. The tab close button is now the same squircle as the
+  unload button beside it.
 
 ## [2.93.4] — 2026-10-04
 

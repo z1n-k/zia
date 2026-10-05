@@ -240,10 +240,14 @@
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  corner-shape: squircle !important;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* (with :root, to beat the rule that rounds every corner, 00-variables) */
+:root .zia-tab-card-action {
+  corner-shape: squircle !important;
 }
 
 /* (faded as a whole, not each shape: where an icon's strokes overlap, the
@@ -287,7 +291,8 @@
   height: var(--zia-close-size) !important;
   min-width: var(--zia-close-size) !important;
   border-radius: var(--zia-close-radius) !important;
-  corner-shape: round !important;
+  /* (the same squircle as the unload button beside it, 17-tab-buttons) */
+  corner-shape: var(--zia-close-corner) !important;
   margin-inline-end: 0 !important;
   padding: 4px !important;
 }
