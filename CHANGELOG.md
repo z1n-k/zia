@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.0] — 2026-10-05
+
+### Added
+
+- A download flies to the Library button as a row, as in Dia: a small
+  glass row with the file's icon and name pops up where you clicked,
+  then arcs off to the Library button, shrinking as it goes, and the
+  button gives a nudge as it lands. In place of Zen's circle; Zen's own
+  switch for that animation turns it off.
+
 ## [2.94.13] — 2026-10-05
 
 ### Changed
