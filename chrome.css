@@ -46,7 +46,6 @@
   --zia-close-size: 22px;
 
   --zia-close-radius: 6px;
-  --zia-close-corner: squircle;
 
   --zia-close-hover-bg: rgba(255, 255, 255, 0.1);
 
@@ -82,6 +81,18 @@
   --zia-tab-card-width: 230px;
   --zia-media-card-base: light-dark(rgb(235, 235, 235), #1b1b1b);
   --zia-split-gap: 5px;
+
+  /* Zia's squircle: on everything with the glass edge and every small icon
+     button, one shape (below, and wherever a part sets corner-shape:
+     var(--zia-squircle)). Dia's, measured off its essentials: only a touch
+     squarer than a circle, its corner about a third of the tile's height,
+     so the radii are the round corners' own. */
+  --zia-squircle: superellipse(1.35);
+  --zia-folder-radius: var(--zia-tab-radius);
+  --zia-glass-button-radius: var(--zia-tab-radius);
+  --zia-pop-radius: 16.5px;
+  --zia-split-card-radius: 14px;
+
   --zia-split-backdrop: rgb(23, 23, 23);
   --zia-media-bg: rgba(0, 0, 0, 0.225);
   --zia-media-card-height: 64px;
@@ -102,7 +113,6 @@
   --zia-essential-max-width: 120px;
   --zia-card-gap: 6px;
 
-  --zia-flyout-border: 1px solid rgba(255, 255, 255, 0.25);
   --zia-card-top-gap: 6px;
   --zia-toolbar-height: 40px;
   --zia-urlbar-height: 31px;
@@ -117,13 +127,21 @@
 /* Zen paints superellipse(var(--zen-squircle-value)) onto every element
    (1.3 on macOS, 2.3 on Windows). A Zia length drawn with that curve looks
    squarer on Windows than the same length on macOS. Zia's corners are
-   circular. Menus, panels and dialogs keep Zen's curve, because their
-   radii are stretched for it. Close buttons set their own shape later. */
+   circular, but for its squircles (--zia-squircle): those have to beat
+   this rule, so they're !important, with a selector at least as specific
+   (an id, two classes, or :root and a class). Menus, panels and dialogs
+   keep Zen's curve, because their radii are stretched for it. */
 :root,
 :root *:not(menupopup, menupopup *, panel, panel *, dialog, dialog *),
 :root *:not(menupopup, menupopup *, panel, panel *, dialog, dialog *)::before,
 :root *:not(menupopup, menupopup *, panel, panel *, dialog, dialog *)::after {
   corner-shape: round !important;
+}
+
+/* Every small icon button's background, in toolbars and the sidebar (the
+   workspaces' icons among them), is Zia's squircle */
+:root :is(toolbarbutton, toolbarbutton > :is(.toolbarbutton-icon, .toolbarbutton-badge-stack, .toolbarbutton-text)):not(menupopup *, panel *, dialog *) {
+  corner-shape: var(--zia-squircle) !important;
 }
 
 /* The fine edge round essentials, folders and cards is half a pixel: one
@@ -470,15 +488,15 @@
    its colour, corners, edge and shadow, at its own height (the toolbar's
    31px squeezed it, its text sitting low) */
 #urlbar[zen-floating-urlbar="true"]:not([breakout-extend]):not([zia-classic]) {
-  border-radius: 16.5px !important;
+  border-radius: var(--zia-pop-radius) !important;
+  corner-shape: var(--zia-squircle) !important;
 
   & > .urlbar-background {
     background: var(--zia-urlbar-open-bg) !important;
     border: none !important;
-    border-radius: 16.5px !important;
-    outline: 1px solid rgba(255, 255, 255, 0.08) !important;
-    outline-offset: -1px !important;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5) !important;
+    border-radius: var(--zia-pop-radius) !important;
+    corner-shape: var(--zia-squircle) !important;
+    box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
   }
 
   & > :is(#urlbar-input-container, .urlbar-input-container) {
@@ -487,17 +505,17 @@
 }
 
 #urlbar[breakout-extend]:not([zia-classic]):not([zen-floating-urlbar="true"]) {
-  border-radius: 16.5px !important;
+  border-radius: var(--zia-pop-radius) !important;
+  corner-shape: var(--zia-squircle) !important;
   translate: var(--zia-urlbar-open-offset-x, 0px) var(--zia-urlbar-open-offset) !important;
   --urlbarview-separator-color: transparent !important;
   --urlbarView-separator-color: transparent !important;
 
   & > .urlbar-background {
     background: var(--zia-urlbar-open-bg) !important;
-    border-radius: 16.5px !important;
-    outline: 1px solid rgba(255, 255, 255, 0.08) !important;
-    outline-offset: -1px !important;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5) !important;
+    border-radius: var(--zia-pop-radius) !important;
+    corner-shape: var(--zia-squircle) !important;
+    box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
     backdrop-filter: none !important;
 
     transform-origin: 50% 0 !important;
@@ -1157,18 +1175,16 @@
       inset: -30% !important;
       border-radius: inherit !important;
       filter: blur(9px) saturate(2.4) brightness(1.15) !important;
-      corner-shape: round !important;
+      corner-shape: var(--zia-squircle) !important;
     }
 
     &::before {
-      corner-shape: round !important;
+      corner-shape: var(--zia-squircle) !important;
 
       border-radius: max(0px, calc(var(--zia-essential-radius) - var(--zen-essential-bg-margin) * var(--zia-essential-inner-tighten))) !important;
 
-      box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.35),
-        inset 0 1px 0 rgba(255, 255, 255, 0.14),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.18) !important;
+      /* (the glass edge, as on the other essentials) */
+      box-shadow: var(--zia-glass-edge) !important;
     }
   }
 }
@@ -1337,9 +1353,11 @@
   .tabbrowser-tab:not([zen-essential])[visuallyselected]
 ) > .tab-stack > .tab-background {
   position: relative;
+}
 
-  corner-shape: round !important;
-
+/* The selected tab's fine shine round its edge (essentials have the glass
+   edge instead, 06) */
+.tabbrowser-tab:not([zen-essential])[visuallyselected] > .tab-stack > .tab-background {
   &::after {
     content: "" !important;
     display: block !important;
@@ -1349,17 +1367,13 @@
     border-radius: inherit !important;
     corner-shape: round !important;
     pointer-events: none !important;
-    background: var(--zia-shine-layers) !important;
+    background: var(--zia-tab-shine-layers) !important;
     filter: none !important;
 
     mask:
       linear-gradient(#000 0 0) content-box exclude,
       linear-gradient(#000 0 0) !important;
   }
-}
-
-.tabbrowser-tab:not([zen-essential])[visuallyselected] > .tab-stack > .tab-background::after {
-  background: var(--zia-tab-shine-layers) !important;
 }
 
 .tabbrowser-tab:not([zen-essential])[visuallyselected] > .tab-stack > .tab-background {
@@ -1481,8 +1495,8 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
     aspect-ratio: 4 / 5;
     display: grid !important;
     place-items: center !important;
-    border-radius: var(--zia-essential-radius, 12px);
-    corner-shape: round;
+    border-radius: var(--zia-essential-radius);
+    corner-shape: var(--zia-squircle) !important;
     background-color: rgba(0, 0, 0, 0.18);
     transition: background-color 0.2s ease, box-shadow 0.2s ease;
   }
@@ -1576,7 +1590,7 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   margin: 0 0 0 6px;
   padding: 0;
   border-radius: 5.5px;
-  corner-shape: squircle;
+  corner-shape: var(--zia-squircle) !important;
   background-color: transparent;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
   color: rgba(255, 255, 255, 0.62);
@@ -2083,7 +2097,7 @@ zen-split-fake-tab {
   --zia-folder-box-bottom: 0px;
   --zia-folder-box-right: var(--zia-folder-right-fix, 0px);
   --zia-folder-box-left: var(--zia-folder-left-fix, 0px);
-  --zia-folder-box-radius: var(--zia-tab-radius);
+  --zia-folder-box-radius: var(--zia-folder-radius);
 
   position: relative;
   isolation: isolate;
@@ -2096,26 +2110,23 @@ zen-split-fake-tab {
   &::before {
     content: "";
     position: absolute;
-    inset: var(--zia-folder-box-top) var(--zia-folder-box-right) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) var(--zia-folder-box-left);
+    inset: var(--zia-folder-box-top) calc(var(--zia-folder-box-right) + 1px) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) calc(var(--zia-folder-box-left) + 1px);
     z-index: -1;
     border-radius: var(--zia-folder-box-radius);
-    corner-shape: round;
     pointer-events: none;
     background-color: transparent;
   }
 
+  /* the box's glass edge, shown with it, as on the rest of the glass:
+     the box (this and its fill) a pixel in from each side, so its dark
+     side lines have room before the tab list's edge, which cut them off */
   &::after {
     content: "";
     position: absolute;
-    inset: var(--zia-folder-box-top) var(--zia-folder-box-right) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) var(--zia-folder-box-left);
-    padding: var(--zia-shine-width);
+    inset: var(--zia-folder-box-top) calc(var(--zia-folder-box-right) + 1px) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) calc(var(--zia-folder-box-left) + 1px);
     border-radius: var(--zia-folder-box-radius);
-    corner-shape: round;
     pointer-events: none;
-    background: var(--zia-shine-layers);
-    mask:
-      linear-gradient(#000 0 0) content-box exclude,
-      linear-gradient(#000 0 0);
+    box-shadow: var(--zia-glass-edge);
     opacity: 0;
   }
 
@@ -2341,13 +2352,16 @@ zen-split-fake-tab {
   opacity: 1 !important;
 }
 
-:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group]))::before {
-  corner-shape: round !important;
+:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) {
+  &::before,
+  &::after {
+    corner-shape: var(--zia-squircle) !important;
+  }
 }
 
 .tabbrowser-tab[zen-essential] > .tab-stack > .tab-background {
   border-radius: var(--zia-essential-radius) !important;
-  corner-shape: round !important;
+  corner-shape: var(--zia-squircle) !important;
 }
 
 :root[zen-sidebar-expanded="true"] #zen-essentials {
@@ -2365,6 +2379,7 @@ zen-split-fake-tab {
 
 .tabbrowser-tab[zen-essential]:not([visuallyselected]) > .tab-stack > .tab-background {
   background: var(--zia-essential-bg) !important;
+  box-shadow: var(--zia-glass-edge) !important;
   transition: none !important;
 }
 
@@ -2576,7 +2591,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close {
   min-width: var(--zia-close-size);
   padding: 4px;
   border-radius: var(--zia-close-radius);
-  corner-shape: round !important;
+  corner-shape: var(--zia-squircle) !important;
   flex-shrink: 0;
 
   margin-inline-start: auto;
@@ -2589,13 +2604,6 @@ zen-folder[zia-hover-held] > .tab-group-label-container > .zia-folder-close {
 
 zen-folder > .tab-group-label-container > .zia-folder-close:hover {
   background-color: var(--zia-close-hover-bg);
-}
-
-/* A tab's own close and unload buttons use the squircle close corner.
-   Inside a folder that rule is the more specific one, so these stay
-   circular with the rest of the folder. */
-:is(zen-folder, tab-group:not([split-view-group])) .tabbrowser-tab :is(.tab-close-button, .tab-reset-button) {
-  corner-shape: round !important;
 }
 
 
@@ -2708,7 +2716,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
 }
 
 /* A coloured folder keeps its usual colour while a tab is dragged into it
- * (its shine marks it as the target): not the plain hover wash, and not the
+ * (its glass edge marks it as the target): not the plain hover wash, and not the
  * hover tint either, which flickered off and on again as the tab dropped. */
 :root[zen-sidebar-expanded="true"] zen-folder[zia-folder-color]:not([zia-folder-color="white"])[zia-drop-slot]::before {
   background-color: color-mix(in srgb, var(--zia-folder-swatch) var(--zia-folder-wash), transparent) !important;
@@ -2870,7 +2878,7 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
     display: block;
     position: relative;
     /* (a touch smaller than the 19px it was) */
-    font-size: 17.5px;
+    font-size: 17px;
     width: 1em;
     height: 0.82em;
     flex: none;
@@ -3235,7 +3243,9 @@ zen-folder:is(:not([zia-folder-color]), [zia-folder-color="white"]) > .tab-group
 }
 #zia-tab-card,
 #zia-folder-card {
-  clip-path: inset(0 round var(--zia-tab-card-radius));
+  /* (clipped to its own squircle; its shadows, the glass edge's dark
+     sides among them, fall outside the clip) */
+  overflow: clip;
   position: fixed;
   z-index: 2147483647;
   width: var(--zia-tab-card-width);
@@ -3243,8 +3253,8 @@ zen-folder:is(:not([zia-folder-color]), [zia-folder-color="white"]) > .tab-group
   padding: 12px 14px 10px;
   background-color: var(--zia-tab-card-bg);
   border-radius: var(--zia-tab-card-radius);
-  corner-shape: round;
-  box-shadow: var(--zia-hover-card-shadow);
+  corner-shape: var(--zia-squircle) !important;
+  box-shadow: var(--zia-glass-edge);
   color: rgb(255, 255, 255);
   pointer-events: auto;
   -moz-window-dragging: no-drag;
@@ -3253,17 +3263,6 @@ zen-folder:is(:not([zia-folder-color]), [zia-folder-color="white"]) > .tab-group
 #zia-tab-card[hidden],
 #zia-folder-card[hidden] {
   display: none;
-}
-
-#zia-tab-card::after,
-#zia-folder-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border: 0.5px solid rgba(255, 255, 255, 0.12);
-  border-radius: inherit;
-  corner-shape: round;
-  pointer-events: none;
 }
 
 #zia-tab-card[zia-open],
@@ -3368,7 +3367,7 @@ zen-folder:is(:not([zia-folder-color]), [zia-folder-color="white"]) > .tab-group
   margin-inline-start: auto;
   padding: 4px;
   border-radius: var(--zia-close-radius);
-  corner-shape: round !important;
+  corner-shape: var(--zia-squircle) !important;
   opacity: 0;
   -moz-context-properties: fill, fill-opacity;
   fill: currentColor;
@@ -3475,10 +3474,14 @@ zen-folder:is(:not([zia-folder-color]), [zia-folder-color="white"]) > .tab-group
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  corner-shape: squircle !important;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* (with :root, to beat the rule that rounds every corner, 00-variables) */
+:root .zia-tab-card-action {
+  corner-shape: var(--zia-squircle) !important;
 }
 
 /* (faded as a whole, not each shape: where an icon's strokes overlap, the
@@ -3522,7 +3525,8 @@ zen-folder:is(:not([zia-folder-color]), [zia-folder-color="white"]) > .tab-group
   height: var(--zia-close-size) !important;
   min-width: var(--zia-close-size) !important;
   border-radius: var(--zia-close-radius) !important;
-  corner-shape: round !important;
+  /* (the same squircle as the unload button beside it, 17-tab-buttons) */
+  corner-shape: var(--zia-squircle) !important;
   margin-inline-end: 0 !important;
   padding: 4px !important;
 }
@@ -4484,9 +4488,10 @@ zen-workspace arrowscrollbox::part(scrollbox) {
   width: min(var(--zia-zone-w), 45%);
   height: min(var(--zia-zone-h), 86%);
   translate: var(--zia-zone-tx) calc(-50% + var(--zia-zone-ty));
-  border-radius: 14px;
+  border-radius: var(--zia-split-card-radius);
+  corner-shape: var(--zia-squircle) !important;
   background: #1f1f1f;
-  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  box-shadow: var(--zia-glass-edge), 0 16px 44px rgba(0, 0, 0, 0.5);
   opacity: 0;
   scale: 0.94;
   pointer-events: none;
@@ -4781,7 +4786,8 @@ findbar {
   backdrop-filter: blur(18px) saturate(1.4);
   border: none !important;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+  /* (Zia's glass edge, and a soft lift off the page) */
+  box-shadow: var(--zia-glass-edge-dark), 0 10px 30px rgba(0, 0, 0, 0.35);
   color: rgba(255, 255, 255, 0.92) !important;
   color-scheme: dark;
   transition: none !important;
@@ -4917,11 +4923,17 @@ findbar {
   }
 }
 
+/* (Zia's squircle, as on the rest of its glass: with an id, to beat the
+   rule that rounds every other corner, 00-variables) */
+:root:not(#zia-none) findbar {
+  corner-shape: var(--zia-squircle) !important;
+}
+
 /* Light mode (a light space, or no space colour in light mode): a pale
    frosted bar with dark ink, as the sidebar and the page are */
 :root[zia-light] findbar {
   background: rgba(248, 248, 250, 0.82) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16), inset 0 0 0 0.5px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--zia-glass-edge-light), 0 10px 30px rgba(0, 0, 0, 0.16);
   color: rgba(28, 28, 32, 0.92) !important;
   color-scheme: light;
 
@@ -5281,7 +5293,7 @@ findbar {
   height: var(--zia-space-pill-height) !important;
   min-height: var(--zia-space-pill-height) !important;
   border-radius: 10px !important;
-  corner-shape: round;
+  corner-shape: var(--zia-squircle) !important;
   background-color: transparent !important;
   background-image: none !important;
 
@@ -5336,7 +5348,6 @@ findbar {
     min-width: var(--zia-space-pill-height) !important;
     max-width: var(--zia-space-pill-height) !important;
     padding: 0 !important;
-    corner-shape: round !important;
 
     & > :is(.toolbarbutton-badge-stack, #downloads-indicator-anchor, .toolbarbutton-icon) {
       padding: 0 !important;
@@ -5460,10 +5471,46 @@ findbar {
 
 #tabbrowser-tab-tooltip,
 #tab-preview-panel,
-#statuspanel,
 tooltip,
 tooltip[default="true"] {
   display: none !important;
+}
+
+/* The status bar, where a link goes as you hover it: hidden, unless "Show
+   where links go" is on (an option), then a small pill of Zia's glass at
+   the foot of the page */
+@media not -moz-pref("zia.status-bar") {
+  #statuspanel {
+    display: none !important;
+  }
+}
+
+@media -moz-pref("zia.status-bar") {
+  #statuspanel {
+    padding: 0 8px 8px !important;
+  }
+
+  #statuspanel-label {
+    margin: 0 !important;
+    padding: 4px 10px !important;
+    border: none !important;
+    border-radius: 9px !important;
+    background: rgba(38, 38, 38, 0.86) !important;
+    backdrop-filter: blur(18px) saturate(1.4);
+    box-shadow: var(--zia-glass-edge-dark), 0 6px 18px rgba(0, 0, 0, 0.3) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 12px !important;
+  }
+
+  :root:not(#zia-none) #statuspanel-label {
+    corner-shape: var(--zia-squircle) !important;
+  }
+
+  :root[zia-light] #statuspanel-label {
+    background: rgba(248, 248, 250, 0.9) !important;
+    box-shadow: var(--zia-glass-edge-light), 0 6px 18px rgba(0, 0, 0, 0.14) !important;
+    color: rgba(28, 28, 32, 0.9) !important;
+  }
 }
 
 @media -moz-pref("zia.features.media-player") {
@@ -5639,12 +5686,8 @@ tooltip[default="true"] {
 #zen-emojis-picker-none {
   list-style-image: url("chrome://sine/content/zia/icons/ui/trash.svg") !important;
 }
-:root[zen-compact-mode="true"] .zen-toolbar-background {
-  &::before,
-  &::after {
-    outline: var(--zia-flyout-border) !important;
-    outline-offset: -1px !important;
-  }
+:root[zen-compact-mode="true"] .zen-toolbar-background::after {
+  box-shadow: var(--zia-glass-edge) !important;
 }
 
 /* Windows: Zen sizes the flyout sidebar's corners for its squarer Windows
@@ -5810,7 +5853,7 @@ zen-folder .tab-reset-button {
   fill-opacity: 1 !important;
   color: rgb(255, 255, 255) !important;
   border-radius: var(--zia-close-radius) !important;
-  corner-shape: var(--zia-close-corner) !important;
+  corner-shape: var(--zia-squircle) !important;
   width: var(--zia-close-size) !important;
   height: var(--zia-close-size) !important;
   min-width: var(--zia-close-size) !important;
@@ -5819,7 +5862,6 @@ zen-folder .tab-reset-button {
 
 zen-folder .tab-reset-button {
   fill-opacity: var(--zia-folder-mark-opacity) !important;
-  corner-shape: round !important;
 }
 
 #urlbar #identity-icon-label,
@@ -5865,8 +5907,8 @@ zen-folder .tab-reset-button {
 
     & > .urlbar-background {
       background: rgb(248, 249, 250) !important;
-      outline: 1px solid rgba(28, 28, 30, 0.12) !important;
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2) !important;
+      outline: none !important;
+      box-shadow: var(--zia-glass-edge-light), 0 16px 48px rgba(0, 0, 0, 0.2) !important;
     }
 
     & .urlbar-input,
@@ -5915,8 +5957,8 @@ zen-folder .tab-reset-button {
 
   & > .urlbar-background {
     background: rgb(248, 249, 250) !important;
-    outline: 1px solid rgba(28, 28, 30, 0.12) !important;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2) !important;
+    outline: none !important;
+    box-shadow: var(--zia-glass-edge-light), 0 16px 48px rgba(0, 0, 0, 0.2) !important;
   }
 
   & .urlbar-input,
@@ -5966,7 +6008,8 @@ zen-folder .tab-reset-button {
 }
 
 #urlbar[breakout-extend]:not([zia-classic])[zen-floating-urlbar="true"] {
-  border-radius: 16.5px !important;
+  border-radius: var(--zia-pop-radius) !important;
+  corner-shape: var(--zia-squircle) !important;
   --urlbarview-separator-color: transparent !important;
   --urlbarView-separator-color: transparent !important;
 }
@@ -6023,8 +6066,8 @@ zen-folder .tab-reset-button {
   --urlbarView-highlight-color: rgb(251, 251, 254) !important;
 
   & > .urlbar-background {
-    outline: 1px solid rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5) !important;
+    outline: none !important;
+    box-shadow: var(--zia-glass-edge-dark), 0 16px 48px rgba(0, 0, 0, 0.5) !important;
   }
 
   & .urlbar-input,
@@ -6067,8 +6110,8 @@ zen-folder .tab-reset-button {
   --urlbarView-highlight-color: rgb(28, 28, 30) !important;
 
   & > .urlbar-background {
-    outline: 1px solid rgba(28, 28, 30, 0.12) !important;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2) !important;
+    outline: none !important;
+    box-shadow: var(--zia-glass-edge-light), 0 16px 48px rgba(0, 0, 0, 0.2) !important;
   }
 
   & .urlbar-input,
@@ -6439,7 +6482,7 @@ zen-folder .tab-reset-button {
   max-width: none !important;
   background-color: var(--zia-tab-card-bg);
   border-radius: var(--zia-tab-card-radius);
-  corner-shape: round;
+  corner-shape: var(--zia-squircle) !important;
   box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.12), 0 8px 24px rgba(0, 0, 0, 0.35);
 
   :root:not([zen-right-side="true"]) & {
@@ -6456,7 +6499,7 @@ zen-folder .tab-reset-button {
     padding: 8px !important;
     background: transparent !important;
     border-radius: 9px !important;
-    corner-shape: superellipse(var(--zen-squircle-value, 1));
+    corner-shape: var(--zia-squircle) !important;
     box-shadow: none !important;
     color: rgb(255, 255, 255) !important;
     -moz-context-properties: fill, fill-opacity;
@@ -6988,6 +7031,7 @@ zen-folder .tab-reset-button {
       width: 236px;
       height: var(--zia-swipe-h, 80px);
       border-radius: var(--zia-tab-card-radius);
+      corner-shape: var(--zia-squircle) !important;
       --zia-swipe-in: 20px;
       opacity: 1;
     }
@@ -7379,6 +7423,7 @@ zen-folder .tab-reset-button {
 
       &::before {
         border-radius: var(--zia-essential-radius) !important;
+        corner-shape: var(--zia-squircle) !important;
         /* (a hover snaps on and off, as on a tab) */
         transition: none !important;
       }
@@ -7422,23 +7467,11 @@ zen-folder .tab-reset-button {
       inset-inline: 4px;
       z-index: 0;
       border-radius: var(--zia-essential-radius);
+      corner-shape: var(--zia-squircle) !important;
       background: var(--zia-lib-tile);
+      /* (the glass edge, as on an essential) */
+      box-shadow: var(--zia-glass-edge);
       pointer-events: none;
-
-      /* Zia's shine round its edge, as on an essential: brightest along
-         the middle of each side, fading into the corners */
-      &::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        pointer-events: none;
-        padding: var(--zia-shine-width);
-        background: var(--zia-shine-layers);
-        mask:
-          linear-gradient(#000 0 0) content-box exclude,
-          linear-gradient(#000 0 0);
-      }
 
       transition: transform var(--zia-spring-time) var(--zia-spring), height var(--zia-spring-time) var(--zia-spring);
 
@@ -7484,22 +7517,10 @@ zen-folder .tab-reset-button {
 
     & :is(.zen-library-filter-button, .zen-library-filter-done) {
       position: relative;
-      border-radius: var(--zia-tab-radius) !important;
-
-      /* the essentials' shine round the edge, fading into the corners */
-      &::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        pointer-events: none;
-        padding: var(--zia-shine-width);
-        background: var(--zia-shine-layers);
-        mask:
-          linear-gradient(#000 0 0) content-box exclude,
-          linear-gradient(#000 0 0);
-      }
-
+      border-radius: var(--zia-glass-button-radius) !important;
+      corner-shape: var(--zia-squircle) !important;
+      /* (the glass edge, as on an essential) */
+      box-shadow: var(--zia-glass-edge) !important;
       background: var(--zia-lib-tile) !important;
       font-weight: 500 !important;
 
@@ -7525,7 +7546,9 @@ zen-folder .tab-reset-button {
 
     & .zen-library-filter-chip {
       padding: 7px 12px !important;
-      border-radius: var(--zia-tab-radius) !important;
+      border-radius: var(--zia-glass-button-radius) !important;
+      corner-shape: var(--zia-squircle) !important;
+      box-shadow: var(--zia-glass-edge) !important;
       background: var(--zia-lib-tile) !important;
 
       &:hover {
@@ -7621,6 +7644,7 @@ zen-folder .tab-reset-button {
     & .zen-library-boost-row {
       padding: 5px 10px 5px 5px !important;
       border-radius: var(--zia-essential-radius) !important;
+      corner-shape: var(--zia-squircle) !important;
     }
 
     & .zen-library-boost-icon {
@@ -7631,6 +7655,7 @@ zen-folder .tab-reset-button {
       &::before {
         border: none !important;
         border-radius: var(--zia-essential-radius) !important;
+        corner-shape: var(--zia-squircle) !important;
         background: var(--zia-lib-tile) !important;
         box-shadow: inset 0 0 0 var(--zia-shine-width) color-mix(in srgb, var(--zia-lib-ink) 16%, transparent) !important;
       }
@@ -7651,6 +7676,7 @@ zen-folder .tab-reset-button {
     & .zen-library-media-item {
       padding: 10px !important;
       border-radius: var(--zia-essential-radius) !important;
+      corner-shape: var(--zia-squircle) !important;
       background: var(--zia-lib-tile) !important;
 
       &:hover {
@@ -7740,6 +7766,7 @@ zen-folder .tab-reset-button {
     /* the media opt-in, as one of Zia's hover cards */
     & .zen-library-media-opt-in {
       border-radius: var(--zia-tab-card-radius) !important;
+      corner-shape: var(--zia-squircle) !important;
       background: var(--zia-tab-card-bg) !important;
       box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.1), 0 16px 40px rgba(0, 0, 0, 0.4) !important;
     }
@@ -7782,11 +7809,78 @@ zen-folder .tab-reset-button {
     }
   }
 
-  /* The last downloads Zen fans out above the Library button (as one
-     finishes, and on hovering it) don't show: they're in the Library's
-     Downloads */
-  #zen-library-download-list {
-    display: none !important;
+  /* The last downloads that fan out above the Library button, as tab rows:
+     a tab's height, corners and hover, the file's icon at a favicon's size,
+     and its size or state beside the name rather than under it (Zen's were
+     52px tall, half as tall again as a tab) */
+  :root:not(#zia-none) #zen-library-download-list {
+    gap: var(--zia-tab-gap) !important;
+
+    & .zen-library-download-list-download {
+      height: var(--zia-tab-height) !important;
+      border-radius: var(--zia-tab-radius) !important;
+      padding: 0 !important;
+
+      &:hover {
+        background: var(--zia-tab-hover-bg) !important;
+      }
+
+      & .zen-library-download-badge {
+        margin: auto var(--zia-lib-icon-gap, 8px) auto var(--zia-lib-row-pad, 10px) !important;
+      }
+
+      & .zen-library-download-badge:not([downloading]) {
+        width: 16px !important;
+        height: 16px !important;
+        border-radius: 4px !important;
+        scale: 1 !important;
+      }
+
+      /* in progress: Zia's ring in its loading blue */
+      & .zen-library-download-badge[downloading] {
+        align-self: center !important;
+        transform: none !important;
+        width: 18px !important;
+        height: 18px !important;
+        border-width: 2px !important;
+        margin-inline: calc(var(--zia-lib-row-pad, 10px) - 1px) calc(var(--zia-lib-icon-gap, 8px) - 1px) !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+
+        & .zen-library-download-progress {
+          --thickness: 2px;
+          --progress: var(--zia-loading-color);
+          --border-color: color-mix(in srgb, currentColor 18%, transparent);
+        }
+      }
+
+      & .zen-library-download-list-title-container {
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px !important;
+      }
+
+      & .zen-library-download-list-title {
+        flex: 0 1 auto;
+        min-width: 0;
+        font-size: var(--zia-text-size) !important;
+        font-weight: var(--zia-tab-weight) !important;
+        opacity: 1 !important;
+      }
+
+      & .zen-library-download-list-subtitle {
+        flex: 0 1 auto;
+        max-width: 55%;
+        margin-inline-start: auto;
+        padding-inline-end: 10px;
+        font-size: 11.5px !important;
+        opacity: 0.5 !important;
+      }
+
+      & .zen-library-download-action {
+        margin: auto 6px auto 0 !important;
+      }
+    }
   }
 
   /* Clear, beside the downloads' filter (zia.uc.js): as the filter is drawn */
@@ -7868,11 +7962,286 @@ zen-folder .tab-reset-button {
   #zen-sidebar-foot-buttons #zen-library-button:is(:hover, [open]) .zen-library-sprite {
     opacity: 1;
   }
+}
+/* The rename card (tidy-downloads/tidy-downloads.js; Tidy Downloads, by
+   Bxthesda and Zylaah, with their permission): a small copy of Zia's glass
+   address pop-up, floating just above the sidebar's foot as Zen's own
+   download list does, so nothing in the sidebar moves for it. A heading says what the
+   file was called, with Undo and close as Zia's small buttons; under it the
+   file, as a highlighted pop-up row, with its picture, new name and size.
+   Out of the way while the Library or its download stack is open. */
+#zia-rename-card {
+  --zia-rc-glass: color-mix(in srgb, var(--zia-urlbar-open-bg) 78%, transparent);
+  --zia-rc-ink: var(--zia-sidebar-ink, rgb(255, 255, 255));
+  --zia-rc-row: rgba(255, 255, 255, 0.08);
+  --zia-rc-hover: rgba(255, 255, 255, 0.1);
 
-  /* After a download, Zen left a small picture of the file sitting on the
-     library button, until its list was next opened. Gone: the file shows in
-     that list. (A download under way keeps its ring.) */
-  #zen-sidebar-foot-buttons #library-button-badge:not([downloading]) {
-    display: none !important;
+  position: absolute;
+  inset-inline: 2px;
+  bottom: calc(100% + 6px);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 6px;
+  border-radius: calc(var(--zia-pop-row-radius, 8px) + 6px);
+  corner-shape: var(--zia-squircle) !important;
+  background: var(--zia-rc-glass);
+  backdrop-filter: blur(24px) saturate(1.6);
+  box-shadow: var(--zia-glass-edge), 0 10px 30px rgba(0, 0, 0, 0.3);
+  color: var(--zia-rc-ink);
+  font-size: var(--zia-text-size);
+  -moz-window-dragging: no-drag;
+  opacity: 0;
+  transform: translateY(6px) scale(0.98);
+  transform-origin: bottom center;
+  transition: opacity 0.2s ease, transform var(--zia-spring-time) var(--zia-spring);
+
+  &[hidden] {
+    display: none;
   }
+
+  &[zia-shown] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+:root:is(:has(zen-library[open]), :has(#zen-sidebar-foot-buttons[zen-library-stack-open])) #zia-rename-card {
+  display: none;
+}
+
+#zen-sidebar-foot-buttons:has(> #zia-rename-card) {
+  position: relative;
+}
+
+/* While a download's being renamed: just a glowing outline round the
+   Library button, in the loading line's colour, with its shimmer */
+#zen-library-button[zia-renaming] {
+  border-radius: var(--zia-close-radius, 6px);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--zia-loading-color) 80%, transparent),
+    0 0 10px color-mix(in srgb, var(--zia-loading-color) 35%, transparent);
+  animation: zia-loading-shimmer 1.4s ease-in-out infinite;
+
+  & .zen-library-sprite {
+    opacity: 1 !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.zia-rc-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 2px 2px 0 8px;
+  font-size: 11.5px;
+  color: color-mix(in srgb, var(--zia-rc-ink) 60%, transparent);
+}
+
+.zia-rc-mark,
+.zia-rc-button {
+  flex: none;
+  background-position: center;
+  background-repeat: no-repeat;
+  -moz-context-properties: fill, fill-opacity;
+  fill: currentColor;
+}
+
+.zia-rc-mark {
+  width: 12px;
+  height: 12px;
+  background-image: url("chrome://sine/content/zia/icons/ui/check.svg");
+  background-size: 12px;
+}
+
+.zia-rc-status {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  & s {
+    text-decoration-thickness: 1px;
+  }
+}
+
+/* Undo and close, as Zia's small buttons: a block behind them on hover */
+.zia-rc-button {
+  appearance: none;
+  width: var(--zia-close-size, 22px);
+  height: var(--zia-close-size, 22px);
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--zia-close-radius, 6px);
+  background-color: transparent;
+  background-size: 14px;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--zia-rc-hover);
+    color: var(--zia-rc-ink);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--zia-loading-color);
+    outline-offset: -2px;
+  }
+}
+
+.zia-rc-undo {
+  background-image: url("chrome://sine/content/zia/icons/ui/arrow-back-up.svg");
+}
+
+.zia-rc-close {
+  background-image: url("chrome://sine/content/zia/icons/ui/x.svg");
+}
+
+/* the file, as one of the pop-up's rows, lit */
+.zia-rc-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--zia-pop-row-height, 36px);
+  padding: 0 10px;
+  border-radius: var(--zia-pop-row-radius, 8px);
+  background: var(--zia-rc-row);
+}
+
+.zia-rc-icon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.zia-rc-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.zia-rc-size {
+  flex: none;
+  font-size: 11px;
+  color: color-mix(in srgb, var(--zia-rc-ink) 45%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* light: the light pop-up's glass, a dark edge and row */
+:root[zia-light] #zia-rename-card {
+  --zia-rc-glass: rgba(250, 250, 251, 0.84);
+  --zia-rc-row: rgba(0, 0, 0, 0.05);
+  --zia-rc-hover: rgba(0, 0, 0, 0.06);
+  box-shadow: var(--zia-glass-edge), 0 10px 30px rgba(0, 0, 0, 0.14);
+}
+
+/* In compact mode it's one of Zen's toasts instead, with an Undo, a pill
+   like the ✕ Zia adds to Zen's toasts (18-light-pop-up-and-late-overrides) */
+.zia-rc-toast {
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 14px !important;
+
+  & label {
+    margin: 0;
+  }
+}
+
+.zia-rc-toast-undo {
+  appearance: none;
+  border: none;
+  border-radius: 999px;
+  padding: 3px 10px 3px 24px;
+  background: rgba(255, 255, 255, 0.12) url("chrome://sine/content/zia/icons/ui/arrow-back-up.svg") 8px center / 12px no-repeat;
+  -moz-context-properties: fill, fill-opacity;
+  fill: currentColor;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+}
+/* Zia's glass, as macOS Tahoe's: its edge on essentials, folders, the hover
+   cards, the split cards, the address pop-up, the sidebar flying out in
+   compact mode and the Library's buttons (each in its own part, with
+   var(--zia-glass-edge)); and a light where they're pressed (zia.uc.js).
+
+   The edge, measured pixel by pixel off Tahoe's toolbar buttons: a light
+   grey hairline along the top and bottom (the top a touch brighter), with
+   a soft glow under it fading into the fill over a few pixels; a dark
+   hairline down the sides; no shadow under it. Each is a shadow nudged
+   along one axis, which follows the corner and thins out round it; the
+   inset ones are pulled back half a pixel (their negative spread) so none
+   of their light creeps down the sides; and a faint line all the way
+   round carries the light and dark ones on round the corners, where they
+   would otherwise stop short. */
+:root {
+  --zia-glass-edge-dark:
+    inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.29),
+    inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.27),
+    inset 0 3px 2px -2px rgba(255, 255, 255, 0.11),
+    inset 0 -3px 2px -2px rgba(255, 255, 255, 0.085),
+    -0.5px 0 0.5px rgba(0, 0, 0, 0.5),
+    0.5px 0 0.5px rgba(0, 0, 0, 0.5),
+    0 0 0.5px 0.25px rgba(0, 0, 0, 0.25);
+  --zia-glass-edge-light:
+    inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.7),
+    inset 0 3px 2px -2px rgba(255, 255, 255, 0.3),
+    inset 0 -3px 2px -2px rgba(255, 255, 255, 0.22),
+    -0.5px 0 0.5px rgba(0, 0, 0, 0.14),
+    0.5px 0 0.5px rgba(0, 0, 0, 0.14),
+    0 0 0.5px 0.25px rgba(0, 0, 0, 0.06);
+  --zia-glass-edge: var(--zia-glass-edge-dark);
+  --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.5);
+
+  /* Pressed, light under the pointer, as on Tahoe's buttons: about a
+     seventh white right under it, falling away fast from there (the 30%
+     midpoint) and then softly across the button to a faint wash, so it's
+     clear where it's pressed even on a small tile; on in a couple of
+     frames, following the pointer while held, fading a quarter of a
+     second after it's let go (zia.uc.js marks the press, sets where it is
+     and eases its strength) */
+  --zia-glass-press-light: rgba(255, 255, 255, 0.15);
+  --zia-glass-press-wash: rgba(255, 255, 255, 0.03);
+}
+
+:root[zia-light] {
+  --zia-glass-edge: var(--zia-glass-edge-light);
+  --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.2);
+  --zia-glass-press-light: rgba(255, 255, 255, 0.62);
+  --zia-glass-press-wash: rgba(255, 255, 255, 0.12);
+}
+
+/* The press light (Clear's icon is its background picture, so it goes
+   without) */
+:root:not(#zia-none) .tabbrowser-tab[zen-essential][zia-glass-press] > .tab-stack > .tab-background,
+:root:not(#zia-none) zen-library [zia-glass-press]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip, .zia-library-rail):not(.zia-library-clear) {
+  background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent)) !important;
+}
+
+/* (a Library section not yet chosen: its hover tile, the light fading on
+   over the sliding tile as it arrives) */
+:root:not(#zia-none) zen-library .zen-library-tab[zia-glass-press]::before {
+  background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent)) !important;
+}
+
+:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group]))[zia-glass-press]::before {
+  background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent));
 }

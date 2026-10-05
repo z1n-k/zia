@@ -11,18 +11,16 @@
       inset: -30% !important;
       border-radius: inherit !important;
       filter: blur(9px) saturate(2.4) brightness(1.15) !important;
-      corner-shape: round !important;
+      corner-shape: var(--zia-squircle) !important;
     }
 
     &::before {
-      corner-shape: round !important;
+      corner-shape: var(--zia-squircle) !important;
 
       border-radius: max(0px, calc(var(--zia-essential-radius) - var(--zen-essential-bg-margin) * var(--zia-essential-inner-tighten))) !important;
 
-      box-shadow:
-        0 0 0 1px rgba(0, 0, 0, 0.35),
-        inset 0 1px 0 rgba(255, 255, 255, 0.14),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.18) !important;
+      /* (the glass edge, as on the other essentials) */
+      box-shadow: var(--zia-glass-edge) !important;
     }
   }
 }
@@ -191,9 +189,11 @@
   .tabbrowser-tab:not([zen-essential])[visuallyselected]
 ) > .tab-stack > .tab-background {
   position: relative;
+}
 
-  corner-shape: round !important;
-
+/* The selected tab's fine shine round its edge (essentials have the glass
+   edge instead, 06) */
+.tabbrowser-tab:not([zen-essential])[visuallyselected] > .tab-stack > .tab-background {
   &::after {
     content: "" !important;
     display: block !important;
@@ -203,17 +203,13 @@
     border-radius: inherit !important;
     corner-shape: round !important;
     pointer-events: none !important;
-    background: var(--zia-shine-layers) !important;
+    background: var(--zia-tab-shine-layers) !important;
     filter: none !important;
 
     mask:
       linear-gradient(#000 0 0) content-box exclude,
       linear-gradient(#000 0 0) !important;
   }
-}
-
-.tabbrowser-tab:not([zen-essential])[visuallyselected] > .tab-stack > .tab-background::after {
-  background: var(--zia-tab-shine-layers) !important;
 }
 
 .tabbrowser-tab:not([zen-essential])[visuallyselected] > .tab-stack > .tab-background {
@@ -335,8 +331,8 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
     aspect-ratio: 4 / 5;
     display: grid !important;
     place-items: center !important;
-    border-radius: var(--zia-essential-radius, 12px);
-    corner-shape: round;
+    border-radius: var(--zia-essential-radius);
+    corner-shape: var(--zia-squircle) !important;
     background-color: rgba(0, 0, 0, 0.18);
     transition: background-color 0.2s ease, box-shadow 0.2s ease;
   }
@@ -430,7 +426,7 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   margin: 0 0 0 6px;
   padding: 0;
   border-radius: 5.5px;
-  corner-shape: squircle;
+  corner-shape: var(--zia-squircle) !important;
   background-color: transparent;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
   color: rgba(255, 255, 255, 0.62);

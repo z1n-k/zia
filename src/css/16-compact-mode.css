@@ -1,9 +1,5 @@
-:root[zen-compact-mode="true"] .zen-toolbar-background {
-  &::before,
-  &::after {
-    outline: var(--zia-flyout-border) !important;
-    outline-offset: -1px !important;
-  }
+:root[zen-compact-mode="true"] .zen-toolbar-background::after {
+  box-shadow: var(--zia-glass-edge) !important;
 }
 
 /* Windows: Zen sizes the flyout sidebar's corners for its squarer Windows

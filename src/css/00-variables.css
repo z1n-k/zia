@@ -46,7 +46,6 @@
   --zia-close-size: 22px;
 
   --zia-close-radius: 6px;
-  --zia-close-corner: squircle;
 
   --zia-close-hover-bg: rgba(255, 255, 255, 0.1);
 
@@ -82,6 +81,18 @@
   --zia-tab-card-width: 230px;
   --zia-media-card-base: light-dark(rgb(235, 235, 235), #1b1b1b);
   --zia-split-gap: 5px;
+
+  /* Zia's squircle: on everything with the glass edge and every small icon
+     button, one shape (below, and wherever a part sets corner-shape:
+     var(--zia-squircle)). Dia's, measured off its essentials: only a touch
+     squarer than a circle, its corner about a third of the tile's height,
+     so the radii are the round corners' own. */
+  --zia-squircle: superellipse(1.35);
+  --zia-folder-radius: var(--zia-tab-radius);
+  --zia-glass-button-radius: var(--zia-tab-radius);
+  --zia-pop-radius: 16.5px;
+  --zia-split-card-radius: 14px;
+
   --zia-split-backdrop: rgb(23, 23, 23);
   --zia-media-bg: rgba(0, 0, 0, 0.225);
   --zia-media-card-height: 64px;
@@ -102,7 +113,6 @@
   --zia-essential-max-width: 120px;
   --zia-card-gap: 6px;
 
-  --zia-flyout-border: 1px solid rgba(255, 255, 255, 0.25);
   --zia-card-top-gap: 6px;
   --zia-toolbar-height: 40px;
   --zia-urlbar-height: 31px;
@@ -117,13 +127,21 @@
 /* Zen paints superellipse(var(--zen-squircle-value)) onto every element
    (1.3 on macOS, 2.3 on Windows). A Zia length drawn with that curve looks
    squarer on Windows than the same length on macOS. Zia's corners are
-   circular. Menus, panels and dialogs keep Zen's curve, because their
-   radii are stretched for it. Close buttons set their own shape later. */
+   circular, but for its squircles (--zia-squircle): those have to beat
+   this rule, so they're !important, with a selector at least as specific
+   (an id, two classes, or :root and a class). Menus, panels and dialogs
+   keep Zen's curve, because their radii are stretched for it. */
 :root,
 :root *:not(menupopup, menupopup *, panel, panel *, dialog, dialog *),
 :root *:not(menupopup, menupopup *, panel, panel *, dialog, dialog *)::before,
 :root *:not(menupopup, menupopup *, panel, panel *, dialog, dialog *)::after {
   corner-shape: round !important;
+}
+
+/* Every small icon button's background, in toolbars and the sidebar (the
+   workspaces' icons among them), is Zia's squircle */
+:root :is(toolbarbutton, toolbarbutton > :is(.toolbarbutton-icon, .toolbarbutton-badge-stack, .toolbarbutton-text)):not(menupopup *, panel *, dialog *) {
+  corner-shape: var(--zia-squircle) !important;
 }
 
 /* The fine edge round essentials, folders and cards is half a pixel: one

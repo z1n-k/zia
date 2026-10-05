@@ -1,0 +1,214 @@
+/* The rename card (tidy-downloads/tidy-downloads.js; Tidy Downloads, by
+   Bxthesda and Zylaah, with their permission): a small copy of Zia's glass
+   address pop-up, floating just above the sidebar's foot as Zen's own
+   download list does, so nothing in the sidebar moves for it. A heading says what the
+   file was called, with Undo and close as Zia's small buttons; under it the
+   file, as a highlighted pop-up row, with its picture, new name and size.
+   Out of the way while the Library or its download stack is open. */
+#zia-rename-card {
+  --zia-rc-glass: color-mix(in srgb, var(--zia-urlbar-open-bg) 78%, transparent);
+  --zia-rc-ink: var(--zia-sidebar-ink, rgb(255, 255, 255));
+  --zia-rc-row: rgba(255, 255, 255, 0.08);
+  --zia-rc-hover: rgba(255, 255, 255, 0.1);
+
+  position: absolute;
+  inset-inline: 2px;
+  bottom: calc(100% + 6px);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 6px;
+  border-radius: calc(var(--zia-pop-row-radius, 8px) + 6px);
+  corner-shape: var(--zia-squircle) !important;
+  background: var(--zia-rc-glass);
+  backdrop-filter: blur(24px) saturate(1.6);
+  box-shadow: var(--zia-glass-edge), 0 10px 30px rgba(0, 0, 0, 0.3);
+  color: var(--zia-rc-ink);
+  font-size: var(--zia-text-size);
+  -moz-window-dragging: no-drag;
+  opacity: 0;
+  transform: translateY(6px) scale(0.98);
+  transform-origin: bottom center;
+  transition: opacity 0.2s ease, transform var(--zia-spring-time) var(--zia-spring);
+
+  &[hidden] {
+    display: none;
+  }
+
+  &[zia-shown] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+:root:is(:has(zen-library[open]), :has(#zen-sidebar-foot-buttons[zen-library-stack-open])) #zia-rename-card {
+  display: none;
+}
+
+#zen-sidebar-foot-buttons:has(> #zia-rename-card) {
+  position: relative;
+}
+
+/* While a download's being renamed: just a glowing outline round the
+   Library button, in the loading line's colour, with its shimmer */
+#zen-library-button[zia-renaming] {
+  border-radius: var(--zia-close-radius, 6px);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--zia-loading-color) 80%, transparent),
+    0 0 10px color-mix(in srgb, var(--zia-loading-color) 35%, transparent);
+  animation: zia-loading-shimmer 1.4s ease-in-out infinite;
+
+  & .zen-library-sprite {
+    opacity: 1 !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.zia-rc-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 2px 2px 0 8px;
+  font-size: 11.5px;
+  color: color-mix(in srgb, var(--zia-rc-ink) 60%, transparent);
+}
+
+.zia-rc-mark,
+.zia-rc-button {
+  flex: none;
+  background-position: center;
+  background-repeat: no-repeat;
+  -moz-context-properties: fill, fill-opacity;
+  fill: currentColor;
+}
+
+.zia-rc-mark {
+  width: 12px;
+  height: 12px;
+  background-image: url("chrome://sine/content/zia/icons/ui/check.svg");
+  background-size: 12px;
+}
+
+.zia-rc-status {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  & s {
+    text-decoration-thickness: 1px;
+  }
+}
+
+/* Undo and close, as Zia's small buttons: a block behind them on hover */
+.zia-rc-button {
+  appearance: none;
+  width: var(--zia-close-size, 22px);
+  height: var(--zia-close-size, 22px);
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--zia-close-radius, 6px);
+  background-color: transparent;
+  background-size: 14px;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--zia-rc-hover);
+    color: var(--zia-rc-ink);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--zia-loading-color);
+    outline-offset: -2px;
+  }
+}
+
+.zia-rc-undo {
+  background-image: url("chrome://sine/content/zia/icons/ui/arrow-back-up.svg");
+}
+
+.zia-rc-close {
+  background-image: url("chrome://sine/content/zia/icons/ui/x.svg");
+}
+
+/* the file, as one of the pop-up's rows, lit */
+.zia-rc-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--zia-pop-row-height, 36px);
+  padding: 0 10px;
+  border-radius: var(--zia-pop-row-radius, 8px);
+  background: var(--zia-rc-row);
+}
+
+.zia-rc-icon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.zia-rc-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.zia-rc-size {
+  flex: none;
+  font-size: 11px;
+  color: color-mix(in srgb, var(--zia-rc-ink) 45%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* light: the light pop-up's glass, a dark edge and row */
+:root[zia-light] #zia-rename-card {
+  --zia-rc-glass: rgba(250, 250, 251, 0.84);
+  --zia-rc-row: rgba(0, 0, 0, 0.05);
+  --zia-rc-hover: rgba(0, 0, 0, 0.06);
+  box-shadow: var(--zia-glass-edge), 0 10px 30px rgba(0, 0, 0, 0.14);
+}
+
+/* In compact mode it's one of Zen's toasts instead, with an Undo, a pill
+   like the ✕ Zia adds to Zen's toasts (18-light-pop-up-and-late-overrides) */
+.zia-rc-toast {
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 14px !important;
+
+  & label {
+    margin: 0;
+  }
+}
+
+.zia-rc-toast-undo {
+  appearance: none;
+  border: none;
+  border-radius: 999px;
+  padding: 3px 10px 3px 24px;
+  background: rgba(255, 255, 255, 0.12) url("chrome://sine/content/zia/icons/ui/arrow-back-up.svg") 8px center / 12px no-repeat;
+  -moz-context-properties: fill, fill-opacity;
+  fill: currentColor;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+}

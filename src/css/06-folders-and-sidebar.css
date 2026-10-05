@@ -33,7 +33,7 @@
   --zia-folder-box-bottom: 0px;
   --zia-folder-box-right: var(--zia-folder-right-fix, 0px);
   --zia-folder-box-left: var(--zia-folder-left-fix, 0px);
-  --zia-folder-box-radius: var(--zia-tab-radius);
+  --zia-folder-box-radius: var(--zia-folder-radius);
 
   position: relative;
   isolation: isolate;
@@ -46,26 +46,23 @@
   &::before {
     content: "";
     position: absolute;
-    inset: var(--zia-folder-box-top) var(--zia-folder-box-right) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) var(--zia-folder-box-left);
+    inset: var(--zia-folder-box-top) calc(var(--zia-folder-box-right) + 1px) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) calc(var(--zia-folder-box-left) + 1px);
     z-index: -1;
     border-radius: var(--zia-folder-box-radius);
-    corner-shape: round;
     pointer-events: none;
     background-color: transparent;
   }
 
+  /* the box's glass edge, shown with it, as on the rest of the glass:
+     the box (this and its fill) a pixel in from each side, so its dark
+     side lines have room before the tab list's edge, which cut them off */
   &::after {
     content: "";
     position: absolute;
-    inset: var(--zia-folder-box-top) var(--zia-folder-box-right) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) var(--zia-folder-box-left);
-    padding: var(--zia-shine-width);
+    inset: var(--zia-folder-box-top) calc(var(--zia-folder-box-right) + 1px) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) calc(var(--zia-folder-box-left) + 1px);
     border-radius: var(--zia-folder-box-radius);
-    corner-shape: round;
     pointer-events: none;
-    background: var(--zia-shine-layers);
-    mask:
-      linear-gradient(#000 0 0) content-box exclude,
-      linear-gradient(#000 0 0);
+    box-shadow: var(--zia-glass-edge);
     opacity: 0;
   }
 
@@ -291,13 +288,16 @@
   opacity: 1 !important;
 }
 
-:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group]))::before {
-  corner-shape: round !important;
+:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) {
+  &::before,
+  &::after {
+    corner-shape: var(--zia-squircle) !important;
+  }
 }
 
 .tabbrowser-tab[zen-essential] > .tab-stack > .tab-background {
   border-radius: var(--zia-essential-radius) !important;
-  corner-shape: round !important;
+  corner-shape: var(--zia-squircle) !important;
 }
 
 :root[zen-sidebar-expanded="true"] #zen-essentials {
@@ -315,6 +315,7 @@
 
 .tabbrowser-tab[zen-essential]:not([visuallyselected]) > .tab-stack > .tab-background {
   background: var(--zia-essential-bg) !important;
+  box-shadow: var(--zia-glass-edge) !important;
   transition: none !important;
 }
 
@@ -526,7 +527,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close {
   min-width: var(--zia-close-size);
   padding: 4px;
   border-radius: var(--zia-close-radius);
-  corner-shape: round !important;
+  corner-shape: var(--zia-squircle) !important;
   flex-shrink: 0;
 
   margin-inline-start: auto;
@@ -539,13 +540,6 @@ zen-folder[zia-hover-held] > .tab-group-label-container > .zia-folder-close {
 
 zen-folder > .tab-group-label-container > .zia-folder-close:hover {
   background-color: var(--zia-close-hover-bg);
-}
-
-/* A tab's own close and unload buttons use the squircle close corner.
-   Inside a folder that rule is the more specific one, so these stay
-   circular with the rest of the folder. */
-:is(zen-folder, tab-group:not([split-view-group])) .tabbrowser-tab :is(.tab-close-button, .tab-reset-button) {
-  corner-shape: round !important;
 }
 
 
@@ -658,7 +652,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
 }
 
 /* A coloured folder keeps its usual colour while a tab is dragged into it
- * (its shine marks it as the target): not the plain hover wash, and not the
+ * (its glass edge marks it as the target): not the plain hover wash, and not the
  * hover tint either, which flickered off and on again as the tab dropped. */
 :root[zen-sidebar-expanded="true"] zen-folder[zia-folder-color]:not([zia-folder-color="white"])[zia-drop-slot]::before {
   background-color: color-mix(in srgb, var(--zia-folder-swatch) var(--zia-folder-wash), transparent) !important;

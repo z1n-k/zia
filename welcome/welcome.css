@@ -428,6 +428,54 @@ kbd > span, .w-key > span { position: static; display: block; text-box: trim-bot
 @keyframes ink-bg { 0%, 20% { background-color: #fbf5ec; } 25%, 45% { background-color: #ffffff; } 50%, 70% { background-color: #eaf6ef; } 75%, 95% { background-color: #f1edfb; } 100% { background-color: #fbf5ec; } }
 @keyframes ink-c { 0%, 20% { color: hsl(36 24% 40%); } 25%, 45% { color: hsl(240 3.5% 40%); } 50%, 70% { color: hsl(148 15% 40%); } 75%, 95% { color: hsl(258 23% 40%); } 100% { color: hsl(36 24% 40%); } }
 
+/* liquid glass: essentials on a space's colours, Zia's glass edge; one is
+   pressed and its light follows the pointer, then fades (8s) */
+.liquid .sky { inset: 0; background: radial-gradient(60cqw 40cqw at 20% 10%, #5b4a86, transparent 70%), radial-gradient(60cqw 40cqw at 85% 90%, #1f5a5c, transparent 70%), linear-gradient(160deg, #3b3550, #24343a); }
+.liquid .tiles { left: 50%; top: 13cqw; width: 62cqw; translate: -50% 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.2cqw; }
+.liquid .tiles i { position: relative; height: 15cqw; border-radius: 3.6cqw; corner-shape: superellipse(1.35); overflow: hidden; background: rgba(255,255,255,.13);
+  box-shadow: inset 0 1px .75px -.5px rgba(255,255,255,.29), inset 0 -1px .75px -.5px rgba(255,255,255,.27), inset 0 .5cqw .4cqw -.35cqw rgba(255,255,255,.11), inset 0 -.5cqw .4cqw -.35cqw rgba(255,255,255,.085), -.5px 0 .5px rgba(0,0,0,.5), .5px 0 .5px rgba(0,0,0,.5), 0 0 .5px .25px rgba(0,0,0,.25); }
+.liquid .tiles i::before { content: ""; position: absolute; left: 50%; top: 50%; width: 4.4cqw; height: 4.4cqw; translate: -50% -50%; border-radius: 1.2cqw; background: var(--c); }
+.liquid .tiles b { left: 0; top: 0; width: 22cqw; height: 22cqw; margin: -11cqw 0 0 -11cqw; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,.2), rgba(255,255,255,.07) 30%, rgba(255,255,255,.03)); opacity: 0;
+  animation: lq-light 8s var(--ease) infinite; }
+.liquid .cursor { left: 0; top: 0; animation: lq-cur 8s var(--ease) infinite; }
+@keyframes lq-cur { 0% { transform: translate(78cqw, 52cqw); opacity: 0; } 8% { opacity: 1; } 22% { transform: translate(44cqw, 20cqw); } 30% { transform: translate(44cqw, 20cqw) scale(.9); } 52% { transform: translate(55cqw, 23cqw) scale(.9); } 58%, 80% { transform: translate(55cqw, 23cqw); opacity: 1; } 92%, 100% { transform: translate(78cqw, 52cqw); opacity: 0; } }
+@keyframes lq-light { 0%, 28% { opacity: 0; transform: translate(6cqw, 5cqw); } 31% { opacity: 1; transform: translate(6cqw, 5cqw); } 52% { opacity: 1; transform: translate(17cqw, 8cqw); } 58% { opacity: .85; transform: translate(17cqw, 8cqw); } 66%, 100% { opacity: 0; transform: translate(17cqw, 8cqw); } }
+
+/* downloads that name themselves, all in the middle (9s): a photo file
+   drops in with a meaningless name; the page's address flows into it and
+   a light reads the picture while the AI's spark glows; the old name
+   blurs away and the new one writes itself in; Undo waits beside it */
+.rename .light { left: 50%; top: -30cqw; width: 90cqw; height: 70cqw; translate: -50% 0; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255,255,255,.1), rgba(255,255,255,.04) 50%, transparent); filter: blur(3cqw); }
+.rename .file { left: 50%; top: 13cqw; width: 19cqw; height: 19cqw; margin-left: -9.5cqw; border-radius: 4.6cqw; corner-shape: superellipse(1.35); overflow: hidden; display: grid; place-items: center;
+  background: rgba(255,255,255,.08);
+  box-shadow: inset 0 1px .75px -.5px rgba(255,255,255,.29), inset 0 -1px .75px -.5px rgba(255,255,255,.27), inset 0 .5cqw .4cqw -.35cqw rgba(255,255,255,.11), -.5px 0 .5px rgba(0,0,0,.5), .5px 0 .5px rgba(0,0,0,.5), 0 2cqw 5cqw rgba(0,0,0,.35);
+  animation: rn-file 9s var(--spring) infinite; }
+.rename .pic { position: static; width: 52%; height: 52%; fill: none; stroke: rgba(255,255,255,.62); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.rename .scan { left: -40%; top: 0; bottom: 0; width: 40%; background: linear-gradient(90deg, transparent, rgba(90,185,245,.32), rgba(255,255,255,.28), transparent); mix-blend-mode: screen; opacity: 0; animation: rn-scan 9s var(--ease) infinite; }
+.rename .spark { left: 50%; top: 10.6cqw; margin-left: 8.2cqw; width: 4.6cqw; height: 4.6cqw; fill: #5ab9f5; filter: drop-shadow(0 0 1.2cqw rgba(90,185,245,.7)); opacity: 0; animation: rn-spark 9s var(--ease) infinite; }
+.rename .ctx { left: 50%; top: 24cqw; padding: .9cqw 1.6cqw; border-radius: 1.6cqw; white-space: nowrap; font: 500 1.6cqw/1.3 -apple-system, system-ui, sans-serif; color: rgba(255,255,255,.5);
+  background: rgba(255,255,255,.06); box-shadow: inset 0 1px .75px -.5px rgba(255,255,255,.22); opacity: 0; animation: rn-ctx 9s var(--ease) infinite; }
+.rename .ctx b { position: static; font-weight: 600; color: rgba(255,255,255,.85); }
+.rename .name { left: 50%; top: 37cqw; width: 54cqw; height: 6.6cqw; margin-left: -27cqw; border-radius: 2.4cqw; corner-shape: superellipse(1.35);
+  background: rgba(255,255,255,.07); box-shadow: inset 0 1px .75px -.5px rgba(255,255,255,.24), inset 0 -1px .75px -.5px rgba(255,255,255,.2), -.5px 0 .5px rgba(0,0,0,.5), .5px 0 .5px rgba(0,0,0,.5);
+  animation: rn-file 9s var(--spring) infinite; }
+.rename .name span { inset: 0; display: grid; place-items: center; white-space: nowrap; }
+.rename .old { font: 500 1.9cqw/1.3 ui-monospace, "SF Mono", Menlo, monospace; color: rgba(255,255,255,.5); animation: rn-old 9s var(--ease) infinite; }
+.rename .new { font: 600 2.5cqw/1.3 -apple-system, system-ui, sans-serif; color: #fff; clip-path: inset(0 100% 0 0); animation: rn-new 9s steps(21, end) infinite; }
+.rename .undo { left: 50%; top: 46.6cqw; translate: -50% 0; display: flex; align-items: center; gap: .8cqw; padding: .9cqw 1.8cqw .9cqw 1.4cqw; border-radius: 99cqw;
+  font: 500 1.7cqw/1.2 -apple-system, system-ui, sans-serif; color: rgba(255,255,255,.75); background: rgba(255,255,255,.08);
+  box-shadow: inset 0 1px .75px -.5px rgba(255,255,255,.24), -.5px 0 .5px rgba(0,0,0,.5), .5px 0 .5px rgba(0,0,0,.5); opacity: 0; animation: rn-undo 9s var(--spring) infinite; }
+.rename .undo svg { position: static; width: 2cqw; height: 2cqw; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes rn-file { 0% { opacity: 0; transform: translateY(1.6cqw) scale(.94); } 7%, 92% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-.6cqw) scale(.98); } }
+@keyframes rn-ctx { 0%, 9% { opacity: 0; transform: translate(-50%, 7cqw); } 14%, 22% { opacity: 1; transform: translate(-50%, 7cqw); } 32%, 100% { opacity: 0; transform: translate(-50%, -6cqw) scale(.6); } }
+@keyframes rn-scan { 0%, 24% { left: -40%; opacity: 0; } 26% { opacity: 1; } 36% { left: 100%; opacity: 1; } 37% { left: -40%; opacity: 1; } 47% { left: 100%; opacity: 1; } 48%, 100% { left: 100%; opacity: 0; } }
+@keyframes rn-spark { 0%, 22% { opacity: 0; transform: scale(.5) rotate(-20deg); } 27% { opacity: 1; transform: scale(1.1) rotate(0); } 32% { transform: scale(.9); } 37% { transform: scale(1.1); } 42% { transform: scale(.9); } 48% { opacity: 1; transform: scale(1); } 56%, 100% { opacity: 0; transform: scale(.6) rotate(20deg); } }
+@keyframes rn-old { 0%, 46% { opacity: 1; filter: none; transform: none; } 53%, 100% { opacity: 0; filter: blur(.8cqw); transform: scale(.96); } }
+@keyframes rn-new { 0%, 52% { clip-path: inset(0 100% 0 0); } 64%, 100% { clip-path: inset(0 0 0 0); } }
+@keyframes rn-undo { 0%, 64% { opacity: 0; transform: translateY(.8cqw) scale(.95); } 70%, 88% { opacity: 1; transform: none; } 94%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .liquid *, .rename * { animation: none !important; } .rename .old, .rename .ctx, .rename .spark { opacity: 0; } .rename .new { clip-path: none; } .rename .undo { opacity: 1; } }
+
 .slide:not(.cur) .stage, .slide:not(.cur) .stage * { animation-play-state: paused !important; }
 
 /* arriving on a step: its rows and page settle in, a beat apart */

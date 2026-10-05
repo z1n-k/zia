@@ -46,6 +46,7 @@
 
       &::before {
         border-radius: var(--zia-essential-radius) !important;
+        corner-shape: var(--zia-squircle) !important;
         /* (a hover snaps on and off, as on a tab) */
         transition: none !important;
       }
@@ -89,23 +90,11 @@
       inset-inline: 4px;
       z-index: 0;
       border-radius: var(--zia-essential-radius);
+      corner-shape: var(--zia-squircle) !important;
       background: var(--zia-lib-tile);
+      /* (the glass edge, as on an essential) */
+      box-shadow: var(--zia-glass-edge);
       pointer-events: none;
-
-      /* Zia's shine round its edge, as on an essential: brightest along
-         the middle of each side, fading into the corners */
-      &::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        pointer-events: none;
-        padding: var(--zia-shine-width);
-        background: var(--zia-shine-layers);
-        mask:
-          linear-gradient(#000 0 0) content-box exclude,
-          linear-gradient(#000 0 0);
-      }
 
       transition: transform var(--zia-spring-time) var(--zia-spring), height var(--zia-spring-time) var(--zia-spring);
 
@@ -151,22 +140,10 @@
 
     & :is(.zen-library-filter-button, .zen-library-filter-done) {
       position: relative;
-      border-radius: var(--zia-tab-radius) !important;
-
-      /* the essentials' shine round the edge, fading into the corners */
-      &::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        pointer-events: none;
-        padding: var(--zia-shine-width);
-        background: var(--zia-shine-layers);
-        mask:
-          linear-gradient(#000 0 0) content-box exclude,
-          linear-gradient(#000 0 0);
-      }
-
+      border-radius: var(--zia-glass-button-radius) !important;
+      corner-shape: var(--zia-squircle) !important;
+      /* (the glass edge, as on an essential) */
+      box-shadow: var(--zia-glass-edge) !important;
       background: var(--zia-lib-tile) !important;
       font-weight: 500 !important;
 
@@ -192,7 +169,9 @@
 
     & .zen-library-filter-chip {
       padding: 7px 12px !important;
-      border-radius: var(--zia-tab-radius) !important;
+      border-radius: var(--zia-glass-button-radius) !important;
+      corner-shape: var(--zia-squircle) !important;
+      box-shadow: var(--zia-glass-edge) !important;
       background: var(--zia-lib-tile) !important;
 
       &:hover {
@@ -288,6 +267,7 @@
     & .zen-library-boost-row {
       padding: 5px 10px 5px 5px !important;
       border-radius: var(--zia-essential-radius) !important;
+      corner-shape: var(--zia-squircle) !important;
     }
 
     & .zen-library-boost-icon {
@@ -298,6 +278,7 @@
       &::before {
         border: none !important;
         border-radius: var(--zia-essential-radius) !important;
+        corner-shape: var(--zia-squircle) !important;
         background: var(--zia-lib-tile) !important;
         box-shadow: inset 0 0 0 var(--zia-shine-width) color-mix(in srgb, var(--zia-lib-ink) 16%, transparent) !important;
       }
@@ -318,6 +299,7 @@
     & .zen-library-media-item {
       padding: 10px !important;
       border-radius: var(--zia-essential-radius) !important;
+      corner-shape: var(--zia-squircle) !important;
       background: var(--zia-lib-tile) !important;
 
       &:hover {
@@ -407,6 +389,7 @@
     /* the media opt-in, as one of Zia's hover cards */
     & .zen-library-media-opt-in {
       border-radius: var(--zia-tab-card-radius) !important;
+      corner-shape: var(--zia-squircle) !important;
       background: var(--zia-tab-card-bg) !important;
       box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.1), 0 16px 40px rgba(0, 0, 0, 0.4) !important;
     }
@@ -449,11 +432,78 @@
     }
   }
 
-  /* The last downloads Zen fans out above the Library button (as one
-     finishes, and on hovering it) don't show: they're in the Library's
-     Downloads */
-  #zen-library-download-list {
-    display: none !important;
+  /* The last downloads that fan out above the Library button, as tab rows:
+     a tab's height, corners and hover, the file's icon at a favicon's size,
+     and its size or state beside the name rather than under it (Zen's were
+     52px tall, half as tall again as a tab) */
+  :root:not(#zia-none) #zen-library-download-list {
+    gap: var(--zia-tab-gap) !important;
+
+    & .zen-library-download-list-download {
+      height: var(--zia-tab-height) !important;
+      border-radius: var(--zia-tab-radius) !important;
+      padding: 0 !important;
+
+      &:hover {
+        background: var(--zia-tab-hover-bg) !important;
+      }
+
+      & .zen-library-download-badge {
+        margin: auto var(--zia-lib-icon-gap, 8px) auto var(--zia-lib-row-pad, 10px) !important;
+      }
+
+      & .zen-library-download-badge:not([downloading]) {
+        width: 16px !important;
+        height: 16px !important;
+        border-radius: 4px !important;
+        scale: 1 !important;
+      }
+
+      /* in progress: Zia's ring in its loading blue */
+      & .zen-library-download-badge[downloading] {
+        align-self: center !important;
+        transform: none !important;
+        width: 18px !important;
+        height: 18px !important;
+        border-width: 2px !important;
+        margin-inline: calc(var(--zia-lib-row-pad, 10px) - 1px) calc(var(--zia-lib-icon-gap, 8px) - 1px) !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+
+        & .zen-library-download-progress {
+          --thickness: 2px;
+          --progress: var(--zia-loading-color);
+          --border-color: color-mix(in srgb, currentColor 18%, transparent);
+        }
+      }
+
+      & .zen-library-download-list-title-container {
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px !important;
+      }
+
+      & .zen-library-download-list-title {
+        flex: 0 1 auto;
+        min-width: 0;
+        font-size: var(--zia-text-size) !important;
+        font-weight: var(--zia-tab-weight) !important;
+        opacity: 1 !important;
+      }
+
+      & .zen-library-download-list-subtitle {
+        flex: 0 1 auto;
+        max-width: 55%;
+        margin-inline-start: auto;
+        padding-inline-end: 10px;
+        font-size: 11.5px !important;
+        opacity: 0.5 !important;
+      }
+
+      & .zen-library-download-action {
+        margin: auto 6px auto 0 !important;
+      }
+    }
   }
 
   /* Clear, beside the downloads' filter (zia.uc.js): as the filter is drawn */
@@ -534,12 +584,5 @@
 
   #zen-sidebar-foot-buttons #zen-library-button:is(:hover, [open]) .zen-library-sprite {
     opacity: 1;
-  }
-
-  /* After a download, Zen left a small picture of the file sitting on the
-     library button, until its list was next opened. Gone: the file shows in
-     that list. (A download under way keeps its ring.) */
-  #zen-sidebar-foot-buttons #library-button-badge:not([downloading]) {
-    display: none !important;
   }
 }

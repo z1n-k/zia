@@ -1,6 +1,8 @@
 #zia-tab-card,
 #zia-folder-card {
-  clip-path: inset(0 round var(--zia-tab-card-radius));
+  /* (clipped to its own squircle; its shadows, the glass edge's dark
+     sides among them, fall outside the clip) */
+  overflow: clip;
   position: fixed;
   z-index: 2147483647;
   width: var(--zia-tab-card-width);
@@ -8,8 +10,8 @@
   padding: 12px 14px 10px;
   background-color: var(--zia-tab-card-bg);
   border-radius: var(--zia-tab-card-radius);
-  corner-shape: round;
-  box-shadow: var(--zia-hover-card-shadow);
+  corner-shape: var(--zia-squircle) !important;
+  box-shadow: var(--zia-glass-edge);
   color: rgb(255, 255, 255);
   pointer-events: auto;
   -moz-window-dragging: no-drag;
@@ -18,17 +20,6 @@
 #zia-tab-card[hidden],
 #zia-folder-card[hidden] {
   display: none;
-}
-
-#zia-tab-card::after,
-#zia-folder-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border: 0.5px solid rgba(255, 255, 255, 0.12);
-  border-radius: inherit;
-  corner-shape: round;
-  pointer-events: none;
 }
 
 #zia-tab-card[zia-open],
@@ -133,7 +124,7 @@
   margin-inline-start: auto;
   padding: 4px;
   border-radius: var(--zia-close-radius);
-  corner-shape: round !important;
+  corner-shape: var(--zia-squircle) !important;
   opacity: 0;
   -moz-context-properties: fill, fill-opacity;
   fill: currentColor;
@@ -240,10 +231,14 @@
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  corner-shape: squircle !important;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* (with :root, to beat the rule that rounds every corner, 00-variables) */
+:root .zia-tab-card-action {
+  corner-shape: var(--zia-squircle) !important;
 }
 
 /* (faded as a whole, not each shape: where an icon's strokes overlap, the
@@ -287,7 +282,8 @@
   height: var(--zia-close-size) !important;
   min-width: var(--zia-close-size) !important;
   border-radius: var(--zia-close-radius) !important;
-  corner-shape: round !important;
+  /* (the same squircle as the unload button beside it, 17-tab-buttons) */
+  corner-shape: var(--zia-squircle) !important;
   margin-inline-end: 0 !important;
   padding: 4px !important;
 }

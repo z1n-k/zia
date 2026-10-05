@@ -4,6 +4,76 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.94.0] — 2026-10-05
+
+### Added
+
+- Liquid glass is Zia's look: a glass edge (a soft light grey hairline
+  along the top and bottom glowing into the fill, and a dark one down the
+  sides) replaces Zia's old shine and outlines on essentials (the chosen
+  one's inner tile too, keeping its colour), folders as you hover or press
+  them, the tab and folder cards, the split cards, the address pop-up, the
+  find bar, the sidebar as it flies out in compact mode, and the Library's
+  buttons and section tile. Pressing an essential, a folder, a Library
+  button or one of the Library's sections (the chosen one too, just for
+  the shine) lights it up under the pointer: the light snaps on, follows
+  the pointer while it's held, and fades once let go.
+- The welcome tour shows the liquid glass and downloads that name
+  themselves, and anyone updating sees the two of them as what's new.
+- Zia's settings are tidier: in eight sections (Look, Tabs and
+  essentials, Sidebar and folders, Address bar and new tabs, Page, Media,
+  Rename downloads with AI, Welcome tour) with shorter names, and a
+  setting that only matters with another one (the AI service's key and
+  model, the hover cards' blur, the tab numbers' colour, where
+  picture-in-picture tucks) shows only while that one's on: 45 to start
+  with rather than 77. The window buttons' settings only show on Windows
+  and Linux. Sine showed every such setting until the one it hangs on was
+  changed; Zia now shows and hides them as the page opens.
+- The glass folders and the archive box are a touch smaller.
+- Show where links go: an option (off to start with) that brings back the
+  status bar at the foot of the page as you hover a link, as a small pill
+  of Zia's glass ([#270](https://github.com/z1n-k/zia/issues/270)).
+- A squircle corner, as Dia's (only a touch squarer than a circle), one
+  shape for everything with the glass edge and every small icon button
+  (the workspaces' icons, toolbar and sidebar buttons, close and unload
+  buttons, tab number keys, the cards' buttons, even the blank icon of a
+  tab without its own), at the sizes their round corners had. Tab rows,
+  the page and menus keep their round corners.
+- Rename finished downloads with AI: [Tidy Downloads](https://github.com/Vertex-Mods/Zen-Tidy-Downloads)
+  by Bxthesda and Zylaah is part of Zia, with their permission. As a
+  download finishes, an AI service gives it a clearer name, shown in a
+  card above the Library button with an Undo. Off until you turn on
+  **Rename finished downloads with AI** in settings and add a key for
+  Mistral, OpenAI, Anthropic, Google, OpenRouter or any OpenAI-compatible
+  endpoint, or use Ollama on your own machine. Remove Tidy Downloads if
+  you have it as its own mod; Zia's copy uses the same settings. Its code
+  is slimmed for Zia (about 4,800 lines to 1,300, leftovers of an older
+  download pile gone). While a file's being renamed, only a glowing
+  outline shows round the Library button; once it has its new name, a
+  small glass pop-up in Zia's look floats above the sidebar's foot,
+  moving nothing, out of the way while the Library is open; in compact
+  mode a toast says it, with an Undo. Downloads from private
+  windows are never sent to an AI service. The card has Zia's glass edge.
+  The AI is told the page's address too (stock photo sites describe the
+  picture there), and is sent a small copy of a downloaded picture, so it
+  can name it by what it shows (a model that can't see pictures is asked
+  again without it).
+
+### Fixed
+
+- The small picture of the last download on the Library button clears
+  itself a few seconds after the download finishes, rather than staying
+  until the button is next hovered (a download under way keeps its ring).
+- The last downloads fan out above the Library button again, as tab rows,
+  and the Library button shows the picture of the latest one again: 2.92.0
+  and 2.93.4 hid them by mistake.
+- An essential's hover card meets the tile's corner again, rather than
+  sitting a little to the left of it under the new squircle corners.
+- Shapes meant to be squircles drawn as circles: the tab number keys, the
+  hover cards' buttons and the Glance buttons lost to the rule that rounds
+  every other corner. The tab close button is now the same squircle as the
+  unload button beside it.
+
 ## [2.93.4] — 2026-10-04
 
 ### Removed

@@ -6,7 +6,7 @@
   // seen that one gets the tour of what's new. Other releases leave it be.
   // Once closed it stays closed; it can be switched off after updates, or
   // asked for again, from Zia's settings.
-  const WELCOME_VERSION = "2.83.0";
+  const WELCOME_VERSION = "2.94.0";
   const WELCOME_SEEN_PREF = "zia.welcome.seen";
   const WELCOME_UPDATES_PREF = "zia.welcome.show";
   const WELCOME_AGAIN_PREF = "zia.welcome.again";

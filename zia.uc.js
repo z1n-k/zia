@@ -9722,7 +9722,9 @@
   const TAB_CARD_GRACE = 120;
   const TAB_CARD_GAP = 8;
 
-  const ESSENTIAL_CARD_OVERLAP_X = 11;
+  // (how far an essential's card tucks under its corner: with the squircle
+  // corners on both, 6px brings the card's corner to the tile's)
+  const ESSENTIAL_CARD_OVERLAP_X = 6;
   const ESSENTIAL_CARD_OVERLAP_Y = 2;
   const FOLDER_CARD_LIFT = 2;
   const DEFAULT_TAB_ICON = "chrome://sine/content/zia/icons/tab-default.svg";
@@ -15286,7 +15288,7 @@
   // seen that one gets the tour of what's new. Other releases leave it be.
   // Once closed it stays closed; it can be switched off after updates, or
   // asked for again, from Zia's settings.
-  const WELCOME_VERSION = "2.83.0";
+  const WELCOME_VERSION = "2.94.0";
   const WELCOME_SEEN_PREF = "zia.welcome.seen";
   const WELCOME_UPDATES_PREF = "zia.welcome.show";
   const WELCOME_AGAIN_PREF = "zia.welcome.again";
@@ -16819,6 +16821,32 @@
     }
   }
 
+  // ---------- The Library button's picture of the last download clears itself
+  // Zen leaves a small picture of the last download on the Library button
+  // until the button is next hovered. It shows as the file flies in, then
+  // clears a few seconds later (a download under way keeps its ring).
+  function clearLibraryBadgeSoon() {
+    const foot = document.getElementById("zen-sidebar-foot-buttons");
+    if (!foot) {
+      return;
+    }
+    let timer = null;
+    const check = () => {
+      clearTimeout(timer);
+      if (!foot.hasAttribute("zen-library-badge")) {
+        return;
+      }
+      timer = setTimeout(() => {
+        const badge = document.getElementById("library-button-badge");
+        if (!badge?.hasAttribute("downloading") && !foot.hasAttribute("zen-library-stack-open")) {
+          foot.removeAttribute("zen-library-badge");
+        }
+      }, 4000);
+    };
+    new MutationObserver(check).observe(foot, { attributes: true, attributeFilter: ["zen-library-badge"] });
+    check();
+  }
+
   // ---------- Clear in the Library's Downloads and History
   // Zen's Library lists every download but has no way to empty the list,
   // only to remove them one by one. A Clear button beside the filter does
@@ -16915,6 +16943,238 @@
     document.getElementById("zen-library-button")?.addEventListener("mouseenter", () => safely("library: rows", matchLibraryRowsToTabs));
     safely("library: rows", matchLibraryRowsToTabs);
     Services.prefs.addObserver(LIBRARY_ZEN_LOOK_PREF, () => watched && addButtons(watched));
+  }
+
+  // ---------- Rename finished downloads with AI (Tidy Downloads)
+  // Tidy Downloads, by Bxthesda and Zylaah, is in tidy-downloads/ (used with
+  // their permission). Zia loads it itself, only with "Rename finished
+  // downloads with AI" on: listed as the mod's own scripts instead, they only
+  // ran once Sine had installed or updated Zia, not after its files were
+  // swapped by hand.
+  // (the renaming, then the model lists for its settings)
+  const TIDY_DOWNLOADS_SCRIPTS = ["tidy-downloads", "tidy-downloads-models"];
+
+  function loadTidyDownloads() {
+    if (!Services.prefs.getBoolPref("zia.features.tidy-downloads", false) || window.__ziaTidyDownloads) {
+      return;
+    }
+    for (const name of TIDY_DOWNLOADS_SCRIPTS) {
+      try {
+        Services.scriptloader.loadSubScript(`chrome://sine/content/zia/tidy-downloads/${name}.js`, window);
+      } catch (err) {
+        console.error(`[Zia] Couldn't load Tidy Downloads (${name}):`, err);
+        return;
+      }
+    }
+  }
+
+  // ---------- Zia's glass: the light where it's pressed
+  function watchLiquidGlass() {
+    // Pressed: a soft light under the pointer, fading once let go
+    // (27-liquid-glass.css), on what has the glass. Marked on the
+    // essential, folder or button, with where the press is inside the box
+    // that lights up.
+    const PRESSABLE = [
+      // (essentials, not the plain tabs, which have no glass)
+      [".tabbrowser-tab[zen-essential]", (hit) => hit, (owner) => owner.querySelector(":scope > .tab-stack > .tab-background")],
+      [":is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container", (hit) => hit.parentNode, (owner) => owner],
+      // (not Clear, whose icon is its background picture)
+      ["zen-library :is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip):not(.zia-library-clear)", (hit) => hit, (owner) => owner],
+      // (the chosen Library section lights the tile that slides behind it,
+      // so it shines too; another lights its own hover tile, as the sliding
+      // one's still behind the old section until the press is let go)
+      ["zen-library .zen-library-tab", (hit) => (hit.hasAttribute("active") ? hit.parentNode.querySelector(":scope > .zia-library-rail") : hit), (owner, hit) => hit],
+    ];
+    let pressed = null;
+    let pressedBox = null;
+    let pressedAt = 0;
+    // The light's strength, eased here rather than by a CSS transition: that
+    // needs the colours registered with @property, which Zen's stylesheets
+    // for mods don't take, so the light only ever snapped off.
+    const shines = new Map();
+    const rgba = (name) => {
+      const parts = getComputedStyle(root).getPropertyValue(name).match(/[\d.]+/g)?.map(Number) || [255, 255, 255, 0];
+      return parts.length > 3 ? parts : [...parts, 1];
+    };
+    const shine = (owner, to, ms, done) => {
+      const run = shines.get(owner) || { level: 0, frame: 0 };
+      cancelAnimationFrame(run.frame);
+      shines.set(owner, run);
+      const light = rgba("--zia-glass-press-light");
+      const wash = rgba("--zia-glass-press-wash");
+      const from = run.level;
+      const start = performance.now();
+      const step = (now) => {
+        const t = Math.min(1, (now - start) / ms);
+        // (ease out)
+        run.level = from + (to - from) * (1 - (1 - t) ** 3);
+        const paint = ([r, g, b, a]) => `rgba(${r}, ${g}, ${b}, ${a * run.level})`;
+        owner.style.setProperty("--zia-press-light", paint(light));
+        owner.style.setProperty("--zia-press-wash", paint(wash));
+        if (t < 1) {
+          run.frame = requestAnimationFrame(step);
+        } else {
+          run.frame = 0;
+          done?.();
+        }
+      };
+      run.frame = requestAnimationFrame(step);
+    };
+    const placeLight = (event) => {
+      const box = pressedBox?.getBoundingClientRect();
+      if (box) {
+        pressed.style.setProperty("--zia-press-x", `${event.clientX - box.left}px`);
+        pressed.style.setProperty("--zia-press-y", `${event.clientY - box.top}px`);
+      }
+    };
+    // (held, the light follows the pointer, even off the button, and on
+    // through a drag: holding and moving a tab or essential starts one,
+    // which cancels the pointer, so the light waits for the real release)
+    const follow = (event) => {
+      if (pressed && (event.clientX || event.clientY)) {
+        placeLight(event);
+      }
+    };
+    const press = (event) => {
+      if (event.button !== 0) {
+        return;
+      }
+      for (const node of event.composedPath()) {
+        if (node.nodeType !== Node.ELEMENT_NODE) {
+          continue;
+        }
+        const match = PRESSABLE.find(([selector]) => node.matches(selector));
+        if (!match) {
+          continue;
+        }
+        const owner = match[1](node);
+        const lit = owner && match[2](owner, node);
+        if (!lit) {
+          return;
+        }
+        pressed = owner;
+        pressedBox = lit;
+        placeLight(event);
+        owner.setAttribute("zia-glass-press", "in");
+        pressedAt = performance.now();
+        shine(owner, 1, 60);
+        return;
+      }
+    };
+    const letGo = () => {
+      const owner = pressed;
+      pressed = null;
+      pressedBox = null;
+      if (!owner) {
+        return;
+      }
+      // (a quick click still lights up for a moment before it fades)
+      const lit = Math.max(0, 120 - (performance.now() - pressedAt));
+      setTimeout(() => {
+        if (owner.getAttribute("zia-glass-press") !== "in" || pressed === owner) {
+          return;
+        }
+        owner.setAttribute("zia-glass-press", "out");
+        shine(owner, 0, 280, () => {
+          if (owner.getAttribute("zia-glass-press") === "out") {
+            owner.removeAttribute("zia-glass-press");
+            for (const name of ["--zia-press-x", "--zia-press-y", "--zia-press-light", "--zia-press-wash"]) {
+              owner.style.removeProperty(name);
+            }
+            shines.delete(owner);
+          }
+        });
+      }, lit);
+    };
+    const PRESS_EVENTS = [
+      ["pointerdown", press],
+      ["pointermove", follow],
+      ["mousemove", follow],
+      ["dragover", follow],
+      ["pointerup", letGo],
+      ["mouseup", letGo],
+      ["dragend", letGo],
+      ["drop", letGo],
+      // (the window losing focus mid-press; not a field inside it)
+      ["blur", (event) => event.target === window && letGo()],
+    ];
+
+    for (const [type, handler] of PRESS_EVENTS) {
+      window.addEventListener(type, handler, true);
+    }
+  }
+  // ---------- Zia's settings: rows shown only with the setting they belong to
+  // Sine shows or hides a mod's setting by its "conditions"
+  // (preferences.json), but its first check runs before the row is on the
+  // page, finds nothing, and every row showed until the setting it hangs on
+  // was changed. Zia applies them as Zia's rows arrive in Settings, the same
+  // way Sine does afterwards (its own observers keep them right from then
+  // on).
+  function fixSettingsConditions() {
+    let rows = null;
+    const loadRows = async () => {
+      if (!rows) {
+        const prefs = await (await fetch("chrome://sine/content/zia/preferences.json")).json();
+        rows = new Map(prefs.filter((pref) => pref.conditions).map((pref) => [(pref.id ?? pref.property).replaceAll(".", "-"), pref]));
+      }
+      return rows;
+    };
+
+    const prefValue = ({ property, value }) => {
+      if (typeof value === "boolean") {
+        return Services.prefs.getBoolPref(property, false);
+      }
+      if (typeof value === "number") {
+        return Services.prefs.getIntPref(property, 0);
+      }
+      return Services.prefs.getStringPref(property, "");
+    };
+    // (Sine's rules: "if" or "not", nested lists with their own "operator",
+    // and a row's own list "OR" unless it says otherwise)
+    const holds = (conditions, operator) => {
+      const list = Array.isArray(conditions) ? conditions : [conditions];
+      const results = list.map((cond) => {
+        if (cond.if || cond.not) {
+          const test = cond.if || cond.not;
+          return (prefValue(test) === test.value) === !cond.not;
+        }
+        return cond.conditions ? holds(cond.conditions, cond.operator || "AND") : false;
+      });
+      return operator === "OR" ? results.some(Boolean) : results.every(Boolean);
+    };
+
+    const apply = async (doc) => {
+      const known = await loadRows();
+      for (const [id, pref] of known) {
+        const row = doc.getElementById(id);
+        if (row) {
+          row.style.display = holds(pref.conditions, pref.operator || "OR") ? "flex" : "none";
+        }
+      }
+    };
+
+    const watch = (doc) => {
+      let frame = 0;
+      const soon = () => {
+        if (!frame) {
+          frame = doc.defaultView?.requestAnimationFrame(() => {
+            frame = 0;
+            apply(doc).catch((err) => noteError("settings: conditions", err));
+          });
+        }
+      };
+      new MutationObserver(soon).observe(doc, { childList: true, subtree: true });
+      soon();
+    };
+
+    const onDocument = (doc) => {
+      if (!/^about:(preferences|settings)/.test(doc?.documentURI || "") || doc.defaultView?.browsingContext?.topChromeWindow !== window) {
+        return;
+      }
+      doc.defaultView.addEventListener("DOMContentLoaded", () => watch(doc), { once: true });
+    };
+    Services.obs.addObserver(onDocument, "document-element-inserted");
+    window.addEventListener("unload", () => Services.obs.removeObserver(onDocument, "document-element-inserted"), { once: true });
   }
 
   function safely(name, fn) {
@@ -17353,6 +17613,10 @@
     safely("revertTypedTextOnLeave", () => revertTypedTextOnLeave(urlbar));
     safely("neverShowScheme", neverShowScheme);
     safely("dressLibrary", dressLibrary);
+    safely("clearLibraryBadgeSoon", clearLibraryBadgeSoon);
+    safely("loadTidyDownloads", loadTidyDownloads);
+    safely("watchLiquidGlass", watchLiquidGlass);
+    safely("fixSettingsConditions", fixSettingsConditions);
 
     updateColor();
     updateTitle();
