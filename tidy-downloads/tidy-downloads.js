@@ -545,6 +545,18 @@ Instructions:
     if (card.parentNode !== foot) {
       foot.appendChild(card);
     }
+    // Pointing at the Library button, which fans out its downloads,
+    // dismisses the card rather than just hiding it under them (it came
+    // back once they closed)
+    if (!foot.ziaRenameCardWatched) {
+      foot.ziaRenameCardWatched = true;
+      document.getElementById("zen-library-button")?.addEventListener("mouseenter", hideCard);
+      new MutationObserver(() => {
+        if (foot.hasAttribute("zen-library-stack-open")) {
+          hideCard();
+        }
+      }).observe(foot, { attributes: true, attributeFilter: ["zen-library-stack-open"] });
+    }
     return true;
   }
 
