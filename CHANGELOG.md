@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.94.9] — 2026-10-05
+
+### Fixed
+
+- The Library's search and buttons start level with the traffic lights,
+  as far from the top as in the sidebar (they sat 5px higher).
+
 ## [2.94.8] — 2026-10-05
 
 ### Fixed
