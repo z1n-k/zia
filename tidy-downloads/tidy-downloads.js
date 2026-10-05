@@ -585,9 +585,16 @@ Instructions:
     cardDownload = download;
     const icon = card.querySelector(".zia-rc-icon");
     const file = new lazy.FileUtils.File(download.target.path);
-    icon.src = /^image\//.test(download.contentType || "") || /\.(png|jpe?g|gif|webp|avif|bmp|svg)$/i.test(names.newName)
-      ? Services.io.newFileURI(file).spec
-      : `moz-icon://${Services.io.newFileURI(file).spec}?size=16`;
+    const picture = /^image\//.test(download.contentType || "") || /\.(png|jpe?g|gif|webp|avif|bmp|svg)$/i.test(names.newName);
+    const fileIcon = `moz-icon://${Services.io.newFileURI(file).spec}?size=32&state=normal`;
+    icon.src = picture ? Services.io.newFileURI(file).spec : fileIcon;
+    // The Library button's badge shows the same picture: Zen drew it from
+    // the file's old name, gone once it's renamed, so it fell back to a
+    // plain icon beside the card's
+    const badge = document.getElementById("library-button-badge");
+    if (badge && !badge.hasAttribute("downloading")) {
+      badge.style.setProperty("--download-image", `url('${picture ? Services.io.newFileURI(file).spec : fileIcon}')`);
+    }
     card.querySelector(".zia-rc-was").textContent = names.originalName;
     card.querySelector(".zia-rc-was").title = names.originalName;
     card.querySelector(".zia-rc-name").textContent = names.newName;
