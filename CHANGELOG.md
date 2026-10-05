@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.1] — 2026-10-05
+
+### Changed
+
+- The download's flight to the Library button moves as Dia's does: it
+  starts centred just above where you clicked, winds up for a moment,
+  drifting back and tilting, then is flung along a shallow curve,
+  levelling out and fading as it lands; the window dims while it flies,
+  with a beam of light to the button and a bloom where it lands. In
+  light mode the row is white and the dim a light grey.
+
 ## [2.95.0] — 2026-10-05
 
 ### Added

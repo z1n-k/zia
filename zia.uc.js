@@ -6585,13 +6585,20 @@
 
   // ---------- A download flies to the Library button as a row, as in Dia
   // Zen sends a plain circle from where you clicked to the Library button.
-  // In its place a small glass row, the file's icon and name, pops up where
-  // you clicked with a little wobble, then arcs off to the Library button,
-  // shrinking and tilting with the curve, and the button gives a nudge as
-  // it lands. Zen's own switch for its animation turns this off too.
+  // In its place, as Dia does it (measured frame by frame): a small row
+  // with the file's icon and name pops up just under where you clicked,
+  // winds up for a moment (drifting away from the Library button and
+  // tilting a few degrees, as a thing about to be thrown), then is flung
+  // along a shallow curve to the button, levelling out, shrinking and
+  // fading as it gets there; the button gives a nudge as it lands. While
+  // it flies the window dims, a beam of light running from the row to the
+  // button and a soft bloom where it lands. Zen's own switch for its
+  // animation turns this off too.
   let downloadFlightOn = false;
-  const FLIGHT_MS = 720;
-  const FLIGHT_POP_MS = 260;
+  const FLIGHT_POP_MS = 120;
+  const FLIGHT_WINDUP_MS = 300;
+  const FLIGHT_LAUNCH_MS = 340;
+  const FLIGHT_SETTLE_MS = 320;
 
   function flightTarget() {
     for (const id of ["zen-library-button", "downloads-button"]) {
@@ -6616,15 +6623,27 @@
     }
   }
 
+  function flightPart(className, parent) {
+    const node = document.createElementNS(XHTML_NS, "div");
+    node.className = className;
+    parent?.appendChild(node);
+    return node;
+  }
+
   function flyDownloadRow(download, start) {
     const target = flightTarget();
     if (!target) {
       return;
     }
+    document.getElementById("zia-download-flight")?.remove();
+    const stage = flightPart("");
+    stage.id = "zia-download-flight";
+    const dim = flightPart("zia-df-dim", stage);
+    const beam = flightPart("zia-df-beam", stage);
+    const bloom = flightPart("zia-df-bloom", stage);
+    const row = flightPart("zia-df-row", stage);
     const name = flightName(download);
     const ext = name.includes(".") ? name.slice(name.lastIndexOf(".")) : "";
-    const row = document.createElementNS(XHTML_NS, "div");
-    row.id = "zia-download-flight";
     const icon = document.createElementNS(XHTML_NS, "img");
     icon.className = "zia-df-icon";
     icon.src = `moz-icon://${ext || ".bin"}?size=16`;
@@ -6632,59 +6651,106 @@
     label.className = "zia-df-name";
     label.textContent = name;
     row.append(icon, label);
-    document.getElementById("zia-download-flight")?.remove();
-    root.appendChild(row);
+    root.appendChild(stage);
 
     const { width, height } = row.getBoundingClientRect();
-    // (the row's middle sits just above where you clicked, kept on screen)
-    const x0 = Math.min(window.innerWidth - width / 2 - 8, Math.max(width / 2 + 8, start.clientX));
-    const y0 = Math.min(window.innerHeight - height / 2 - 8, Math.max(height / 2 + 8, start.clientY - 18));
-    const dx = target.x - x0;
-    const dy = target.y - y0;
-    // an arc up and over, as a thrown thing goes, as high as there's room
-    const lift = Math.min(160, Math.hypot(dx, dy) * 0.32, Math.max(0, Math.min(y0, target.y) - 16));
-    const at = (t) => {
-      const e = t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
-      return { x: dx * e, y: dy * e - lift * 4 * e * (1 - e), e };
-    };
-    const frames = [];
-    const STEPS = 24;
-    for (let i = 0; i <= STEPS; i++) {
+    const keep = (x, y) => ({
+      x: Math.min(window.innerWidth - width / 2 - 8, Math.max(width / 2 + 8, x)),
+      y: Math.min(window.innerHeight - height / 2 - 8, Math.max(height / 2 + 8, y)),
+    });
+    // (centred just above where you clicked, as in Dia)
+    const p0 = keep(start.clientX, start.clientY - height * 0.9);
+    const dx = target.x - p0.x;
+    const dy = target.y - p0.y;
+    const distance = Math.hypot(dx, dy) || 1;
+    const ux = dx / distance;
+    const uy = dy / distance;
+    // the wind-up: back away from the button up or down, a little towards
+    // it sideways, tilting the way it'll be thrown
+    const wind = keep(p0.x + ux * 18, p0.y - Math.sign(uy || 1) * 34);
+    const tilt = -Math.sign(dx * dy || 1) * 6;
+    const at = (x, y, rotate, scale) => `translate(${x - p0.x}px, ${y - p0.y}px) translate(-50%, -50%) rotate(${rotate}deg) scale(${scale})`;
+
+    row.style.left = `${p0.x}px`;
+    row.style.top = `${p0.y}px`;
+    const total = FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
+    const o = (ms) => ms / total;
+    // the flight itself: a shallow curve, bowing away from straight a
+    // touch, fastest at first and easing into the button
+    const frames = [
+      { offset: 0, transform: at(start.clientX, start.clientY, 0, 0.45), opacity: 0, filter: "blur(0px)" },
+      { offset: o(FLIGHT_POP_MS), transform: at(p0.x, p0.y, 0, 1), opacity: 1, filter: "blur(0px)", easing: "cubic-bezier(0.35, 0, 0.25, 1)" },
+      { offset: o(FLIGHT_POP_MS + FLIGHT_WINDUP_MS * 0.4), transform: at(p0.x + (wind.x - p0.x) * 0.5, p0.y + (wind.y - p0.y) * 0.5, tilt * 0.45, 1.03), opacity: 1, filter: "blur(0px)" },
+      { offset: o(FLIGHT_POP_MS + FLIGHT_WINDUP_MS), transform: at(wind.x, wind.y, tilt, 1.04), opacity: 1, filter: "blur(0px)", easing: "cubic-bezier(0.3, 0, 0.2, 1)" },
+    ];
+    const bow = Math.min(60, distance * 0.12);
+    const STEPS = 10;
+    for (let i = 1; i <= STEPS; i++) {
       const t = i / STEPS;
-      const { x, y, e } = at(t);
-      const ahead = at(Math.min(1, t + 0.04));
-      // tilting into the curve, its leading end up as it climbs and down as
-      // it falls, a few degrees at most (whichever way it's flying)
-      const vx = ahead.x - x;
-      const climb = (Math.atan2(ahead.y - y, Math.abs(vx) || 0.001) * 180) / Math.PI;
-      const tilt = Math.max(-10, Math.min(10, climb * 0.25)) * (vx < 0 ? -1 : 1);
+      const e = 1 - (1 - t) ** 2.4;
+      const sideways = bow * Math.sin(Math.PI * e);
+      const x = wind.x + (target.x - wind.x) * e - uy * sideways * Math.sign(tilt);
+      const y = wind.y + (target.y - wind.y) * e + ux * sideways * Math.sign(tilt);
       frames.push({
-        offset: t,
-        transform: `translate(${x}px, ${y}px) translate(-50%, -50%) rotate(${tilt}deg) scale(${1 - 0.78 * e})`,
-        opacity: t < 0.85 ? 1 : 1 - (t - 0.85) / 0.15,
+        offset: o(FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS * t),
+        transform: at(x, y, tilt * (1 - e), 1.04 - 0.66 * e),
+        opacity: t < 0.55 ? 1 : Math.max(0, 1 - (t - 0.55) / 0.45),
+        filter: `blur(${(Math.max(0, t - 0.45) * 4).toFixed(2)}px)`,
       });
     }
+    const flight = row.animate(frames, { duration: total, easing: "linear", fill: "forwards" });
 
-    row.style.left = `${x0}px`;
-    row.style.top = `${y0}px`;
-    const pop = row.animate(
+    // the dim: in as it winds up, out once it's landed
+    const settle = total + FLIGHT_SETTLE_MS;
+    const so = (ms) => ms / settle;
+    dim.animate(
       [
-        { transform: "translate(-50%, -50%) rotate(-5deg) scale(0.6)", opacity: 0 },
-        { transform: "translate(-50%, -50%) rotate(3deg) scale(1.06)", opacity: 1, offset: 0.6 },
-        { transform: "translate(-50%, -50%) rotate(0deg) scale(1)", opacity: 1 },
+        { opacity: 0, easing: "ease-in-out" },
+        { opacity: 1, offset: so(FLIGHT_POP_MS + FLIGHT_WINDUP_MS) },
+        { opacity: 1, offset: so(total), easing: "ease-out" },
+        { opacity: 0 },
       ],
-      { duration: FLIGHT_POP_MS, easing: "cubic-bezier(0.2, 0.9, 0.3, 1)", fill: "forwards" }
+      { duration: settle, easing: "linear", fill: "forwards" }
     );
-    pop.finished
-      .then(() => row.animate(frames, { duration: FLIGHT_MS, delay: 140, easing: "linear", fill: "forwards" }).finished)
-      .then(() => {
-        row.remove();
-        target.button.animate(
-          [{ transform: "scale(1)" }, { transform: "scale(1.18)", offset: 0.4 }, { transform: "scale(1)" }],
-          { duration: 360, easing: "cubic-bezier(0.3, 1.4, 0.5, 1)" }
-        );
-      })
-      .catch(() => row.remove());
+
+    // the beam: from the row to the button, drawn out as it's thrown
+    const length = Math.hypot(target.x - wind.x, target.y - wind.y) + 120;
+    const angle = (Math.atan2(target.y - wind.y, target.x - wind.x) * 180) / Math.PI;
+    Object.assign(beam.style, { left: `${wind.x}px`, top: `${wind.y}px`, width: `${length}px` });
+    beam.style.transform = `translate(-60px, -50%) rotate(${angle}deg)`;
+    beam.style.transformOrigin = "60px 50%";
+    beam.animate(
+      [
+        { opacity: 0, scale: "0.15 0.6" },
+        { opacity: 0, scale: "0.15 0.6", offset: so(FLIGHT_POP_MS + FLIGHT_WINDUP_MS * 0.85), easing: "ease-out" },
+        { opacity: 0.85, scale: "0.25 0.8", offset: so(FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS * 0.15) },
+        { opacity: 1, scale: "1 1", offset: so(FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS * 0.6) },
+        { opacity: 0.5, scale: "1 0.8", offset: so(total) },
+        { opacity: 0, scale: "1 0.6" },
+      ],
+      { duration: settle, easing: "linear", fill: "forwards" }
+    );
+
+    // the bloom where it lands
+    Object.assign(bloom.style, { left: `${target.x}px`, top: `${target.y}px` });
+    bloom.animate(
+      [
+        { opacity: 0, scale: 0.4 },
+        { opacity: 0, scale: 0.4, offset: so(FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS * 0.5) },
+        { opacity: 1, scale: 1, offset: so(total) },
+        { opacity: 0, scale: 1.3 },
+      ],
+      { duration: settle, easing: "linear", fill: "forwards" }
+    );
+
+    setTimeout(() => {
+      target.button.animate(
+        [{ transform: "scale(1)" }, { transform: "scale(1.18)", offset: 0.4 }, { transform: "scale(1)" }],
+        { duration: 360, easing: "cubic-bezier(0.3, 1.4, 0.5, 1)" }
+      );
+    }, total - 40);
+    setTimeout(() => stage.remove(), settle + 40);
+    flight.finished.catch(() => stage.remove());
   }
 
   function flyDownloadRows() {
