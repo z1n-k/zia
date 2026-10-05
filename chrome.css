@@ -4882,6 +4882,18 @@ findbar {
     }
   }
 
+  /* (the close button the same grey as the arrows, which Firefox's icons
+     drew fainter than the text; brighter on hover) */
+  & :is(.findbar-find-previous, .findbar-find-next, .findbar-closebutton) {
+    color: rgba(255, 255, 255, 0.55) !important;
+    fill: currentColor !important;
+    fill-opacity: 1 !important;
+
+    &:hover:not([disabled]) {
+      color: rgba(255, 255, 255, 0.9) !important;
+    }
+  }
+
   & .findbar-find-previous {
     order: 3;
   }
@@ -4904,8 +4916,6 @@ findbar {
     padding: 7px !important;
     border-radius: 7px !important;
     position: relative;
-    fill: currentColor !important;
-    color: inherit !important;
 
     &::before {
       content: "";
