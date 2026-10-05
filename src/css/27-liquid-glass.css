@@ -30,16 +30,16 @@
     0.5px 0 0.5px rgba(0, 0, 0, 0.14),
     0 0 0.5px 0.25px rgba(0, 0, 0, 0.06);
   --zia-glass-edge: var(--zia-glass-edge-dark);
-  /* the same with softer dark sides, for the folders' boxes and the find
-     bar, where the full ones read too heavy */
-  --zia-glass-edge-soft-dark:
+  /* the same with a faint light line all the way round in place of the
+     dark sides, for the folders' boxes and the find bar, whose dark sides
+     went nowhere against a dark sidebar or page (light mode: just softer
+     dark sides) */
+  --zia-glass-edge-lit-dark:
     inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.29),
     inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.27),
     inset 0 3px 2px -2px rgba(255, 255, 255, 0.11),
     inset 0 -3px 2px -2px rgba(255, 255, 255, 0.085),
-    -0.5px 0 0.5px rgba(0, 0, 0, 0.3),
-    0.5px 0 0.5px rgba(0, 0, 0, 0.3),
-    0 0 0.5px 0.25px rgba(0, 0, 0, 0.15);
+    0 0 0 0.5px rgba(255, 255, 255, 0.16);
   --zia-glass-edge-soft-light:
     inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.85),
     inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.7),
@@ -48,7 +48,7 @@
     -0.5px 0 0.5px rgba(0, 0, 0, 0.08),
     0.5px 0 0.5px rgba(0, 0, 0, 0.08),
     0 0 0.5px 0.25px rgba(0, 0, 0, 0.04);
-  --zia-glass-edge-soft: var(--zia-glass-edge-soft-dark);
+  --zia-glass-edge-lit: var(--zia-glass-edge-lit-dark);
   --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.5);
 
   /* Pressed, light under the pointer, as on Tahoe's buttons: about a
@@ -64,7 +64,7 @@
 
 :root[zia-light] {
   --zia-glass-edge: var(--zia-glass-edge-light);
-  --zia-glass-edge-soft: var(--zia-glass-edge-soft-light);
+  --zia-glass-edge-lit: var(--zia-glass-edge-soft-light);
   --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.2);
   --zia-glass-press-light: rgba(255, 255, 255, 0.62);
   --zia-glass-press-wash: rgba(255, 255, 255, 0.12);
