@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.11] — 2026-10-05
+
+### Added
+
+- "Zen's own address bar, as it looks without Zia" (off by default):
+  the address bar and its pop-up as Zen draws them, with the rest of Zia
+  kept, the toolbar's colours and buttons among it (#302).
+
 ## [2.95.10] — 2026-10-05
 
 ### Fixed

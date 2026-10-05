@@ -16,9 +16,11 @@ zen-folder .tab-reset-button {
   fill-opacity: var(--zia-folder-mark-opacity) !important;
 }
 
-#urlbar #identity-icon-label,
-#urlbar .identity-icon-label {
-  display: none !important;
+@media not -moz-pref("zia.urlbar.zen-look") {
+  #urlbar #identity-icon-label,
+  #urlbar .identity-icon-label {
+    display: none !important;
+  }
 }
 
 /* A folder being named by the local model shimmers (zia.uc.js) */

@@ -174,15 +174,17 @@
   opacity: 0.7 !important;
 }
 
-#urlbar :is(#page-action-buttons, .urlbar-page-action) image,
-#urlbar .urlbar-icon {
-  width: 14px !important;
-  height: 14px !important;
-}
+@media not -moz-pref("zia.urlbar.zen-look") {
+  #urlbar :is(#page-action-buttons, .urlbar-page-action) image,
+  #urlbar .urlbar-icon {
+    width: 14px !important;
+    height: 14px !important;
+  }
 
-#urlbar #zen-site-data-icon-button image {
-  width: 17px !important;
-  height: 16px !important;
+  #urlbar #zen-site-data-icon-button image {
+    width: 17px !important;
+    height: 16px !important;
+  }
 }
 
 #urlbar-search-mode-indicator,

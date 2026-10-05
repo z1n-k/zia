@@ -295,9 +295,23 @@
   },
   {
     "type": "checkbox",
+    "label": "Zen's own address bar, as it looks without Zia",
+    "property": "zia.urlbar.zen-look",
+    "defaultValue": false
+  },
+  {
+    "type": "checkbox",
     "label": "Zia's address bar pop-up (off: Zen's)",
     "property": "zia.urlbar.dia-style",
-    "defaultValue": true
+    "defaultValue": true,
+    "conditions": [
+      {
+        "if": {
+          "property": "zia.urlbar.zen-look",
+          "value": false
+        }
+      }
+    ]
   },
   {
     "type": "checkbox",
@@ -338,13 +352,29 @@
     "type": "checkbox",
     "label": "Show only the page's title, in the domain's colour, until clicked",
     "property": "zia.urlbar.title-only",
-    "defaultValue": false
+    "defaultValue": false,
+    "conditions": [
+      {
+        "if": {
+          "property": "zia.urlbar.zen-look",
+          "value": false
+        }
+      }
+    ]
   },
   {
     "type": "checkbox",
     "label": "Centre the address bar's text",
     "property": "zia.urlbar.center-text",
-    "defaultValue": false
+    "defaultValue": false,
+    "conditions": [
+      {
+        "if": {
+          "property": "zia.urlbar.zen-look",
+          "value": false
+        }
+      }
+    ]
   },
   {
     "type": "dropdown",
