@@ -197,18 +197,25 @@
 }
 
 
-/* The sidebar's text size, an option (zia.uc.js): a touch or two smaller,
-   for a narrow sidebar, or a touch larger */
-:root[zia-text-size="small"] {
-  --zia-text-size: calc(1.22rem - 1.4px);
+/* The sidebar's text size, an option: a touch or two smaller, for a
+   narrow sidebar, or a touch larger (read straight off the option, so it
+   takes as soon as it's changed, with or without zia.uc.js) */
+@media -moz-pref("zia.sidebar.text-size", "small") {
+  :root {
+    --zia-text-size: calc(1.22rem - 1.4px);
+  }
 }
 
-:root[zia-text-size="smaller"] {
-  --zia-text-size: calc(1.22rem - 2.4px);
+@media -moz-pref("zia.sidebar.text-size", "smaller") {
+  :root {
+    --zia-text-size: calc(1.22rem - 2.4px);
+  }
 }
 
-:root[zia-text-size="large"] {
-  --zia-text-size: calc(1.22rem + 0.6px);
+@media -moz-pref("zia.sidebar.text-size", "large") {
+  :root {
+    --zia-text-size: calc(1.22rem + 0.6px);
+  }
 }
 :root:not([inDOMFullscreen="true"]):not([popup-window]) {
   & #zen-appcontent-wrapper {

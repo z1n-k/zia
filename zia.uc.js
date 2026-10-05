@@ -6500,23 +6500,6 @@
   }
 
 
-  // The sidebar's text a size smaller (or larger) than Zia's, for a narrow
-  // sidebar where long tab names were cut short (an option; 00-variables)
-  const TEXT_SIZE_PREF = "zia.sidebar.text-size";
-
-  function watchTextSize() {
-    const apply = () => {
-      const size = Services.prefs.getStringPref(TEXT_SIZE_PREF, "default");
-      if (["small", "smaller", "large"].includes(size)) {
-        root.setAttribute("zia-text-size", size);
-      } else {
-        root.removeAttribute("zia-text-size");
-      }
-    };
-    apply();
-    Services.prefs.addObserver(TEXT_SIZE_PREF, apply);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(TEXT_SIZE_PREF, apply), { once: true });
-  }
   function addDownloadProgress() {
     const button = document.getElementById("downloads-button");
     const commons = window.DownloadsCommon;
@@ -10370,7 +10353,7 @@
       !tab.selected &&
       !tab.hasAttribute("pending") &&
       !!tab.linkedPanel &&
-      tabCardKind(tab) === "web"
+      tabCardKind(tab) !== "new"
     );
   }
 
@@ -17845,7 +17828,6 @@
     safely("applyZenDefaults", applyZenDefaults);
     safely("setupIconPack", setupIconPack);
     safely("watchOptions", watchOptions);
-    safely("watchTextSize", watchTextSize);
     safely("watchUrlbarPosition", watchUrlbarPosition);
     safely("watchPipWindows", watchPipWindows);
     safely("watchMultiview", watchMultiview);
