@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.9] — 2026-10-05
+
+### Added
+
+- The welcome tour shows a download flying to the Library, in the tour
+  for newcomers and in this update's tour of what's new.
+
 ## [2.95.8] — 2026-10-05
 
 ### Fixed
