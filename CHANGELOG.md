@@ -6,6 +6,11 @@ Every release of Zia, newest first. The format follows
 
 ## [2.94.6] — 2026-10-05
 
+### Changed
+
+- The tab and folder hover cards' glass has faint light sides, as the
+  find bar's does, rather than dark ones.
+
 ### Fixed
 
 - A page glanced at from an essential no longer sometimes shows a thin

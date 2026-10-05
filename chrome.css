@@ -3244,8 +3244,8 @@ zen-folder:is(:not([zia-folder-color]), [zia-folder-color="white"]) > .tab-group
 }
 #zia-tab-card,
 #zia-folder-card {
-  /* (clipped to its own squircle; its shadows, the glass edge's dark
-     sides among them, fall outside the clip) */
+  /* (clipped to its own squircle; its shadows, the glass edge's sides
+     among them, fall outside the clip) */
   overflow: clip;
   position: fixed;
   z-index: 2147483647;
@@ -3255,7 +3255,9 @@ zen-folder:is(:not([zia-folder-color]), [zia-folder-color="white"]) > .tab-group
   background-color: var(--zia-tab-card-bg);
   border-radius: var(--zia-tab-card-radius);
   corner-shape: var(--zia-squircle) !important;
-  box-shadow: var(--zia-glass-edge);
+  /* (its sides a faint light line, as on the find bar, rather than dark
+     ones, which went nowhere against a dark sidebar or page) */
+  box-shadow: var(--zia-glass-edge-lit);
   color: rgb(255, 255, 255);
   pointer-events: auto;
   -moz-window-dragging: no-drag;
