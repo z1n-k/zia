@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.94.12] — 2026-10-05
+
+### Fixed
+
+- Pointing at the Library button dismisses AI renaming's card, rather
+  than hiding it under the downloads for it to come back after.
+
 ## [2.94.11] — 2026-10-05
 
 ### Fixed
