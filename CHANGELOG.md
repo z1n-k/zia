@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.18] — 2026-10-05
+
+### Fixed
+
+- The Library's rows end as a tab does: their buttons are a tab's close
+  button's size, as far in from the row's end as from its top and bottom
+  (they sat further in, and were larger).
+
 ## [2.95.17] — 2026-10-05
 
 ### Fixed

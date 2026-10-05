@@ -217,8 +217,10 @@
     & .zen-library-row {
       gap: var(--zia-lib-icon-gap, 8px) !important;
       min-height: var(--zia-tab-height);
-      /* the tab's own padding before its icon (measured, 28k-library.js) */
-      padding: 6px var(--zia-lib-row-pad, 10px) !important;
+      /* the tab's own padding before its icon (measured, 28k-library.js),
+         and after its buttons the tab's after its close button: as far in
+         from the end as from the top and bottom of a tab */
+      padding: 6px calc((var(--zia-tab-height) - var(--zia-close-size)) / 2) 6px var(--zia-lib-row-pad, 10px) !important;
       border-radius: var(--zia-tab-radius) !important;
       /* (the hover snaps on and off, as on a tab) */
       transition: none !important;
@@ -250,10 +252,12 @@
       opacity: 0.55 !important;
     }
 
+    /* the rows' buttons the size of a tab's close button */
     & .zen-library-row-actions .toolbarbutton-1 > .toolbarbutton-icon {
-      width: 16px !important;
-      height: 16px !important;
-      padding: 5px !important;
+      width: var(--zia-close-size) !important;
+      height: var(--zia-close-size) !important;
+      padding: calc((var(--zia-close-size) - 16px) / 2) !important;
+      box-sizing: border-box !important;
       border-radius: var(--zia-close-radius) !important;
     }
 
