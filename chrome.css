@@ -8334,29 +8334,30 @@ zen-folder .tab-reset-button {
     }
   }
 
-  /* Pressed, light under the pointer, as on Tahoe's buttons: about a sixth
-     white right under it, fading out across the button to a faint wash, so
+  /* Pressed, light under the pointer, as on Tahoe's buttons: about a
+     seventh white right under it, falling away fast from there (the 30%
+     midpoint) and then softly across the button to a faint wash, so
      it's clear where it's pressed even on a small tile; on in a couple of
      frames, following the pointer while held, fading a quarter of a second
      after it's let go (zia.uc.js marks the press, sets where it is and
      eases its strength) */
   :root {
-    --zia-glass-press-light: rgba(255, 255, 255, 0.18);
-    --zia-glass-press-wash: rgba(255, 255, 255, 0.04);
+    --zia-glass-press-light: rgba(255, 255, 255, 0.15);
+    --zia-glass-press-wash: rgba(255, 255, 255, 0.03);
   }
 
   :root[zia-light] {
-    --zia-glass-press-light: rgba(255, 255, 255, 0.75);
-    --zia-glass-press-wash: rgba(255, 255, 255, 0.15);
+    --zia-glass-press-light: rgba(255, 255, 255, 0.62);
+    --zia-glass-press-wash: rgba(255, 255, 255, 0.12);
   }
 
   /* (Clear's icon is its background picture, so it goes without) */
   :root:not(#zia-none) .tabbrowser-tab[zen-essential][zia-glass-press] > .tab-stack > .tab-background,
   :root:not(#zia-none) zen-library [zia-glass-press]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip, .zia-library-rail) {
-    background-image: radial-gradient(circle 48px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), var(--zia-press-wash, transparent)) !important;
+    background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent)) !important;
   }
 
   :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group]))[zia-glass-press]::before {
-    background-image: radial-gradient(circle 48px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), var(--zia-press-wash, transparent));
+    background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent));
   }
 }
