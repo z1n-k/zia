@@ -3283,9 +3283,8 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 /* ---- a folder's own icon, on the glass front ---- */
 
 /* centred on the front, so it tips with it as the folder opens; on the
-   box, on its front. White on every folder, with a close dark halo and a
-   soft shadow below so it holds up on the coloured tints (a white folder's
-   has none). An emoji keeps its own colours. */
+   box, on its front. White on every folder, with no shadow. An emoji
+   keeps its own colours. */
 .zia-fi-mark {
   display: none;
   position: absolute;
@@ -3298,7 +3297,6 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   -moz-context-properties: fill, fill-opacity, stroke, stroke-opacity;
   fill: rgb(255, 255, 255);
   stroke: rgb(255, 255, 255);
-  filter: drop-shadow(0 0 0.025em rgba(0, 0, 0, 0.4)) drop-shadow(0 0.03em 0.05em rgba(0, 0, 0, 0.35));
   pointer-events: none;
 }
 
@@ -3306,10 +3304,6 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   display: block;
 }
 
-/* on a white folder (the default) the white icon needs no shadow */
-zen-folder:is(:not([zia-folder-color]), [zia-folder-color="white"]) > .tab-group-label-container .zia-fi-mark {
-  filter: none;
-}
 #zia-tab-card,
 #zia-folder-card {
   /* (clipped to its own squircle; its shadows, the glass edge's sides
