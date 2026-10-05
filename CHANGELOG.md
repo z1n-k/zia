@@ -15,6 +15,8 @@ Every release of Zia, newest first. The format follows
 
 - A page glanced at from an essential no longer sometimes shows a thin
   line of colour down the left of its card.
+- The Library's Filter and Clear buttons are square; they were a touch
+  taller than wide.
 
 ## [2.94.5] — 2026-10-05
 

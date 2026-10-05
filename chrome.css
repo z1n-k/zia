@@ -7921,7 +7921,17 @@ zen-folder .tab-reset-button {
      placeholder was cut off: both are square icon buttons, named on hover */
   zen-library .zen-library-search-header :is(.zen-library-filter-button, .zia-library-clear) {
     flex: none !important;
+    /* (truly square: they came out a pixel or so taller than wide, the
+       row stretching them and their borders added on) */
+    box-sizing: border-box !important;
     width: 34px !important;
+    min-width: 34px !important;
+    max-width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    align-self: center !important;
+    margin-block: 0 !important;
     padding: 0 !important;
     justify-content: center !important;
 
