@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.7] — 2026-10-05
+
+### Fixed
+
+- The flying download's name keeps the tails of its letters (g, p, y):
+  they were cut off.
+
 ## [2.95.6] — 2026-10-05
 
 ### Fixed
