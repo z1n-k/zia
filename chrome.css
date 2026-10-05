@@ -1197,10 +1197,14 @@
 
 /* The sound badge: a small bead of Zia's glass, frosted, a shade lighter
    than the tile so it sits in front, over the corner of the site's icon.
-   Its edge is drawn inside it (so no dark ring floats outside a bead this
-   small), its fill reaching right to that edge, and a soft shadow lifts it. */
+   Its edge, for a bead this small: the glass's light lines inside, top and
+   bottom, and one thin dark ring flush all the way round it (the glass's
+   offset side lines left gaps on a circle), its fill reaching right to
+   the ring, and a soft shadow lifting it. */
 .tab-icon-overlay:not([crashed]):is([soundplaying], [muted], [activemedia-blocked]) {
   --zia-badge-glass: rgba(78, 78, 84, 0.8);
+  --zia-badge-rim: rgba(255, 255, 255, 0.29);
+  --zia-badge-ring: rgba(0, 0, 0, 0.55);
   list-style-image: var(--zia-sound-wave, url("chrome://sine/content/zia/icons/sound-wave.svg")) !important;
   -moz-context-properties: fill !important;
   fill: rgb(255, 255, 255) !important;
@@ -1211,11 +1215,17 @@
   border-radius: 999px !important;
   corner-shape: round !important;
   outline: none !important;
-  box-shadow: var(--zia-glass-edge-inside), 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+  box-shadow:
+    inset 0 1px 0.75px -0.5px var(--zia-badge-rim),
+    inset 0 -1px 0.75px -0.5px var(--zia-badge-rim),
+    0 0 0 0.5px var(--zia-badge-ring),
+    0 1px 3px rgba(0, 0, 0, 0.35) !important;
   transition: background-color 0.15s ease !important;
 
   :root[zia-light] & {
     --zia-badge-glass: rgba(255, 255, 255, 0.86);
+    --zia-badge-rim: rgba(255, 255, 255, 0.85);
+    --zia-badge-ring: rgba(0, 0, 0, 0.14);
     fill: rgb(28, 28, 32) !important;
 
     &[muted] {
