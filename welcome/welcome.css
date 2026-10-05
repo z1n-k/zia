@@ -441,35 +441,40 @@ kbd > span, .w-key > span { position: static; display: block; text-box: trim-bot
 @keyframes lq-cur { 0% { transform: translate(78cqw, 52cqw); opacity: 0; } 8% { opacity: 1; } 22% { transform: translate(44cqw, 20cqw); } 30% { transform: translate(44cqw, 20cqw) scale(.9); } 52% { transform: translate(55cqw, 23cqw) scale(.9); } 58%, 80% { transform: translate(55cqw, 23cqw); opacity: 1; } 92%, 100% { transform: translate(78cqw, 52cqw); opacity: 0; } }
 @keyframes lq-light { 0%, 28% { opacity: 0; transform: translate(6cqw, 5cqw); } 31% { opacity: 1; transform: translate(6cqw, 5cqw); } 52% { opacity: 1; transform: translate(17cqw, 8cqw); } 58% { opacity: .85; transform: translate(17cqw, 8cqw); } 66%, 100% { opacity: 0; transform: translate(17cqw, 8cqw); } }
 
-/* downloads that name themselves: a photo saved, the Library button glows
-   while the AI thinks, then the rename card rises with its new name (9s) */
-.rename .w-page { overflow: hidden; }
-.rename .photo { left: 50%; top: 14%; width: 40%; aspect-ratio: 1; translate: -50% 0; border-radius: 2.4cqw; background: rgba(255,255,255,.06); display: grid; place-items: center; }
-.rename .photo svg, .rename .rc .th svg { position: static; width: 56%; height: 56%; fill: none; stroke: rgba(255,255,255,.55); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
-.rename .save { left: 50%; top: 52%; padding: .9cqw 1.6cqw; border-radius: 1cqw; background: rgba(28,28,30,.92); color: rgba(255,255,255,.85); font: 500 1.7cqw/1 -apple-system, system-ui, sans-serif; box-shadow: 0 1cqw 3cqw rgba(0,0,0,.4); opacity: 0; animation: rn-save 9s var(--ease) infinite; }
-.rename .foot { left: 6cqw; width: 34cqw; bottom: 5cqw; height: 5cqw; display: flex; align-items: center; justify-content: space-between; padding: 0 1.4cqw; }
-.rename .foot > * { position: relative; }
-.rename .lib { width: 3.2cqw; height: 3.2cqw; border-radius: .9cqw; background: rgba(255,255,255,.35); animation: rn-lib 9s var(--ease) infinite; }
-.rename .dots { display: flex; gap: .9cqw; margin-right: 12cqw; }
-.rename .dots i { position: relative; width: 1cqw; height: 1cqw; border-radius: 50%; background: rgba(255,255,255,.55); }
-.rename .dots i + i { background: rgba(255,255,255,.22); }
-.rename .rc { left: 6.4cqw; width: 33.2cqw; bottom: 11.4cqw; padding: 1cqw; border-radius: 2.4cqw; corner-shape: superellipse(1.35); background: rgba(44,44,46,.92); display: grid; gap: .8cqw;
-  box-shadow: inset 0 1px .75px -.5px rgba(255,255,255,.29), inset 0 -1px .75px -.5px rgba(255,255,255,.27), -.5px 0 .5px rgba(0,0,0,.5), .5px 0 .5px rgba(0,0,0,.5), 0 1.6cqw 4cqw rgba(0,0,0,.35);
-  opacity: 0; transform: translateY(1.4cqw) scale(.98); animation: rn-card 9s var(--spring) infinite; }
-.rename .rc > * { position: relative; }
-.rename .rc .h { display: flex; align-items: center; gap: .8cqw; padding: 0 .4cqw; font: 500 1.45cqw/1.2 -apple-system, system-ui, sans-serif; color: rgba(255,255,255,.55); white-space: nowrap; overflow: hidden; }
-.rename .rc .h > * { position: relative; }
-.rename .rc .ck { width: 1.3cqw; height: .7cqw; border: solid rgba(255,255,255,.7); border-width: 0 0 .25cqw .25cqw; rotate: -45deg; translate: 0 -.2cqw; flex: none; }
-.rename .rc s { text-decoration-thickness: 1px; overflow: hidden; text-overflow: ellipsis; }
-.rename .rc .r { display: flex; align-items: center; gap: 1.2cqw; height: 5.4cqw; padding: 0 1.2cqw; border-radius: 1.4cqw; background: rgba(255,255,255,.08); }
-.rename .rc .r > * { position: relative; }
-.rename .rc .th { width: 3cqw; height: 3cqw; border-radius: .7cqw; flex: none; background: rgba(255,255,255,.1); display: grid; place-items: center; }
-.rename .rc .th svg { width: 72%; height: 72%; stroke: rgba(255,255,255,.8); stroke-width: 1.8; }
-.rename .rc b { font: 600 1.8cqw/1.35 -apple-system, system-ui, sans-serif; color: rgba(255,255,255,.95); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-@keyframes rn-save { 0%, 6% { opacity: 0; translate: 0 .6cqw; } 10%, 18% { opacity: 1; translate: 0 0; } 22%, 100% { opacity: 0; } }
-@keyframes rn-lib { 0%, 20% { box-shadow: none; background: rgba(255,255,255,.35); } 24%, 44% { box-shadow: 0 0 0 .25cqw #5ab9f5, 0 0 2cqw rgba(90,185,245,.45); background: rgba(255,255,255,.75); } 50%, 100% { box-shadow: none; background: rgba(255,255,255,.35); } }
-@keyframes rn-card { 0%, 46% { opacity: 0; transform: translateY(1.4cqw) scale(.98); } 52%, 88% { opacity: 1; transform: none; } 96%, 100% { opacity: 0; transform: translateY(.6cqw) scale(.99); } }
-@media (prefers-reduced-motion: reduce) { .liquid *, .rename * { animation: none !important; } .rename .rc { opacity: 1; transform: none; } }
+/* downloads that name themselves, all in the middle (9s): a photo file
+   drops in with a meaningless name; the page's address flows into it and
+   a light reads the picture while the AI's spark glows; the old name
+   blurs away and the new one writes itself in; Undo waits beside it */
+.rename .light { left: 50%; top: -30cqw; width: 90cqw; height: 70cqw; translate: -50% 0; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255,255,255,.1), rgba(255,255,255,.04) 50%, transparent); filter: blur(3cqw); }
+.rename .file { left: 50%; top: 13cqw; width: 19cqw; height: 19cqw; margin-left: -9.5cqw; border-radius: 4.6cqw; corner-shape: superellipse(1.35); overflow: hidden; display: grid; place-items: center;
+  background: rgba(255,255,255,.08);
+  box-shadow: inset 0 1px .75px -.5px rgba(255,255,255,.29), inset 0 -1px .75px -.5px rgba(255,255,255,.27), inset 0 .5cqw .4cqw -.35cqw rgba(255,255,255,.11), -.5px 0 .5px rgba(0,0,0,.5), .5px 0 .5px rgba(0,0,0,.5), 0 2cqw 5cqw rgba(0,0,0,.35);
+  animation: rn-file 9s var(--spring) infinite; }
+.rename .pic { position: static; width: 52%; height: 52%; fill: none; stroke: rgba(255,255,255,.62); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.rename .scan { left: -40%; top: 0; bottom: 0; width: 40%; background: linear-gradient(90deg, transparent, rgba(90,185,245,.32), rgba(255,255,255,.28), transparent); mix-blend-mode: screen; opacity: 0; animation: rn-scan 9s var(--ease) infinite; }
+.rename .spark { left: 50%; top: 10.6cqw; margin-left: 8.2cqw; width: 4.6cqw; height: 4.6cqw; fill: #5ab9f5; filter: drop-shadow(0 0 1.2cqw rgba(90,185,245,.7)); opacity: 0; animation: rn-spark 9s var(--ease) infinite; }
+.rename .ctx { left: 50%; top: 24cqw; padding: .9cqw 1.6cqw; border-radius: 1.6cqw; white-space: nowrap; font: 500 1.6cqw/1.3 -apple-system, system-ui, sans-serif; color: rgba(255,255,255,.5);
+  background: rgba(255,255,255,.06); box-shadow: inset 0 1px .75px -.5px rgba(255,255,255,.22); opacity: 0; animation: rn-ctx 9s var(--ease) infinite; }
+.rename .ctx b { position: static; font-weight: 600; color: rgba(255,255,255,.85); }
+.rename .name { left: 50%; top: 37cqw; width: 54cqw; height: 6.6cqw; margin-left: -27cqw; border-radius: 2.4cqw; corner-shape: superellipse(1.35);
+  background: rgba(255,255,255,.07); box-shadow: inset 0 1px .75px -.5px rgba(255,255,255,.24), inset 0 -1px .75px -.5px rgba(255,255,255,.2), -.5px 0 .5px rgba(0,0,0,.5), .5px 0 .5px rgba(0,0,0,.5);
+  animation: rn-file 9s var(--spring) infinite; }
+.rename .name span { inset: 0; display: grid; place-items: center; white-space: nowrap; }
+.rename .old { font: 500 1.9cqw/1.3 ui-monospace, "SF Mono", Menlo, monospace; color: rgba(255,255,255,.5); animation: rn-old 9s var(--ease) infinite; }
+.rename .new { font: 600 2.5cqw/1.3 -apple-system, system-ui, sans-serif; color: #fff; clip-path: inset(0 100% 0 0); animation: rn-new 9s steps(21, end) infinite; }
+.rename .undo { left: 50%; top: 46.6cqw; translate: -50% 0; display: flex; align-items: center; gap: .8cqw; padding: .9cqw 1.8cqw .9cqw 1.4cqw; border-radius: 99cqw;
+  font: 500 1.7cqw/1.2 -apple-system, system-ui, sans-serif; color: rgba(255,255,255,.75); background: rgba(255,255,255,.08);
+  box-shadow: inset 0 1px .75px -.5px rgba(255,255,255,.24), -.5px 0 .5px rgba(0,0,0,.5), .5px 0 .5px rgba(0,0,0,.5); opacity: 0; animation: rn-undo 9s var(--spring) infinite; }
+.rename .undo svg { position: static; width: 2cqw; height: 2cqw; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes rn-file { 0% { opacity: 0; transform: translateY(1.6cqw) scale(.94); } 7%, 92% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-.6cqw) scale(.98); } }
+@keyframes rn-ctx { 0%, 9% { opacity: 0; transform: translate(-50%, 7cqw); } 14%, 22% { opacity: 1; transform: translate(-50%, 7cqw); } 32%, 100% { opacity: 0; transform: translate(-50%, -6cqw) scale(.6); } }
+@keyframes rn-scan { 0%, 24% { left: -40%; opacity: 0; } 26% { opacity: 1; } 36% { left: 100%; opacity: 1; } 37% { left: -40%; opacity: 1; } 47% { left: 100%; opacity: 1; } 48%, 100% { left: 100%; opacity: 0; } }
+@keyframes rn-spark { 0%, 22% { opacity: 0; transform: scale(.5) rotate(-20deg); } 27% { opacity: 1; transform: scale(1.1) rotate(0); } 32% { transform: scale(.9); } 37% { transform: scale(1.1); } 42% { transform: scale(.9); } 48% { opacity: 1; transform: scale(1); } 56%, 100% { opacity: 0; transform: scale(.6) rotate(20deg); } }
+@keyframes rn-old { 0%, 46% { opacity: 1; filter: none; transform: none; } 53%, 100% { opacity: 0; filter: blur(.8cqw); transform: scale(.96); } }
+@keyframes rn-new { 0%, 52% { clip-path: inset(0 100% 0 0); } 64%, 100% { clip-path: inset(0 0 0 0); } }
+@keyframes rn-undo { 0%, 64% { opacity: 0; transform: translateY(.8cqw) scale(.95); } 70%, 88% { opacity: 1; transform: none; } 94%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .liquid *, .rename * { animation: none !important; } .rename .old, .rename .ctx, .rename .spark { opacity: 0; } .rename .new { clip-path: none; } .rename .undo { opacity: 1; } }
 
 .slide:not(.cur) .stage, .slide:not(.cur) .stage * { animation-play-state: paused !important; }
 

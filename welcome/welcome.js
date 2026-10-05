@@ -49,10 +49,13 @@
     liquid: () => `<div class="stage liquid"><div class="sky"></div><div class="tiles">${["#ea4335", "#53fc18", "#9146ff", "#25d366", "#ececef", "#5865f2"].map((c, i) => `<i style="--c:${c}">${i === 1 ? "<b></b>" : ""}</i>`).join("")}</div><svg class="cursor" viewBox="0 0 24 24"><path d="M5.2 3.6c-.7-.3-1.4.4-1.1 1.1l6.9 15.6c.3.8 1.5.7 1.7-.1l1.8-5.6c.1-.3.3-.5.6-.6l5.6-1.8c.8-.2.9-1.4.1-1.7z"/></svg></div>`,
     // 2.94: a photo saved, the Library button glowing while the AI thinks,
     // then the rename card with its new name
-    rename: () => `<div class="stage rename"><div class="w-side">${rows(3).replace(/<span class="w-key">\d<\/span>/g, "")}</div>
-      <div class="w-page"><div class="photo"><svg viewBox="0 0 24 24"><path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12"/><path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5"/><path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3"/></svg></div><div class="save">Save image</div></div>
-      <div class="foot"><span class="lib"></span><span class="dots"><i></i><i></i></span></div>
-      <div class="rc"><div class="h"><span class="ck"></span>Renamed from <s>pexels-optical-chemist-3408744</s></div><div class="r"><span class="th"><svg viewBox="0 0 24 24"><path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12"/><path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5"/><path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3"/></svg></span><b>black-dog-on-road.jpg</b></div></div></div>`,
+    // 2.94: a photo saved with a meaningless name: the page's address flows
+    // into it, a light reads the picture, and its new name writes itself in
+    rename: () => `<div class="stage rename"><div class="light"></div>
+      <div class="ctx">pexels.com/photo/<b>black-dog-on-road</b></div>
+      <div class="file"><svg class="pic" viewBox="0 0 24 24"><path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12"/><path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5"/><path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3"/></svg><i class="scan"></i></div><svg class="spark" viewBox="0 0 24 24"><path d="M12 2.5c.6 4.6 2.9 6.9 7.5 7.5c-4.6.6 -6.9 2.9 -7.5 7.5c-.6 -4.6 -2.9 -6.9 -7.5 -7.5c4.6 -.6 6.9 -2.9 7.5 -7.5z"/><path d="M19 15.5c.25 1.9 1.2 2.85 3.1 3.1c-1.9.25 -2.85 1.2 -3.1 3.1c-.25 -1.9 -1.2 -2.85 -3.1 -3.1c1.9 -.25 2.85 -1.2 3.1 -3.1z"/></svg>
+      <div class="name"><span class="old">pexels-optical-chemist-3408744.jpg</span><span class="new">black-dog-on-road.jpg</span></div>
+      <div class="undo"><svg viewBox="0 0 24 24"><path d="M9 14l-4 -4l4 -4"/><path d="M5 10h11a4 4 0 1 1 0 8h-1"/></svg>Undo</div></div>`,
     ink: () => `<div class="stage ink"><div class="bar"><svg viewBox="0 0 24 24"><path d="M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"/><path d="M9 4v16"/></svg><svg viewBox="0 0 24 24"><path d="M15 6l-6 6l6 6"/></svg><svg viewBox="0 0 24 24" class="off"><path d="M9 6l6 6l-6 6"/></svg><svg viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg>
       <span class="url"><b>journal.page</b> / Morning pages</span></div>
       <div class="body"><i class="h"></i><i class="l"></i><i class="l"></i><i class="l s"></i></div></div>`,
