@@ -16,7 +16,9 @@ Every release of Zia, newest first. The format follows
   the tab and folder cards, the split cards, the address pop-up, the
   sidebar as it flies out in compact mode, and the Library's buttons.
   Pressing an essential, a tab, a folder or a Library button lights it
-  softly under the pointer, as Tahoe's buttons do. Essentials
+  up under the pointer as Tahoe's buttons do: the light snaps on, follows
+  the pointer while it's held, and fades once let go, and the button
+  swells a touch while held. Essentials
   also bend the space's colours at their rim, with
   [liquidglass](https://github.com/gentpan/liquidglass) by gentpan (MIT),
   an SVG lens that Firefox draws, unlike most web liquid glass.

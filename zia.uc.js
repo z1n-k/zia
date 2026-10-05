@@ -17065,6 +17065,21 @@
       ["zen-library :is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip)", (hit) => hit, (owner) => owner],
     ];
     let pressed = null;
+    let pressedBox = null;
+    let pressedAt = 0;
+    const placeLight = (event) => {
+      const box = pressedBox?.getBoundingClientRect();
+      if (box) {
+        pressed.style.setProperty("--zia-press-x", `${event.clientX - box.left}px`);
+        pressed.style.setProperty("--zia-press-y", `${event.clientY - box.top}px`);
+      }
+    };
+    // (held, the light follows the pointer, even off the button)
+    const follow = (event) => {
+      if (pressed) {
+        placeLight(event);
+      }
+    };
     const press = (event) => {
       if (event.button !== 0) {
         return;
@@ -17078,34 +17093,44 @@
           continue;
         }
         const owner = match[1](node);
-        const box = match[2](owner)?.getBoundingClientRect();
-        if (!box) {
+        const lit = match[2](owner);
+        if (!lit) {
           return;
         }
-        owner.style.setProperty("--zia-press-x", `${event.clientX - box.left}px`);
-        owner.style.setProperty("--zia-press-y", `${event.clientY - box.top}px`);
-        owner.setAttribute("zia-glass-press", "in");
         pressed = owner;
+        pressedBox = lit;
+        placeLight(event);
+        owner.setAttribute("zia-glass-press", "in");
+        pressedAt = performance.now();
         return;
       }
     };
     const letGo = () => {
       const owner = pressed;
       pressed = null;
+      pressedBox = null;
       if (!owner) {
         return;
       }
-      owner.setAttribute("zia-glass-press", "out");
+      // (a quick click still lights up for a moment before it fades)
+      const lit = Math.max(0, 120 - (performance.now() - pressedAt));
       setTimeout(() => {
-        if (owner.getAttribute("zia-glass-press") === "out") {
-          owner.removeAttribute("zia-glass-press");
-          owner.style.removeProperty("--zia-press-x");
-          owner.style.removeProperty("--zia-press-y");
+        if (owner.getAttribute("zia-glass-press") !== "in" || pressed === owner) {
+          return;
         }
-      }, 500);
+        owner.setAttribute("zia-glass-press", "out");
+        setTimeout(() => {
+          if (owner.getAttribute("zia-glass-press") === "out") {
+            owner.removeAttribute("zia-glass-press");
+            owner.style.removeProperty("--zia-press-x");
+            owner.style.removeProperty("--zia-press-y");
+          }
+        }, 400);
+      }, lit);
     };
     const PRESS_EVENTS = [
       ["pointerdown", press],
+      ["pointermove", follow],
       ["pointerup", letGo],
       ["pointercancel", letGo],
       ["dragstart", letGo],
