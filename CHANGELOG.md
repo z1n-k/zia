@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.13] — 2026-10-05
+
+### Fixed
+
+- The download's trailing glow and the bloom where it lands are back as
+  they were (2.95.12 flattened them); the row itself stays free of the
+  blur that made the flight stutter.
+
 ## [2.95.12] — 2026-10-05
 
 ### Fixed

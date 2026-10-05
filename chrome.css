@@ -5641,7 +5641,9 @@ tooltip[default="true"] {
     width: 200px;
     height: 70px;
     border-radius: 50%;
-    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02) 55%, transparent);
+    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.07), transparent);
+    filter: blur(12px);
+    mix-blend-mode: screen;
     opacity: 0;
     will-change: transform, opacity;
   }
@@ -5653,6 +5655,7 @@ tooltip[default="true"] {
     margin: -80px 0 0 -80px;
     border-radius: 50%;
     background: radial-gradient(closest-side, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 50%, transparent);
+    mix-blend-mode: screen;
     opacity: 0;
     will-change: transform, opacity;
   }
