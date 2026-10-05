@@ -60,12 +60,18 @@
   }
 
   & #nav-bar {
-    padding-inline: var(--zia-toolbar-end-gap) !important;
     --zen-toolbar-height: var(--zia-toolbar-height) !important;
     --urlbar-height: var(--zia-urlbar-height) !important;
   }
 
-  & #urlbar-container {
+  /* (the toolbar's own spacing, for the toolbar above the page: with Zen's
+     single toolbar the row sits in the sidebar, and it pushed the address
+     bar in from the sidebar's edges, past the essentials under it) */
+  &:not([zen-single-toolbar="true"]) #nav-bar {
+    padding-inline: var(--zia-toolbar-end-gap) !important;
+  }
+
+  &:not([zen-single-toolbar="true"]) #urlbar-container {
     margin-inline-start: 8px !important;
   }
 }

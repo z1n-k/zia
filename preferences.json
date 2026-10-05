@@ -295,9 +295,9 @@
   },
   {
     "type": "checkbox",
-    "label": "Zen's own address bar, as it looks without Zia",
-    "property": "zia.urlbar.zen-look",
-    "defaultValue": false
+    "label": "Zia's address bar (off: Zen's own, as it looks without Zia)",
+    "property": "zia.urlbar.zia-look",
+    "defaultValue": true
   },
   {
     "type": "checkbox",
@@ -307,8 +307,8 @@
     "conditions": [
       {
         "if": {
-          "property": "zia.urlbar.zen-look",
-          "value": false
+          "property": "zia.urlbar.zia-look",
+          "value": true
         }
       }
     ]
@@ -356,8 +356,8 @@
     "conditions": [
       {
         "if": {
-          "property": "zia.urlbar.zen-look",
-          "value": false
+          "property": "zia.urlbar.zia-look",
+          "value": true
         }
       }
     ]
@@ -370,8 +370,8 @@
     "conditions": [
       {
         "if": {
-          "property": "zia.urlbar.zen-look",
-          "value": false
+          "property": "zia.urlbar.zia-look",
+          "value": true
         }
       }
     ]

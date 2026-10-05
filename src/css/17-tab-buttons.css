@@ -16,7 +16,7 @@ zen-folder .tab-reset-button {
   fill-opacity: var(--zia-folder-mark-opacity) !important;
 }
 
-@media not -moz-pref("zia.urlbar.zen-look") {
+@media -moz-pref("zia.urlbar.zia-look") {
   #urlbar #identity-icon-label,
   #urlbar .identity-icon-label {
     display: none !important;

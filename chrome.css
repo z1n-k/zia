@@ -272,12 +272,18 @@
   }
 
   & #nav-bar {
-    padding-inline: var(--zia-toolbar-end-gap) !important;
     --zen-toolbar-height: var(--zia-toolbar-height) !important;
     --urlbar-height: var(--zia-urlbar-height) !important;
   }
 
-  & #urlbar-container {
+  /* (the toolbar's own spacing, for the toolbar above the page: with Zen's
+     single toolbar the row sits in the sidebar, and it pushed the address
+     bar in from the sidebar's edges, past the essentials under it) */
+  &:not([zen-single-toolbar="true"]) #nav-bar {
+    padding-inline: var(--zia-toolbar-end-gap) !important;
+  }
+
+  &:not([zen-single-toolbar="true"]) #urlbar-container {
     margin-inline-start: 8px !important;
   }
 }
@@ -447,10 +453,10 @@
   }
 }
 /* Zia's address bar, all of it (the bar, its loading line, the page's
-   title in it, the copy-link and site buttons, the pop-up): off with
-   "Zen's own address bar", zia.urlbar.zen-look, which leaves the bar as
-   Zen draws it and keeps the rest of Zia */
-@media not -moz-pref("zia.urlbar.zen-look") {
+   title in it, the copy-link and site buttons, the pop-up), with "Zia's
+   address bar" on, zia.urlbar.zia-look; off leaves the bar as Zen draws
+   it and keeps the rest of Zia */
+@media -moz-pref("zia.urlbar.zia-look") {
   #urlbar:not(:hover):not([focused]):not([breakout-extend]) > .urlbar-background {
     background: transparent !important;
     box-shadow: none !important;
@@ -1060,7 +1066,7 @@
   stroke-opacity: 1 !important;
 }
 
-@media not -moz-pref("zia.urlbar.zen-look") {
+@media -moz-pref("zia.urlbar.zia-look") {
   :root #urlbar[breakout-extend]:not([zia-classic]) {
     color-scheme: dark !important;
     color: rgb(251, 251, 254) !important;
@@ -1103,7 +1109,7 @@
 }
 
 /* Zen's own address bar: Zia's parts of it put away, Zen's back */
-@media -moz-pref("zia.urlbar.zen-look") {
+@media not -moz-pref("zia.urlbar.zia-look") {
   #urlbar :is(#zia-url-title, #zia-url-plain, #zia-copy-link-button) {
     display: none !important;
   }
@@ -2443,7 +2449,7 @@ zen-split-fake-tab {
   font-size: var(--zia-text-size) !important;
 }
 
-@media not -moz-pref("zia.urlbar.zen-look") {
+@media -moz-pref("zia.urlbar.zia-look") {
   #urlbar:not([breakout-extend]) :is(.urlbar-input, #zia-url-title, #zia-url-plain) {
     font-size: var(--zia-text-size) !important;
   }
@@ -3860,15 +3866,19 @@ zen-folder:is(:not([zia-folder-color]), [zia-folder-color="white"]) > .tab-group
     }
   }
 }
-#urlbar:not([breakout-extend]) .urlbar-input {
-  color: rgb(255, 255, 255) !important;
-}
-:root[zia-site-dark="true"] #urlbar:not([breakout-extend]) .urlbar-input {
-  color: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
-}
+/* the address in the toolbar's ink (with Zia's address bar; Zen's keeps
+   its own, softer) */
+@media -moz-pref("zia.urlbar.zia-look") {
+  #urlbar:not([breakout-extend]) .urlbar-input {
+    color: rgb(255, 255, 255) !important;
+  }
+  :root[zia-site-dark="true"] #urlbar:not([breakout-extend]) .urlbar-input {
+    color: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
+  }
 
-:root[zia-site-light="true"] #urlbar:not([breakout-extend]) .urlbar-input {
-  color: var(--zia-light-ink) !important;
+  :root[zia-site-light="true"] #urlbar:not([breakout-extend]) .urlbar-input {
+    color: var(--zia-light-ink) !important;
+  }
 }
 
 :is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container > label,
@@ -5552,7 +5562,7 @@ findbar {
   opacity: 0.7 !important;
 }
 
-@media not -moz-pref("zia.urlbar.zen-look") {
+@media -moz-pref("zia.urlbar.zia-look") {
   #urlbar :is(#page-action-buttons, .urlbar-page-action) image,
   #urlbar .urlbar-icon {
     width: 14px !important;
@@ -6069,7 +6079,7 @@ zen-folder .tab-reset-button {
   fill-opacity: var(--zia-folder-mark-opacity) !important;
 }
 
-@media not -moz-pref("zia.urlbar.zen-look") {
+@media -moz-pref("zia.urlbar.zia-look") {
   #urlbar #identity-icon-label,
   #urlbar .identity-icon-label {
     display: none !important;
