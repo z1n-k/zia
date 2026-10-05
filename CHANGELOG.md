@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.16] — 2026-10-05
+
+### Fixed
+
+- A folder's hover card sits level with the folder again: its first tab
+  lines up with the folder's row, centre to centre, so a folder of one tab
+  has its card centred on it, as a tab's is.
+
 ## [2.95.15] — 2026-10-05
 
 ### Changed

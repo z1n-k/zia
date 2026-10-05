@@ -6,7 +6,6 @@
   // corners on both, 6px brings the card's corner to the tile's)
   const ESSENTIAL_CARD_OVERLAP_X = 6;
   const ESSENTIAL_CARD_OVERLAP_Y = 2;
-  const FOLDER_CARD_LIFT = 2;
   const DEFAULT_TAB_ICON = "chrome://sine/content/zia/icons/tab-default.svg";
 
   const TAB_CARD_ACTIONS = [
