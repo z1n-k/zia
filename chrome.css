@@ -7529,7 +7529,7 @@ zen-folder .tab-reset-button {
     /* the traffic lights as far down from the top as in the sidebar (Zen's
        12px, and the 3px more Zia gives them there, 06-folders-and-sidebar,
        which they lose on moving in), and the search and its buttons beside
-       them down as much */
+       them level with them, the same 20px from the top */
     @media (-moz-platform: macos) {
       & #zen-library-header {
         padding-top: 17px !important;
@@ -7537,7 +7537,7 @@ zen-folder .tab-reset-button {
     }
 
     & .zen-library-search-top {
-      padding: 15px 10px 6px !important;
+      padding: 20px 10px 6px !important;
     }
 
     & .zen-library-search-box {
