@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.94.3] — 2026-10-05
+
+### Changed
+
+- The glass tile inside a selected essential has a slightly thicker
+  edge, so it no longer gets lost against the essential's colour.
+
 ## [2.94.2] — 2026-10-05
 
 ### Changed
