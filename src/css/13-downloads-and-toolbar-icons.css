@@ -193,9 +193,45 @@
 
 #tabbrowser-tab-tooltip,
 #tab-preview-panel,
-#statuspanel,
 tooltip,
 tooltip[default="true"] {
   display: none !important;
+}
+
+/* The status bar, where a link goes as you hover it: hidden, unless "Show
+   where links go" is on (an option), then a small pill of Zia's glass at
+   the foot of the page */
+@media not -moz-pref("zia.status-bar") {
+  #statuspanel {
+    display: none !important;
+  }
+}
+
+@media -moz-pref("zia.status-bar") {
+  #statuspanel {
+    padding: 0 8px 8px !important;
+  }
+
+  #statuspanel-label {
+    margin: 0 !important;
+    padding: 4px 10px !important;
+    border: none !important;
+    border-radius: 9px !important;
+    background: rgba(38, 38, 38, 0.86) !important;
+    backdrop-filter: blur(18px) saturate(1.4);
+    box-shadow: var(--zia-glass-edge-dark), 0 6px 18px rgba(0, 0, 0, 0.3) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 12px !important;
+  }
+
+  :root:not(#zia-none) #statuspanel-label {
+    corner-shape: var(--zia-squircle) !important;
+  }
+
+  :root[zia-light] #statuspanel-label {
+    background: rgba(248, 248, 250, 0.9) !important;
+    box-shadow: var(--zia-glass-edge-light), 0 6px 18px rgba(0, 0, 0, 0.14) !important;
+    color: rgba(28, 28, 32, 0.9) !important;
+  }
 }
 

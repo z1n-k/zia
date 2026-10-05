@@ -403,6 +403,12 @@
   },
   {
     "type": "checkbox",
+    "label": "Show where links go, at the foot of the page, as you hover them",
+    "property": "zia.status-bar",
+    "defaultValue": false
+  },
+  {
+    "type": "checkbox",
     "label": "Hide the window buttons, for keyboard users",
     "property": "zia.window-buttons.hide",
     "defaultValue": false,

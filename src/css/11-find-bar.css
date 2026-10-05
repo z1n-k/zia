@@ -24,7 +24,8 @@ findbar {
   backdrop-filter: blur(18px) saturate(1.4);
   border: none !important;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+  /* (Zia's glass edge, and a soft lift off the page) */
+  box-shadow: var(--zia-glass-edge-dark), 0 10px 30px rgba(0, 0, 0, 0.35);
   color: rgba(255, 255, 255, 0.92) !important;
   color-scheme: dark;
   transition: none !important;
@@ -160,11 +161,17 @@ findbar {
   }
 }
 
+/* (Zia's squircle, as on the rest of its glass: with an id, to beat the
+   rule that rounds every other corner, 00-variables) */
+:root:not(#zia-none) findbar {
+  corner-shape: var(--zia-squircle) !important;
+}
+
 /* Light mode (a light space, or no space colour in light mode): a pale
    frosted bar with dark ink, as the sidebar and the page are */
 :root[zia-light] findbar {
   background: rgba(248, 248, 250, 0.82) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16), inset 0 0 0 0.5px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--zia-glass-edge-light), 0 10px 30px rgba(0, 0, 0, 0.16);
   color: rgba(28, 28, 32, 0.92) !important;
   color-scheme: light;
 

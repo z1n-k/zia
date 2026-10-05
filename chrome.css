@@ -1195,31 +1195,17 @@
   display: none !important;
 }
 
-/* The sound badge: Zia's dark bead, with the glass, as the music player
-   has it, over the corner of the site's icon.
-   Its edge, for a bead this small: the glass's light lines inside, top and
-   bottom, and one thin dark ring flush all the way round it (the glass's
-   offset side lines left gaps on a circle), its fill reaching right to
-   the ring, and a soft shadow lifting it. */
 .tab-icon-overlay:not([crashed]):is([soundplaying], [muted], [activemedia-blocked]) {
-  --zia-badge-glass: rgba(48, 48, 48, 0.92);
-  --zia-badge-rim: rgba(255, 255, 255, 0.29);
-  --zia-badge-ring: rgba(0, 0, 0, 0.55);
   list-style-image: var(--zia-sound-wave, url("chrome://sine/content/zia/icons/sound-wave.svg")) !important;
   -moz-context-properties: fill !important;
   fill: rgb(255, 255, 255) !important;
-  background-color: var(--zia-badge-glass) !important;
+  background-color: rgba(22, 22, 22, 0.86) !important;
   background-image: none !important;
-  background-clip: border-box !important;
-  backdrop-filter: blur(6px) saturate(1.6) !important;
   border-radius: 999px !important;
   corner-shape: round !important;
-  outline: none !important;
-  box-shadow:
-    inset 0 1px 0.75px -0.5px var(--zia-badge-rim),
-    inset 0 -1px 0.75px -0.5px var(--zia-badge-rim),
-    0 0 0 0.5px var(--zia-badge-ring),
-    0 1px 3px rgba(0, 0, 0, 0.35) !important;
+  outline: 0.5px solid rgba(255, 255, 255, 0.18) !important;
+  outline-offset: -0.5px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35) !important;
   transition: background-color 0.15s ease !important;
 
   &[muted] {
@@ -1240,9 +1226,8 @@
     }
   }
 
-  /* (hovered, a shade lighter) */
   &:hover {
-    --zia-badge-glass: rgba(64, 64, 66, 0.94);
+    background-color: rgba(48, 48, 48, 0.92) !important;
   }
 }
 
@@ -2125,23 +2110,23 @@ zen-split-fake-tab {
   &::before {
     content: "";
     position: absolute;
-    inset: var(--zia-folder-box-top) var(--zia-folder-box-right) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) var(--zia-folder-box-left);
+    inset: var(--zia-folder-box-top) calc(var(--zia-folder-box-right) + 1px) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) calc(var(--zia-folder-box-left) + 1px);
     z-index: -1;
     border-radius: var(--zia-folder-box-radius);
     pointer-events: none;
     background-color: transparent;
   }
 
-  /* the box's glass edge, shown with it (its dark sides drawn just
-     inside, as a folder runs to the edge of the tab list, which cut them
-     off dead straight outside) */
+  /* the box's glass edge, shown with it, as on the rest of the glass:
+     the box (this and its fill) a pixel in from each side, so its dark
+     side lines have room before the tab list's edge, which cut them off */
   &::after {
     content: "";
     position: absolute;
-    inset: var(--zia-folder-box-top) var(--zia-folder-box-right) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) var(--zia-folder-box-left);
+    inset: var(--zia-folder-box-top) calc(var(--zia-folder-box-right) + 1px) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) calc(var(--zia-folder-box-left) + 1px);
     border-radius: var(--zia-folder-box-radius);
     pointer-events: none;
-    box-shadow: var(--zia-glass-edge-inside);
+    box-shadow: var(--zia-glass-edge);
     opacity: 0;
   }
 
@@ -4801,7 +4786,8 @@ findbar {
   backdrop-filter: blur(18px) saturate(1.4);
   border: none !important;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+  /* (Zia's glass edge, and a soft lift off the page) */
+  box-shadow: var(--zia-glass-edge-dark), 0 10px 30px rgba(0, 0, 0, 0.35);
   color: rgba(255, 255, 255, 0.92) !important;
   color-scheme: dark;
   transition: none !important;
@@ -4937,11 +4923,17 @@ findbar {
   }
 }
 
+/* (Zia's squircle, as on the rest of its glass: with an id, to beat the
+   rule that rounds every other corner, 00-variables) */
+:root:not(#zia-none) findbar {
+  corner-shape: var(--zia-squircle) !important;
+}
+
 /* Light mode (a light space, or no space colour in light mode): a pale
    frosted bar with dark ink, as the sidebar and the page are */
 :root[zia-light] findbar {
   background: rgba(248, 248, 250, 0.82) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16), inset 0 0 0 0.5px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--zia-glass-edge-light), 0 10px 30px rgba(0, 0, 0, 0.16);
   color: rgba(28, 28, 32, 0.92) !important;
   color-scheme: light;
 
@@ -5479,10 +5471,46 @@ findbar {
 
 #tabbrowser-tab-tooltip,
 #tab-preview-panel,
-#statuspanel,
 tooltip,
 tooltip[default="true"] {
   display: none !important;
+}
+
+/* The status bar, where a link goes as you hover it: hidden, unless "Show
+   where links go" is on (an option), then a small pill of Zia's glass at
+   the foot of the page */
+@media not -moz-pref("zia.status-bar") {
+  #statuspanel {
+    display: none !important;
+  }
+}
+
+@media -moz-pref("zia.status-bar") {
+  #statuspanel {
+    padding: 0 8px 8px !important;
+  }
+
+  #statuspanel-label {
+    margin: 0 !important;
+    padding: 4px 10px !important;
+    border: none !important;
+    border-radius: 9px !important;
+    background: rgba(38, 38, 38, 0.86) !important;
+    backdrop-filter: blur(18px) saturate(1.4);
+    box-shadow: var(--zia-glass-edge-dark), 0 6px 18px rgba(0, 0, 0, 0.3) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 12px !important;
+  }
+
+  :root:not(#zia-none) #statuspanel-label {
+    corner-shape: var(--zia-squircle) !important;
+  }
+
+  :root[zia-light] #statuspanel-label {
+    background: rgba(248, 248, 250, 0.9) !important;
+    box-shadow: var(--zia-glass-edge-light), 0 6px 18px rgba(0, 0, 0, 0.14) !important;
+    color: rgba(28, 28, 32, 0.9) !important;
+  }
 }
 
 @media -moz-pref("zia.features.media-player") {
@@ -8152,8 +8180,7 @@ zen-folder .tab-reset-button {
 /* Zia's glass, as macOS Tahoe's: its edge on essentials, folders, the hover
    cards, the split cards, the address pop-up, the sidebar flying out in
    compact mode and the Library's buttons (each in its own part, with
-   var(--zia-glass-edge)); a light where they're pressed; and on
-   essentials, the space's colours bent at the rim (zia.uc.js).
+   var(--zia-glass-edge)); and a light where they're pressed (zia.uc.js).
 
    The edge, measured pixel by pixel off Tahoe's toolbar buttons: a light
    grey hairline along the top and bottom (the top a touch brighter), with
@@ -8182,16 +8209,6 @@ zen-folder .tab-reset-button {
     0.5px 0 0.5px rgba(0, 0, 0, 0.14),
     0 0 0.5px 0.25px rgba(0, 0, 0, 0.06);
   --zia-glass-edge: var(--zia-glass-edge-dark);
-  /* the same with its dark sides drawn just inside, for a folder, which
-     runs to the edge of the tab list and cut the outside ones off dead
-     straight */
-  --zia-glass-edge-inside:
-    inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.29),
-    inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.27),
-    inset 0 3px 2px -2px rgba(255, 255, 255, 0.11),
-    inset 0 -3px 2px -2px rgba(255, 255, 255, 0.085),
-    inset 1px 0 0 -0.5px rgba(0, 0, 0, 0.5),
-    inset -1px 0 0 -0.5px rgba(0, 0, 0, 0.5);
   --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.5);
 
   /* Pressed, light under the pointer, as on Tahoe's buttons: about a
@@ -8207,31 +8224,9 @@ zen-folder .tab-reset-button {
 
 :root[zia-light] {
   --zia-glass-edge: var(--zia-glass-edge-light);
-  --zia-glass-edge-inside:
-    inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.85),
-    inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.7),
-    inset 0 3px 2px -2px rgba(255, 255, 255, 0.3),
-    inset 0 -3px 2px -2px rgba(255, 255, 255, 0.22),
-    inset 1px 0 0 -0.5px rgba(0, 0, 0, 0.14),
-    inset -1px 0 0 -0.5px rgba(0, 0, 0, 0.14);
   --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.2);
   --zia-glass-press-light: rgba(255, 255, 255, 0.62);
   --zia-glass-press-wash: rgba(255, 255, 255, 0.12);
-}
-
-/* The bend: each essential's copy of the space's background sits at the
-   bottom of the tile, under its tint and icon */
-:root[zia-liquid-glass] .tabbrowser-tab[zen-essential] > .tab-stack {
-  position: relative;
-  isolation: isolate;
-}
-
-.zia-glass-copy {
-  position: absolute;
-  corner-shape: var(--zia-squircle) !important;
-  z-index: -1;
-  pointer-events: none;
-  background-repeat: no-repeat;
 }
 
 /* The press light (Clear's icon is its background picture, so it goes

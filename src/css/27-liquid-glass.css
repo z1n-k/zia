@@ -1,8 +1,7 @@
 /* Zia's glass, as macOS Tahoe's: its edge on essentials, folders, the hover
    cards, the split cards, the address pop-up, the sidebar flying out in
    compact mode and the Library's buttons (each in its own part, with
-   var(--zia-glass-edge)); a light where they're pressed; and on
-   essentials, the space's colours bent at the rim (zia.uc.js).
+   var(--zia-glass-edge)); and a light where they're pressed (zia.uc.js).
 
    The edge, measured pixel by pixel off Tahoe's toolbar buttons: a light
    grey hairline along the top and bottom (the top a touch brighter), with
@@ -31,16 +30,6 @@
     0.5px 0 0.5px rgba(0, 0, 0, 0.14),
     0 0 0.5px 0.25px rgba(0, 0, 0, 0.06);
   --zia-glass-edge: var(--zia-glass-edge-dark);
-  /* the same with its dark sides drawn just inside, for a folder, which
-     runs to the edge of the tab list and cut the outside ones off dead
-     straight */
-  --zia-glass-edge-inside:
-    inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.29),
-    inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.27),
-    inset 0 3px 2px -2px rgba(255, 255, 255, 0.11),
-    inset 0 -3px 2px -2px rgba(255, 255, 255, 0.085),
-    inset 1px 0 0 -0.5px rgba(0, 0, 0, 0.5),
-    inset -1px 0 0 -0.5px rgba(0, 0, 0, 0.5);
   --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.5);
 
   /* Pressed, light under the pointer, as on Tahoe's buttons: about a
@@ -56,31 +45,9 @@
 
 :root[zia-light] {
   --zia-glass-edge: var(--zia-glass-edge-light);
-  --zia-glass-edge-inside:
-    inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.85),
-    inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.7),
-    inset 0 3px 2px -2px rgba(255, 255, 255, 0.3),
-    inset 0 -3px 2px -2px rgba(255, 255, 255, 0.22),
-    inset 1px 0 0 -0.5px rgba(0, 0, 0, 0.14),
-    inset -1px 0 0 -0.5px rgba(0, 0, 0, 0.14);
   --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.2);
   --zia-glass-press-light: rgba(255, 255, 255, 0.62);
   --zia-glass-press-wash: rgba(255, 255, 255, 0.12);
-}
-
-/* The bend: each essential's copy of the space's background sits at the
-   bottom of the tile, under its tint and icon */
-:root[zia-liquid-glass] .tabbrowser-tab[zen-essential] > .tab-stack {
-  position: relative;
-  isolation: isolate;
-}
-
-.zia-glass-copy {
-  position: absolute;
-  corner-shape: var(--zia-squircle) !important;
-  z-index: -1;
-  pointer-events: none;
-  background-repeat: no-repeat;
 }
 
 /* The press light (Clear's icon is its background picture, so it goes

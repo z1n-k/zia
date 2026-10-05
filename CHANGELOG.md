@@ -8,20 +8,16 @@ Every release of Zia, newest first. The format follows
 
 ### Added
 
-- Liquid glass, as macOS Tahoe's, is Zia's look: its glass edge, matched
-  pixel by pixel to Tahoe's toolbar buttons (a soft light grey hairline
+- Liquid glass is Zia's look: a glass edge (a soft light grey hairline
   along the top and bottom glowing into the fill, and a dark one down the
-  sides), replaces Zia's old shine and outlines on essentials (the chosen
+  sides) replaces Zia's old shine and outlines on essentials (the chosen
   one's inner tile too, keeping its colour), folders as you hover or press
   them, the tab and folder cards, the split cards, the address pop-up, the
-  sidebar as it flies out in compact mode, and the Library's buttons and
-  section tile. Pressing an essential, a folder, a Library button or one
-  of the Library's sections (the chosen one too, just for the shine)
-  lights it up under the pointer as Tahoe's buttons do: the light snaps
-  on, follows the pointer while it's held, and fades once let go.
-  Essentials also bend the space's colours at their rim, with
-  [liquidglass](https://github.com/gentpan/liquidglass) by gentpan (MIT),
-  an SVG lens that Firefox draws, unlike most web liquid glass.
+  find bar, the sidebar as it flies out in compact mode, and the Library's
+  buttons and section tile. Pressing an essential, a folder, a Library
+  button or one of the Library's sections (the chosen one too, just for
+  the shine) lights it up under the pointer: the light snaps on, follows
+  the pointer while it's held, and fades once let go.
 - The welcome tour shows the liquid glass and downloads that name
   themselves, and anyone updating sees the two of them as what's new.
 - Zia's settings are tidier: in eight sections (Look, Tabs and
@@ -33,10 +29,10 @@ Every release of Zia, newest first. The format follows
   with rather than 77. The window buttons' settings only show on Windows
   and Linux. Sine showed every such setting until the one it hangs on was
   changed; Zia now shows and hides them as the page opens.
-- The sound badge on an essential keeps its dark bead and takes the glass,
-  as the music player has it: light lines along its top and bottom, a
-  thin dark ring all the way round, and a soft shadow.
 - The glass folders and the archive box are a touch smaller.
+- Show where links go: an option (off to start with) that brings back the
+  status bar at the foot of the page as you hover a link, as a small pill
+  of Zia's glass ([#270](https://github.com/z1n-k/zia/issues/270)).
 - A squircle corner, as Dia's (only a touch squarer than a circle), one
   shape for everything with the glass edge and every small icon button
   (the workspaces' icons, toolbar and sidebar buttons, close and unload

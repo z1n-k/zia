@@ -46,23 +46,23 @@
   &::before {
     content: "";
     position: absolute;
-    inset: var(--zia-folder-box-top) var(--zia-folder-box-right) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) var(--zia-folder-box-left);
+    inset: var(--zia-folder-box-top) calc(var(--zia-folder-box-right) + 1px) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) calc(var(--zia-folder-box-left) + 1px);
     z-index: -1;
     border-radius: var(--zia-folder-box-radius);
     pointer-events: none;
     background-color: transparent;
   }
 
-  /* the box's glass edge, shown with it (its dark sides drawn just
-     inside, as a folder runs to the edge of the tab list, which cut them
-     off dead straight outside) */
+  /* the box's glass edge, shown with it, as on the rest of the glass:
+     the box (this and its fill) a pixel in from each side, so its dark
+     side lines have room before the tab list's edge, which cut them off */
   &::after {
     content: "";
     position: absolute;
-    inset: var(--zia-folder-box-top) var(--zia-folder-box-right) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) var(--zia-folder-box-left);
+    inset: var(--zia-folder-box-top) calc(var(--zia-folder-box-right) + 1px) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) calc(var(--zia-folder-box-left) + 1px);
     border-radius: var(--zia-folder-box-radius);
     pointer-events: none;
-    box-shadow: var(--zia-glass-edge-inside);
+    box-shadow: var(--zia-glass-edge);
     opacity: 0;
   }
 
