@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.94.8] — 2026-10-05
+
+### Fixed
+
+- With "Toolbar in the site's colour" off, the toolbar takes Zen's own
+  colour, the sidebar's, as the option says, rather than Zia's
+  near-black; the page is then a card with all four corners round
+  (#271).
+
 ## [2.94.7] — 2026-10-05
 
 ### Changed
