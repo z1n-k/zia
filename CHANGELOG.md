@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.4] — 2026-10-05
+
+### Removed
+
+- 2.95.3's tracking of the pointer inside pages for the download's
+  flight, which didn't work: the flight starts above where you last
+  clicked, as before, until it's done properly.
+
 ## [2.95.3] — 2026-10-05
 
 ### Changed
