@@ -87,8 +87,13 @@
     }
   }
 
+  /* (hovered, a shade lighter, as glass lit by the pointer) */
   &:hover {
-    background-color: rgba(48, 48, 48, 0.92) !important;
+    --zia-badge-glass: rgba(98, 98, 104, 0.84);
+  }
+
+  :root[zia-light] &:hover {
+    --zia-badge-glass: rgba(255, 255, 255, 0.97);
   }
 }
 
