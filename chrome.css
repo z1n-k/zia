@@ -8242,24 +8242,24 @@ zen-folder .tab-reset-button {
     0.5px 0 0.5px rgba(0, 0, 0, 0.08),
     0 0 0.5px 0.25px rgba(0, 0, 0, 0.04);
   --zia-glass-edge-lit: var(--zia-glass-edge-lit-dark);
-  /* a touch thicker and brighter, for the glass tile inside a selected
+  /* a touch thicker (as bright), for the glass tile inside a selected
      essential, whose thin edge got lost against its colour */
   --zia-glass-edge-thick-dark:
-    inset 0 1.5px 0.5px -0.5px rgba(255, 255, 255, 0.4),
-    inset 0 -1.5px 0.5px -0.5px rgba(255, 255, 255, 0.36),
-    inset 0 4px 2.5px -2.5px rgba(255, 255, 255, 0.15),
-    inset 0 -4px 2.5px -2.5px rgba(255, 255, 255, 0.12),
+    inset 0 1.5px 0.5px -0.5px rgba(255, 255, 255, 0.29),
+    inset 0 -1.5px 0.5px -0.5px rgba(255, 255, 255, 0.27),
+    inset 0 4px 2.5px -2.5px rgba(255, 255, 255, 0.11),
+    inset 0 -4px 2.5px -2.5px rgba(255, 255, 255, 0.085),
     -1px 0 0.5px rgba(0, 0, 0, 0.5),
     1px 0 0.5px rgba(0, 0, 0, 0.5),
-    0 0 0.5px 0.5px rgba(0, 0, 0, 0.28);
+    0 0 0.5px 0.5px rgba(0, 0, 0, 0.25);
   --zia-glass-edge-thick-light:
-    inset 0 1.5px 0.5px -0.5px rgba(255, 255, 255, 0.9),
-    inset 0 -1.5px 0.5px -0.5px rgba(255, 255, 255, 0.78),
-    inset 0 4px 2.5px -2.5px rgba(255, 255, 255, 0.36),
-    inset 0 -4px 2.5px -2.5px rgba(255, 255, 255, 0.27),
-    -1px 0 0.5px rgba(0, 0, 0, 0.16),
-    1px 0 0.5px rgba(0, 0, 0, 0.16),
-    0 0 0.5px 0.5px rgba(0, 0, 0, 0.08);
+    inset 0 1.5px 0.5px -0.5px rgba(255, 255, 255, 0.85),
+    inset 0 -1.5px 0.5px -0.5px rgba(255, 255, 255, 0.7),
+    inset 0 4px 2.5px -2.5px rgba(255, 255, 255, 0.3),
+    inset 0 -4px 2.5px -2.5px rgba(255, 255, 255, 0.22),
+    -1px 0 0.5px rgba(0, 0, 0, 0.14),
+    1px 0 0.5px rgba(0, 0, 0, 0.14),
+    0 0 0.5px 0.5px rgba(0, 0, 0, 0.06);
   --zia-glass-edge-thick: var(--zia-glass-edge-thick-dark);
   --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.5);
 
