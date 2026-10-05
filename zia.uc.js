@@ -16966,7 +16966,7 @@
     }
   }
 
-  // ---------- Liquid glass essentials (an option)
+  // ---------- Liquid glass (an option): the bend in essentials
   // Each essential holds a copy of Zen's space background, lined up with the
   // real one, under its tint and icon; liquid-glass/liquid-glass.js (gentpan's
   // liquidglass, MIT) bends that copy at the tile's rim with an SVG
@@ -16975,11 +16975,11 @@
   // alone), so the glass bends Zen's own background, never the desktop
   // through a see-through window.
   const LIQUID_GLASS_PREF = "zia.liquid-glass";
-  // (just the bend: the rim is Zia's own, in 27-liquid-glass.css)
+  // (just the bend: the rim is Zia's hairlines, in 27-liquid-glass.css)
   const LIQUID_GLASS_OPTICS = { bezel: 0.5, curvature: 4, chroma: 0.05, specular: 0 };
 
   function watchLiquidGlass() {
-    // tile → { copy, edge, glass }
+    // tile → { copy, glass }
     const lenses = new Map();
     let watchers = null;
     let frame = 0;
@@ -17010,7 +17010,6 @@
         if (!tiles.has(tile)) {
           lens.glass?.destroy();
           lens.copy.remove();
-          lens.edge.remove();
           lenses.delete(tile);
         }
       }
@@ -17022,15 +17021,11 @@
         if (!lens) {
           const copy = document.createElementNS(XHTML_NS, "div");
           copy.className = "zia-glass-copy";
-          // (the dark hairline round the outside of the tile)
-          const edge = document.createElementNS(XHTML_NS, "div");
-          edge.className = "zia-glass-edge";
           tile.parentNode.prepend(copy);
-          tile.parentNode.append(edge);
-          lens = { copy, edge, glass: null };
+          lens = { copy, glass: null };
           lenses.set(tile, lens);
         }
-        const { copy, edge } = lens;
+        const { copy } = lens;
         const stack = tile.parentNode.getBoundingClientRect();
         const box = tile.getBoundingClientRect();
         if (box.width < 1 || box.height < 1) {
@@ -17046,13 +17041,6 @@
           backgroundImage: back.paint,
           backgroundSize: `${back.box.width}px ${back.box.height}px`,
           backgroundPosition: `${back.box.left - box.left}px ${back.box.top - box.top}px`,
-        });
-        Object.assign(edge.style, {
-          left: `${box.left - stack.left - 0.5}px`,
-          top: `${box.top - stack.top - 0.5}px`,
-          width: `${box.width + 1}px`,
-          height: `${box.height + 1}px`,
-          borderRadius: `${radius + 0.5}px`,
         });
         const optics = { radius, refraction: Math.round(Math.min(box.width, box.height) * 0.2) };
         if (lens.glass) {
@@ -17113,10 +17101,9 @@
       watchers = null;
       cancelAnimationFrame(frame);
       frame = 0;
-      for (const { copy, edge, glass } of lenses.values()) {
+      for (const { copy, glass } of lenses.values()) {
         glass?.destroy();
         copy.remove();
-        edge.remove();
       }
       lenses.clear();
       root.removeAttribute("zia-liquid-glass");

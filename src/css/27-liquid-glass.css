@@ -1,6 +1,8 @@
-/* Liquid glass essentials (an option, zia.uc.js): the bent copy of the
-   space's background sits at the bottom of each essential, under its tint,
-   shine ring and icon */
+/* Liquid glass (an option): macOS Tahoe's glass edge on Zia's surfaces, and
+   on essentials, the space's colours bent at the rim (zia.uc.js).
+
+   The bend: each essential's copy of the space's background sits at the
+   bottom of the tile, under its tint and icon. */
 :root[zia-liquid-glass] .tabbrowser-tab[zen-essential] > .tab-stack {
   position: relative;
   isolation: isolate;
@@ -13,35 +15,117 @@
   background-repeat: no-repeat;
 }
 
-/* Tahoe's rim, two hairlines: a light one inside, as bright along the top as
-   the bottom and fading out down the sides, and a dark one outside, the
-   other way round, down the sides and fading out at the top and bottom */
-:root[zia-liquid-glass] .tabbrowser-tab[zen-essential] > .tab-stack > .tab-background {
-  --zia-glass-rim: rgba(255, 255, 255, 0.42);
-  --zia-glass-rim-fade: rgba(255, 255, 255, 0.04);
-}
+@media -moz-pref("zia.liquid-glass") {
+  /* The edge, as on Tahoe's buttons: a light hairline inside along the top
+     and bottom (the top a touch brighter), fading out down the sides; a dark
+     one outside down the sides, fading out at the top and bottom; and a
+     soft lift off whatever's behind. Each is a shadow nudged half a pixel,
+     which follows the corner and thins out round it. */
+  :root {
+    --zia-glass-rim-top: rgba(255, 255, 255, 0.4);
+    --zia-glass-rim-bottom: rgba(255, 255, 255, 0.24);
+    --zia-glass-side: rgba(0, 0, 0, 0.5);
+    --zia-glass-edge:
+      inset 0 0.5px 0 var(--zia-glass-rim-top),
+      inset 0 -0.5px 0 var(--zia-glass-rim-bottom),
+      -0.5px 0 0 var(--zia-glass-side),
+      0.5px 0 0 var(--zia-glass-side);
+    --zia-glass-lift: 0 1px 4px rgba(0, 0, 0, 0.22);
+    --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.5);
+  }
 
-:root[zia-liquid-glass] .tabbrowser-tab[zen-essential]:not([visuallyselected]) > .tab-stack > .tab-background::after {
-  background: linear-gradient(to right, var(--zia-glass-rim-fade), var(--zia-glass-rim) 30%, var(--zia-glass-rim) 70%, var(--zia-glass-rim-fade)) !important;
-}
+  :root[zia-light] {
+    --zia-glass-rim-top: rgba(255, 255, 255, 0.95);
+    --zia-glass-rim-bottom: rgba(255, 255, 255, 0.6);
+    --zia-glass-side: rgba(0, 0, 0, 0.13);
+    --zia-glass-lift: 0 1px 4px rgba(0, 0, 0, 0.08);
+    --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.2);
+  }
 
-.zia-glass-edge {
-  box-sizing: border-box;
-  position: absolute;
-  z-index: 1;
-  padding: 0.5px;
-  pointer-events: none;
-  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.5) 30%, rgba(0, 0, 0, 0.5) 70%, transparent);
-  mask:
-    linear-gradient(#000 0 0) content-box exclude,
-    linear-gradient(#000 0 0);
-}
+  /* Essentials (the chosen one keeps Zen's picture-coloured look) */
+  .tabbrowser-tab[zen-essential]:not([visuallyselected]) > .tab-stack > .tab-background {
+    box-shadow: var(--zia-glass-edge), var(--zia-glass-lift) !important;
 
-:root[zia-light] .zia-glass-edge {
-  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.14) 30%, rgba(0, 0, 0, 0.14) 70%, transparent);
-}
+    &::after {
+      display: none !important;
+    }
+  }
 
-:root[zia-liquid-glass][zia-light] .tabbrowser-tab[zen-essential] > .tab-stack > .tab-background {
-  --zia-glass-rim: rgba(255, 255, 255, 0.95);
-  --zia-glass-rim-fade: rgba(255, 255, 255, 0.3);
+  /* The selected tab: its dark stays, its shine ring becomes the edge,
+     under its glow */
+  :root:not(#zia-none) .tabbrowser-tab:not([zen-essential])[visuallyselected] > .tab-stack > .tab-background {
+    box-shadow:
+      var(--zia-glass-edge),
+      0 0 var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color),
+      0 calc(-1 * var(--zia-active-glow-reach)) var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color),
+      0 var(--zia-active-glow-reach) var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color) !important;
+
+    &::after {
+      display: none !important;
+    }
+  }
+
+  /* A folder's box, hovered, held after a drop, or pressed */
+  :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])):is(:hover, :active, [zia-hover-held]) {
+    &::before {
+      box-shadow: var(--zia-glass-edge), var(--zia-glass-lift);
+    }
+
+    &::after {
+      display: none;
+    }
+  }
+
+  /* The tab and folder hover cards: the edge in place of their hairline
+     border (their corner clip widened a pixel, to keep its dark sides) */
+  #zia-tab-card,
+  #zia-folder-card {
+    clip-path: inset(-1px round calc(var(--zia-tab-card-radius) + 1px));
+    box-shadow: var(--zia-glass-edge), var(--zia-glass-lift);
+
+    &::after {
+      display: none;
+    }
+  }
+
+  /* The split cards a dragged tab drops on */
+  .zia-split-zone {
+    box-shadow: var(--zia-glass-edge), 0 16px 44px rgba(0, 0, 0, 0.5);
+  }
+
+  /* The address pop-up, open or floating */
+  :root:not(#zia-none) #urlbar:is([breakout-extend], [zen-floating-urlbar="true"]):not([zia-classic]) > .urlbar-background {
+    outline: none !important;
+    box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
+  }
+
+  /* The sidebar as it flies out in compact mode */
+  :root[zen-compact-mode="true"] .zen-toolbar-background {
+    &::before,
+    &::after {
+      outline: none !important;
+    }
+
+    &::after {
+      box-shadow: var(--zia-glass-edge) !important;
+    }
+  }
+
+  /* The music player */
+  #zen-media-controls-toolbar .zen-media-card {
+    box-shadow: var(--zia-glass-edge), var(--zia-glass-lift) !important;
+  }
+
+  /* The Library's icon buttons (Filter, Clear, the filters) and the tile
+     under its chosen section */
+  @media not -moz-pref("zia.library.zen-look") {
+    zen-library :is(.zen-library-filter-button, .zen-library-filter-done, .zia-library-clear, .zen-library-filter-chip),
+    zen-library .zia-library-rail {
+      box-shadow: var(--zia-glass-edge), var(--zia-glass-lift) !important;
+
+      &::after {
+        display: none !important;
+      }
+    }
+  }
 }

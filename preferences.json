@@ -105,7 +105,7 @@
   },
   {
     "type": "checkbox",
-    "label": "Liquid glass essentials: each tile bends the space's colours at its rim, like macOS Tahoe (experimental)",
+    "label": "Liquid glass, like macOS Tahoe: a glass edge on essentials, the selected tab, folders, cards, the address pop-up, the music player and the Library's buttons, and essentials bend the space's colours at their rim (experimental)",
     "property": "zia.liquid-glass",
     "defaultValue": false
   },

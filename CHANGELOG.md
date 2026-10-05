@@ -8,11 +8,14 @@ Every release of Zia, newest first. The format follows
 
 ### Added
 
-- Liquid glass essentials (experimental, off by default): turn on
-  **Liquid glass essentials** in settings and each essential bends the
-  space's colours at its rim, like macOS Tahoe's glass, with its thin light
-  rim along the top and bottom and a dark hairline down the sides. The bend
-  is [liquidglass](https://github.com/gentpan/liquidglass) by gentpan (MIT),
+- Liquid glass (experimental, off by default): turn on **Liquid glass** in
+  settings for macOS Tahoe's glass edge (a light hairline along the top and
+  bottom, a dark one down the sides, and a soft lift) on essentials, the
+  selected tab, folders as you hover or press them, the tab and folder
+  cards, the split cards, the address pop-up, the sidebar as it flies out
+  in compact mode, the music player and the Library's buttons. Essentials
+  also bend the space's colours at their rim, with
+  [liquidglass](https://github.com/gentpan/liquidglass) by gentpan (MIT),
   an SVG lens that Firefox draws, unlike most web liquid glass.
 - Rename finished downloads with AI: [Tidy Downloads](https://github.com/Vertex-Mods/Zen-Tidy-Downloads)
   by Bxthesda and Zylaah is part of Zia, with their permission. As a
