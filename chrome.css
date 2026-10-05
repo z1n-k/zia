@@ -7879,12 +7879,15 @@ zen-folder .tab-reset-button {
   /* ...and the badge that flies there from the Library button as they fan
      out the same 16px all the way: Zen grows it to twice its 20px on the
      way, for its own list's big icons, so it landed huge over the name and
-     then snapped small */
-  :root:not(#zia-none) #zen-library-button > .toolbarbutton-badge-stack #library-button-badge:not([downloading]) {
+     then snapped small. (Zen 1.23 sizes it with scale and a growing
+     transform and moves it with left and top; newer Zen moves it with the
+     transform, so that's kept, and is nothing on 1.23.) */
+  :root:not(#zia-none) #library-button-badge:not([downloading]) {
     width: 16px !important;
     height: 16px !important;
     border-radius: 4px !important;
-    transform: translate(var(--zen-library-badge-tx), var(--zen-library-badge-ty)) !important;
+    scale: none !important;
+    transform: translate(var(--zen-library-badge-tx, 0px), var(--zen-library-badge-ty, 0px)) !important;
   }
 
   :root:not(#zia-none) #zen-library-download-list {
