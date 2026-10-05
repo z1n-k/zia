@@ -8243,14 +8243,14 @@ zen-folder .tab-reset-button {
   :root {
     --zia-glass-rim-top: rgba(255, 255, 255, 0.27);
     --zia-glass-rim-bottom: rgba(255, 255, 255, 0.25);
-    --zia-glass-glow-top: rgba(255, 255, 255, 0.15);
-    --zia-glass-glow-bottom: rgba(255, 255, 255, 0.12);
+    --zia-glass-glow-top: rgba(255, 255, 255, 0.11);
+    --zia-glass-glow-bottom: rgba(255, 255, 255, 0.085);
     --zia-glass-side: rgba(0, 0, 0, 0.6);
     --zia-glass-edge:
       inset 0 1px 0.75px -0.5px var(--zia-glass-rim-top),
       inset 0 -1px 0.75px -0.5px var(--zia-glass-rim-bottom),
-      inset 0 3.5px 2.5px -2.5px var(--zia-glass-glow-top),
-      inset 0 -3.5px 2.5px -2.5px var(--zia-glass-glow-bottom),
+      inset 0 3px 2px -2px var(--zia-glass-glow-top),
+      inset 0 -3px 2px -2px var(--zia-glass-glow-bottom),
       -0.5px 0 0 var(--zia-glass-side),
       0.5px 0 0 var(--zia-glass-side);
     /* the same with its dark sides drawn just inside, for a folder running
@@ -8259,8 +8259,8 @@ zen-folder .tab-reset-button {
     --zia-glass-edge-inside:
       inset 0 1px 0.75px -0.5px var(--zia-glass-rim-top),
       inset 0 -1px 0.75px -0.5px var(--zia-glass-rim-bottom),
-      inset 0 3.5px 2.5px -2.5px var(--zia-glass-glow-top),
-      inset 0 -3.5px 2.5px -2.5px var(--zia-glass-glow-bottom),
+      inset 0 3px 2px -2px var(--zia-glass-glow-top),
+      inset 0 -3px 2px -2px var(--zia-glass-glow-bottom),
       inset 1px 0 0 -0.5px var(--zia-glass-side),
       inset -1px 0 0 -0.5px var(--zia-glass-side);
     --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.5);
@@ -8269,8 +8269,8 @@ zen-folder .tab-reset-button {
   :root[zia-light] {
     --zia-glass-rim-top: rgba(255, 255, 255, 0.85);
     --zia-glass-rim-bottom: rgba(255, 255, 255, 0.7);
-    --zia-glass-glow-top: rgba(255, 255, 255, 0.4);
-    --zia-glass-glow-bottom: rgba(255, 255, 255, 0.3);
+    --zia-glass-glow-top: rgba(255, 255, 255, 0.3);
+    --zia-glass-glow-bottom: rgba(255, 255, 255, 0.22);
     --zia-glass-side: rgba(0, 0, 0, 0.16);
     --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.2);
   }
