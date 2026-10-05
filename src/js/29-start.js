@@ -244,7 +244,6 @@
     safely("applyZenDefaults", applyZenDefaults);
     safely("setupIconPack", setupIconPack);
     safely("watchOptions", watchOptions);
-    safely("watchTextSize", watchTextSize);
     safely("watchUrlbarPosition", watchUrlbarPosition);
     safely("watchPipWindows", watchPipWindows);
     safely("watchMultiview", watchMultiview);

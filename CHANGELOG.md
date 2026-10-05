@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.17] — 2026-10-05
+
+### Fixed
+
+- The sidebar's text size option takes effect: it's now read straight off
+  the option, as soon as it's changed, rather than through Zia's script.
+- With Firefox's tab hover previews on, Zen's and Firefox's own pages
+  (settings, about:config and the like) get a picture in their hover card
+  too, as web pages do (#292). (After updating Zia, restart Zen once so its
+  new script loads.)
+
 ## [2.95.16] — 2026-10-05
 
 ### Fixed

@@ -96,7 +96,7 @@
       !tab.selected &&
       !tab.hasAttribute("pending") &&
       !!tab.linkedPanel &&
-      tabCardKind(tab) === "web"
+      tabCardKind(tab) !== "new"
     );
   }
 
