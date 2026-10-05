@@ -404,12 +404,16 @@
     const width = card.offsetWidth;
     const height = card.offsetHeight;
     let x = onRight ? sidebar.left - width - TAB_CARD_GAP : sidebar.right + TAB_CARD_GAP;
-    let y = box.top - FOLDER_CARD_LIFT;
+    // its first row level with the folder, centre to centre (so a card of
+    // one tab sits centred on it, as a tab's card does)
+    const first = card.querySelector(".zia-folder-card-row");
+    const middle = first ? first.offsetTop + first.offsetHeight / 2 : height / 2;
+    let y = box.top + box.height / 2 - middle;
     x = Math.max(TAB_CARD_GAP, Math.min(x, window.innerWidth - width - TAB_CARD_GAP));
     y = Math.max(TAB_CARD_GAP, Math.min(y, window.innerHeight - height - TAB_CARD_GAP));
     card.style.left = `${Math.round(x)}px`;
     card.style.top = `${Math.round(y)}px`;
-    card.style.transformOrigin = onRight ? "top right" : "top left";
+    card.style.transformOrigin = `${onRight ? "right" : "left"} ${Math.round(box.top + box.height / 2 - y)}px`;
   }
 
   function hoveredFolderLabel(target) {
