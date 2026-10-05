@@ -4,6 +4,19 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.94.7] — 2026-10-05
+
+### Changed
+
+- Folders are no longer glass: a hovered folder's box has the soft
+  shine border it had before, with round corners, and no light where
+  it's pressed.
+
+### Fixed
+
+- AI renaming's "Renamed from" card shows again on newer Zen, which
+  left it empty, so it never appeared (the file was still renamed).
+
 ## [2.94.6] — 2026-10-05
 
 ### Changed

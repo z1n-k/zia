@@ -2111,23 +2111,24 @@ zen-split-fake-tab {
   &::before {
     content: "";
     position: absolute;
-    inset: var(--zia-folder-box-top) calc(var(--zia-folder-box-right) + 1px) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) calc(var(--zia-folder-box-left) + 1px);
+    inset: var(--zia-folder-box-top) var(--zia-folder-box-right) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) var(--zia-folder-box-left);
     z-index: -1;
     border-radius: var(--zia-folder-box-radius);
     pointer-events: none;
     background-color: transparent;
   }
 
-  /* the box's glass edge, shown with it, as on the rest of the glass:
-     the box (this and its fill) a pixel in from each side, so its dark
-     side lines have room before the tab list's edge, which cut them off */
   &::after {
     content: "";
     position: absolute;
-    inset: var(--zia-folder-box-top) calc(var(--zia-folder-box-right) + 1px) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) calc(var(--zia-folder-box-left) + 1px);
+    inset: var(--zia-folder-box-top) var(--zia-folder-box-right) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) var(--zia-folder-box-left);
+    padding: var(--zia-shine-width);
     border-radius: var(--zia-folder-box-radius);
     pointer-events: none;
-    box-shadow: var(--zia-glass-edge-lit);
+    background: var(--zia-shine-layers);
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
     opacity: 0;
   }
 
@@ -2356,7 +2357,7 @@ zen-split-fake-tab {
 :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) {
   &::before,
   &::after {
-    corner-shape: var(--zia-squircle) !important;
+    corner-shape: round !important;
   }
 }
 
@@ -2717,7 +2718,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
 }
 
 /* A coloured folder keeps its usual colour while a tab is dragged into it
- * (its glass edge marks it as the target): not the plain hover wash, and not the
+ * (its shine marks it as the target): not the plain hover wash, and not the
  * hover tint either, which flickered off and on again as the tab dropped. */
 :root[zen-sidebar-expanded="true"] zen-folder[zia-folder-color]:not([zia-folder-color="white"])[zia-drop-slot]::before {
   background-color: color-mix(in srgb, var(--zia-folder-swatch) var(--zia-folder-wash), transparent) !important;
@@ -8203,7 +8204,7 @@ zen-folder .tab-reset-button {
     background-color: rgba(255, 255, 255, 0.2);
   }
 }
-/* Zia's glass, as macOS Tahoe's: its edge on essentials, folders, the hover
+/* Zia's glass, as macOS Tahoe's: its edge on essentials, the hover
    cards, the split cards, the address pop-up, the sidebar flying out in
    compact mode and the Library's buttons (each in its own part, with
    var(--zia-glass-edge)); and a light where they're pressed (zia.uc.js).
@@ -8237,9 +8238,9 @@ zen-folder .tab-reset-button {
   --zia-glass-edge: var(--zia-glass-edge-dark);
   /* the same with a faint light line down the sides in place of the dark
      ones (on the sides only, as they were, so the top and bottom stay as
-     bright as everywhere else), for the folders' boxes and the find bar, whose dark sides
-     went nowhere against a dark sidebar or page (light mode: just softer
-     dark sides) */
+     bright as everywhere else), for the find bar and the hover cards,
+     whose dark sides went nowhere against a dark sidebar or page (light
+     mode: just softer dark sides) */
   --zia-glass-edge-lit-dark:
     inset 0 1px 0.5px -0.5px rgba(255, 255, 255, 0.29),
     inset 0 -1px 0.5px -0.5px rgba(255, 255, 255, 0.27),
@@ -8309,8 +8310,4 @@ zen-folder .tab-reset-button {
    over the sliding tile as it arrives) */
 :root:not(#zia-none) zen-library .zen-library-tab[zia-glass-press]::before {
   background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent)) !important;
-}
-
-:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group]))[zia-glass-press]::before {
-  background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent));
 }

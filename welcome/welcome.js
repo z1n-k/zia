@@ -80,7 +80,7 @@
     tabpeek: { v: WIRES.tabpeek, t: "A glance, kept in its tab", d: "Glance at a link and a small picture of the page tucks into the tab, as in Dia. Close the glance and it sinks back in." },
     panels: { v: WIRES.panels, t: "Bookmarks and History, beside your tabs", d: "<kbd>⌘</kbd><kbd>B</kbd> and <kbd>⌘</kbd><kbd>⇧</kbd><kbd>H</kbd> slide in as a second sidebar, matched to your tabs row for row." },
     ink: { v: WIRES.ink, t: "The site's own ink", d: "The toolbar's text and buttons take a touch of each site's colour: a soft brown on a cream page, a soft grey on a white one." },
-    liquid: { v: WIRES.liquid, t: "Liquid glass", d: "Essentials, folders, cards and buttons are glass now: lit along their top and bottom edges, with a fine dark line down their sides. Press one and it lights up under your finger." },
+    liquid: { v: WIRES.liquid, t: "Liquid glass", d: "Essentials, cards and buttons are glass now: lit along their top and bottom edges, with a fine dark line down their sides. Press one and it lights up under your finger." },
     rename: { v: WIRES.rename, t: "Downloads that name themselves", d: "Turn it on in settings, and each download gets a clear name from an AI service you choose, or one running on your own computer. It reads the page and even looks at photos. Undo puts the old name back." },
     icons: { v: WIRES.icons, t: "5,166 icons, or your own", d: "Search Tabler's set by what you mean, not what it's called. Or right-click a folder and choose an SVG." },
   };

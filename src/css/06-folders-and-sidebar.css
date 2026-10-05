@@ -46,23 +46,24 @@
   &::before {
     content: "";
     position: absolute;
-    inset: var(--zia-folder-box-top) calc(var(--zia-folder-box-right) + 1px) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) calc(var(--zia-folder-box-left) + 1px);
+    inset: var(--zia-folder-box-top) var(--zia-folder-box-right) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) var(--zia-folder-box-left);
     z-index: -1;
     border-radius: var(--zia-folder-box-radius);
     pointer-events: none;
     background-color: transparent;
   }
 
-  /* the box's glass edge, shown with it, as on the rest of the glass:
-     the box (this and its fill) a pixel in from each side, so its dark
-     side lines have room before the tab list's edge, which cut them off */
   &::after {
     content: "";
     position: absolute;
-    inset: var(--zia-folder-box-top) calc(var(--zia-folder-box-right) + 1px) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) calc(var(--zia-folder-box-left) + 1px);
+    inset: var(--zia-folder-box-top) var(--zia-folder-box-right) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) var(--zia-folder-box-left);
+    padding: var(--zia-shine-width);
     border-radius: var(--zia-folder-box-radius);
     pointer-events: none;
-    box-shadow: var(--zia-glass-edge-lit);
+    background: var(--zia-shine-layers);
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
     opacity: 0;
   }
 
@@ -291,7 +292,7 @@
 :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) {
   &::before,
   &::after {
-    corner-shape: var(--zia-squircle) !important;
+    corner-shape: round !important;
   }
 }
 
@@ -652,7 +653,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
 }
 
 /* A coloured folder keeps its usual colour while a tab is dragged into it
- * (its glass edge marks it as the target): not the plain hover wash, and not the
+ * (its shine marks it as the target): not the plain hover wash, and not the
  * hover tint either, which flickered off and on again as the tab dropped. */
 :root[zen-sidebar-expanded="true"] zen-folder[zia-folder-color]:not([zia-folder-color="white"])[zia-drop-slot]::before {
   background-color: color-mix(in srgb, var(--zia-folder-swatch) var(--zia-folder-wash), transparent) !important;

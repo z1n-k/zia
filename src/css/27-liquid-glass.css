@@ -1,4 +1,4 @@
-/* Zia's glass, as macOS Tahoe's: its edge on essentials, folders, the hover
+/* Zia's glass, as macOS Tahoe's: its edge on essentials, the hover
    cards, the split cards, the address pop-up, the sidebar flying out in
    compact mode and the Library's buttons (each in its own part, with
    var(--zia-glass-edge)); and a light where they're pressed (zia.uc.js).
@@ -32,9 +32,9 @@
   --zia-glass-edge: var(--zia-glass-edge-dark);
   /* the same with a faint light line down the sides in place of the dark
      ones (on the sides only, as they were, so the top and bottom stay as
-     bright as everywhere else), for the folders' boxes and the find bar, whose dark sides
-     went nowhere against a dark sidebar or page (light mode: just softer
-     dark sides) */
+     bright as everywhere else), for the find bar and the hover cards,
+     whose dark sides went nowhere against a dark sidebar or page (light
+     mode: just softer dark sides) */
   --zia-glass-edge-lit-dark:
     inset 0 1px 0.5px -0.5px rgba(255, 255, 255, 0.29),
     inset 0 -1px 0.5px -0.5px rgba(255, 255, 255, 0.27),
@@ -104,8 +104,4 @@
    over the sliding tile as it arrives) */
 :root:not(#zia-none) zen-library .zen-library-tab[zia-glass-press]::before {
   background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent)) !important;
-}
-
-:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group]))[zia-glass-press]::before {
-  background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent));
 }

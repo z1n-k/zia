@@ -16972,12 +16972,11 @@
   function watchLiquidGlass() {
     // Pressed: a soft light under the pointer, fading once let go
     // (27-liquid-glass.css), on what has the glass. Marked on the
-    // essential, folder or button, with where the press is inside the box
+    // essential or button, with where the press is inside the box
     // that lights up.
     const PRESSABLE = [
       // (essentials, not the plain tabs, which have no glass)
       [".tabbrowser-tab[zen-essential]", (hit) => hit, (owner) => owner.querySelector(":scope > .tab-stack > .tab-background")],
-      [":is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container", (hit) => hit.parentNode, (owner) => owner],
       // (not Clear, whose icon is its background picture)
       ["zen-library :is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip):not(.zia-library-clear)", (hit) => hit, (owner) => owner],
       // (the chosen Library section lights the tile that slides behind it,
