@@ -381,10 +381,11 @@
     border: none !important;
     border-radius: 9px !important;
     /* Zia's glass, as on the essential it sits on: its edge and squircle,
-       what's behind it blurred, and a soft lift off it */
+       and a soft lift off it (no blur behind it: tilted, it drew a line of
+       the colour behind down the side of its box) */
     corner-shape: var(--zia-squircle) !important;
     background: rgba(255, 255, 255, 0.16) !important;
-    backdrop-filter: blur(8px) saturate(1.6) !important;
+    backdrop-filter: none !important;
     box-shadow: var(--zia-glass-edge-thick), 0 1px 4px rgba(0, 0, 0, 0.2) !important;
   }
 
@@ -420,7 +421,6 @@
   justify-content: center;
   border-radius: 9px;
   background: rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(8px) saturate(1.6);
   box-shadow: var(--zia-glass-edge-thick), 0 1px 4px rgba(0, 0, 0, 0.2);
 
   & > .zia-glance-ghost-icon {
