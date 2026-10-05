@@ -476,6 +476,59 @@ kbd > span, .w-key > span { position: static; display: block; text-box: trim-bot
 @keyframes rn-undo { 0%, 64% { opacity: 0; transform: translateY(.8cqw) scale(.95); } 70%, 88% { opacity: 1; transform: none; } 94%, 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .liquid *, .rename * { animation: none !important; } .rename .old, .rename .ctx, .rename .spark { opacity: 0; } .rename .new { clip-path: none; } .rename .undo { opacity: 1; } }
 
+/* a download flying to the Library (6s), as in Dia: the pointer clicks
+   Save on a page; the window dims; the file's row pops up just above the
+   pointer, swoops up and away, then sweeps down into the Library button,
+   leaning into the turn and shrinking as it lands; the button nods */
+.flight .fside { left: 0; top: 0; bottom: 0; width: 24cqw; background: rgba(255,255,255,.025); }
+.flight .frow { position: relative; display: block; height: 4.6cqw; margin: 0 2.4cqw 1cqw; border-radius: 1.4cqw; background: rgba(255,255,255,.06); }
+.flight .frow:first-child { margin-top: 6cqw; }
+.flight .frow.s { width: 60%; }
+.flight .lib { left: 7.5cqw; top: 52cqw; width: 6cqw; height: 6cqw; border-radius: 1.7cqw; corner-shape: superellipse(1.35); display: grid; place-items: center; background: rgba(255,255,255,.06);
+  box-shadow: inset 0 1px .75px -.5px rgba(255,255,255,.24), -.5px 0 .5px rgba(0,0,0,.5), .5px 0 .5px rgba(0,0,0,.5); animation: fl-lib 6s var(--ease) infinite; }
+.flight .lib svg { position: static; width: 3.2cqw; height: 3.2cqw; fill: none; stroke: rgba(255,255,255,.7); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.flight .fpage { left: 27cqw; top: 4cqw; right: 4cqw; bottom: 4cqw; border-radius: 2cqw; background: rgba(255,255,255,.05); }
+.flight .fpage .pic { left: 6cqw; top: 5cqw; width: 30cqw; height: 18cqw; border-radius: 1.4cqw; background: linear-gradient(135deg, #3a3f52, #23262f); }
+.flight .fpage .l { left: 6cqw; top: 27cqw; width: 50cqw; height: 1.4cqw; border-radius: 1cqw; background: rgba(255,255,255,.12); }
+.flight .fpage .l.s { top: 31cqw; width: 34cqw; }
+.flight .save { left: 33cqw; top: 23cqw; padding: .9cqw 1.8cqw; border-radius: 99cqw; font: 500 1.7cqw/1.2 -apple-system, system-ui, sans-serif; color: rgba(255,255,255,.8); background: rgba(255,255,255,.1); white-space: nowrap;
+  animation: fl-save 6s var(--ease) infinite; }
+.flight .dim { inset: 0; background: rgba(0,0,0,.34); opacity: 0; animation: fl-dim 6s linear infinite; }
+.flight .glow { left: 0; top: 0; width: 24cqw; height: 9cqw; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,.08), transparent); filter: blur(1.4cqw); opacity: 0; animation: fl-row 6s linear infinite; animation-delay: .04s; }
+.flight .row { left: 0; top: 0; display: flex; align-items: center; gap: 1cqw; height: 4.6cqw; padding: 0 1.8cqw 0 1.3cqw; border-radius: 1.5cqw; corner-shape: superellipse(1.35); white-space: nowrap;
+  font: 500 1.7cqw/1.35 -apple-system, system-ui, sans-serif; color: rgba(255,255,255,.92); background: #2b2d34;
+  box-shadow: inset 0 1px .75px -.5px rgba(255,255,255,.29), inset 0 -1px .75px -.5px rgba(255,255,255,.27), -.5px 0 .5px rgba(0,0,0,.5), .5px 0 .5px rgba(0,0,0,.5), 0 1.2cqw 3cqw rgba(0,0,0,.35);
+  opacity: 0; animation: fl-row 6s linear infinite; }
+.flight .row > * { position: static; }
+.flight .ico { width: 2.2cqw; height: 2.2cqw; fill: none; stroke: rgba(255,255,255,.75); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.flight .cursor { left: 0; top: 0; animation: fl-cur 6s var(--ease) infinite; }
+@keyframes fl-row {
+  0%, 15% { opacity: 0; transform: translate(68cqw, 30cqw) translate(-50%, -50%) scale(.45); }
+  20% { opacity: 1; transform: translate(68.0cqw, 24.5cqw) translate(-50%, -50%) scale(1); }
+  21.69% { opacity: 1.000; transform: translate(68.00cqw, 24.47cqw) translate(-50%, -50%) rotate(0.59deg) scale(1.000); }
+  23.38% { opacity: 1.000; transform: translate(68.00cqw, 24.26cqw) translate(-50%, -50%) rotate(2.04deg) scale(1.000); }
+  25.06% { opacity: 1.000; transform: translate(67.95cqw, 23.70cqw) translate(-50%, -50%) rotate(3.87deg) scale(1.000); }
+  26.75% { opacity: 1.000; transform: translate(67.72cqw, 22.67cqw) translate(-50%, -50%) rotate(5.61deg) scale(1.000); }
+  28.44% { opacity: 1.000; transform: translate(66.95cqw, 21.17cqw) translate(-50%, -50%) rotate(6.78deg) scale(1.000); }
+  30.12% { opacity: 1.000; transform: translate(64.92cqw, 19.48cqw) translate(-50%, -50%) rotate(7.00deg) scale(1.000); }
+  31.81% { opacity: 1.000; transform: translate(60.43cqw, 18.45cqw) translate(-50%, -50%) rotate(7.00deg) scale(1.000); }
+  33.50% { opacity: 1.000; transform: translate(51.76cqw, 20.11cqw) translate(-50%, -50%) rotate(6.76deg) scale(0.985); }
+  35.19% { opacity: 1.000; transform: translate(40.35cqw, 26.05cqw) translate(-50%, -50%) rotate(5.91deg) scale(0.780); }
+  36.88% { opacity: 0.788; transform: translate(30.24cqw, 33.87cqw) translate(-50%, -50%) rotate(4.65deg) scale(0.563); }
+  38.56% { opacity: 0.362; transform: translate(22.27cqw, 41.50cqw) translate(-50%, -50%) rotate(3.21deg) scale(0.432); }
+  40.25% { opacity: 0.112; transform: translate(16.64cqw, 47.63cqw) translate(-50%, -50%) rotate(1.81deg) scale(0.373); }
+  41.94% { opacity: 0.022; transform: translate(13.12cqw, 51.77cqw) translate(-50%, -50%) rotate(0.69deg) scale(0.354); }
+  43.62% { opacity: 0.002; transform: translate(11.28cqw, 54.02cqw) translate(-50%, -50%) rotate(0.06deg) scale(0.350); }
+  45.31% { opacity: 0.000; transform: translate(10.60cqw, 54.88cqw) translate(-50%, -50%) rotate(0.00deg) scale(0.350); }
+  47.00% { opacity: 0.000; transform: translate(10.50cqw, 55.00cqw) translate(-50%, -50%) rotate(0.00deg) scale(0.350); }
+  47.5%, 100% { opacity: 0; transform: translate(10.5cqw, 55.0cqw) translate(-50%, -50%) scale(.35); }
+}
+@keyframes fl-cur { 0% { transform: translate(84cqw, 50cqw); opacity: 0; } 5% { opacity: 1; } 13% { transform: translate(67cqw, 29cqw); } 15% { transform: translate(67cqw, 29cqw) scale(.88); } 17%, 70% { transform: translate(67cqw, 29cqw); opacity: 1; } 82%, 100% { transform: translate(84cqw, 50cqw); opacity: 0; } }
+@keyframes fl-save { 0%, 14% { background: rgba(255,255,255,.1); } 15% { background: rgba(255,255,255,.2); } 18%, 100% { background: rgba(255,255,255,.1); } }
+@keyframes fl-dim { 0%, 17% { opacity: 0; } 23%, 46% { opacity: 1; } 56%, 100% { opacity: 0; } }
+@keyframes fl-lib { 0%, 46% { transform: none; } 49% { transform: scale(1.18); } 53%, 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .flight * { animation: none !important; } .flight .row { opacity: 1; transform: translate(60cqw, 24cqw); } }
+
 .slide:not(.cur) .stage, .slide:not(.cur) .stage * { animation-play-state: paused !important; }
 
 /* arriving on a step: its rows and page settle in, a beat apart */
