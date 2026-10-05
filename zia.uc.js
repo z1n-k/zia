@@ -728,12 +728,17 @@
             scroll: { capture: true, mozSystemGroup: true },
             DOMContentLoaded: {},
             pageshow: {},
+            // (where the pointer is in the page, for a download's flight,
+            // 19-downloads)
+            mousedown: { capture: true, mozSystemGroup: true },
+            mousemove: { capture: true, mozSystemGroup: true },
           },
         },
         allFrames: false,
         messageManagerGroups: ["browsers"],
         // Firefox only starts a helper inside a website's process when told
-        // it's safe there; this one only reports how far a page scrolled.
+        // it's safe there; this one only reports how far a page scrolled,
+        // and where the pointer is in it.
         safeForUntrustedWebProcess: true,
       });
     } catch (err) {
@@ -6596,8 +6601,8 @@
   // animation turns this off too.
   let downloadFlightOn = false;
   const FLIGHT_POP_MS = 120;
-  const FLIGHT_WINDUP_MS = 300;
-  const FLIGHT_LAUNCH_MS = 340;
+  const FLIGHT_WINDUP_MS = 380;
+  const FLIGHT_LAUNCH_MS = 420;
   const FLIGHT_SETTLE_MS = 320;
 
   function flightTarget() {
@@ -6663,39 +6668,46 @@
     const dx = target.x - p0.x;
     const dy = target.y - p0.y;
     const distance = Math.hypot(dx, dy) || 1;
-    const ux = dx / distance;
-    const uy = dy / distance;
-    // the wind-up: back away from the button up or down, a little towards
-    // it sideways, tilting the way it'll be thrown
-    const wind = keep(p0.x + ux * 18, p0.y - Math.sign(uy || 1) * 34);
-    const tilt = -Math.sign(dx * dy || 1) * 6;
+    // The path, as Dia's: one swoop. It drops straight away from the
+    // button (down when the button's above, up when it's below), rounds
+    // the turn, then sweeps off in a long curve to the button: a cubic
+    // curve whose first handle points straight away and whose second sits
+    // out level with it, a little way towards the button.
+    const away = -Math.sign(dy || -1);
+    const drop = Math.min(120, Math.max(60, distance * 0.16));
+    const c1 = { x: p0.x, y: p0.y + away * drop };
+    const c2 = { x: p0.x + dx * 0.42, y: p0.y + away * drop * 1.1 };
+    const bez = (u, a, b, c, d) => (1 - u) ** 3 * a + 3 * (1 - u) ** 2 * u * b + 3 * (1 - u) * u ** 2 * c + u ** 3 * d;
+    const point = (u) => ({ x: bez(u, p0.x, c1.x, c2.x, target.x), y: bez(u, p0.y, c1.y, c2.y, target.y) });
     const at = (x, y, rotate, scale) => `translate(${x - p0.x}px, ${y - p0.y}px) translate(-50%, -50%) rotate(${rotate}deg) scale(${scale})`;
 
     row.style.left = `${p0.x}px`;
     row.style.top = `${p0.y}px`;
     const total = FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
     const o = (ms) => ms / total;
-    // the flight itself: a shallow curve, bowing away from straight a
-    // touch, fastest at first and easing into the button
     const frames = [
       { offset: 0, transform: at(start.clientX, start.clientY, 0, 0.45), opacity: 0, filter: "blur(0px)" },
-      { offset: o(FLIGHT_POP_MS), transform: at(p0.x, p0.y, 0, 1), opacity: 1, filter: "blur(0px)", easing: "cubic-bezier(0.35, 0, 0.25, 1)" },
-      { offset: o(FLIGHT_POP_MS + FLIGHT_WINDUP_MS * 0.4), transform: at(p0.x + (wind.x - p0.x) * 0.5, p0.y + (wind.y - p0.y) * 0.5, tilt * 0.45, 1.03), opacity: 1, filter: "blur(0px)" },
-      { offset: o(FLIGHT_POP_MS + FLIGHT_WINDUP_MS), transform: at(wind.x, wind.y, tilt, 1.04), opacity: 1, filter: "blur(0px)", easing: "cubic-bezier(0.3, 0, 0.2, 1)" },
+      { offset: o(FLIGHT_POP_MS), transform: at(p0.x, p0.y, 0, 1), opacity: 1, filter: "blur(0px)" },
     ];
-    const bow = Math.min(60, distance * 0.12);
-    const STEPS = 10;
+    // along the path: slow through the turn, then fast, easing in at the
+    // end; tilting with the curve, its leading end down as it drops and up
+    // as it climbs (a few degrees at most)
+    const STEPS = 28;
+    const flightMs = FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
     for (let i = 1; i <= STEPS; i++) {
       const t = i / STEPS;
-      const e = 1 - (1 - t) ** 2.4;
-      const sideways = bow * Math.sin(Math.PI * e);
-      const x = wind.x + (target.x - wind.x) * e - uy * sideways * Math.sign(tilt);
-      const y = wind.y + (target.y - wind.y) * e + ux * sideways * Math.sign(tilt);
+      const u = t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2;
+      const here = point(u);
+      const ahead = point(Math.min(1, u + 0.02));
+      const back = point(Math.max(0, u - 0.02));
+      const vx = ahead.x - back.x;
+      const climb = (Math.atan2(ahead.y - back.y, Math.abs(vx) || 0.001) * 180) / Math.PI;
+      const tilt = Math.max(-8, Math.min(8, climb * 0.12)) * (vx < 0 ? -1 : 1) * (1 - u);
       frames.push({
-        offset: o(FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS * t),
-        transform: at(x, y, tilt * (1 - e), 1.04 - 0.66 * e),
-        opacity: t < 0.55 ? 1 : Math.max(0, 1 - (t - 0.55) / 0.45),
-        filter: `blur(${(Math.max(0, t - 0.45) * 4).toFixed(2)}px)`,
+        offset: o(FLIGHT_POP_MS + flightMs * t),
+        transform: at(here.x, here.y, tilt, 1 - 0.65 * Math.max(0, (u - 0.45) / 0.55)),
+        opacity: u < 0.7 ? 1 : Math.max(0, 1 - (u - 0.7) / 0.3),
+        filter: `blur(${(Math.max(0, u - 0.6) * 5).toFixed(2)}px)`,
       });
     }
     const flight = row.animate(frames, { duration: total, easing: "linear", fill: "forwards" });
@@ -6755,14 +6767,18 @@
     if (!Downloads?.getList) {
       return;
     }
-    // (over the page too: the browser window sees the pointer move before
-    // the page does)
+    // (over the window's own parts; the page's are reported below)
     const track = (event) => {
       lastPointer = { clientX: event.clientX, clientY: event.clientY };
     };
     for (const type of ["mousemove", "mousedown", "mouseup"]) {
       document.addEventListener(type, track, { capture: true, passive: true });
     }
+    // (and inside the page, which the window doesn't see: the page's helper
+    // reports it, in screen terms, actors/ZiaChild.sys.mjs)
+    window.ziaOnPagePointer = (screenX, screenY) => {
+      lastPointer = { clientX: screenX - window.mozInnerScreenX, clientY: screenY - window.mozInnerScreenY };
+    };
     Downloads.getList(Downloads.ALL)
       .then((list) => {
         downloadFlightOn = true;

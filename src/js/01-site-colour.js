@@ -678,12 +678,17 @@
             scroll: { capture: true, mozSystemGroup: true },
             DOMContentLoaded: {},
             pageshow: {},
+            // (where the pointer is in the page, for a download's flight,
+            // 19-downloads)
+            mousedown: { capture: true, mozSystemGroup: true },
+            mousemove: { capture: true, mozSystemGroup: true },
           },
         },
         allFrames: false,
         messageManagerGroups: ["browsers"],
         // Firefox only starts a helper inside a website's process when told
-        // it's safe there; this one only reports how far a page scrolled.
+        // it's safe there; this one only reports how far a page scrolled,
+        // and where the pointer is in it.
         safeForUntrustedWebProcess: true,
       });
     } catch (err) {

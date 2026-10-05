@@ -2,6 +2,7 @@
 
 const THROTTLE_MS = 50;
 const SETTLE_MS = 80;
+const POINTER_MS = 120;
 
 export class ZiaChild extends JSWindowActorChild {
   #lastSent = 0;
@@ -16,6 +17,28 @@ export class ZiaChild extends JSWindowActorChild {
       case "pageshow":
         this.#onPageShown();
         break;
+      case "mousedown":
+        this.#sendPointer(event, true);
+        break;
+      case "mousemove":
+        this.#sendPointer(event, false);
+        break;
+    }
+  }
+
+  // Where the pointer is, in screen terms, for a download's flight in the
+  // browser window (a click at once, a move at most every POINTER_MS)
+  #pointerSent = 0;
+
+  #sendPointer(event, now) {
+    const time = Date.now();
+    if (!now && time - this.#pointerSent < POINTER_MS) {
+      return;
+    }
+    this.#pointerSent = time;
+    try {
+      this.sendAsyncMessage("Zia:Pointer", { screenX: event.screenX, screenY: event.screenY });
+    } catch (err) {
     }
   }
 

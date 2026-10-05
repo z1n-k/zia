@@ -4,6 +4,21 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.3] — 2026-10-05
+
+### Changed
+
+- The download's flight swoops as Dia's does: from just above the
+  pointer it drops away from the Library button, rounds the turn and
+  sweeps off in a long curve to it, slow through the turn and fast
+  across the sweep, tilting with the curve.
+
+### Fixed
+
+- The flight starts above the pointer when you click inside a page too:
+  the browser window never saw those clicks, so it started where the
+  last click outside the page had been.
+
 ## [2.95.2] — 2026-10-05
 
 ### Fixed
