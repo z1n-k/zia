@@ -26,14 +26,10 @@
   function measureFolderSlot() {
     // (not a glance: its tab sits inside the one it came from, drawn as a
     // small picture, and the slot shrank to that while a glance was open)
-    // (nor a split's tab, drawn inside its card, nor one being dragged or
-    // pressed, which is scaled)
     const visible = (tab) =>
       tab.getBoundingClientRect().height > 8 &&
       !tab.hasAttribute("zen-empty-tab") &&
       !tab.hasAttribute("zen-glance-tab") &&
-      !tab.hasAttribute("zia-dragging") &&
-      !tab.closest("tab-group[split-view-group]") &&
       !tab.parentElement?.closest(".tabbrowser-tab");
     const inFolder = [...document.querySelectorAll("zen-folder:not([collapsed]) > .tab-group-container > .tabbrowser-tab")].find(visible);
     const tab =
@@ -72,10 +68,7 @@
         end = inner.right - (boxRight - gap);
       }
     }
-    // (its height as laid out: the box on screen is bigger while the tab
-    // springs or is pressed, and the slot could come out taller than a tab)
-    const height = parseFloat(getComputedStyle(bg).height) || b.height;
-    const next = [top, bottom, start, end, height].map((n) => `${Math.round(n * 2) / 2}px`).join(" ");
+    const next = [top, bottom, start, end, b.height].map((n) => `${Math.round(n * 2) / 2}px`).join(" ");
     if (next === slotSize) {
       return;
     }

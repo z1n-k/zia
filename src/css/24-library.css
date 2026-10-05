@@ -121,8 +121,18 @@
     }
 
     /* search and filters: Zia's field and tiles */
+    /* the traffic lights as far down from the top as in the sidebar (Zen's
+       12px, and the 3px more Zia gives them there, 06-folders-and-sidebar,
+       which they lose on moving in), and the search and its buttons beside
+       them down as much */
+    @media (-moz-platform: macos) {
+      & #zen-library-header {
+        padding-top: 17px !important;
+      }
+    }
+
     & .zen-library-search-top {
-      padding: 10px 10px 6px !important;
+      padding: 15px 10px 6px !important;
     }
 
     & .zen-library-search-box {

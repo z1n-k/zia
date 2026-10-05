@@ -6,11 +6,13 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
-### Fixed
+### Changed
 
-- An empty folder's dashed "Drag tabs here" slot is the height of a tab
-  again: it could be measured off a tab that was springing, pressed,
-  being dragged or in a split, and come out taller.
+- The glass on the tile inside a selected essential, and on the glance
+  card, is softer: its light top and bottom a touch dimmer, its dark
+  sides a touch lighter.
+- The Library's traffic lights, search and buttons sit as far down from
+  the top as the sidebar's traffic lights do (they were 5px higher).
 
 ## [2.94.4] — 2026-10-05
 
