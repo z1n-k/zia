@@ -5543,8 +5543,8 @@ tooltip[default="true"] {
 
 
 /* A download flying to the Library button as a row, as in Dia (zia.uc.js):
-   the window dimmed, a beam of light from the row to the button and a
-   bloom where it lands, and the row itself, a small glass row with the
+   the window dimmed, a faint glow trailing the row and a soft bloom where
+   it lands, and the row itself, a small glass row with the
    file's icon and name, as AI renaming's card is drawn */
 #zia-download-flight {
   position: fixed;
@@ -5560,22 +5560,25 @@ tooltip[default="true"] {
     opacity: 0;
   }
 
+  /* (the glow trailing the row: its size, very faint and soft) */
   & > .zia-df-beam {
     position: absolute;
-    height: 150px;
-    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.14) 55%, transparent);
-    filter: blur(14px);
+    width: 200px;
+    height: 70px;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.07), transparent);
+    filter: blur(12px);
     mix-blend-mode: screen;
     opacity: 0;
   }
 
   & > .zia-df-bloom {
     position: absolute;
-    width: 220px;
-    height: 220px;
-    margin: -110px 0 0 -110px;
+    width: 160px;
+    height: 160px;
+    margin: -80px 0 0 -80px;
     border-radius: 50%;
-    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.16) 50%, transparent);
+    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 50%, transparent);
     mix-blend-mode: screen;
     opacity: 0;
   }
@@ -5620,11 +5623,11 @@ tooltip[default="true"] {
   }
 
   & > .zia-df-beam {
-    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.35) 55%, transparent);
+    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.22), transparent);
   }
 
   & > .zia-df-bloom {
-    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.35) 50%, transparent);
+    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.1) 50%, transparent);
   }
 
   & > .zia-df-row {

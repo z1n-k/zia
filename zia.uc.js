@@ -6591,8 +6591,8 @@
   // tilting a few degrees, as a thing about to be thrown), then is flung
   // along a shallow curve to the button, levelling out, shrinking and
   // fading as it gets there; the button gives a nudge as it lands. While
-  // it flies the window dims, a beam of light running from the row to the
-  // button and a soft bloom where it lands. Zen's own switch for its
+  // it flies the window dims, a faint glow trailing the row and a soft
+  // bloom where it lands. Zen's own switch for its
   // animation turns this off too.
   let downloadFlightOn = false;
   const FLIGHT_POP_MS = 120;
@@ -6658,7 +6658,7 @@
       x: Math.min(window.innerWidth - width / 2 - 8, Math.max(width / 2 + 8, x)),
       y: Math.min(window.innerHeight - height / 2 - 8, Math.max(height / 2 + 8, y)),
     });
-    // (centred just above where you clicked, as in Dia)
+    // (centred just above the pointer, as in Dia)
     const p0 = keep(start.clientX, start.clientY - height * 0.9);
     const dx = target.x - p0.x;
     const dy = target.y - p0.y;
@@ -6713,22 +6713,17 @@
       { duration: settle, easing: "linear", fill: "forwards" }
     );
 
-    // the beam: from the row to the button, drawn out as it's thrown
-    const length = Math.hypot(target.x - wind.x, target.y - wind.y) + 120;
-    const angle = (Math.atan2(target.y - wind.y, target.x - wind.x) * 180) / Math.PI;
-    Object.assign(beam.style, { left: `${wind.x}px`, top: `${wind.y}px`, width: `${length}px` });
-    beam.style.transform = `translate(-60px, -50%) rotate(${angle}deg)`;
-    beam.style.transformOrigin = "60px 50%";
+    // the light: a faint glow trailing just behind the row along its own
+    // path, as in Dia, only a breath brighter than the dim
+    beam.style.left = row.style.left;
+    beam.style.top = row.style.top;
     beam.animate(
-      [
-        { opacity: 0, scale: "0.15 0.6" },
-        { opacity: 0, scale: "0.15 0.6", offset: so(FLIGHT_POP_MS + FLIGHT_WINDUP_MS * 0.85), easing: "ease-out" },
-        { opacity: 0.85, scale: "0.25 0.8", offset: so(FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS * 0.15) },
-        { opacity: 1, scale: "1 1", offset: so(FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS * 0.6) },
-        { opacity: 0.5, scale: "1 0.8", offset: so(total) },
-        { opacity: 0, scale: "1 0.6" },
-      ],
-      { duration: settle, easing: "linear", fill: "forwards" }
+      frames.map((frame, i) => ({
+        offset: frame.offset,
+        transform: frame.transform.replace(/scale\(([\d.]+)\)/, (_, n) => `scale(${(Number(n) * 1.6).toFixed(3)})`),
+        opacity: i < 3 ? 0 : frame.opacity,
+      })),
+      { duration: total, delay: 40, easing: "linear", fill: "forwards" }
     );
 
     // the bloom where it lands
@@ -6753,10 +6748,20 @@
     flight.finished.catch(() => stage.remove());
   }
 
+  let lastPointer = null;
+
   function flyDownloadRows() {
     const Downloads = window.Downloads;
     if (!Downloads?.getList) {
       return;
+    }
+    // (over the page too: the browser window sees the pointer move before
+    // the page does)
+    const track = (event) => {
+      lastPointer = { clientX: event.clientX, clientY: event.clientY };
+    };
+    for (const type of ["mousemove", "mousedown", "mouseup"]) {
+      document.addEventListener(type, track, { capture: true, passive: true });
     }
     Downloads.getList(Downloads.ALL)
       .then((list) => {
@@ -6766,7 +6771,9 @@
             try {
               // (only one just started, here, and not those listed on startup)
               const fresh = !download.succeeded && Date.now() - (download.startTime?.getTime?.() ?? 0) < 5000;
-              const start = window.gZenUIManager?._lastClickPosition;
+              // where the pointer is now (a save dialog in between, the
+              // last click was the menu's, back where the menu was)
+              const start = lastPointer || window.gZenUIManager?._lastClickPosition;
               if (
                 !fresh ||
                 !start ||
