@@ -436,6 +436,7 @@
     safely("dressLibrary", dressLibrary);
     safely("clearLibraryBadgeSoon", clearLibraryBadgeSoon);
     safely("loadTidyDownloads", loadTidyDownloads);
+    safely("watchLiquidGlass", watchLiquidGlass);
 
     updateColor();
     updateTitle();

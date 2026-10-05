@@ -105,6 +105,12 @@
   },
   {
     "type": "checkbox",
+    "label": "Liquid glass essentials: each tile bends the space's colours at its rim, like macOS Tahoe (experimental)",
+    "property": "zia.liquid-glass",
+    "defaultValue": false
+  },
+  {
+    "type": "checkbox",
     "label": "Zen's own Library look (off: Zia's)",
     "property": "zia.library.zen-look",
     "defaultValue": false
