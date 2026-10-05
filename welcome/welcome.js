@@ -50,9 +50,9 @@
     // 2.94: a photo saved, the Library button glowing while the AI thinks,
     // then the rename card with its new name
     rename: () => `<div class="stage rename"><div class="w-side">${rows(3).replace(/<span class="w-key">\d<\/span>/g, "")}</div>
-      <div class="w-page"><div class="photo"><i></i></div><div class="save">Save image</div></div>
+      <div class="w-page"><div class="photo"><svg viewBox="0 0 24 24"><path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12"/><path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5"/><path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3"/></svg></div><div class="save">Save image</div></div>
       <div class="foot"><span class="lib"></span><span class="dots"><i></i><i></i></span></div>
-      <div class="rc"><div class="h"><span class="ck"></span>Renamed from <s>pexels-optical-chemist-3408744</s></div><div class="r"><span class="th"></span><b>black-dog-on-road.jpg</b></div></div></div>`,
+      <div class="rc"><div class="h"><span class="ck"></span>Renamed from <s>pexels-optical-chemist-3408744</s></div><div class="r"><span class="th"><svg viewBox="0 0 24 24"><path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12"/><path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5"/><path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3"/></svg></span><b>black-dog-on-road.jpg</b></div></div></div>`,
     ink: () => `<div class="stage ink"><div class="bar"><svg viewBox="0 0 24 24"><path d="M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"/><path d="M9 4v16"/></svg><svg viewBox="0 0 24 24"><path d="M15 6l-6 6l6 6"/></svg><svg viewBox="0 0 24 24" class="off"><path d="M9 6l6 6l-6 6"/></svg><svg viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg>
       <span class="url"><b>journal.page</b> / Morning pages</span></div>
       <div class="body"><i class="h"></i><i class="l"></i><i class="l"></i><i class="l s"></i></div></div>`,

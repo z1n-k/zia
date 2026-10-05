@@ -444,8 +444,8 @@ kbd > span, .w-key > span { position: static; display: block; text-box: trim-bot
 /* downloads that name themselves: a photo saved, the Library button glows
    while the AI thinks, then the rename card rises with its new name (9s) */
 .rename .w-page { overflow: hidden; }
-.rename .photo { left: 50%; top: 12%; width: 56%; height: 62%; translate: -50% 0; border-radius: 1.4cqw; background: linear-gradient(#55606b, #39424a 60%, #2c3136); }
-.rename .photo i { left: 32%; bottom: 14%; width: 34%; height: 46%; border-radius: 42% 50% 18% 24%; background: #111; }
+.rename .photo { left: 50%; top: 14%; width: 40%; aspect-ratio: 1; translate: -50% 0; border-radius: 2.4cqw; background: rgba(255,255,255,.06); display: grid; place-items: center; }
+.rename .photo svg, .rename .rc .th svg { position: static; width: 56%; height: 56%; fill: none; stroke: rgba(255,255,255,.55); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
 .rename .save { left: 50%; top: 52%; padding: .9cqw 1.6cqw; border-radius: 1cqw; background: rgba(28,28,30,.92); color: rgba(255,255,255,.85); font: 500 1.7cqw/1 -apple-system, system-ui, sans-serif; box-shadow: 0 1cqw 3cqw rgba(0,0,0,.4); opacity: 0; animation: rn-save 9s var(--ease) infinite; }
 .rename .foot { left: 6cqw; width: 34cqw; bottom: 5cqw; height: 5cqw; display: flex; align-items: center; justify-content: space-between; padding: 0 1.4cqw; }
 .rename .foot > * { position: relative; }
@@ -463,8 +463,9 @@ kbd > span, .w-key > span { position: static; display: block; text-box: trim-bot
 .rename .rc s { text-decoration-thickness: 1px; overflow: hidden; text-overflow: ellipsis; }
 .rename .rc .r { display: flex; align-items: center; gap: 1.2cqw; height: 5.4cqw; padding: 0 1.2cqw; border-radius: 1.4cqw; background: rgba(255,255,255,.08); }
 .rename .rc .r > * { position: relative; }
-.rename .rc .th { width: 3cqw; height: 3cqw; border-radius: .7cqw; flex: none; background: linear-gradient(#55606b, #2c3136); }
-.rename .rc b { font: 600 1.8cqw/1 -apple-system, system-ui, sans-serif; color: rgba(255,255,255,.95); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rename .rc .th { width: 3cqw; height: 3cqw; border-radius: .7cqw; flex: none; background: rgba(255,255,255,.1); display: grid; place-items: center; }
+.rename .rc .th svg { width: 72%; height: 72%; stroke: rgba(255,255,255,.8); stroke-width: 1.8; }
+.rename .rc b { font: 600 1.8cqw/1.35 -apple-system, system-ui, sans-serif; color: rgba(255,255,255,.95); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @keyframes rn-save { 0%, 6% { opacity: 0; translate: 0 .6cqw; } 10%, 18% { opacity: 1; translate: 0 0; } 22%, 100% { opacity: 0; } }
 @keyframes rn-lib { 0%, 20% { box-shadow: none; background: rgba(255,255,255,.35); } 24%, 44% { box-shadow: 0 0 0 .25cqw #5ab9f5, 0 0 2cqw rgba(90,185,245,.45); background: rgba(255,255,255,.75); } 50%, 100% { box-shadow: none; background: rgba(255,255,255,.35); } }
 @keyframes rn-card { 0%, 46% { opacity: 0; transform: translateY(1.4cqw) scale(.98); } 52%, 88% { opacity: 1; transform: none; } 96%, 100% { opacity: 0; transform: translateY(.6cqw) scale(.99); } }
