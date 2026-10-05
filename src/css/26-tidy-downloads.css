@@ -9,7 +9,6 @@
   --zia-rc-glass: color-mix(in srgb, var(--zia-urlbar-open-bg) 78%, transparent);
   --zia-rc-ink: var(--zia-sidebar-ink, rgb(255, 255, 255));
   --zia-rc-row: rgba(255, 255, 255, 0.08);
-  --zia-rc-edge: rgba(255, 255, 255, 0.14);
   --zia-rc-hover: rgba(255, 255, 255, 0.1);
 
   position: absolute;
@@ -22,9 +21,10 @@
   margin: 0;
   padding: 6px;
   border-radius: calc(var(--zia-pop-row-radius, 8px) + 6px);
+  corner-shape: var(--zia-squircle) !important;
   background: var(--zia-rc-glass);
   backdrop-filter: blur(24px) saturate(1.6);
-  box-shadow: inset 0 0 0 var(--zia-shine-width) var(--zia-rc-edge), 0 10px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--zia-glass-edge), 0 10px 30px rgba(0, 0, 0, 0.3);
   color: var(--zia-rc-ink);
   font-size: var(--zia-text-size);
   -moz-window-dragging: no-drag;
@@ -179,9 +179,8 @@
 :root[zia-light] #zia-rename-card {
   --zia-rc-glass: rgba(250, 250, 251, 0.84);
   --zia-rc-row: rgba(0, 0, 0, 0.05);
-  --zia-rc-edge: rgba(0, 0, 0, 0.1);
   --zia-rc-hover: rgba(0, 0, 0, 0.06);
-  box-shadow: inset 0 0 0 var(--zia-shine-width) var(--zia-rc-edge), 0 10px 30px rgba(0, 0, 0, 0.14);
+  box-shadow: var(--zia-glass-edge), 0 10px 30px rgba(0, 0, 0, 0.14);
 }
 
 /* In compact mode it's one of Zen's toasts instead, with an Undo, a pill
@@ -211,47 +210,5 @@
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.2);
-  }
-}
-
-/* Optional: a glowing edge in the loading line's colour (Zia blue, or the
-   space's accent with "Use Zen's accent colour for the loading bar"), with
-   the line's gentle shimmer */
-@media -moz-pref("zia.tidy-downloads.glow") {
-  #zia-rename-card {
-    box-shadow:
-      0 0 14px color-mix(in srgb, var(--zia-loading-color) 28%, transparent),
-      0 10px 30px rgba(0, 0, 0, 0.3);
-
-    &::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      padding: 1px;
-      border-radius: inherit;
-      background: linear-gradient(
-        135deg,
-        color-mix(in srgb, var(--zia-loading-color) 70%, transparent),
-        var(--zia-loading-color) 55%,
-        color-mix(in srgb, var(--zia-loading-color) 55%, white) 100%
-      );
-      mask:
-        linear-gradient(#000 0 0) content-box exclude,
-        linear-gradient(#000 0 0);
-      pointer-events: none;
-      animation: zia-loading-shimmer 1.4s ease-in-out infinite;
-    }
-  }
-
-  :root[zia-light] #zia-rename-card {
-    box-shadow:
-      0 0 14px color-mix(in srgb, var(--zia-loading-color) 22%, transparent),
-      0 10px 30px rgba(0, 0, 0, 0.14);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    #zia-rename-card::before {
-      animation: none;
-    }
   }
 }

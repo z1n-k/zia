@@ -42,8 +42,11 @@ Every release of Zia, newest first. The format follows
   small glass pop-up in Zia's look floats above the sidebar's foot,
   moving nothing, out of the way while the Library is open; in compact
   mode a toast says it, with an Undo. Downloads from private
-  windows are never sent to an AI service. The card has a glowing edge in
-  the loading line's colour, which can be turned off in settings.
+  windows are never sent to an AI service. The card has Zia's glass edge.
+  The AI is told the page's address too (stock photo sites describe the
+  picture there), and is sent a small copy of a downloaded picture, so it
+  can name it by what it shows (a model that can't see pictures is asked
+  again without it).
 
 ### Fixed
 

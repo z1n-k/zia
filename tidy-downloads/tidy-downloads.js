@@ -101,7 +101,9 @@
 
   const SYSTEM_PROMPT = `I am downloading a file. Rewrite its filename to be helpful, concise and readable. 2-4 words.
 - IMPORTANT: Return ONLY the new filename. Do not provide explanations, conversational text, or "based on the information provided".
-- Keep informative names mostly the same. For non-informative names, add information from the tab title or website.
+- Keep informative names mostly the same. For non-informative names, add information from the tab title, the page's address or the website.
+- A picture of the file may be attached: then name the file for what the picture shows, in a few words.
+- A site's name, a person's username and a number (pexels-jane-doe-3408744.jpg, AdobeStock_184679416.jpg, unsplash-xyz.jpg) are not informative; name such a file for what it shows, or for the page's address or title.
 - Remove machine-generated cruft, like IDs, (1), (copy), etc.
 - Clean up messy text, especially dates. Make timestamps concise, human readable, and remove seconds.
 - Clean up text casing and letter spacing to make it easier to read.
@@ -113,6 +115,7 @@ Some examples, in the form "original name, tab title, domain -> new name"
 - 'image.png', 'Feedback: Card border radius - nateparro2t@gmail.com - Gmail', 'mail.google.com' -> 'Card border radius feedback.png'
 - 'Brooklyn_Bridge_September_2022_008.jpg', 'nyc bridges - Google Images', 'images.google.com' -> 'Brooklyn Bridge Sept 2022.jpg'
 - 'AdobeStock_184679416.jpg', 'ladybug - Google Images', 'images.google.com' -> 'Ladybug.jpg'
+- 'pexels-optical-chemist-3408744.jpg', 'Free Download Photos', 'pexels.com/photo/black-dog-on-road-3408744' -> 'Black dog on road.jpg'
 - 'CleanShot 2023-08-17 at 19.51.05@2x.png', 'dogfooding - The Browser Company - Slack', 'app.slack.com' -> 'CleanShot Aug 17 from dogfooding.png'
 - 'Screenshot 2023-09-26 at 11.12.18 PM', 'DM with Nate - Twitter', 'twitter.com' -> 'Sept 26 Screenshot from Nate.png'
 - 'image0.png', 'Nate - Slack', 'files.slack.com' -> 'Slack Image from Nate.png'`;
@@ -145,40 +148,21 @@ Some examples, in the form "original name, tab title, domain -> new name"
     const user = `Original filename: '${context.filename}'
 Source domain: '${context.domain}'
 Source tab title: '${context.title}'
+Page address: '${context.page}'
 Page Header: '${context.header}'
 
 Instructions:
 1. First, check if the "Original filename" is already descriptive (contains real words, e.g., "viper-gaming-valorant-hd..."). If so, prioritize cleaning it up (remove random strings, IDs, dates) rather than rewriting it completely from the context.
-2. ONLY if the "Original filename" is meaningless gibberish (e.g., "wp13801370.jpg", "OIP.jpg", "image.png"), rename it based on the "Source tab title" or "Page Header".
+2. ONLY if the "Original filename" is meaningless gibberish (e.g., "wp13801370.jpg", "OIP.jpg", "image.png"), rename it based on the "Source tab title", "Page address" or "Page Header".
 3. Return ONLY the new filename.`;
-
-    const headers = { "Content-Type": "application/json" };
-    let body;
-    if (ai.id === "anthropic") {
-      headers["x-api-key"] = ai.key;
-      headers["anthropic-version"] = "2023-06-01";
-      body = { model: ai.model, max_tokens: 50, temperature: 0.1, system: SYSTEM_PROMPT, messages: [{ role: "user", content: user }] };
-    } else {
-      if (ai.key) {
-        headers.Authorization = `Bearer ${ai.key}`;
-      }
-      if (ai.id === "openrouter") {
-        headers["HTTP-Referer"] = "https://github.com/z1n-k/zia";
-        headers["X-Title"] = "Zia";
-      }
-      body = {
-        model: ai.model,
-        temperature: 0.1,
-        max_tokens: 50,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: user },
-        ],
-      };
+    const ask = (picture) => request(ai, picture ? withPicture(ai, user + PICTURE_NOTE, picture) : user, signal);
+    log(`Asking ${ai.label} (${ai.model}) about`, context.filename, context.picture ? "(with its picture)" : "");
+    let response = await ask(context.picture);
+    // (a model that can't see pictures: asked again with the words alone)
+    if (!response.ok && context.picture && response.status >= 400 && response.status < 500 && response.status !== 401 && response.status !== 429) {
+      log(`${ai.label} took no picture (${response.status}); asking without it`);
+      response = await ask(null);
     }
-
-    log(`Asking ${ai.label} (${ai.model}) about`, context.filename);
-    const response = await fetch(ai.url, { method: "POST", headers, body: JSON.stringify(body), signal });
     if (!response.ok) {
       throw new Error(failureReason(response.status, await response.text()));
     }
@@ -193,6 +177,54 @@ Instructions:
     return name;
   }
 
+  const PICTURE_NOTE = "\nThe file's picture is attached: name it for what it shows.";
+
+  // The question with the file's picture, in each service's own form
+  function withPicture(ai, text, picture) {
+    if (ai.id === "anthropic") {
+      return [
+        { type: "image", source: { type: "base64", media_type: "image/jpeg", data: picture.split(",")[1] } },
+        { type: "text", text },
+      ];
+    }
+    // (Mistral takes the picture's address on its own; the rest in an object)
+    const image = ai.id === "mistral" ? picture : { url: picture };
+    return [
+      { type: "text", text },
+      { type: "image_url", image_url: image },
+    ];
+  }
+
+  // One request to the service: the question as text, or with a picture
+  function request(ai, question, signal) {
+    const headers = { "Content-Type": "application/json" };
+    let body;
+    if (ai.id === "anthropic") {
+      headers["x-api-key"] = ai.key;
+      headers["anthropic-version"] = "2023-06-01";
+      body = { model: ai.model, max_tokens: 50, temperature: 0.1, system: SYSTEM_PROMPT, messages: [{ role: "user", content: question }] };
+    } else {
+      if (ai.key) {
+        headers.Authorization = `Bearer ${ai.key}`;
+      }
+      if (ai.id === "openrouter") {
+        headers["HTTP-Referer"] = "https://github.com/z1n-k/zia";
+        headers["X-Title"] = "Zia";
+      }
+      body = {
+        model: ai.model,
+        temperature: 0.1,
+        max_tokens: 50,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: question },
+        ],
+      };
+    }
+
+    return fetch(ai.url, { method: "POST", headers, body: JSON.stringify(body), signal });
+  }
+
   // ---------- what the file came from
   function pageContext(download, filename) {
     const source = download.source?.url || "";
@@ -203,8 +235,18 @@ Instructions:
     } catch (err) {
       // (a data: or blob: download)
     }
-    const tab = gBrowser.tabs.find((t) => [source, referrer].includes(t.linkedBrowser?.currentURI?.spec));
+    // (the tab it came from, or the one in front, where it was just saved)
+    const tab = gBrowser.tabs.find((t) => [source, referrer].includes(t.linkedBrowser?.currentURI?.spec)) || gBrowser.selectedTab;
     let title = tab?.label || "unknown";
+    // The page's address, which on many sites says what's on it
+    // (pexels.com/photo/black-dog-on-road-3408744): without its query
+    let page = "unknown";
+    try {
+      const url = new URL(referrer || tab?.linkedBrowser?.currentURI?.spec || source);
+      page = `${url.hostname}${url.pathname}`.replace(/\/+$/, "");
+    } catch (err) {
+      // (no address)
+    }
     let header = "unknown";
     // from a search engine's images, the search is what names the file
     for (const spec of [referrer, source, gBrowser.selectedBrowser?.currentURI?.spec]) {
@@ -225,7 +267,30 @@ Instructions:
         // (not a URL)
       }
     }
-    return { filename, domain, title, header };
+    return { filename, domain, title, page, header };
+  }
+
+  // A small JPEG of a picture download, for a service that can see it (at
+  // most 512px a side), or null
+  const PICTURES = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif", ".bmp"]);
+  async function pictureOf(path, extension) {
+    if (!PICTURES.has(extension)) {
+      return null;
+    }
+    try {
+      const image = new Image();
+      image.src = Services.io.newFileURI(new lazy.FileUtils.File(path)).spec;
+      await image.decode();
+      const scale = Math.min(1, 512 / Math.max(image.naturalWidth, image.naturalHeight));
+      const canvas = document.createElementNS(XHTML, "canvas");
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+      canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL("image/jpeg", 0.8);
+    } catch (err) {
+      log("Couldn't read the picture:", err);
+      return null;
+    }
   }
 
   // ---------- names and files
@@ -370,7 +435,9 @@ Instructions:
     button?.setAttribute("zia-renaming", "true");
     let suggestion;
     try {
-      suggestion = await suggestName(pageContext(download, name), controller.signal);
+      const context = pageContext(download, name);
+      context.picture = await pictureOf(path, extension);
+      suggestion = await suggestName(context, controller.signal);
     } finally {
       clearTimeout(timeout);
       button?.removeAttribute("zia-renaming");

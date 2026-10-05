@@ -366,12 +366,6 @@
     "defaultValue": false
   },
   {
-    "type": "checkbox",
-    "label": "The rename card has a glowing edge in the loading line's colour",
-    "property": "zia.tidy-downloads.glow",
-    "defaultValue": true
-  },
-  {
     "property": "extensions.downloads.ai_provider",
     "label": "AI service",
     "type": "dropdown",
