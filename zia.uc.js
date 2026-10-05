@@ -6792,6 +6792,72 @@
     flight.finished.catch(() => stage.remove());
   }
 
+  // Firefox's "What should Zen do with this file?" box opened wherever the
+  // system put it, top left of the screen: it's centred on the page of the
+  // window it's for, every time, and saving from it sends the download's
+  // flight from there.
+  let savedFromDialog = null;
+  const DOWNLOAD_DIALOG = "chrome://mozapps/content/downloads/unknownContentType.xhtml";
+
+  function pageBoxOnScreen() {
+    const page = document.getElementById("tabbrowser-tabpanels")?.getBoundingClientRect();
+    if (!page || !page.width) {
+      return null;
+    }
+    return { left: window.mozInnerScreenX + page.left, top: window.mozInnerScreenY + page.top, width: page.width, height: page.height, client: page };
+  }
+
+  function centreDownloadDialog(dialog) {
+    // (only the window it's for: the front browser window)
+    if (Services.wm.getMostRecentWindow("navigator:browser") !== window) {
+      return;
+    }
+    const place = () => {
+      const page = pageBoxOnScreen();
+      if (!page || dialog.closed) {
+        return;
+      }
+      dialog.moveTo(
+        Math.round(page.left + (page.width - dialog.outerWidth) / 2),
+        Math.round(page.top + (page.height - dialog.outerHeight) / 2)
+      );
+    };
+    place();
+    // (once it's sized itself to what it shows)
+    dialog.requestAnimationFrame(() => dialog.requestAnimationFrame(place));
+    dialog.document.addEventListener("dialogaccept", () => {
+      const page = pageBoxOnScreen();
+      if (page) {
+        savedFromDialog = { clientX: page.client.left + page.client.width / 2, clientY: page.client.top + page.client.height / 2, at: Date.now() };
+      }
+    });
+  }
+
+  function watchDownloadDialog() {
+    const observer = {
+      observe(subject, topic) {
+        if (topic !== "domwindowopened") {
+          return;
+        }
+        subject.addEventListener(
+          "load",
+          () => {
+            if (subject.location?.href === DOWNLOAD_DIALOG) {
+              try {
+                centreDownloadDialog(subject);
+              } catch (err) {
+                noteError("downloads: centre dialog", err);
+              }
+            }
+          },
+          { once: true }
+        );
+      },
+    };
+    Services.ww.registerNotification(observer);
+    window.addEventListener("unload", () => Services.ww.unregisterNotification(observer), { once: true });
+  }
+
   function flyDownloadRows() {
     const Downloads = window.Downloads;
     if (!Downloads?.getList) {
@@ -6805,12 +6871,17 @@
             try {
               // (only one just started, here, and not those listed on startup)
               const fresh = !download.succeeded && Date.now() - (download.startTime?.getTime?.() ?? 0) < 5000;
-              const start = window.gZenUIManager?._lastClickPosition;
+              // (from where Firefox's "what should Zen do with this file?"
+              // box was, if that's where it was saved from, 2s ago at most)
+              const fromDialog = savedFromDialog && Date.now() - savedFromDialog.at < 2000 ? savedFromDialog : null;
+              savedFromDialog = null;
+              const start = fromDialog || window.gZenUIManager?._lastClickPosition;
               if (
                 !fresh ||
                 !start ||
                 !Services.prefs.getBoolPref("zen.downloads.download-animation", true) ||
-                Services.focus.activeWindow !== window ||
+                // (this window, the front one, or the one that box came from)
+                (Services.focus.activeWindow !== window && !fromDialog) ||
                 matchMedia("(prefers-reduced-motion: reduce)").matches
               ) {
                 return;
@@ -17794,6 +17865,7 @@
     safely("addDownloadProgress", addDownloadProgress);
     safely("flyFirstDownloadToButton", flyFirstDownloadToButton);
     safely("flyDownloadRows", flyDownloadRows);
+    safely("watchDownloadDialog", watchDownloadDialog);
     ifOn("icon-picker", "addIconPicker", addIconPicker);
     safely("watchCompactTopRow", watchCompactTopRow);
     safely("watchOldIcons", watchOldIcons);
