@@ -4,6 +4,21 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.15] — 2026-10-05
+
+### Changed
+
+- The address bar option now reads as the others do: "Zia's address bar
+  (off: Zen's own)", on by default. Anyone who'd turned Zen's on keeps it
+  (#302).
+
+### Fixed
+
+- With Zen's single toolbar (the address bar in the sidebar), the address
+  bar lines up with the sidebar's edges and the essentials under it: the
+  toolbar's own spacing pushed it in.
+- With Zen's own address bar, the address keeps Zen's softer colour.
+
 ## [2.95.14] — 2026-10-05
 
 ### Fixed

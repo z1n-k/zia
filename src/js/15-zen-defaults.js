@@ -60,6 +60,18 @@
     } catch (err) {
       noteError("zen defaults: acrylic", err);
     }
+    set("zia.urlbar.zia-look", true);
+    // 2.95.11's "Zen's own address bar" is now "Zia's address bar", the other
+    // way round, as the other options are: anyone who'd turned Zen's on
+    // keeps it
+    try {
+      if (Services.prefs.getBoolPref("zia.urlbar.zen-look", false)) {
+        Services.prefs.setBoolPref("zia.urlbar.zia-look", false);
+      }
+      Services.prefs.clearUserPref("zia.urlbar.zen-look");
+    } catch (err) {
+      noteError("zen defaults: address bar look", err);
+    }
     set("zia.essentials.fill-row", false);
     set("zia.essentials.split", true);
     set("zia.pip.dia-style", true);

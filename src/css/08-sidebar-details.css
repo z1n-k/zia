@@ -1,12 +1,16 @@
-#urlbar:not([breakout-extend]) .urlbar-input {
-  color: rgb(255, 255, 255) !important;
-}
-:root[zia-site-dark="true"] #urlbar:not([breakout-extend]) .urlbar-input {
-  color: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
-}
+/* the address in the toolbar's ink (with Zia's address bar; Zen's keeps
+   its own, softer) */
+@media -moz-pref("zia.urlbar.zia-look") {
+  #urlbar:not([breakout-extend]) .urlbar-input {
+    color: rgb(255, 255, 255) !important;
+  }
+  :root[zia-site-dark="true"] #urlbar:not([breakout-extend]) .urlbar-input {
+    color: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
+  }
 
-:root[zia-site-light="true"] #urlbar:not([breakout-extend]) .urlbar-input {
-  color: var(--zia-light-ink) !important;
+  :root[zia-site-light="true"] #urlbar:not([breakout-extend]) .urlbar-input {
+    color: var(--zia-light-ink) !important;
+  }
 }
 
 :is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container > label,

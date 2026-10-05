@@ -1,8 +1,8 @@
 /* Zia's address bar, all of it (the bar, its loading line, the page's
-   title in it, the copy-link and site buttons, the pop-up): off with
-   "Zen's own address bar", zia.urlbar.zen-look, which leaves the bar as
-   Zen draws it and keeps the rest of Zia */
-@media not -moz-pref("zia.urlbar.zen-look") {
+   title in it, the copy-link and site buttons, the pop-up), with "Zia's
+   address bar" on, zia.urlbar.zia-look; off leaves the bar as Zen draws
+   it and keeps the rest of Zia */
+@media -moz-pref("zia.urlbar.zia-look") {
   #urlbar:not(:hover):not([focused]):not([breakout-extend]) > .urlbar-background {
     background: transparent !important;
     box-shadow: none !important;
@@ -612,7 +612,7 @@
   stroke-opacity: 1 !important;
 }
 
-@media not -moz-pref("zia.urlbar.zen-look") {
+@media -moz-pref("zia.urlbar.zia-look") {
   :root #urlbar[breakout-extend]:not([zia-classic]) {
     color-scheme: dark !important;
     color: rgb(251, 251, 254) !important;
@@ -655,7 +655,7 @@
 }
 
 /* Zen's own address bar: Zia's parts of it put away, Zen's back */
-@media -moz-pref("zia.urlbar.zen-look") {
+@media not -moz-pref("zia.urlbar.zia-look") {
   #urlbar :is(#zia-url-title, #zia-url-plain, #zia-copy-link-button) {
     display: none !important;
   }
