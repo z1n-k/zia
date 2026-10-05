@@ -42,14 +42,18 @@
     --zia-glass-rim-bottom: rgba(255, 255, 255, 0.25);
     --zia-glass-glow-top: rgba(255, 255, 255, 0.11);
     --zia-glass-glow-bottom: rgba(255, 255, 255, 0.085);
-    --zia-glass-side: rgba(0, 0, 0, 0.6);
+    --zia-glass-side: rgba(0, 0, 0, 0.5);
+    /* (and a faint line all the way round, so the light and dark ones run
+       on round the corners where they meet, rather than stopping short) */
+    --zia-glass-contour: rgba(0, 0, 0, 0.25);
     --zia-glass-edge:
       inset 0 1px 0.75px -0.5px var(--zia-glass-rim-top),
       inset 0 -1px 0.75px -0.5px var(--zia-glass-rim-bottom),
       inset 0 3px 2px -2px var(--zia-glass-glow-top),
       inset 0 -3px 2px -2px var(--zia-glass-glow-bottom),
-      -0.5px 0 0 var(--zia-glass-side),
-      0.5px 0 0 var(--zia-glass-side);
+      -0.5px 0 0.5px var(--zia-glass-side),
+      0.5px 0 0.5px var(--zia-glass-side),
+      0 0 0.5px 0.25px var(--zia-glass-contour);
     /* the same with its dark sides drawn just inside, for a folder running
        to the edge of the tab list, which cut the outside ones off dead
        straight */
@@ -68,7 +72,8 @@
     --zia-glass-rim-bottom: rgba(255, 255, 255, 0.7);
     --zia-glass-glow-top: rgba(255, 255, 255, 0.3);
     --zia-glass-glow-bottom: rgba(255, 255, 255, 0.22);
-    --zia-glass-side: rgba(0, 0, 0, 0.16);
+    --zia-glass-side: rgba(0, 0, 0, 0.14);
+    --zia-glass-contour: rgba(0, 0, 0, 0.06);
     --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.2);
   }
 
@@ -140,11 +145,11 @@
     }
   }
 
-  /* Pressed, light under the pointer, as on Tahoe's buttons, measured off
-     them: about a sixth white right under it, still about a twelfth at the
-     far end, so the whole button brightens round the press; on in a couple
-     of frames, held while pressed, fading a quarter of a second after it's
-     let go (zia.uc.js marks the press and where it is) */
+  /* Pressed, light under the pointer, as on Tahoe's buttons: about a sixth
+     white right under it, fading out across the button to a faint wash, so
+     it's clear where it's pressed even on a small tile; on in a couple of
+     frames, following the pointer while held, fading a quarter of a second
+     after it's let go (zia.uc.js marks the press and where it is) */
   [zia-glass-press] {
     --zia-press-light: var(--zia-glass-press-light);
     --zia-press-wash: var(--zia-glass-press-wash);
@@ -158,58 +163,22 @@
   }
 
   :root {
-    --zia-glass-press-light: rgba(255, 255, 255, 0.17);
-    --zia-glass-press-wash: rgba(255, 255, 255, 0.08);
+    --zia-glass-press-light: rgba(255, 255, 255, 0.18);
+    --zia-glass-press-wash: rgba(255, 255, 255, 0.04);
   }
 
   :root[zia-light] {
-    --zia-glass-press-light: rgba(255, 255, 255, 0.7);
-    --zia-glass-press-wash: rgba(255, 255, 255, 0.35);
+    --zia-glass-press-light: rgba(255, 255, 255, 0.75);
+    --zia-glass-press-wash: rgba(255, 255, 255, 0.15);
   }
 
   /* (Clear's icon is its background picture, so it goes without) */
   :root:not(#zia-none) .tabbrowser-tab[zia-glass-press] > .tab-stack > .tab-background,
   :root:not(#zia-none) zen-library [zia-glass-press]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip, .zia-library-rail) {
-    background-image: radial-gradient(circle 120px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light), var(--zia-press-wash)) !important;
-  }
-
-  /* and, as Tahoe's do, the button swells a touch while it's held (its
-     content stays put): animated, as tiles and tabs turn their own
-     transitions off */
-  :root:not(#zia-none) :is(.tabbrowser-tab[zia-glass-press="in"] > .tab-stack > .tab-background, zen-library [zia-glass-press="in"]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip, .zia-library-rail)) {
-    animation: zia-glass-swell var(--zia-spring-time) var(--zia-spring) forwards;
-  }
-
-  :root:not(#zia-none) :is(.tabbrowser-tab[zia-glass-press="out"] > .tab-stack > .tab-background, zen-library [zia-glass-press="out"]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip, .zia-library-rail)) {
-    animation: zia-glass-settle 0.28s ease-out forwards;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    :root:not(#zia-none) [zia-glass-press] :is(.tab-background),
-    :root:not(#zia-none) zen-library [zia-glass-press] {
-      animation: none;
-    }
+    background-image: radial-gradient(circle 48px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light), var(--zia-press-wash)) !important;
   }
 
   :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group]))[zia-glass-press]::before {
-    background-image: radial-gradient(circle 120px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light), var(--zia-press-wash));
-  }
-}
-
-@keyframes zia-glass-swell {
-  from {
-    scale: 1;
-  }
-  to {
-    scale: 1.02;
-  }
-}
-
-@keyframes zia-glass-settle {
-  from {
-    scale: 1.02;
-  }
-  to {
-    scale: 1;
+    background-image: radial-gradient(circle 48px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light), var(--zia-press-wash));
   }
 }
