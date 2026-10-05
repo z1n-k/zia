@@ -281,6 +281,13 @@
     };
   }
   function parseColor(text) {
+    // (colour mixes compute to color(srgb r g b / a), each 0 to 1: read as
+    // 0 to 255, a space's colour came out black and see-through)
+    const srgb = text.match(/^color\(srgb\s+([\d.e-]+)\s+([\d.e-]+)\s+([\d.e-]+)(?:\s*\/\s*([\d.e-]+))?/);
+    if (srgb) {
+      const [r, g, b] = srgb.slice(1, 4).map((c) => Math.round(Math.min(1, Math.max(0, Number(c))) * 255));
+      return [r, g, b, Math.round((srgb[4] === undefined ? 1 : Number(srgb[4])) * 255)];
+    }
     const parts = text.match(/[\d.]+/g)?.map(Number) || [];
     return parts.length >= 3 ? [parts[0], parts[1], parts[2], Math.round((parts[3] ?? 1) * 255)] : [0, 0, 0, 0];
   }

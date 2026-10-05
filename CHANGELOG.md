@@ -8,6 +8,10 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- AI renaming's card is solid, in the space's colour: it was see-through
+  over the music card, and could stay grey whatever the space, where
+  Zia misread a space's mixed colour (which the music card's colour
+  comes from too).
 - The download badge flying from the Library button keeps the list's
   icon size on Zen 1.23 too: 2.94.10's fix only took on newer Zen.
 
