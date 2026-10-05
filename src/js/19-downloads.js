@@ -211,8 +211,8 @@
     const total = FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
     const o = (ms) => ms / total;
     const frames = [
-      { offset: 0, transform: at(start.clientX, start.clientY, 0, 0.45), opacity: 0, filter: "blur(0px)" },
-      { offset: o(FLIGHT_POP_MS), transform: at(p0.x, p0.y, 0, 1), opacity: 1, filter: "blur(0px)" },
+      { offset: 0, transform: at(start.clientX, start.clientY, 0, 0.45), opacity: 0 },
+      { offset: o(FLIGHT_POP_MS), transform: at(p0.x, p0.y, 0, 1), opacity: 1 },
     ];
     // along the path: slow through the turn, then fast, easing in at the
     // end. It leans one way the whole flight, as Dia's does (anticlockwise
@@ -236,9 +236,11 @@
         offset: o(FLIGHT_POP_MS + flightMs * t),
         transform: at(here.x, here.y, tilt.toFixed(2), (1 - 0.65 * smooth(0.45, 1, u)).toFixed(4)),
         opacity: (1 - smooth(0.7, 1, u)).toFixed(4),
-        filter: `blur(${(smooth(0.6, 1, u) * 2).toFixed(2)}px)`,
       });
     }
+    // (only movement and fading, which Firefox runs on the graphics card:
+    // with a blur in it too, it ran frame by frame alongside everything
+    // else a download starts, and stuttered)
     const flight = row.animate(frames, { duration: total, easing: "linear", fill: "forwards" });
 
     // the dim: in as it winds up, out once it's landed
