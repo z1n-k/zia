@@ -25,7 +25,10 @@
      corners are a superellipse. Zia's corners are circular, so that stretch
      is divided back out. With page rounding on, the card uses a fixed
      length instead (04). */
-  --zia-card-radius: calc(var(--zen-native-inner-radius, 10.5px) / var(--zen-squircle-value, 1));
+  /* (the page card's corner; edge to edge sets the card's to 0, while the
+     compact sidebar keeps this one, 16-compact-mode) */
+  --zia-card-radius-base: calc(var(--zen-native-inner-radius, 10.5px) / var(--zen-squircle-value, 1));
+  --zia-card-radius: var(--zia-card-radius-base);
 
   --zia-shine-layers:
     linear-gradient(to right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.2) 35%, rgba(255, 255, 255, 0.2) 65%, rgba(255, 255, 255, 0.08)),
@@ -193,6 +196,20 @@
   --zia-urlbar-hover-bg: rgba(0, 0, 0, 0.06);
 }
 
+
+/* The sidebar's text size, an option (zia.uc.js): a touch or two smaller,
+   for a narrow sidebar, or a touch larger */
+:root[zia-text-size="small"] {
+  --zia-text-size: calc(1.22rem - 1.4px);
+}
+
+:root[zia-text-size="smaller"] {
+  --zia-text-size: calc(1.22rem - 2.4px);
+}
+
+:root[zia-text-size="large"] {
+  --zia-text-size: calc(1.22rem + 0.6px);
+}
 :root:not([inDOMFullscreen="true"]):not([popup-window]) {
   & #zen-appcontent-wrapper {
     margin: var(--zia-card-top-gap) var(--zia-card-gap) var(--zia-card-gap) 0 !important;
@@ -946,6 +963,7 @@
 :root #zen-appcontent-navbar-wrapper {
   color-scheme: dark !important;
   color: rgb(251, 251, 254) !important;
+  --zia-toolbar-ink: rgb(251, 251, 254);
   --toolbox-textcolor: rgb(251, 251, 254) !important;
   --toolbar-color: rgb(251, 251, 254) !important;
   --toolbar-field-color: rgb(251, 251, 254) !important;
@@ -958,14 +976,15 @@
   --toolbox-textcolor: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
   --toolbar-color: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
   --toolbar-field-color: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
-  /* The buttons are white on every dark site, as in Dia, so a dimmed one
-     (back with nowhere to go) still reads; the address keeps the softer ink. */
-  --toolbarbutton-icon-fill: var(--zia-dark-button-ink) !important;
-  --zia-toolbar-ink: var(--zia-dark-button-ink);
+  /* the buttons and extension icons in the address's own ink, so they all
+     match (they were whiter than the address) */
+  --toolbarbutton-icon-fill: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
+  --zia-toolbar-ink: var(--zia-dark-ink, rgb(251, 251, 254));
 
   & toolbarbutton:not(.webextension-browser-action, [id$="-browser-action"], [id$="-BAP"]) {
-    color: var(--zia-dark-button-ink) !important;
-    fill: var(--zia-dark-button-ink) !important;
+    color: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
+    fill: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
+    fill-opacity: 1 !important;
   }
 }
 
@@ -1022,6 +1041,17 @@
   fill: var(--zia-light-ink) !important;
   /* full strength, or the thin strokes read lighter than the address */
   fill-opacity: 1 !important;
+}
+
+/* Extension icons that take the toolbar's colour (Zia's own icons given to
+   an extension, and extensions' single-colour icons) in the same ink as
+   the address and the buttons, at full strength: they came out fainter */
+#zen-appcontent-navbar-wrapper :is(.webextension-browser-action, toolbarbutton[id$="-browser-action"], toolbarbutton[id$="-BAP"]),
+#zen-appcontent-navbar-wrapper :is(.webextension-browser-action, toolbarbutton[id$="-browser-action"], toolbarbutton[id$="-BAP"]) :is(.toolbarbutton-icon, .toolbarbutton-badge-stack) {
+  fill: var(--zia-toolbar-ink, currentColor) !important;
+  stroke: var(--zia-toolbar-ink, currentColor) !important;
+  fill-opacity: 1 !important;
+  stroke-opacity: 1 !important;
 }
 
 :root #urlbar[breakout-extend]:not([zia-classic]) {
@@ -3440,6 +3470,28 @@ zen-folder:is(:not([zia-folder-color]), [zia-folder-color="white"]) > .tab-group
   }
 }
 
+/* the page's picture, with Firefox's hover previews on (zia.uc.js): full
+   width across the top of the card, its corners following the card's, a
+   faint tile until it's drawn */
+.zia-tab-card-thumb {
+  display: block;
+  width: calc(100% + 28px);
+  height: auto;
+  aspect-ratio: 1 / 0.55;
+  margin: -12px -14px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+:root[zia-light] .zia-tab-card-thumb {
+  background: rgba(0, 0, 0, 0.04);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
 .zia-tab-card-title {
   font-weight: 600;
   font-size: 13px;
@@ -5817,13 +5869,14 @@ tooltip[default="true"] {
    curve (2.3 times the length), and Zia draws every corner as a circle, so
    the sidebar came out far rounder than the page card and the window's own
    corners. It takes the page card's corner instead, as Zen's curve is
-   divided back out of that. */
+   divided back out of that (the card's usual corner, kept with the page
+   edge to edge, which squared it off). */
 @media (-moz-platform: windows) {
   :root[zen-compact-mode="true"]:not(#zia-none) .zen-toolbar-background {
     &,
     &::before,
     &::after {
-      border-radius: max(0px, calc(var(--zia-card-radius) - var(--zen-compact-mode-no-padding-radius-fix, 0px) / var(--zen-squircle-value, 1))) !important;
+      border-radius: max(0px, calc(var(--zia-card-radius-base) - var(--zen-compact-mode-no-padding-radius-fix, 0px) / var(--zen-squircle-value, 1))) !important;
     }
   }
 }

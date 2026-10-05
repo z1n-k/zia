@@ -191,6 +191,30 @@
     "id": "zia-section-sidebar"
   },
   {
+    "type": "dropdown",
+    "label": "Text size in the sidebar",
+    "property": "zia.sidebar.text-size",
+    "defaultValue": "default",
+    "options": [
+      {
+        "label": "Default",
+        "value": "default"
+      },
+      {
+        "label": "Small",
+        "value": "small"
+      },
+      {
+        "label": "Smaller",
+        "value": "smaller"
+      },
+      {
+        "label": "Large",
+        "value": "large"
+      }
+    ]
+  },
+  {
     "type": "checkbox",
     "label": "Folders open and close with a spring",
     "property": "zia.folders.bounce",

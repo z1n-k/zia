@@ -515,6 +515,7 @@
 :root #zen-appcontent-navbar-wrapper {
   color-scheme: dark !important;
   color: rgb(251, 251, 254) !important;
+  --zia-toolbar-ink: rgb(251, 251, 254);
   --toolbox-textcolor: rgb(251, 251, 254) !important;
   --toolbar-color: rgb(251, 251, 254) !important;
   --toolbar-field-color: rgb(251, 251, 254) !important;
@@ -527,14 +528,15 @@
   --toolbox-textcolor: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
   --toolbar-color: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
   --toolbar-field-color: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
-  /* The buttons are white on every dark site, as in Dia, so a dimmed one
-     (back with nowhere to go) still reads; the address keeps the softer ink. */
-  --toolbarbutton-icon-fill: var(--zia-dark-button-ink) !important;
-  --zia-toolbar-ink: var(--zia-dark-button-ink);
+  /* the buttons and extension icons in the address's own ink, so they all
+     match (they were whiter than the address) */
+  --toolbarbutton-icon-fill: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
+  --zia-toolbar-ink: var(--zia-dark-ink, rgb(251, 251, 254));
 
   & toolbarbutton:not(.webextension-browser-action, [id$="-browser-action"], [id$="-BAP"]) {
-    color: var(--zia-dark-button-ink) !important;
-    fill: var(--zia-dark-button-ink) !important;
+    color: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
+    fill: var(--zia-dark-ink, rgb(251, 251, 254)) !important;
+    fill-opacity: 1 !important;
   }
 }
 
@@ -591,6 +593,17 @@
   fill: var(--zia-light-ink) !important;
   /* full strength, or the thin strokes read lighter than the address */
   fill-opacity: 1 !important;
+}
+
+/* Extension icons that take the toolbar's colour (Zia's own icons given to
+   an extension, and extensions' single-colour icons) in the same ink as
+   the address and the buttons, at full strength: they came out fainter */
+#zen-appcontent-navbar-wrapper :is(.webextension-browser-action, toolbarbutton[id$="-browser-action"], toolbarbutton[id$="-BAP"]),
+#zen-appcontent-navbar-wrapper :is(.webextension-browser-action, toolbarbutton[id$="-browser-action"], toolbarbutton[id$="-BAP"]) :is(.toolbarbutton-icon, .toolbarbutton-badge-stack) {
+  fill: var(--zia-toolbar-ink, currentColor) !important;
+  stroke: var(--zia-toolbar-ink, currentColor) !important;
+  fill-opacity: 1 !important;
+  stroke-opacity: 1 !important;
 }
 
 :root #urlbar[breakout-extend]:not([zia-classic]) {

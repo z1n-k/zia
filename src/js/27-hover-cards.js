@@ -72,9 +72,68 @@
       });
       row.appendChild(button);
     }
-    card.append(title, sub, row);
+    // a picture of the page, with Firefox's hover previews on (below)
+    const thumb = document.createElementNS(XHTML_NS, "canvas");
+    thumb.className = "zia-tab-card-thumb";
+    thumb.hidden = true;
+    card.append(thumb, title, sub, row);
     root.appendChild(card);
     return card;
+  }
+
+  // With Firefox's tab hover previews on (browser.tabs.hoverPreview), the
+  // card shows a picture of the page above its name, as Firefox's own
+  // preview does, for a loaded page other than the one you're on (Zia's
+  // card stands in for Firefox's, which it hides, and showed only the
+  // name). Drawn as Firefox draws its own, or as Zia draws a glance's.
+  const TAB_THUMB_RATIO = 0.55;
+  let thumbToken = 0;
+
+  function wantsTabThumb(tab) {
+    return (
+      Services.prefs.getBoolPref("browser.tabs.hoverPreview.enabled", false) &&
+      Services.prefs.getBoolPref("browser.tabs.hoverPreview.showThumbnails", true) &&
+      !tab.selected &&
+      !tab.hasAttribute("pending") &&
+      !!tab.linkedPanel &&
+      tabCardKind(tab) === "web"
+    );
+  }
+
+  async function drawTabThumb(canvas, tab, token) {
+    const browser = tab.linkedBrowser;
+    let picture = null;
+    try {
+      const { PageThumbs } = ChromeUtils.importESModule("resource://gre/modules/PageThumbs.sys.mjs");
+      if (PageThumbs.captureTabPreviewThumbnail) {
+        picture = await PageThumbs.captureTabPreviewThumbnail(browser);
+      }
+    } catch (err) {
+      picture = null;
+    }
+    if (!picture) {
+      const windowGlobal = browser?.browsingContext?.currentWindowGlobal;
+      const width = browser?.clientWidth;
+      if (windowGlobal && width) {
+        try {
+          picture = await windowGlobal.drawSnapshot(new DOMRect(0, 0, width, width * TAB_THUMB_RATIO), canvas.width / width, "white");
+        } catch (err) {
+          picture = null;
+        }
+      }
+    }
+    if (!picture || token !== thumbToken || !canvas.isConnected) {
+      picture?.close?.();
+      return;
+    }
+    const ctx = canvas.getContext("2d");
+    // (the top of the page, filling the frame)
+    const sw = picture.width;
+    const sh = Math.min(picture.height, sw * TAB_THUMB_RATIO);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(picture, 0, 0, sw, sh, 0, 0, canvas.width, canvas.height);
+    picture.close?.();
+    canvas.setAttribute("zia-drawn", "true");
   }
 
   function fillTabCard(card, tab) {
@@ -85,6 +144,19 @@
     const sub = card.querySelector(".zia-tab-card-sub");
     sub.textContent = isNew ? "" : tabCardDomain(shown);
     sub.hidden = !sub.textContent;
+
+    const thumb = card.querySelector(".zia-tab-card-thumb");
+    const token = ++thumbToken;
+    thumb.removeAttribute("zia-drawn");
+    thumb.hidden = !wantsTabThumb(shown);
+    if (!thumb.hidden) {
+      const ratio = Math.max(1, window.devicePixelRatio || 1);
+      // (the card's set width: it's still hidden here)
+      const width = parseFloat(getComputedStyle(root).getPropertyValue("--zia-tab-card-width")) || 260;
+      thumb.width = Math.round(width * ratio);
+      thumb.height = Math.round(width * TAB_THUMB_RATIO * ratio);
+      drawTabThumb(thumb, shown, token).catch((err) => noteError("hover card: thumbnail", err));
+    }
 
     const row = card.querySelector("#zia-tab-card-actions");
     row.hidden = isNew;

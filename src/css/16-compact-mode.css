@@ -6,13 +6,14 @@
    curve (2.3 times the length), and Zia draws every corner as a circle, so
    the sidebar came out far rounder than the page card and the window's own
    corners. It takes the page card's corner instead, as Zen's curve is
-   divided back out of that. */
+   divided back out of that (the card's usual corner, kept with the page
+   edge to edge, which squared it off). */
 @media (-moz-platform: windows) {
   :root[zen-compact-mode="true"]:not(#zia-none) .zen-toolbar-background {
     &,
     &::before,
     &::after {
-      border-radius: max(0px, calc(var(--zia-card-radius) - var(--zen-compact-mode-no-padding-radius-fix, 0px) / var(--zen-squircle-value, 1))) !important;
+      border-radius: max(0px, calc(var(--zia-card-radius-base) - var(--zen-compact-mode-no-padding-radius-fix, 0px) / var(--zen-squircle-value, 1))) !important;
     }
   }
 }
