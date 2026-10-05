@@ -437,6 +437,7 @@
     safely("clearLibraryBadgeSoon", clearLibraryBadgeSoon);
     safely("loadTidyDownloads", loadTidyDownloads);
     safely("watchLiquidGlass", watchLiquidGlass);
+    safely("fixSettingsConditions", fixSettingsConditions);
 
     updateColor();
     updateTitle();

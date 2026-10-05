@@ -8151,8 +8151,8 @@ zen-folder .tab-reset-button {
    would otherwise stop short. */
 :root {
   --zia-glass-edge-dark:
-    inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.27),
-    inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.25),
+    inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.29),
+    inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.27),
     inset 0 3px 2px -2px rgba(255, 255, 255, 0.11),
     inset 0 -3px 2px -2px rgba(255, 255, 255, 0.085),
     -0.5px 0 0.5px rgba(0, 0, 0, 0.5),
@@ -8171,8 +8171,8 @@ zen-folder .tab-reset-button {
      runs to the edge of the tab list and cut the outside ones off dead
      straight */
   --zia-glass-edge-inside:
-    inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.27),
-    inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.25),
+    inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.29),
+    inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.27),
     inset 0 3px 2px -2px rgba(255, 255, 255, 0.11),
     inset 0 -3px 2px -2px rgba(255, 255, 255, 0.085),
     inset 1px 0 0 -0.5px rgba(0, 0, 0, 0.5),

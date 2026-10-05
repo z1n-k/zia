@@ -22,6 +22,15 @@ Every release of Zia, newest first. The format follows
   Essentials also bend the space's colours at their rim, with
   [liquidglass](https://github.com/gentpan/liquidglass) by gentpan (MIT),
   an SVG lens that Firefox draws, unlike most web liquid glass.
+- Zia's settings are tidier: in eight sections (Look, Tabs and
+  essentials, Sidebar and folders, Address bar and new tabs, Page, Media,
+  Rename downloads with AI, Welcome tour) with shorter names, and a
+  setting that only matters with another one (the AI service's key and
+  model, the hover cards' blur, the tab numbers' colour, where
+  picture-in-picture tucks) shows only while that one's on: 45 to start
+  with rather than 77. The window buttons' settings only show on Windows
+  and Linux. Sine showed every such setting until the one it hangs on was
+  changed; Zia now shows and hides them as the page opens.
 - A squircle corner, as Dia's (only a touch squarer than a circle), one
   shape for everything with the glass edge and every small icon button
   (the workspaces' icons, toolbar and sidebar buttons, close and unload
