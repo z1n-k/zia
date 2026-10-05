@@ -22,7 +22,7 @@ Every release of Zia, newest first. The format follows
   Essentials also bend the space's colours at their rim, with
   [liquidglass](https://github.com/gentpan/liquidglass) by gentpan (MIT),
   an SVG lens that Firefox draws, unlike most web liquid glass.
-- Tahoe's squircle corner, one shape for everything with the glass edge
+- A squircle corner, as Tahoe's, one shape for everything with the glass edge
   and every small icon button (the workspaces' icons, toolbar and sidebar
   buttons, close and unload buttons, tab number keys, the cards' buttons,
   even the blank icon of a tab without its own), each sized up a little

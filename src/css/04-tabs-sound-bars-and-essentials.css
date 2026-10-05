@@ -189,8 +189,6 @@
   .tabbrowser-tab:not([zen-essential])[visuallyselected]
 ) > .tab-stack > .tab-background {
   position: relative;
-
-  corner-shape: round !important;
 }
 
 /* The selected tab's fine shine round its edge (essentials have the glass

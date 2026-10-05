@@ -36,7 +36,7 @@
   --zia-essential-min-width: 54px;
   --zia-essential-height: 41px;
   --zia-essential-inner-tighten: 1;
-  --zia-essential-radius: 22px;
+  --zia-essential-radius: 18px;
   --zia-essential-gap: 3px;
   --zia-essential-bottom-space: 8px;
   --zia-essential-bg: rgba(255, 255, 255, 0.13);
@@ -77,7 +77,7 @@
 
   --zia-tab-card-bg: rgb(38, 38, 38);
   --zia-tab-card-sub: rgba(255, 255, 255, 0.55);
-  --zia-tab-card-radius: 24px;
+  --zia-tab-card-radius: 20px;
   --zia-tab-card-width: 230px;
   --zia-media-card-base: light-dark(rgb(235, 235, 235), #1b1b1b);
   --zia-split-gap: 5px;
@@ -87,11 +87,11 @@
      corner-shape: var(--zia-squircle)). Their radii (these, and the
      essentials' and hover cards' above) are larger than a circle's would
      be, as a squircle of the same radius looks squarer. */
-  --zia-squircle: squircle;
-  --zia-folder-radius: 18px;
-  --zia-glass-button-radius: 18px;
-  --zia-pop-radius: 30px;
-  --zia-split-card-radius: 26px;
+  --zia-squircle: superellipse(1.7);
+  --zia-folder-radius: 15px;
+  --zia-glass-button-radius: 15px;
+  --zia-pop-radius: 25px;
+  --zia-split-card-radius: 22px;
 
   --zia-split-backdrop: rgb(23, 23, 23);
   --zia-media-bg: rgba(0, 0, 0, 0.225);
@@ -1353,8 +1353,6 @@
   .tabbrowser-tab:not([zen-essential])[visuallyselected]
 ) > .tab-stack > .tab-background {
   position: relative;
-
-  corner-shape: round !important;
 }
 
 /* The selected tab's fine shine round its edge (essentials have the glass
