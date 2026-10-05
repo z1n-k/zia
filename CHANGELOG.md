@@ -67,6 +67,8 @@ Every release of Zia, newest first. The format follows
 - The last downloads fan out above the Library button again, as tab rows,
   and the Library button shows the picture of the latest one again: 2.92.0
   and 2.93.4 hid them by mistake.
+- An essential's hover card meets the tile's corner again, rather than
+  sitting a little to the left of it under the new squircle corners.
 - Shapes meant to be squircles drawn as circles: the tab number keys, the
   hover cards' buttons and the Glance buttons lost to the rule that rounds
   every other corner. The tab close button is now the same squircle as the
