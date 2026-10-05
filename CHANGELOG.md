@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.10] — 2026-10-05
+
+### Fixed
+
+- Firefox's "What should Zen do with this file?" box opens in the middle
+  of the page, every time: it opened wherever the system put it, often
+  top left.
+- Saving from that box sends the download's flight to the Library from
+  where the box was: there was none, as the box, not the browser, was in
+  front when the download began.
+
 ## [2.95.9] — 2026-10-05
 
 ### Added
