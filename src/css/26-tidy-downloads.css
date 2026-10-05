@@ -143,6 +143,16 @@
   object-fit: cover;
 }
 
+/* the file's picture here and in the Library button's corner, in Zia's
+   squircle (with an id, to beat the rule that rounds every corner) */
+:root:not(#zia-none) :is(#zia-rename-card .zia-rc-icon, #library-button-badge:not([downloading]), #zen-library-download-list .zen-library-download-badge:not([downloading])) {
+  corner-shape: var(--zia-squircle) !important;
+}
+
+:root:not(#zia-none) #library-button-badge:not([downloading]) {
+  border-radius: 4px !important;
+}
+
 .zia-rc-name {
   flex: 1;
   min-width: 0;

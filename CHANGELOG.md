@@ -4,6 +4,19 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.6] — 2026-10-05
+
+### Fixed
+
+- The download's flight leans smoothly: one lean that builds through the
+  turn and eases off across the sweep, where it flipped side to side as
+  it rose. Its path is finer too.
+- After AI renaming, the Library button's badge shows the same file
+  picture as the card: Zen drew it from the file's old name, gone once
+  renamed, and fell back to a plain icon.
+- The file's picture on the card, the Library button and the downloads
+  list has Zia's squircle corners.
+
 ## [2.95.5] — 2026-10-05
 
 ### Added

@@ -6703,24 +6703,28 @@
       { offset: o(FLIGHT_POP_MS), transform: at(p0.x, p0.y, 0, 1), opacity: 1, filter: "blur(0px)" },
     ];
     // along the path: slow through the turn, then fast, easing in at the
-    // end; tilting with the curve, its leading end down as it drops and up
-    // as it climbs (a few degrees at most)
-    const STEPS = 28;
+    // end. It leans one way the whole flight, as Dia's does (anticlockwise
+    // flying up and left; mirrored for the button below or to the right):
+    // the lean builds smoothly through the turn and eases off across the
+    // sweep. (Following the path's own slope, it flipped side to side
+    // where the path ran straight up.)
+    const lean = -Math.sign(dx * dy || 1) * 7;
+    const smooth = (a, b, x) => {
+      const k = Math.min(1, Math.max(0, (x - a) / (b - a)));
+      return k * k * (3 - 2 * k);
+    };
+    const STEPS = 48;
     const flightMs = FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
     for (let i = 1; i <= STEPS; i++) {
       const t = i / STEPS;
       const u = t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2;
       const here = point(u);
-      const ahead = point(Math.min(1, u + 0.02));
-      const back = point(Math.max(0, u - 0.02));
-      const vx = ahead.x - back.x;
-      const climb = (Math.atan2(ahead.y - back.y, Math.abs(vx) || 0.001) * 180) / Math.PI;
-      const tilt = Math.max(-8, Math.min(8, climb * 0.12)) * (vx < 0 ? -1 : 1) * (1 - u);
+      const tilt = lean * smooth(0, 0.35, t) * (1 - smooth(0.45, 0.9, t));
       frames.push({
         offset: o(FLIGHT_POP_MS + flightMs * t),
-        transform: at(here.x, here.y, tilt, 1 - 0.65 * Math.max(0, (u - 0.45) / 0.55)),
-        opacity: u < 0.7 ? 1 : Math.max(0, 1 - (u - 0.7) / 0.3),
-        filter: `blur(${(Math.max(0, u - 0.6) * 5).toFixed(2)}px)`,
+        transform: at(here.x, here.y, tilt.toFixed(2), (1 - 0.65 * smooth(0.45, 1, u)).toFixed(4)),
+        opacity: (1 - smooth(0.7, 1, u)).toFixed(4),
+        filter: `blur(${(smooth(0.6, 1, u) * 2).toFixed(2)}px)`,
       });
     }
     const flight = row.animate(frames, { duration: total, easing: "linear", fill: "forwards" });
