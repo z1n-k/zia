@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.94.11] — 2026-10-05
+
+### Fixed
+
+- AI renaming's card is solid, in the space's colour: it was see-through
+  over the music card, and could stay grey whatever the space, where
+  Zia misread a space's mixed colour (which the music card's colour
+  comes from too).
+- The download badge flying from the Library button keeps the list's
+  icon size on Zen 1.23 too: 2.94.10's fix only took on newer Zen.
+
 ## [2.94.10] — 2026-10-05
 
 ### Changed
