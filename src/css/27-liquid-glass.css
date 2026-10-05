@@ -51,6 +51,25 @@
     0.5px 0 0.5px rgba(0, 0, 0, 0.08),
     0 0 0.5px 0.25px rgba(0, 0, 0, 0.04);
   --zia-glass-edge-lit: var(--zia-glass-edge-lit-dark);
+  /* a touch thicker and brighter, for the glass tile inside a selected
+     essential, whose thin edge got lost against its colour */
+  --zia-glass-edge-thick-dark:
+    inset 0 1.5px 0.5px -0.5px rgba(255, 255, 255, 0.4),
+    inset 0 -1.5px 0.5px -0.5px rgba(255, 255, 255, 0.36),
+    inset 0 4px 2.5px -2.5px rgba(255, 255, 255, 0.15),
+    inset 0 -4px 2.5px -2.5px rgba(255, 255, 255, 0.12),
+    -1px 0 0.5px rgba(0, 0, 0, 0.5),
+    1px 0 0.5px rgba(0, 0, 0, 0.5),
+    0 0 0.5px 0.5px rgba(0, 0, 0, 0.28);
+  --zia-glass-edge-thick-light:
+    inset 0 1.5px 0.5px -0.5px rgba(255, 255, 255, 0.9),
+    inset 0 -1.5px 0.5px -0.5px rgba(255, 255, 255, 0.78),
+    inset 0 4px 2.5px -2.5px rgba(255, 255, 255, 0.36),
+    inset 0 -4px 2.5px -2.5px rgba(255, 255, 255, 0.27),
+    -1px 0 0.5px rgba(0, 0, 0, 0.16),
+    1px 0 0.5px rgba(0, 0, 0, 0.16),
+    0 0 0.5px 0.5px rgba(0, 0, 0, 0.08);
+  --zia-glass-edge-thick: var(--zia-glass-edge-thick-dark);
   --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.5);
 
   /* Pressed, light under the pointer, as on Tahoe's buttons: about a
@@ -67,6 +86,7 @@
 :root[zia-light] {
   --zia-glass-edge: var(--zia-glass-edge-light);
   --zia-glass-edge-lit: var(--zia-glass-edge-soft-light);
+  --zia-glass-edge-thick: var(--zia-glass-edge-thick-light);
   --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.2);
   --zia-glass-press-light: rgba(255, 255, 255, 0.62);
   --zia-glass-press-wash: rgba(255, 255, 255, 0.12);

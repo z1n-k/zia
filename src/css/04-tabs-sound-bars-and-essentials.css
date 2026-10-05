@@ -19,8 +19,9 @@
 
       border-radius: max(0px, calc(var(--zia-essential-radius) - var(--zen-essential-bg-margin) * var(--zia-essential-inner-tighten))) !important;
 
-      /* (the glass edge, as on the other essentials) */
-      box-shadow: var(--zia-glass-edge) !important;
+      /* (the glass edge, as on the other essentials, a touch thicker so it
+         holds its own against the colour round it) */
+      box-shadow: var(--zia-glass-edge-thick) !important;
     }
   }
 }
