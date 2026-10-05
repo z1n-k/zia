@@ -33,8 +33,9 @@ Every release of Zia, newest first. The format follows
   with rather than 77. The window buttons' settings only show on Windows
   and Linux. Sine showed every such setting until the one it hangs on was
   changed; Zia now shows and hides them as the page opens.
-- The sound badge on an essential is a small bead of the glass, frosted,
-  with its edge, in place of the dark circle.
+- The sound badge on an essential keeps its dark bead and takes the glass,
+  as the music player has it: light lines along its top and bottom, a
+  thin dark ring all the way round, and a soft shadow.
 - The glass folders and the archive box are a touch smaller.
 - A squircle corner, as Dia's (only a touch squarer than a circle), one
   shape for everything with the glass edge and every small icon button
