@@ -8820,40 +8820,41 @@
   }
 
   // A folder's own icon (Zen keeps it in its folder picture, an SVG
-  // <image>), worn on the glass front; or, a folder at a time (right-click
-  // it, Show Icon Only), shown alone. Kept by folder id, as its colour is.
-  const FOLDER_ICON_ONLY_PREF = "zia.folder-icon-only";
+  // <image>), shown alone in the folder's place; or, a folder at a time
+  // (right-click it, Show Icon on Folder), worn on the glass folder's
+  // front. Kept by folder id, as its colour is.
+  const FOLDER_ICON_ON_FOLDER_PREF = "zia.folder-icon-on-folder";
 
-  function readIconOnly() {
+  function readIconOnFolder() {
     try {
-      return JSON.parse(Services.prefs.getStringPref(FOLDER_ICON_ONLY_PREF, "{}")) || {};
+      return JSON.parse(Services.prefs.getStringPref(FOLDER_ICON_ON_FOLDER_PREF, "{}")) || {};
     } catch (err) {
       return {};
     }
   }
 
-  function setIconOnly(folder, on) {
+  function setIconOnFolder(folder, on) {
     if (!folder?.id) {
       return;
     }
-    const map = readIconOnly();
+    const map = readIconOnFolder();
     if (on) {
       map[folder.id] = true;
     } else {
       delete map[folder.id];
     }
     try {
-      Services.prefs.setStringPref(FOLDER_ICON_ONLY_PREF, JSON.stringify(map));
+      Services.prefs.setStringPref(FOLDER_ICON_ON_FOLDER_PREF, JSON.stringify(map));
     } catch (err) {
-      noteError("folder icon: save icon only", err);
+      noteError("folder icon: save icon on folder", err);
     }
-    folder.toggleAttribute("zia-icon-only", on);
+    folder.toggleAttribute("zia-icon-on-folder", on);
   }
 
-  function restoreIconOnly() {
-    const map = readIconOnly();
+  function restoreIconOnFolder() {
+    const map = readIconOnFolder();
     for (const folder of document.querySelectorAll("zen-folder")) {
-      folder.toggleAttribute("zia-icon-only", !!map[folder.id]);
+      folder.toggleAttribute("zia-icon-on-folder", !!map[folder.id]);
     }
   }
 
@@ -8861,7 +8862,7 @@
     return !!folderIconBox(folder)?.querySelector("svg .icon image")?.getAttribute("href");
   }
 
-  function addIconOnlyMenuItem() {
+  function addIconOnFolderMenuItem() {
     let item = null;
     document.addEventListener(
       "popupshowing",
@@ -8873,15 +8874,15 @@
         const folder = folderFromNode(menu.triggerNode || event.explicitOriginalTarget);
         if (!item) {
           item = document.createXULElement("menuitem");
-          item.id = "zia-folder-icon-only";
+          item.id = "zia-folder-icon-on-folder";
           item.setAttribute("type", "checkbox");
           // (Zia ticks it from the folder, not the menu: a menu tick is
           // there for any "checked", even "false")
           item.setAttribute("autocheck", "false");
-          item.setAttribute("label", "Show Icon Only");
+          item.setAttribute("label", "Show Icon on Folder");
           item.addEventListener("command", () => {
             const folder = item.ziaFolder;
-            setIconOnly(folder, !folder?.hasAttribute("zia-icon-only"));
+            setIconOnFolder(folder, !folder?.hasAttribute("zia-icon-on-folder"));
           });
           const after = document.getElementById("zia-folder-color-menu") || document.getElementById("context_zenFolderRename");
           if (after?.parentElement === menu) {
@@ -8894,7 +8895,7 @@
         const shown = !!folder?.isZenFolder && folderHasOwnIcon(folder);
         item.hidden = !shown;
         item.ziaFolder = shown ? folder : null;
-        if (shown && folder.hasAttribute("zia-icon-only")) {
+        if (shown && folder.hasAttribute("zia-icon-on-folder")) {
           item.setAttribute("checked", "true");
         } else {
           item.removeAttribute("checked");
@@ -9060,12 +9061,14 @@
     // tabs moved in and out by Zen's own drag and drop, without an event;
     // and a folder given an icon, or its icon changed
     new MutationObserver(recount).observe(gBrowser.tabContainer, { subtree: true, childList: true, attributes: true, attributeFilter: ["href"] });
-    restoreIconOnly();
-    setTimeout(restoreIconOnly, 1500);
+    // (the old per-folder "icon only" choice is the default now)
+    Services.prefs.clearUserPref("zia.folder-icon-only");
+    restoreIconOnFolder();
+    setTimeout(restoreIconOnFolder, 1500);
     gBrowser.tabContainer.addEventListener("TabGroupCreate", (event) => {
-      event.target?.toggleAttribute?.("zia-icon-only", !!readIconOnly()[event.target.id]);
+      event.target?.toggleAttribute?.("zia-icon-on-folder", !!readIconOnFolder()[event.target.id]);
     });
-    addIconOnlyMenuItem();
+    addIconOnFolderMenuItem();
     countAllFolderSheets();
     // folders restored at start-up
     setTimeout(countAllFolderSheets, 1500);

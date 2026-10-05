@@ -4,14 +4,14 @@
    three (zia.uc.js counts them). An empty folder is just the folder. The
    front tips forward and the sheets rise as it opens; a tab dropped in
    drops a sheet in. Drawn in em from one 1em-wide box. A folder given an
-   icon of its own wears it on the glass front, unless it's set (right-click
-   it, Show Icon Only) to show the icon alone. */
+   icon of its own shows the icon alone, unless it's set (right-click it,
+   Show Icon on Folder) to wear it on the glass front. */
 .zia-fi {
   display: none;
 }
 
 :is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container .tab-group-folder-icon:not(:has(.icon image:not([href=""]))),
-:is(zen-folder, tab-group:not([split-view-group])):not([zia-icon-only]) > .tab-group-label-container .tab-group-folder-icon {
+:is(zen-folder, tab-group:not([split-view-group]))[zia-icon-on-folder] > .tab-group-label-container .tab-group-folder-icon {
   background-color: transparent !important;
   mask: none !important;
   display: flex !important;

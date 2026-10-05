@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.20] — 2026-10-05
+
+### Changed
+
+- A folder given an icon shows the icon by itself, in the folder's place;
+  to wear it on the front of the glass folder instead, right-click the
+  folder and choose Show Icon on Folder. A folder without an icon is the
+  plain folder, as before.
+
 ## [2.95.19] — 2026-10-05
 
 ### Changed
