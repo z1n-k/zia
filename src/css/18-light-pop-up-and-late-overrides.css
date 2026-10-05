@@ -12,8 +12,8 @@
 
     & > .urlbar-background {
       background: rgb(248, 249, 250) !important;
-      outline: 1px solid rgba(28, 28, 30, 0.12) !important;
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2) !important;
+      outline: none !important;
+      box-shadow: var(--zia-glass-edge-light), 0 16px 48px rgba(0, 0, 0, 0.2) !important;
     }
 
     & .urlbar-input,
@@ -62,8 +62,8 @@
 
   & > .urlbar-background {
     background: rgb(248, 249, 250) !important;
-    outline: 1px solid rgba(28, 28, 30, 0.12) !important;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2) !important;
+    outline: none !important;
+    box-shadow: var(--zia-glass-edge-light), 0 16px 48px rgba(0, 0, 0, 0.2) !important;
   }
 
   & .urlbar-input,
@@ -170,8 +170,8 @@
   --urlbarView-highlight-color: rgb(251, 251, 254) !important;
 
   & > .urlbar-background {
-    outline: 1px solid rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5) !important;
+    outline: none !important;
+    box-shadow: var(--zia-glass-edge-dark), 0 16px 48px rgba(0, 0, 0, 0.5) !important;
   }
 
   & .urlbar-input,
@@ -214,8 +214,8 @@
   --urlbarView-highlight-color: rgb(28, 28, 30) !important;
 
   & > .urlbar-background {
-    outline: 1px solid rgba(28, 28, 30, 0.12) !important;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2) !important;
+    outline: none !important;
+    box-shadow: var(--zia-glass-edge-light), 0 16px 48px rgba(0, 0, 0, 0.2) !important;
   }
 
   & .urlbar-input,

@@ -105,12 +105,6 @@
   },
   {
     "type": "checkbox",
-    "label": "Liquid glass, like macOS Tahoe: a glass edge on essentials, the selected tab, folders, cards, the address pop-up, the music player and the Library's buttons, and essentials bend the space's colours at their rim (experimental)",
-    "property": "zia.liquid-glass",
-    "defaultValue": false
-  },
-  {
-    "type": "checkbox",
     "label": "Zen's own Library look (off: Zia's)",
     "property": "zia.library.zen-look",
     "defaultValue": false

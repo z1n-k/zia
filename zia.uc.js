@@ -16966,7 +16966,7 @@
     }
   }
 
-  // ---------- Liquid glass (an option): the bend in essentials
+  // ---------- Zia's glass: the bend in essentials, and the press light
   // Each essential holds a copy of Zen's space background, lined up with the
   // real one, under its tint and icon; liquid-glass/liquid-glass.js (gentpan's
   // liquidglass, MIT) bends that copy at the tile's rim with an SVG
@@ -16974,14 +16974,12 @@
   // Firefox draws (bending what's behind with backdrop-filter is Chrome's
   // alone), so the glass bends Zen's own background, never the desktop
   // through a see-through window.
-  const LIQUID_GLASS_PREF = "zia.liquid-glass";
   // (just the bend: the rim is Zia's hairlines, in 27-liquid-glass.css)
   const LIQUID_GLASS_OPTICS = { bezel: 0.5, curvature: 4, chroma: 0.05, specular: 0 };
 
   function watchLiquidGlass() {
     // tile → { copy, glass }
     const lenses = new Map();
-    let watchers = null;
     let frame = 0;
 
     const spaceBackground = () => {
@@ -17064,7 +17062,8 @@
       // (essentials, not the plain tabs, which have no glass)
       [".tabbrowser-tab[zen-essential]", (hit) => hit, (owner) => owner.querySelector(":scope > .tab-stack > .tab-background")],
       [":is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container", (hit) => hit.parentNode, (owner) => owner],
-      ["zen-library :is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip)", (hit) => hit, (owner) => owner],
+      // (not Clear, whose icon is its background picture)
+      ["zen-library :is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip):not(.zia-library-clear)", (hit) => hit, (owner) => owner],
       // (the chosen Library section lights the tile that slides behind it,
       // so it shines too; another lights its own hover tile, as the sliding
       // one's still behind the old section until the press is let go)
@@ -17184,70 +17183,36 @@
       ["blur", (event) => event.target === window && letGo()],
     ];
 
-    const start = () => {
-      if (watchers) {
+    // (the press light needs none of the bend's script)
+    for (const [type, handler] of PRESS_EVENTS) {
+      window.addEventListener(type, handler, true);
+    }
+    if (!window.__ziaLiquidGlass) {
+      try {
+        Services.scriptloader.loadSubScript("chrome://sine/content/zia/liquid-glass/liquid-glass.js", window);
+      } catch (err) {
+        console.error("[Zia] Couldn't load liquid glass:", err);
         return;
       }
-      if (!window.__ziaLiquidGlass) {
-        try {
-          Services.scriptloader.loadSubScript("chrome://sine/content/zia/liquid-glass/liquid-glass.js", window);
-        } catch (err) {
-          console.error("[Zia] Couldn't load liquid glass:", err);
-          return;
-        }
+    }
+    const resized = new ResizeObserver(alignSoon);
+    const changed = new MutationObserver(alignSoon);
+    for (const id of ["zen-browser-background", "zen-toolbar-background"]) {
+      const layer = document.getElementById(id);
+      if (layer) {
+        changed.observe(layer, { attributes: true, attributeFilter: ["style"] });
       }
-      const resized = new ResizeObserver(alignSoon);
-      const changed = new MutationObserver(alignSoon);
-      for (const id of ["zen-browser-background", "zen-toolbar-background"]) {
-        const layer = document.getElementById(id);
-        if (layer) {
-          changed.observe(layer, { attributes: true, attributeFilter: ["style"] });
-        }
-      }
-      changed.observe(root, { attributes: true, attributeFilter: ["zen-compact-mode", "zen-sidebar-expanded", "zia-light"] });
-      const tabs = document.getElementById("tabbrowser-tabs") || document.getElementById("navigator-toolbox");
-      if (tabs) {
-        changed.observe(tabs, { childList: true, subtree: true, attributes: true, attributeFilter: ["zen-essential", "visuallyselected"] });
-        resized.observe(tabs);
-      }
-      const toolbox = document.getElementById("navigator-toolbox");
-      toolbox?.addEventListener("transitionend", alignSoon);
-      window.addEventListener("resize", alignSoon);
-      for (const [type, handler] of PRESS_EVENTS) {
-        window.addEventListener(type, handler, true);
-      }
-      watchers = { resized, changed, toolbox };
-      root.setAttribute("zia-liquid-glass", "true");
-      align();
-    };
-
-    const stop = () => {
-      if (!watchers) {
-        return;
-      }
-      watchers.resized.disconnect();
-      watchers.changed.disconnect();
-      watchers.toolbox?.removeEventListener("transitionend", alignSoon);
-      window.removeEventListener("resize", alignSoon);
-      for (const [type, handler] of PRESS_EVENTS) {
-        window.removeEventListener(type, handler, true);
-      }
-      letGo();
-      watchers = null;
-      cancelAnimationFrame(frame);
-      frame = 0;
-      for (const { copy, glass } of lenses.values()) {
-        glass?.destroy();
-        copy.remove();
-      }
-      lenses.clear();
-      root.removeAttribute("zia-liquid-glass");
-    };
-
-    const apply = () => (Services.prefs.getBoolPref(LIQUID_GLASS_PREF, false) ? start() : stop());
-    apply();
-    Services.prefs.addObserver(LIQUID_GLASS_PREF, apply);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(LIQUID_GLASS_PREF, apply), { once: true });
+    }
+    changed.observe(root, { attributes: true, attributeFilter: ["zen-compact-mode", "zen-sidebar-expanded", "zia-light"] });
+    const tabs = document.getElementById("tabbrowser-tabs") || document.getElementById("navigator-toolbox");
+    if (tabs) {
+      changed.observe(tabs, { childList: true, subtree: true, attributes: true, attributeFilter: ["zen-essential", "visuallyselected"] });
+      resized.observe(tabs);
+    }
+    document.getElementById("navigator-toolbox")?.addEventListener("transitionend", alignSoon);
+    window.addEventListener("resize", alignSoon);
+    root.setAttribute("zia-liquid-glass", "true");
+    align();
   }
 
   function safely(name, fn) {

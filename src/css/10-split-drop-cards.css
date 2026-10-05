@@ -27,7 +27,7 @@
   translate: var(--zia-zone-tx) calc(-50% + var(--zia-zone-ty));
   border-radius: 14px;
   background: #1f1f1f;
-  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  box-shadow: var(--zia-glass-edge), 0 16px 44px rgba(0, 0, 0, 0.5);
   opacity: 0;
   scale: 0.94;
   pointer-events: none;

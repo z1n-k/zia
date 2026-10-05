@@ -67,9 +67,7 @@
     background: var(--zia-urlbar-open-bg) !important;
     border: none !important;
     border-radius: 16.5px !important;
-    outline: 1px solid rgba(255, 255, 255, 0.08) !important;
-    outline-offset: -1px !important;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5) !important;
+    box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
   }
 
   & > :is(#urlbar-input-container, .urlbar-input-container) {
@@ -86,9 +84,7 @@
   & > .urlbar-background {
     background: var(--zia-urlbar-open-bg) !important;
     border-radius: 16.5px !important;
-    outline: 1px solid rgba(255, 255, 255, 0.08) !important;
-    outline-offset: -1px !important;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5) !important;
+    box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
     backdrop-filter: none !important;
 
     transform-origin: 50% 0 !important;

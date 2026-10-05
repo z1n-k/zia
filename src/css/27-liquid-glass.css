@@ -1,8 +1,75 @@
-/* Liquid glass (an option): macOS Tahoe's glass edge on Zia's surfaces, and
-   on essentials, the space's colours bent at the rim (zia.uc.js).
+/* Zia's glass, as macOS Tahoe's: its edge on essentials, folders, the hover
+   cards, the split cards, the address pop-up, the sidebar flying out in
+   compact mode and the Library's buttons (each in its own part, with
+   var(--zia-glass-edge)); a light where they're pressed; and on
+   essentials, the space's colours bent at the rim (zia.uc.js).
 
-   The bend: each essential's copy of the space's background sits at the
-   bottom of the tile, under its tint and icon. */
+   The edge, measured pixel by pixel off Tahoe's toolbar buttons: a light
+   grey hairline along the top and bottom (the top a touch brighter), with
+   a soft glow under it fading into the fill over a few pixels; a dark
+   hairline down the sides; no shadow under it. Each is a shadow nudged
+   along one axis, which follows the corner and thins out round it; the
+   inset ones are pulled back half a pixel (their negative spread) so none
+   of their light creeps down the sides; and a faint line all the way
+   round carries the light and dark ones on round the corners, where they
+   would otherwise stop short. */
+:root {
+  --zia-glass-edge-dark:
+    inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.27),
+    inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.25),
+    inset 0 3px 2px -2px rgba(255, 255, 255, 0.11),
+    inset 0 -3px 2px -2px rgba(255, 255, 255, 0.085),
+    -0.5px 0 0.5px rgba(0, 0, 0, 0.5),
+    0.5px 0 0.5px rgba(0, 0, 0, 0.5),
+    0 0 0.5px 0.25px rgba(0, 0, 0, 0.25);
+  --zia-glass-edge-light:
+    inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.7),
+    inset 0 3px 2px -2px rgba(255, 255, 255, 0.3),
+    inset 0 -3px 2px -2px rgba(255, 255, 255, 0.22),
+    -0.5px 0 0.5px rgba(0, 0, 0, 0.14),
+    0.5px 0 0.5px rgba(0, 0, 0, 0.14),
+    0 0 0.5px 0.25px rgba(0, 0, 0, 0.06);
+  --zia-glass-edge: var(--zia-glass-edge-dark);
+  /* the same with its dark sides drawn just inside, for a folder, which
+     runs to the edge of the tab list and cut the outside ones off dead
+     straight */
+  --zia-glass-edge-inside:
+    inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.27),
+    inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.25),
+    inset 0 3px 2px -2px rgba(255, 255, 255, 0.11),
+    inset 0 -3px 2px -2px rgba(255, 255, 255, 0.085),
+    inset 1px 0 0 -0.5px rgba(0, 0, 0, 0.5),
+    inset -1px 0 0 -0.5px rgba(0, 0, 0, 0.5);
+  --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.5);
+
+  /* Pressed, light under the pointer, as on Tahoe's buttons: about a
+     seventh white right under it, falling away fast from there (the 30%
+     midpoint) and then softly across the button to a faint wash, so it's
+     clear where it's pressed even on a small tile; on in a couple of
+     frames, following the pointer while held, fading a quarter of a
+     second after it's let go (zia.uc.js marks the press, sets where it is
+     and eases its strength) */
+  --zia-glass-press-light: rgba(255, 255, 255, 0.15);
+  --zia-glass-press-wash: rgba(255, 255, 255, 0.03);
+}
+
+:root[zia-light] {
+  --zia-glass-edge: var(--zia-glass-edge-light);
+  --zia-glass-edge-inside:
+    inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.7),
+    inset 0 3px 2px -2px rgba(255, 255, 255, 0.3),
+    inset 0 -3px 2px -2px rgba(255, 255, 255, 0.22),
+    inset 1px 0 0 -0.5px rgba(0, 0, 0, 0.14),
+    inset -1px 0 0 -0.5px rgba(0, 0, 0, 0.14);
+  --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.2);
+  --zia-glass-press-light: rgba(255, 255, 255, 0.62);
+  --zia-glass-press-wash: rgba(255, 255, 255, 0.12);
+}
+
+/* The bend: each essential's copy of the space's background sits at the
+   bottom of the tile, under its tint and icon */
 :root[zia-liquid-glass] .tabbrowser-tab[zen-essential] > .tab-stack {
   position: relative;
   isolation: isolate;
@@ -15,160 +82,19 @@
   background-repeat: no-repeat;
 }
 
-@media -moz-pref("zia.liquid-glass") {
-  /* The edge, measured pixel by pixel off Tahoe's toolbar buttons: a light
-     grey hairline along the top and bottom (the top a touch brighter), with
-     a soft glow under it fading into the fill over a few pixels; a dark
-     hairline down the sides; no shadow under it. Each is a shadow nudged
-     along one axis, which follows the corner and thins out round it; the
-     inset ones are pulled back half a pixel (their negative spread) so
-     none of their light creeps down the sides. */
-  :root {
-    --zia-glass-rim-top: rgba(255, 255, 255, 0.27);
-    --zia-glass-rim-bottom: rgba(255, 255, 255, 0.25);
-    --zia-glass-glow-top: rgba(255, 255, 255, 0.11);
-    --zia-glass-glow-bottom: rgba(255, 255, 255, 0.085);
-    --zia-glass-side: rgba(0, 0, 0, 0.5);
-    /* (and a faint line all the way round, so the light and dark ones run
-       on round the corners where they meet, rather than stopping short) */
-    --zia-glass-contour: rgba(0, 0, 0, 0.25);
-    --zia-glass-edge:
-      inset 0 1px 0.75px -0.5px var(--zia-glass-rim-top),
-      inset 0 -1px 0.75px -0.5px var(--zia-glass-rim-bottom),
-      inset 0 3px 2px -2px var(--zia-glass-glow-top),
-      inset 0 -3px 2px -2px var(--zia-glass-glow-bottom),
-      -0.5px 0 0.5px var(--zia-glass-side),
-      0.5px 0 0.5px var(--zia-glass-side),
-      0 0 0.5px 0.25px var(--zia-glass-contour);
-    /* the same with its dark sides drawn just inside, for a folder running
-       to the edge of the tab list, which cut the outside ones off dead
-       straight */
-    --zia-glass-edge-inside:
-      inset 0 1px 0.75px -0.5px var(--zia-glass-rim-top),
-      inset 0 -1px 0.75px -0.5px var(--zia-glass-rim-bottom),
-      inset 0 3px 2px -2px var(--zia-glass-glow-top),
-      inset 0 -3px 2px -2px var(--zia-glass-glow-bottom),
-      inset 1px 0 0 -0.5px var(--zia-glass-side),
-      inset -1px 0 0 -0.5px var(--zia-glass-side);
-    --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.5);
-  }
+/* The press light (Clear's icon is its background picture, so it goes
+   without) */
+:root:not(#zia-none) .tabbrowser-tab[zen-essential][zia-glass-press] > .tab-stack > .tab-background,
+:root:not(#zia-none) zen-library [zia-glass-press]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip, .zia-library-rail):not(.zia-library-clear) {
+  background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent)) !important;
+}
 
-  :root[zia-light] {
-    --zia-glass-rim-top: rgba(255, 255, 255, 0.85);
-    --zia-glass-rim-bottom: rgba(255, 255, 255, 0.7);
-    --zia-glass-glow-top: rgba(255, 255, 255, 0.3);
-    --zia-glass-glow-bottom: rgba(255, 255, 255, 0.22);
-    --zia-glass-side: rgba(0, 0, 0, 0.14);
-    --zia-glass-contour: rgba(0, 0, 0, 0.06);
-    --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.2);
-  }
+/* (a Library section not yet chosen: its hover tile, the light fading on
+   over the sliding tile as it arrives) */
+:root:not(#zia-none) zen-library .zen-library-tab[zia-glass-press]::before {
+  background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent)) !important;
+}
 
-  /* Essentials (the chosen one keeps Zen's picture-coloured look, below) */
-  .tabbrowser-tab[zen-essential]:not([visuallyselected]) > .tab-stack > .tab-background {
-    box-shadow: var(--zia-glass-edge) !important;
-
-    &::after {
-      display: none !important;
-    }
-  }
-
-  /* The chosen essential, in Zen's picture-coloured look: its inner tile
-     inside the coloured border keeps its colour and takes the same edge */
-  @media -moz-pref("zen.theme.essentials-favicon-bg") {
-    :root:not(#zia-none) .tabbrowser-tab[zen-essential][visuallyselected] > .tab-stack > .tab-background::before {
-      box-shadow: var(--zia-glass-edge) !important;
-    }
-  }
-
-  /* A folder's box, hovered, held after a drop, or pressed */
-  :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])):is(:hover, :active, [zia-hover-held]) {
-    &::before {
-      box-shadow: var(--zia-glass-edge-inside);
-    }
-
-    &::after {
-      display: none;
-    }
-  }
-
-  /* The tab and folder hover cards: the edge in place of their hairline
-     border (their corner clip widened a pixel, to keep its dark sides) */
-  #zia-tab-card,
-  #zia-folder-card {
-    clip-path: inset(-1px round calc(var(--zia-tab-card-radius) + 1px));
-    box-shadow: var(--zia-glass-edge);
-
-    &::after {
-      display: none;
-    }
-  }
-
-  /* The split cards a dragged tab drops on */
-  .zia-split-zone {
-    box-shadow: var(--zia-glass-edge), 0 16px 44px rgba(0, 0, 0, 0.5);
-  }
-
-  /* The address pop-up, open or floating */
-  :root:not(#zia-none) #urlbar:is([breakout-extend], [zen-floating-urlbar="true"]):not([zia-classic]) > .urlbar-background {
-    outline: none !important;
-    box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
-  }
-
-  /* The sidebar as it flies out in compact mode */
-  :root[zen-compact-mode="true"] .zen-toolbar-background {
-    &::before,
-    &::after {
-      outline: none !important;
-    }
-
-    &::after {
-      box-shadow: var(--zia-glass-edge) !important;
-    }
-  }
-
-  /* The Library's icon buttons (Filter, Clear, the filters) and the tile
-     under its chosen section */
-  @media not -moz-pref("zia.library.zen-look") {
-    zen-library :is(.zen-library-filter-button, .zen-library-filter-done, .zia-library-clear, .zen-library-filter-chip),
-    zen-library .zia-library-rail {
-      box-shadow: var(--zia-glass-edge) !important;
-
-      &::after {
-        display: none !important;
-      }
-    }
-  }
-
-  /* Pressed, light under the pointer, as on Tahoe's buttons: about a
-     seventh white right under it, falling away fast from there (the 30%
-     midpoint) and then softly across the button to a faint wash, so
-     it's clear where it's pressed even on a small tile; on in a couple of
-     frames, following the pointer while held, fading a quarter of a second
-     after it's let go (zia.uc.js marks the press, sets where it is and
-     eases its strength) */
-  :root {
-    --zia-glass-press-light: rgba(255, 255, 255, 0.15);
-    --zia-glass-press-wash: rgba(255, 255, 255, 0.03);
-  }
-
-  :root[zia-light] {
-    --zia-glass-press-light: rgba(255, 255, 255, 0.62);
-    --zia-glass-press-wash: rgba(255, 255, 255, 0.12);
-  }
-
-  /* (Clear's icon is its background picture, so it goes without) */
-  :root:not(#zia-none) .tabbrowser-tab[zen-essential][zia-glass-press] > .tab-stack > .tab-background,
-  :root:not(#zia-none) zen-library [zia-glass-press]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip, .zia-library-rail) {
-    background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent)) !important;
-  }
-
-  /* (a Library section not yet chosen: its hover tile, the light fading
-     on over the sliding tile as it arrives) */
-  :root:not(#zia-none) zen-library .zen-library-tab[zia-glass-press]::before {
-    background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent)) !important;
-  }
-
-  :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group]))[zia-glass-press]::before {
-    background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent));
-  }
+:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group]))[zia-glass-press]::before {
+  background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent));
 }

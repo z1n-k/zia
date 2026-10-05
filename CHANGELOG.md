@@ -8,18 +8,18 @@ Every release of Zia, newest first. The format follows
 
 ### Added
 
-- Liquid glass (experimental, off by default): turn on **Liquid glass** in
-  settings for macOS Tahoe's glass edge, matched pixel by pixel to its
-  toolbar buttons (a soft light grey hairline along the top and bottom
-  glowing into the fill, and a dark one down the sides) on essentials, the
-  folders as you hover or press them,
-  the tab and folder cards, the split cards, the address pop-up, the
-  sidebar as it flies out in compact mode, and the Library's buttons.
-  Pressing an essential, a folder, a Library button or one of the
-  Library's sections (the chosen one too, just for the shine) lights it
-  up under the pointer as Tahoe's buttons do: the light snaps on, follows
-  the pointer while it's held, and fades once let go. Essentials
-  also bend the space's colours at their rim, with
+- Liquid glass, as macOS Tahoe's, is Zia's look: its glass edge, matched
+  pixel by pixel to Tahoe's toolbar buttons (a soft light grey hairline
+  along the top and bottom glowing into the fill, and a dark one down the
+  sides), replaces Zia's old shine and outlines on essentials (the chosen
+  one's inner tile too, keeping its colour), folders as you hover or press
+  them, the tab and folder cards, the split cards, the address pop-up, the
+  sidebar as it flies out in compact mode, and the Library's buttons and
+  section tile. Pressing an essential, a folder, a Library button or one
+  of the Library's sections (the chosen one too, just for the shine)
+  lights it up under the pointer as Tahoe's buttons do: the light snaps
+  on, follows the pointer while it's held, and fades once let go.
+  Essentials also bend the space's colours at their rim, with
   [liquidglass](https://github.com/gentpan/liquidglass) by gentpan (MIT),
   an SVG lens that Firefox draws, unlike most web liquid glass.
 - Rename finished downloads with AI: [Tidy Downloads](https://github.com/Vertex-Mods/Zen-Tidy-Downloads)

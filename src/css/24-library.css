@@ -90,22 +90,9 @@
       z-index: 0;
       border-radius: var(--zia-essential-radius);
       background: var(--zia-lib-tile);
+      /* (the glass edge, as on an essential) */
+      box-shadow: var(--zia-glass-edge);
       pointer-events: none;
-
-      /* Zia's shine round its edge, as on an essential: brightest along
-         the middle of each side, fading into the corners */
-      &::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        pointer-events: none;
-        padding: var(--zia-shine-width);
-        background: var(--zia-shine-layers);
-        mask:
-          linear-gradient(#000 0 0) content-box exclude,
-          linear-gradient(#000 0 0);
-      }
 
       transition: transform var(--zia-spring-time) var(--zia-spring), height var(--zia-spring-time) var(--zia-spring);
 
@@ -152,21 +139,8 @@
     & :is(.zen-library-filter-button, .zen-library-filter-done) {
       position: relative;
       border-radius: var(--zia-tab-radius) !important;
-
-      /* the essentials' shine round the edge, fading into the corners */
-      &::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        pointer-events: none;
-        padding: var(--zia-shine-width);
-        background: var(--zia-shine-layers);
-        mask:
-          linear-gradient(#000 0 0) content-box exclude,
-          linear-gradient(#000 0 0);
-      }
-
+      /* (the glass edge, as on an essential) */
+      box-shadow: var(--zia-glass-edge) !important;
       background: var(--zia-lib-tile) !important;
       font-weight: 500 !important;
 
@@ -193,6 +167,7 @@
     & .zen-library-filter-chip {
       padding: 7px 12px !important;
       border-radius: var(--zia-tab-radius) !important;
+      box-shadow: var(--zia-glass-edge) !important;
       background: var(--zia-lib-tile) !important;
 
       &:hover {
