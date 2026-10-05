@@ -45,6 +45,14 @@
     panels: () => `<div class="stage panels"><div class="w-side">${rows(5).replace(/<span class="w-key">\d<\/span>/g, "")}</div>
       <div class="bm"><div class="in"><div class="bt"></div>${Array.from({ length: 6 }, (_, i) => `<div class="br${i === 2 ? " sub" : ""}"><i></i><u style="width:${[11, 8, 9, 12, 7, 10][i]}cqw"></u></div>`).join("")}</div></div>
       <div class="pp"></div></div>`,
+    // 2.94: essentials as glass, one pressed, its light following the pointer
+    liquid: () => `<div class="stage liquid"><div class="sky"></div><div class="tiles">${["#ea4335", "#53fc18", "#9146ff", "#25d366", "#ececef", "#5865f2"].map((c, i) => `<i style="--c:${c}">${i === 1 ? "<b></b>" : ""}</i>`).join("")}</div><svg class="cursor" viewBox="0 0 24 24"><path d="M5.2 3.6c-.7-.3-1.4.4-1.1 1.1l6.9 15.6c.3.8 1.5.7 1.7-.1l1.8-5.6c.1-.3.3-.5.6-.6l5.6-1.8c.8-.2.9-1.4.1-1.7z"/></svg></div>`,
+    // 2.94: a photo saved, the Library button glowing while the AI thinks,
+    // then the rename card with its new name
+    rename: () => `<div class="stage rename"><div class="w-side">${rows(3).replace(/<span class="w-key">\d<\/span>/g, "")}</div>
+      <div class="w-page"><div class="photo"><i></i></div><div class="save">Save image</div></div>
+      <div class="foot"><span class="lib"></span><span class="dots"><i></i><i></i></span></div>
+      <div class="rc"><div class="h"><span class="ck"></span>Renamed from <s>pexels-optical-chemist-3408744</s></div><div class="r"><span class="th"></span><b>black-dog-on-road.jpg</b></div></div></div>`,
     ink: () => `<div class="stage ink"><div class="bar"><svg viewBox="0 0 24 24"><path d="M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"/><path d="M9 4v16"/></svg><svg viewBox="0 0 24 24"><path d="M15 6l-6 6l6 6"/></svg><svg viewBox="0 0 24 24" class="off"><path d="M9 6l6 6l-6 6"/></svg><svg viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg>
       <span class="url"><b>journal.page</b> / Morning pages</span></div>
       <div class="body"><i class="h"></i><i class="l"></i><i class="l"></i><i class="l s"></i></div></div>`,
@@ -69,12 +77,14 @@
     tabpeek: { v: WIRES.tabpeek, t: "A glance, kept in its tab", d: "Glance at a link and a small picture of the page tucks into the tab, as in Dia. Close the glance and it sinks back in." },
     panels: { v: WIRES.panels, t: "Bookmarks and History, beside your tabs", d: "<kbd>⌘</kbd><kbd>B</kbd> and <kbd>⌘</kbd><kbd>⇧</kbd><kbd>H</kbd> slide in as a second sidebar, matched to your tabs row for row." },
     ink: { v: WIRES.ink, t: "The site's own ink", d: "The toolbar's text and buttons take a touch of each site's colour: a soft brown on a cream page, a soft grey on a white one." },
+    liquid: { v: WIRES.liquid, t: "Liquid glass", d: "Essentials, folders, cards and buttons are glass, as in macOS Tahoe: lit along their top and bottom edges, bending the space's colours at their rim. Press one and it lights up under your finger." },
+    rename: { v: WIRES.rename, t: "Downloads that name themselves", d: "Turn it on in settings, and each download gets a clear name from an AI service you choose, or one running on your own computer. It reads the page and even looks at photos. Undo puts the old name back." },
     icons: { v: WIRES.icons, t: "5,166 icons, or your own", d: "Search Tabler's set by what you mean, not what it's called. Or right-click a folder and choose an SVG." },
   };
 
   const TOURS = {
-    install: { eyebrow: "Welcome to Zia", list: ["intro", "numbers", "undo", "split", "color", "glassfolder", "cards", "tabpeek", "panels", "music", "address", "multiview", "pip", "pdf", "icons", "star"] },
-    update: { eyebrow: "New in Zia", list: ["whatsnew", "glassfolder", "tabpeek", "panels", "ink", "star"] },
+    install: { eyebrow: "Welcome to Zia", list: ["intro", "liquid", "numbers", "undo", "split", "color", "glassfolder", "cards", "tabpeek", "panels", "music", "address", "multiview", "pip", "pdf", "icons", "rename", "star"] },
+    update: { eyebrow: "New in Zia", list: ["whatsnew", "liquid", "rename", "star"] },
   };
 
   // Numbered tabs and undo step through a little story, over and over

@@ -428,6 +428,48 @@ kbd > span, .w-key > span { position: static; display: block; text-box: trim-bot
 @keyframes ink-bg { 0%, 20% { background-color: #fbf5ec; } 25%, 45% { background-color: #ffffff; } 50%, 70% { background-color: #eaf6ef; } 75%, 95% { background-color: #f1edfb; } 100% { background-color: #fbf5ec; } }
 @keyframes ink-c { 0%, 20% { color: hsl(36 24% 40%); } 25%, 45% { color: hsl(240 3.5% 40%); } 50%, 70% { color: hsl(148 15% 40%); } 75%, 95% { color: hsl(258 23% 40%); } 100% { color: hsl(36 24% 40%); } }
 
+/* liquid glass: essentials on a space's colours, Zia's glass edge; one is
+   pressed and its light follows the pointer, then fades (8s) */
+.liquid .sky { inset: 0; background: radial-gradient(60cqw 40cqw at 20% 10%, #5b4a86, transparent 70%), radial-gradient(60cqw 40cqw at 85% 90%, #1f5a5c, transparent 70%), linear-gradient(160deg, #3b3550, #24343a); }
+.liquid .tiles { left: 50%; top: 13cqw; width: 62cqw; translate: -50% 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.2cqw; }
+.liquid .tiles i { position: relative; height: 15cqw; border-radius: 3.6cqw; corner-shape: superellipse(1.35); overflow: hidden; background: rgba(255,255,255,.13);
+  box-shadow: inset 0 1px .75px -.5px rgba(255,255,255,.29), inset 0 -1px .75px -.5px rgba(255,255,255,.27), inset 0 .5cqw .4cqw -.35cqw rgba(255,255,255,.11), inset 0 -.5cqw .4cqw -.35cqw rgba(255,255,255,.085), -.5px 0 .5px rgba(0,0,0,.5), .5px 0 .5px rgba(0,0,0,.5), 0 0 .5px .25px rgba(0,0,0,.25); }
+.liquid .tiles i::before { content: ""; position: absolute; left: 50%; top: 50%; width: 4.4cqw; height: 4.4cqw; translate: -50% -50%; border-radius: 1.2cqw; background: var(--c); }
+.liquid .tiles b { left: 0; top: 0; width: 22cqw; height: 22cqw; margin: -11cqw 0 0 -11cqw; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,255,255,.2), rgba(255,255,255,.07) 30%, rgba(255,255,255,.03)); opacity: 0;
+  animation: lq-light 8s var(--ease) infinite; }
+.liquid .cursor { left: 0; top: 0; animation: lq-cur 8s var(--ease) infinite; }
+@keyframes lq-cur { 0% { transform: translate(78cqw, 52cqw); opacity: 0; } 8% { opacity: 1; } 22% { transform: translate(44cqw, 20cqw); } 30% { transform: translate(44cqw, 20cqw) scale(.9); } 52% { transform: translate(55cqw, 23cqw) scale(.9); } 58%, 80% { transform: translate(55cqw, 23cqw); opacity: 1; } 92%, 100% { transform: translate(78cqw, 52cqw); opacity: 0; } }
+@keyframes lq-light { 0%, 28% { opacity: 0; transform: translate(6cqw, 5cqw); } 31% { opacity: 1; transform: translate(6cqw, 5cqw); } 52% { opacity: 1; transform: translate(17cqw, 8cqw); } 58% { opacity: .85; transform: translate(17cqw, 8cqw); } 66%, 100% { opacity: 0; transform: translate(17cqw, 8cqw); } }
+
+/* downloads that name themselves: a photo saved, the Library button glows
+   while the AI thinks, then the rename card rises with its new name (9s) */
+.rename .w-page { overflow: hidden; }
+.rename .photo { left: 50%; top: 12%; width: 56%; height: 62%; translate: -50% 0; border-radius: 1.4cqw; background: linear-gradient(#55606b, #39424a 60%, #2c3136); }
+.rename .photo i { left: 32%; bottom: 14%; width: 34%; height: 46%; border-radius: 42% 50% 18% 24%; background: #111; }
+.rename .save { left: 50%; top: 52%; padding: .9cqw 1.6cqw; border-radius: 1cqw; background: rgba(28,28,30,.92); color: rgba(255,255,255,.85); font: 500 1.7cqw/1 -apple-system, system-ui, sans-serif; box-shadow: 0 1cqw 3cqw rgba(0,0,0,.4); opacity: 0; animation: rn-save 9s var(--ease) infinite; }
+.rename .foot { left: 6cqw; width: 34cqw; bottom: 5cqw; height: 5cqw; display: flex; align-items: center; justify-content: space-between; padding: 0 1.4cqw; }
+.rename .foot > * { position: relative; }
+.rename .lib { width: 3.2cqw; height: 3.2cqw; border-radius: .9cqw; background: rgba(255,255,255,.35); animation: rn-lib 9s var(--ease) infinite; }
+.rename .dots { display: flex; gap: .9cqw; margin-right: 12cqw; }
+.rename .dots i { position: relative; width: 1cqw; height: 1cqw; border-radius: 50%; background: rgba(255,255,255,.55); }
+.rename .dots i + i { background: rgba(255,255,255,.22); }
+.rename .rc { left: 6.4cqw; width: 33.2cqw; bottom: 11.4cqw; padding: 1cqw; border-radius: 2.4cqw; corner-shape: superellipse(1.35); background: rgba(44,44,46,.92); display: grid; gap: .8cqw;
+  box-shadow: inset 0 1px .75px -.5px rgba(255,255,255,.29), inset 0 -1px .75px -.5px rgba(255,255,255,.27), -.5px 0 .5px rgba(0,0,0,.5), .5px 0 .5px rgba(0,0,0,.5), 0 1.6cqw 4cqw rgba(0,0,0,.35);
+  opacity: 0; transform: translateY(1.4cqw) scale(.98); animation: rn-card 9s var(--spring) infinite; }
+.rename .rc > * { position: relative; }
+.rename .rc .h { display: flex; align-items: center; gap: .8cqw; padding: 0 .4cqw; font: 500 1.45cqw/1.2 -apple-system, system-ui, sans-serif; color: rgba(255,255,255,.55); white-space: nowrap; overflow: hidden; }
+.rename .rc .h > * { position: relative; }
+.rename .rc .ck { width: 1.3cqw; height: .7cqw; border: solid rgba(255,255,255,.7); border-width: 0 0 .25cqw .25cqw; rotate: -45deg; translate: 0 -.2cqw; flex: none; }
+.rename .rc s { text-decoration-thickness: 1px; overflow: hidden; text-overflow: ellipsis; }
+.rename .rc .r { display: flex; align-items: center; gap: 1.2cqw; height: 5.4cqw; padding: 0 1.2cqw; border-radius: 1.4cqw; background: rgba(255,255,255,.08); }
+.rename .rc .r > * { position: relative; }
+.rename .rc .th { width: 3cqw; height: 3cqw; border-radius: .7cqw; flex: none; background: linear-gradient(#55606b, #2c3136); }
+.rename .rc b { font: 600 1.8cqw/1 -apple-system, system-ui, sans-serif; color: rgba(255,255,255,.95); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@keyframes rn-save { 0%, 6% { opacity: 0; translate: 0 .6cqw; } 10%, 18% { opacity: 1; translate: 0 0; } 22%, 100% { opacity: 0; } }
+@keyframes rn-lib { 0%, 20% { box-shadow: none; background: rgba(255,255,255,.35); } 24%, 44% { box-shadow: 0 0 0 .25cqw #5ab9f5, 0 0 2cqw rgba(90,185,245,.45); background: rgba(255,255,255,.75); } 50%, 100% { box-shadow: none; background: rgba(255,255,255,.35); } }
+@keyframes rn-card { 0%, 46% { opacity: 0; transform: translateY(1.4cqw) scale(.98); } 52%, 88% { opacity: 1; transform: none; } 96%, 100% { opacity: 0; transform: translateY(.6cqw) scale(.99); } }
+@media (prefers-reduced-motion: reduce) { .liquid *, .rename * { animation: none !important; } .rename .rc { opacity: 1; transform: none; } }
+
 .slide:not(.cur) .stage, .slide:not(.cur) .stage * { animation-play-state: paused !important; }
 
 /* arriving on a step: its rows and page settle in, a beat apart */

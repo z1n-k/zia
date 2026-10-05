@@ -29,7 +29,7 @@
     display: block;
     position: relative;
     /* (a touch smaller than the 19px it was) */
-    font-size: 17.5px;
+    font-size: 17px;
     width: 1em;
     height: 0.82em;
     flex: none;

@@ -31,18 +31,30 @@
   display: none !important;
 }
 
+/* The sound badge: a small bead of Zia's glass, frosted, with the glass
+   edge, over the corner of the site's icon */
 .tab-icon-overlay:not([crashed]):is([soundplaying], [muted], [activemedia-blocked]) {
+  --zia-badge-glass: rgba(52, 52, 56, 0.72);
   list-style-image: var(--zia-sound-wave, url("chrome://sine/content/zia/icons/sound-wave.svg")) !important;
   -moz-context-properties: fill !important;
   fill: rgb(255, 255, 255) !important;
-  background-color: rgba(22, 22, 22, 0.86) !important;
+  background-color: var(--zia-badge-glass) !important;
   background-image: none !important;
+  backdrop-filter: blur(6px) saturate(1.6) !important;
   border-radius: 999px !important;
   corner-shape: round !important;
-  outline: 0.5px solid rgba(255, 255, 255, 0.18) !important;
-  outline-offset: -0.5px !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35) !important;
+  outline: none !important;
+  box-shadow: var(--zia-glass-edge) !important;
   transition: background-color 0.15s ease !important;
+
+  :root[zia-light] & {
+    --zia-badge-glass: rgba(255, 255, 255, 0.72);
+    fill: rgb(28, 28, 32) !important;
+
+    &[muted] {
+      fill: rgba(28, 28, 32, 0.8) !important;
+    }
+  }
 
   &[muted] {
     list-style-image: var(--zia-sound-muted, url("chrome://sine/content/zia/icons/sound-muted.svg")) !important;
