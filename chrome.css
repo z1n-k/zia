@@ -2126,7 +2126,7 @@ zen-split-fake-tab {
     inset: var(--zia-folder-box-top) calc(var(--zia-folder-box-right) + 1px) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) calc(var(--zia-folder-box-left) + 1px);
     border-radius: var(--zia-folder-box-radius);
     pointer-events: none;
-    box-shadow: var(--zia-glass-edge);
+    box-shadow: var(--zia-glass-edge-lit);
     opacity: 0;
   }
 
@@ -4786,8 +4786,9 @@ findbar {
   backdrop-filter: blur(18px) saturate(1.4);
   border: none !important;
   border-radius: 12px;
-  /* (Zia's glass edge, and a soft lift off the page) */
-  box-shadow: var(--zia-glass-edge-dark), 0 10px 30px rgba(0, 0, 0, 0.35);
+  /* Zia's glass edge, its sides a faint light line rather than dark ones,
+     which went nowhere against a dark page, and a soft lift off it */
+  box-shadow: var(--zia-glass-edge-lit-dark), 0 10px 30px rgba(0, 0, 0, 0.35);
   color: rgba(255, 255, 255, 0.92) !important;
   color-scheme: dark;
   transition: none !important;
@@ -4943,7 +4944,7 @@ findbar {
    frosted bar with dark ink, as the sidebar and the page are */
 :root[zia-light] findbar {
   background: rgba(248, 248, 250, 0.82) !important;
-  box-shadow: var(--zia-glass-edge-light), 0 10px 30px rgba(0, 0, 0, 0.16);
+  box-shadow: var(--zia-glass-edge-soft-light), 0 10px 30px rgba(0, 0, 0, 0.16);
   color: rgba(28, 28, 32, 0.92) !important;
   color-scheme: light;
 
@@ -8219,6 +8220,27 @@ zen-folder .tab-reset-button {
     0.5px 0 0.5px rgba(0, 0, 0, 0.14),
     0 0 0.5px 0.25px rgba(0, 0, 0, 0.06);
   --zia-glass-edge: var(--zia-glass-edge-dark);
+  /* the same with a faint light line down the sides in place of the dark
+     ones (on the sides only, as they were, so the top and bottom stay as
+     bright as everywhere else), for the folders' boxes and the find bar, whose dark sides
+     went nowhere against a dark sidebar or page (light mode: just softer
+     dark sides) */
+  --zia-glass-edge-lit-dark:
+    inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.29),
+    inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.27),
+    inset 0 3px 2px -2px rgba(255, 255, 255, 0.11),
+    inset 0 -3px 2px -2px rgba(255, 255, 255, 0.085),
+    -0.5px 0 0.5px rgba(255, 255, 255, 0.16),
+    0.5px 0 0.5px rgba(255, 255, 255, 0.16);
+  --zia-glass-edge-soft-light:
+    inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.7),
+    inset 0 3px 2px -2px rgba(255, 255, 255, 0.3),
+    inset 0 -3px 2px -2px rgba(255, 255, 255, 0.22),
+    -0.5px 0 0.5px rgba(0, 0, 0, 0.08),
+    0.5px 0 0.5px rgba(0, 0, 0, 0.08),
+    0 0 0.5px 0.25px rgba(0, 0, 0, 0.04);
+  --zia-glass-edge-lit: var(--zia-glass-edge-lit-dark);
   --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.5);
 
   /* Pressed, light under the pointer, as on Tahoe's buttons: about a
@@ -8234,6 +8256,7 @@ zen-folder .tab-reset-button {
 
 :root[zia-light] {
   --zia-glass-edge: var(--zia-glass-edge-light);
+  --zia-glass-edge-lit: var(--zia-glass-edge-soft-light);
   --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.2);
   --zia-glass-press-light: rgba(255, 255, 255, 0.62);
   --zia-glass-press-wash: rgba(255, 255, 255, 0.12);
