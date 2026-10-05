@@ -29,12 +29,16 @@
     "zia.split.drop-cards",
     "zia.page.rounding",
   ];
-  const WATCHED_OPTIONS = ["zia.urlbar.dia-style", "zia.newtab.real-tab", "zia.toolbar.site-color", "zia.split.drop-cards"];
+  const WATCHED_OPTIONS = ["zia.urlbar.zen-look", "zia.urlbar.dia-style", "zia.newtab.real-tab", "zia.toolbar.site-color", "zia.split.drop-cards"];
 
   function watchOptions() {
     const urlbar = gURLBar?.textbox || document.getElementById("urlbar");
     const apply = () => {
-      urlbar?.toggleAttribute("zia-classic", !Services.prefs.getBoolPref("zia.urlbar.dia-style", true));
+      // (Zen's own address bar takes Zen's pop-up with it)
+      urlbar?.toggleAttribute(
+        "zia-classic",
+        !Services.prefs.getBoolPref("zia.urlbar.dia-style", true) || Services.prefs.getBoolPref("zia.urlbar.zen-look", false)
+      );
       // Off gives Cmd/Ctrl+T back to Zen's floating address bar, and tab
       // drops on the page back to Zen's own split.
       try {

@@ -446,456 +446,462 @@
     }
   }
 }
-#urlbar:not(:hover):not([focused]):not([breakout-extend]) > .urlbar-background {
-  background: transparent !important;
-  box-shadow: none !important;
-  border-color: transparent !important;
-}
-
-#urlbar:not([breakout-extend]) > .urlbar-background {
-  border-radius: var(--zia-urlbar-radius) !important;
-  transition: background-color 0.06s linear !important;
-}
-
-:root:not([zia-split="true"]) #urlbar:not([breakout-extend], [zen-floating-urlbar="true"]) {
-  height: var(--zia-urlbar-height) !important;
-  min-height: var(--zia-urlbar-height) !important;
-  max-height: var(--zia-urlbar-height) !important;
-
-  --urlbar-height: var(--zia-urlbar-height) !important;
-
-  & :is(.urlbar-input, #zia-url-title, #zia-url-plain) {
-    translate: 0 0;
-  }
-}
-
-/* The bar's contents centred in its height, whatever is showing in it:
-   searching your bookmarks, history or tabs brings up a taller search
-   button that otherwise pushed the text and icons down, leaving less room
-   below them than above */
-:root:not([zia-split="true"]) #urlbar:not([breakout-extend]) > :is(#urlbar-input-container, .urlbar-input-container) {
-  height: 100% !important;
-  min-height: 0 !important;
-  padding-block: 0 !important;
-  align-items: center !important;
-}
-
-#urlbar:is(:hover, [focused]):not([breakout-extend]) > .urlbar-background {
-  background: var(--zia-urlbar-hover-bg) !important;
-  box-shadow: none !important;
-  outline: none !important;
-}
-
-/* Windows, with no tab open: the address bar's hover showed as a flat,
-   solid grey block; it's the same light see-through wash as elsewhere. */
-@media (-moz-platform: windows) {
-  :root[zen-has-empty-tab="true"] #urlbar:is(:hover, [focused]):not([breakout-extend]) > .urlbar-background {
-    background: rgba(255, 255, 255, 0.09) !important;
-    background-color: rgba(255, 255, 255, 0.09) !important;
-  }
-}
-
-/* The floating address bar's row is Zen's 62px (15px above and below the
-   text), but with nothing listed under it the bar itself stayed 52px, so
-   its background was 10px short at the bottom and the address and icon sat
-   5px below its middle: the bar is at least as tall as its row */
-#urlbar[zen-floating-urlbar="true"]:not([zia-classic]) {
-  min-height: var(--urlbar-container-height, 62px) !important;
-}
-
-/* The floating address bar with nothing to list under it yet (no history,
-   top sites or suggestions to show as it opens: Firefox doesn't open the
-   list then, so it's never "extended"): it's the pop-up all the same, in
-   its colour, corners, edge and shadow, at its own height (the toolbar's
-   31px squeezed it, its text sitting low) */
-#urlbar[zen-floating-urlbar="true"]:not([breakout-extend]):not([zia-classic]) {
-  border-radius: var(--zia-pop-radius) !important;
-  corner-shape: var(--zia-squircle) !important;
-
-  & > .urlbar-background {
-    background: var(--zia-urlbar-open-bg) !important;
-    border: none !important;
-    border-radius: var(--zia-pop-radius) !important;
-    corner-shape: var(--zia-squircle) !important;
-    box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
+/* Zia's address bar, all of it (the bar, its loading line, the page's
+   title in it, the copy-link and site buttons, the pop-up): off with
+   "Zen's own address bar", zia.urlbar.zen-look, which leaves the bar as
+   Zen draws it and keeps the rest of Zia */
+@media not -moz-pref("zia.urlbar.zen-look") {
+  #urlbar:not(:hover):not([focused]):not([breakout-extend]) > .urlbar-background {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
   }
 
-  & > :is(#urlbar-input-container, .urlbar-input-container) {
+  #urlbar:not([breakout-extend]) > .urlbar-background {
+    border-radius: var(--zia-urlbar-radius) !important;
+    transition: background-color 0.06s linear !important;
+  }
+
+  :root:not([zia-split="true"]) #urlbar:not([breakout-extend], [zen-floating-urlbar="true"]) {
+    height: var(--zia-urlbar-height) !important;
+    min-height: var(--zia-urlbar-height) !important;
+    max-height: var(--zia-urlbar-height) !important;
+
+    --urlbar-height: var(--zia-urlbar-height) !important;
+
+    & :is(.urlbar-input, #zia-url-title, #zia-url-plain) {
+      translate: 0 0;
+    }
+  }
+
+  /* The bar's contents centred in its height, whatever is showing in it:
+     searching your bookmarks, history or tabs brings up a taller search
+     button that otherwise pushed the text and icons down, leaving less room
+     below them than above */
+  :root:not([zia-split="true"]) #urlbar:not([breakout-extend]) > :is(#urlbar-input-container, .urlbar-input-container) {
+    height: 100% !important;
+    min-height: 0 !important;
+    padding-block: 0 !important;
     align-items: center !important;
   }
-}
 
-#urlbar[breakout-extend]:not([zia-classic]):not([zen-floating-urlbar="true"]) {
-  border-radius: var(--zia-pop-radius) !important;
-  corner-shape: var(--zia-squircle) !important;
-  translate: var(--zia-urlbar-open-offset-x, 0px) var(--zia-urlbar-open-offset) !important;
-  --urlbarview-separator-color: transparent !important;
-  --urlbarView-separator-color: transparent !important;
+  #urlbar:is(:hover, [focused]):not([breakout-extend]) > .urlbar-background {
+    background: var(--zia-urlbar-hover-bg) !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
 
-  & > .urlbar-background {
-    background: var(--zia-urlbar-open-bg) !important;
+  /* Windows, with no tab open: the address bar's hover showed as a flat,
+     solid grey block; it's the same light see-through wash as elsewhere. */
+  @media (-moz-platform: windows) {
+    :root[zen-has-empty-tab="true"] #urlbar:is(:hover, [focused]):not([breakout-extend]) > .urlbar-background {
+      background: rgba(255, 255, 255, 0.09) !important;
+      background-color: rgba(255, 255, 255, 0.09) !important;
+    }
+  }
+
+  /* The floating address bar's row is Zen's 62px (15px above and below the
+     text), but with nothing listed under it the bar itself stayed 52px, so
+     its background was 10px short at the bottom and the address and icon sat
+     5px below its middle: the bar is at least as tall as its row */
+  #urlbar[zen-floating-urlbar="true"]:not([zia-classic]) {
+    min-height: var(--urlbar-container-height, 62px) !important;
+  }
+
+  /* The floating address bar with nothing to list under it yet (no history,
+     top sites or suggestions to show as it opens: Firefox doesn't open the
+     list then, so it's never "extended"): it's the pop-up all the same, in
+     its colour, corners, edge and shadow, at its own height (the toolbar's
+     31px squeezed it, its text sitting low) */
+  #urlbar[zen-floating-urlbar="true"]:not([breakout-extend]):not([zia-classic]) {
     border-radius: var(--zia-pop-radius) !important;
     corner-shape: var(--zia-squircle) !important;
-    box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
-    backdrop-filter: none !important;
 
-    transform-origin: 50% 0 !important;
-    animation: zia-urlbar-open 0.18s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
-  }
+    & > .urlbar-background {
+      background: var(--zia-urlbar-open-bg) !important;
+      border: none !important;
+      border-radius: var(--zia-pop-radius) !important;
+      corner-shape: var(--zia-squircle) !important;
+      box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
+    }
 
-  & .urlbarView-body-inner {
-    border-top: none !important;
-  }
-}
-
-@keyframes zia-urlbar-open {
-  from { scale: 0.8; opacity: 0.4; }
-  to { scale: 1; opacity: 1; }
-}
-
-#urlbar[breakout-extend]:not([zia-classic]) {
-  /* (Zen 1.23 gave every row a 45px least height and a clear 2px border
-     above and below, which made Zia's rows taller and further apart) */
-  --urlbarview-row-min-height: var(--zia-pop-row-height) !important;
-
-  & .urlbarView-row {
-    margin-inline: var(--zia-pop-row-inset) !important;
-    margin-block: calc(var(--zia-pop-row-gap) / 2) !important;
-    padding-block: 0 !important;
-    border-block: 0 !important;
-    min-height: 0 !important;
-    border-radius: var(--zia-pop-row-radius) !important;
-
-    & > .urlbarView-row-inner {
-      padding-block: 0 !important;
-      min-height: var(--zia-pop-row-height) !important;
+    & > :is(#urlbar-input-container, .urlbar-input-container) {
       align-items: center !important;
     }
   }
 
-  & .urlbarView-row:hover {
-    background-color: rgba(255, 255, 255, 0.05) !important;
-  }
+  #urlbar[breakout-extend]:not([zia-classic]):not([zen-floating-urlbar="true"]) {
+    border-radius: var(--zia-pop-radius) !important;
+    corner-shape: var(--zia-squircle) !important;
+    translate: var(--zia-urlbar-open-offset-x, 0px) var(--zia-urlbar-open-offset) !important;
+    --urlbarview-separator-color: transparent !important;
+    --urlbarView-separator-color: transparent !important;
 
-  & .urlbarView-row[selected] {
-    background-color: rgba(255, 255, 255, 0.08) !important;
+    & > .urlbar-background {
+      background: var(--zia-urlbar-open-bg) !important;
+      border-radius: var(--zia-pop-radius) !important;
+      corner-shape: var(--zia-squircle) !important;
+      box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
+      backdrop-filter: none !important;
 
-    :root[zia-space-colored="true"] & {
-      background-color: color-mix(in srgb, var(--zen-primary-color, white) 12%, rgb(61, 61, 61)) !important;
+      transform-origin: 50% 0 !important;
+      animation: zia-urlbar-open 0.18s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
     }
 
-    & .urlbarView-shortcutContent {
+    & .urlbarView-body-inner {
+      border-top: none !important;
+    }
+  }
+
+  @keyframes zia-urlbar-open {
+    from { scale: 0.8; opacity: 0.4; }
+    to { scale: 1; opacity: 1; }
+  }
+
+  #urlbar[breakout-extend]:not([zia-classic]) {
+    /* (Zen 1.23 gave every row a 45px least height and a clear 2px border
+       above and below, which made Zia's rows taller and further apart) */
+    --urlbarview-row-min-height: var(--zia-pop-row-height) !important;
+
+    & .urlbarView-row {
+      margin-inline: var(--zia-pop-row-inset) !important;
+      margin-block: calc(var(--zia-pop-row-gap) / 2) !important;
+      padding-block: 0 !important;
+      border-block: 0 !important;
+      min-height: 0 !important;
+      border-radius: var(--zia-pop-row-radius) !important;
+
+      & > .urlbarView-row-inner {
+        padding-block: 0 !important;
+        min-height: var(--zia-pop-row-height) !important;
+        align-items: center !important;
+      }
+    }
+
+    & .urlbarView-row:hover {
+      background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    & .urlbarView-row[selected] {
+      background-color: rgba(255, 255, 255, 0.08) !important;
+
+      :root[zia-space-colored="true"] & {
+        background-color: color-mix(in srgb, var(--zen-primary-color, white) 12%, rgb(61, 61, 61)) !important;
+      }
+
+      & .urlbarView-shortcutContent {
+        background-color: transparent !important;
+        fill: rgba(255, 255, 255, 0.9) !important;
+      }
+    }
+
+    & .urlbarView-favicon {
       background-color: transparent !important;
-      fill: rgba(255, 255, 255, 0.9) !important;
+      border-radius: 0 !important;
+      width: 16px !important;
+      height: 16px !important;
+      min-width: 16px !important;
+      padding: 0 !important;
+    }
+
+    & .urlbarView-row :is(.urlbarView-title,
+      .urlbarView-url,
+      .urlbarView-action,
+      .urlbarView-title-separator,
+      .urlbarView-tags,
+      .urlbarView-title strong) {
+      font-size: var(--zia-text-size) !important;
+    }
+
+    & .urlbarView-row :is(.urlbarView-title,
+      .urlbarView-url,
+      .urlbarView-action,
+      .urlbarView-title-separator,
+      .urlbarView-tags) {
+      font-weight: var(--zia-tab-weight) !important;
+    }
+
+    & .urlbarView-row :is(.urlbarView-title, .urlbarView-url, .urlbarView-action) strong {
+      font-weight: var(--zia-tab-weight) !important;
+    }
+
+    & .urlbarView-row :is(.urlbarView-title, .urlbarView-title strong) {
+      color: rgb(255, 255, 255) !important;
+    }
+
+    & .urlbarView-row :is(.urlbarView-url, .urlbarView-action, .urlbarView-title-separator) {
+      color: rgba(255, 255, 255, 0.55) !important;
+    }
+
+    & .urlbarView-row :is(.urlbarView-url, .urlbarView-action, .urlbarView-title-separator, .urlbarView-tags) strong {
+      color: inherit !important;
+    }
+
+    & :is(.urlbarView-button-result-menu, .urlbarView-result-menu-button, .urlbarView-button-menu) {
+      display: none !important;
+    }
+
+    & :is(.urlbarView-action.urlbarView-switchToTab, .urlbarView-row[type="switchtab"] .urlbarView-action) {
+      display: none !important;
+    }
+
+    /* An open tab says so: a small "Switch to tab" tag at the end of its row
+       (Firefox's own action text is hidden above), pinned to the row's end so
+       a long title can't push it out of view (a sliver of it showed there) */
+    & .urlbarView-row[type="switchtab"] .urlbarView-row-inner {
+      position: relative;
+      padding-inline-end: 104px !important;
+    }
+
+    & .urlbarView-row[type="switchtab"] .urlbarView-row-inner::after {
+      content: "Switch to tab";
+      position: absolute;
+      inset-inline-end: 8px;
+      top: 50%;
+      translate: 0 -50%;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background-color: color-mix(in srgb, currentColor 10%, transparent);
+      color: color-mix(in srgb, currentColor 60%, transparent);
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 16px;
+      white-space: nowrap;
+    }
+
+    & :is(.urlbarView, .urlbarView-body-outer, .urlbarView-results, #urlbar-results) {
+      padding-inline: 0 !important;
+      padding-block: 0 !important;
+      margin-inline: 0 !important;
+    }
+
+    & .urlbarView-body-inner {
+      padding-inline: 0 !important;
+      margin-inline: 0 !important;
+    }
+
+    & .urlbarView-body-inner {
+      padding-block: var(--zia-pop-list-pad) !important;
+    }
+
+    & .urlbarView {
+      margin-block-end: calc(-1 * var(--zia-pop-bottom-trim)) !important;
+    }
+
+    /* When the list scrolls it hangs past the pop-up by the trim. Cut it off
+       exactly at the pop-up's edge, so rows run right up to it mid-scroll, and
+       add the hidden amount back as space at the end, so the last row scrolls
+       clear with the same gap below it as at the sides. */
+    :root[zia-pop-scrolls="true"] & .urlbarView {
+      clip-path: inset(0 0 var(--zia-pop-bottom-trim) 0);
+    }
+
+    :root[zia-pop-scrolls="true"] & #urlbar-results::after {
+      content: "";
+      display: block;
+      height: var(--zia-pop-bottom-trim);
+    }
+
+    --urlbarView-item-inline-padding: 8px !important;
+
+    & :is(.urlbarView, .urlbarView-body-outer, .urlbarView-body-inner, .urlbarView-results, #urlbar-results) {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin-inline: 0 !important;
+    }
+
+    & :is(.urlbarView-body-inner, .urlbarView-body-outer, .urlbarView-results, #urlbar-results) {
+      margin-block: 0 !important;
+      border-block: 0 !important;
+    }
+
+    & .urlbarView-row-buttons {
+      display: none !important;
+    }
+
+    & :is(.search-one-offs, #urlbar-one-offs, .search-panel-one-offs-container) {
+      display: none !important;
     }
   }
 
-  & .urlbarView-favicon {
-    background-color: transparent !important;
-    border-radius: 0 !important;
-    width: 16px !important;
-    height: 16px !important;
-    min-width: 16px !important;
-    padding: 0 !important;
-  }
-
-  & .urlbarView-row :is(.urlbarView-title,
-    .urlbarView-url,
-    .urlbarView-action,
-    .urlbarView-title-separator,
-    .urlbarView-tags,
-    .urlbarView-title strong) {
-    font-size: var(--zia-text-size) !important;
-  }
-
-  & .urlbarView-row :is(.urlbarView-title,
-    .urlbarView-url,
-    .urlbarView-action,
-    .urlbarView-title-separator,
-    .urlbarView-tags) {
-    font-weight: var(--zia-tab-weight) !important;
-  }
-
-  & .urlbarView-row :is(.urlbarView-title, .urlbarView-url, .urlbarView-action) strong {
-    font-weight: var(--zia-tab-weight) !important;
-  }
-
-  & .urlbarView-row :is(.urlbarView-title, .urlbarView-title strong) {
-    color: rgb(255, 255, 255) !important;
-  }
-
-  & .urlbarView-row :is(.urlbarView-url, .urlbarView-action, .urlbarView-title-separator) {
-    color: rgba(255, 255, 255, 0.55) !important;
-  }
-
-  & .urlbarView-row :is(.urlbarView-url, .urlbarView-action, .urlbarView-title-separator, .urlbarView-tags) strong {
-    color: inherit !important;
-  }
-
-  & :is(.urlbarView-button-result-menu, .urlbarView-result-menu-button, .urlbarView-button-menu) {
-    display: none !important;
-  }
-
-  & :is(.urlbarView-action.urlbarView-switchToTab, .urlbarView-row[type="switchtab"] .urlbarView-action) {
-    display: none !important;
-  }
-
-  /* An open tab says so: a small "Switch to tab" tag at the end of its row
-     (Firefox's own action text is hidden above), pinned to the row's end so
-     a long title can't push it out of view (a sliver of it showed there) */
-  & .urlbarView-row[type="switchtab"] .urlbarView-row-inner {
-    position: relative;
-    padding-inline-end: 104px !important;
-  }
-
-  & .urlbarView-row[type="switchtab"] .urlbarView-row-inner::after {
-    content: "Switch to tab";
-    position: absolute;
-    inset-inline-end: 8px;
-    top: 50%;
-    translate: 0 -50%;
-    padding: 2px 7px;
-    border-radius: 6px;
-    background-color: color-mix(in srgb, currentColor 10%, transparent);
-    color: color-mix(in srgb, currentColor 60%, transparent);
-    font-size: 11px;
-    font-weight: 400;
-    line-height: 16px;
-    white-space: nowrap;
-  }
-
-  & :is(.urlbarView, .urlbarView-body-outer, .urlbarView-results, #urlbar-results) {
-    padding-inline: 0 !important;
-    padding-block: 0 !important;
-    margin-inline: 0 !important;
-  }
-
-  & .urlbarView-body-inner {
-    padding-inline: 0 !important;
-    margin-inline: 0 !important;
-  }
-
-  & .urlbarView-body-inner {
-    padding-block: var(--zia-pop-list-pad) !important;
-  }
-
-  & .urlbarView {
-    margin-block-end: calc(-1 * var(--zia-pop-bottom-trim)) !important;
-  }
-
-  /* When the list scrolls it hangs past the pop-up by the trim. Cut it off
-     exactly at the pop-up's edge, so rows run right up to it mid-scroll, and
-     add the hidden amount back as space at the end, so the last row scrolls
-     clear with the same gap below it as at the sides. */
-  :root[zia-pop-scrolls="true"] & .urlbarView {
-    clip-path: inset(0 0 var(--zia-pop-bottom-trim) 0);
-  }
-
-  :root[zia-pop-scrolls="true"] & #urlbar-results::after {
+  :is(#urlbar:not([breakout-extend]), .zia-pane-address)::after {
     content: "";
-    display: block;
-    height: var(--zia-pop-bottom-trim);
+    position: absolute;
+    inset: 0;
+    border-radius: var(--zia-urlbar-radius);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    --zia-load-width: calc(var(--zia-load-progress, 0) * 100%);
+    --zia-load-p: var(--zia-load-progress, 0);
+
+    --zia-load-tint: color-mix(in srgb, var(--zia-loading-color) 30%, transparent),
+      color-mix(in srgb, var(--zia-loading-color) 14%, transparent) 50%,
+      transparent 100%;
+    --zia-load-glow: color-mix(in srgb, var(--zia-loading-color) 36%, transparent),
+      color-mix(in srgb, var(--zia-loading-color) 16%, transparent) 35%,
+      color-mix(in srgb, var(--zia-loading-color) 5%, transparent) 70%,
+      transparent 100%;
+    background:
+
+      radial-gradient(farthest-side at 100% 100%, var(--zia-load-glow))
+        calc(var(--zia-load-p) * 100% + (var(--zia-load-p) - 1) * 180px) 100% / 180px 100% no-repeat,
+
+      radial-gradient(farthest-side at 0% 100%, var(--zia-load-glow))
+        calc(var(--zia-load-p) * 100% + var(--zia-load-p) * 28px) 100% / 28px 100% no-repeat,
+
+      radial-gradient(100% 100% at 100% 100%, var(--zia-load-tint))
+        calc(var(--zia-load-p) * 100% + (var(--zia-load-p) - 1) * 240px) 100% / 240px 100% no-repeat,
+      radial-gradient(100% 100% at 0% 100%, var(--zia-load-tint))
+        calc(var(--zia-load-p) * 100% + var(--zia-load-p) * 36px) 100% / 36px 100% no-repeat,
+
+      linear-gradient(
+        to right,
+        color-mix(in srgb, var(--zia-loading-color) 70%, transparent),
+        var(--zia-loading-color) 85%,
+        color-mix(in srgb, var(--zia-loading-color) 55%, white) 100%
+      ) left bottom / var(--zia-load-width) 1.5px no-repeat;
   }
 
-  --urlbarView-item-inline-padding: 8px !important;
-
-  & :is(.urlbarView, .urlbarView-body-outer, .urlbarView-body-inner, .urlbarView-results, #urlbar-results) {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin-inline: 0 !important;
+  :root[zia-loading="true"] #urlbar:not([breakout-extend])::after,
+  :root .zia-pane-address[zia-loading]:not(#zia-none)::after {
+    opacity: 1;
+    animation: zia-loading-shimmer 1.4s ease-in-out infinite;
   }
 
-  & :is(.urlbarView-body-inner, .urlbarView-body-outer, .urlbarView-results, #urlbar-results) {
-    margin-block: 0 !important;
-    border-block: 0 !important;
+  @keyframes zia-loading-shimmer {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.25); }
   }
 
-  & .urlbarView-row-buttons {
-    display: none !important;
+  #urlbar .urlbar-input-box {
+    position: relative;
   }
 
-  & :is(.search-one-offs, #urlbar-one-offs, .search-panel-one-offs-container) {
-    display: none !important;
+  #zia-url-title,
+  #zia-url-plain {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+    color: var(--toolbar-field-color, currentColor);
   }
-}
 
-:is(#urlbar:not([breakout-extend]), .zia-pane-address)::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: var(--zia-urlbar-radius);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  --zia-load-width: calc(var(--zia-load-progress, 0) * 100%);
-  --zia-load-p: var(--zia-load-progress, 0);
+  #zia-url-title > span,
+  #zia-url-plain > span {
+    white-space: pre;
+  }
 
-  --zia-load-tint: color-mix(in srgb, var(--zia-loading-color) 30%, transparent),
-    color-mix(in srgb, var(--zia-loading-color) 14%, transparent) 50%,
-    transparent 100%;
-  --zia-load-glow: color-mix(in srgb, var(--zia-loading-color) 36%, transparent),
-    color-mix(in srgb, var(--zia-loading-color) 16%, transparent) 35%,
-    color-mix(in srgb, var(--zia-loading-color) 5%, transparent) 70%,
-    transparent 100%;
-  background:
-
-    radial-gradient(farthest-side at 100% 100%, var(--zia-load-glow))
-      calc(var(--zia-load-p) * 100% + (var(--zia-load-p) - 1) * 180px) 100% / 180px 100% no-repeat,
-
-    radial-gradient(farthest-side at 0% 100%, var(--zia-load-glow))
-      calc(var(--zia-load-p) * 100% + var(--zia-load-p) * 28px) 100% / 28px 100% no-repeat,
-
-    radial-gradient(100% 100% at 100% 100%, var(--zia-load-tint))
-      calc(var(--zia-load-p) * 100% + (var(--zia-load-p) - 1) * 240px) 100% / 240px 100% no-repeat,
-    radial-gradient(100% 100% at 0% 100%, var(--zia-load-tint))
-      calc(var(--zia-load-p) * 100% + var(--zia-load-p) * 36px) 100% / 36px 100% no-repeat,
-
-    linear-gradient(
-      to right,
-      color-mix(in srgb, var(--zia-loading-color) 70%, transparent),
-      var(--zia-loading-color) 85%,
-      color-mix(in srgb, var(--zia-loading-color) 55%, white) 100%
-    ) left bottom / var(--zia-load-width) 1.5px no-repeat;
-}
-
-:root[zia-loading="true"] #urlbar:not([breakout-extend])::after,
-:root .zia-pane-address[zia-loading]:not(#zia-none)::after {
-  opacity: 1;
-  animation: zia-loading-shimmer 1.4s ease-in-out infinite;
-}
-
-@keyframes zia-loading-shimmer {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.25); }
-}
-
-#urlbar .urlbar-input-box {
-  position: relative;
-}
-
-#zia-url-title,
-#zia-url-plain {
-  position: absolute;
-  inset: 0;
-  display: none;
-  align-items: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  pointer-events: none;
-  color: var(--toolbar-field-color, currentColor);
-}
-
-#zia-url-title > span,
-#zia-url-plain > span {
-  white-space: pre;
-}
-
-#zia-url-title .zia-url-title-rest,
-#zia-url-plain .zia-url-title-rest {
-  opacity: 0.55;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-#urlbar[zia-has-title="true"]:not(:hover):not([focused]):not([breakout-extend]) #zia-url-title {
-  display: flex;
-}
-
-#urlbar[zia-has-title="true"]:hover:not([focused]):not([breakout-extend]) #zia-url-plain {
-  display: flex;
-}
-
-#urlbar[zia-has-title="true"]:not([focused]):not([breakout-extend]) .urlbar-input {
-  opacity: 0 !important;
-}
-
-/* Optionally, the closed bar shows only the page's title, in the domain's
-   colour (zia.uc.js), and keeps it on hover: the address shows once clicked */
-@media -moz-pref("zia.urlbar.title-only") {
-  #zia-url-title .zia-url-title-host {
+  #zia-url-title .zia-url-title-rest,
+  #zia-url-plain .zia-url-title-rest {
+    opacity: 0.55;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  #urlbar[zia-has-title="true"]:hover:not([focused]):not([breakout-extend]) {
-    & #zia-url-title {
-      display: flex;
+  #urlbar[zia-has-title="true"]:not(:hover):not([focused]):not([breakout-extend]) #zia-url-title {
+    display: flex;
+  }
+
+  #urlbar[zia-has-title="true"]:hover:not([focused]):not([breakout-extend]) #zia-url-plain {
+    display: flex;
+  }
+
+  #urlbar[zia-has-title="true"]:not([focused]):not([breakout-extend]) .urlbar-input {
+    opacity: 0 !important;
+  }
+
+  /* Optionally, the closed bar shows only the page's title, in the domain's
+     colour (zia.uc.js), and keeps it on hover: the address shows once clicked */
+  @media -moz-pref("zia.urlbar.title-only") {
+    #zia-url-title .zia-url-title-host {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    & #zia-url-plain {
-      display: none;
+    #urlbar[zia-has-title="true"]:hover:not([focused]):not([breakout-extend]) {
+      & #zia-url-title {
+        display: flex;
+      }
+
+      & #zia-url-plain {
+        display: none;
+      }
     }
   }
-}
 
-#urlbar :is(.urlbar-input, #zia-url-title, #zia-url-title span, #zia-url-plain, #zia-url-plain span) {
-  font-weight: var(--zia-tab-weight) !important;
-}
+  #urlbar :is(.urlbar-input, #zia-url-title, #zia-url-title span, #zia-url-plain, #zia-url-plain span) {
+    font-weight: var(--zia-tab-weight) !important;
+  }
 
-/* Zen's own copy button gives way to Zia's paperclip, once it's there */
-#urlbar:has(#zia-copy-link-button) #zen-copy-url-button {
-  display: none !important;
-}
+  /* Zen's own copy button gives way to Zia's paperclip, once it's there */
+  #urlbar:has(#zia-copy-link-button) #zen-copy-url-button {
+    display: none !important;
+  }
 
-#urlbar #identity-box,
-#urlbar #page-action-buttons {
-  transition: opacity 0.15s ease !important;
-}
+  #urlbar #identity-box,
+  #urlbar #page-action-buttons {
+    transition: opacity 0.15s ease !important;
+  }
 
-#urlbar:not(:hover):not([focused]):not([breakout-extend]) :is(#identity-box, #page-action-buttons) {
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
+  #urlbar:not(:hover):not([focused]):not([breakout-extend]) :is(#identity-box, #page-action-buttons) {
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
 
-/* Takes the address bar's colour as it changes with the site, like the
-   icons beside it. */
-#zia-copy-link-button {
-  color: inherit !important;
-}
+  /* Takes the address bar's colour as it changes with the site, like the
+     icons beside it. */
+  #zia-copy-link-button {
+    color: inherit !important;
+  }
 
-#zia-copy-link-button image {
-  list-style-image: url("chrome://sine/content/zia/icons/ui/paperclip.svg") !important;
-  -moz-context-properties: fill, fill-opacity, stroke, stroke-opacity;
-  fill: currentColor;
-}
+  #zia-copy-link-button image {
+    list-style-image: url("chrome://sine/content/zia/icons/ui/paperclip.svg") !important;
+    -moz-context-properties: fill, fill-opacity, stroke, stroke-opacity;
+    fill: currentColor;
+  }
 
-#zia-copy-link-button[zia-copied] image {
-  list-style-image: url("chrome://sine/content/zia/icons/ui/check.svg") !important;
-}
+  #zia-copy-link-button[zia-copied] image {
+    list-style-image: url("chrome://sine/content/zia/icons/ui/check.svg") !important;
+  }
 
-#urlbar :is(#zia-copy-link-button, #zen-site-data-icon-button) {
-  width: 26px !important;
-  min-width: 26px !important;
-  height: 26px !important;
-  min-height: 26px !important;
-  padding: 0 !important;
-  box-sizing: border-box !important;
-  justify-content: center !important;
-  align-items: center !important;
-  align-self: center !important;
-}
+  #urlbar :is(#zia-copy-link-button, #zen-site-data-icon-button) {
+    width: 26px !important;
+    min-width: 26px !important;
+    height: 26px !important;
+    min-height: 26px !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    justify-content: center !important;
+    align-items: center !important;
+    align-self: center !important;
+  }
 
-#urlbar #zia-copy-link-button image {
-  width: 16px !important;
-  height: 16px !important;
-}
+  #urlbar #zia-copy-link-button image {
+    width: 16px !important;
+    height: 16px !important;
+  }
 
-#zia-copy-link-button[hidden],
-#urlbar[breakout-extend]:not([zia-classic]) #zia-copy-link-button {
-  display: none !important;
-}
+  #zia-copy-link-button[hidden],
+  #urlbar[breakout-extend]:not([zia-classic]) #zia-copy-link-button {
+    display: none !important;
+  }
 
-#urlbar *:active,
-#urlbar *:active > image {
-  scale: 1 !important;
-  transform: none !important;
-}
+  #urlbar *:active,
+  #urlbar *:active > image {
+    scale: 1 !important;
+    transform: none !important;
+  }
 
-#zen-site-data-icon-button image {
-  list-style-image: url("chrome://sine/content/zia/icons/site-settings.svg") !important;
+  #zen-site-data-icon-button image {
+    list-style-image: url("chrome://sine/content/zia/icons/site-settings.svg") !important;
+  }
 }
 
 #zen-toggle-compact-mode,
@@ -1054,43 +1060,52 @@
   stroke-opacity: 1 !important;
 }
 
-:root #urlbar[breakout-extend]:not([zia-classic]) {
-  color-scheme: dark !important;
-  color: rgb(251, 251, 254) !important;
-  --toolbar-field-color: rgb(251, 251, 254) !important;
-  --toolbar-field-focus-color: rgb(251, 251, 254) !important;
-
-  & .urlbar-input {
+@media not -moz-pref("zia.urlbar.zen-look") {
+  :root #urlbar[breakout-extend]:not([zia-classic]) {
+    color-scheme: dark !important;
     color: rgb(251, 251, 254) !important;
+    --toolbar-field-color: rgb(251, 251, 254) !important;
+    --toolbar-field-focus-color: rgb(251, 251, 254) !important;
+
+    & .urlbar-input {
+      color: rgb(251, 251, 254) !important;
+    }
+
+    & .urlbar-icon {
+      color: rgb(251, 251, 254) !important;
+      fill: currentColor !important;
+    }
   }
 
-  & .urlbar-icon {
-    color: rgb(251, 251, 254) !important;
-    fill: currentColor !important;
+
+  /* The "paste the copied link" suggestion: just the link, without the
+     search engine's name in a chip at the far right */
+  .urlbarView-row:is([type="clipboard"], :has(.urlbarView-favicon[src*="clipboard"])) :is(.urlbarView-action, .urlbarView-button:not(.urlbarView-button-result-menu)) {
+    display: none !important;
+  }
+
+  /* "Switch to tab:" (and the like) in the address itself, the address's own
+     size rather than Zen's 14px */
+  #urlbar[breakout-extend]:not([zia-classic]) :is(#urlbar-label-box, #urlbar-label-box > *) {
+    font-size: var(--zia-text-size) !important;
+    font-weight: var(--zia-tab-weight) !important;
+  }
+
+  /* Optional: the address bar's text centred in it (off: from the left).
+     Only the toolbar's: the floating bar mid-window (Zen's new tab bar, or
+     its own setting) is a search box, and starts from the left. */
+  @media -moz-pref("zia.urlbar.center-text") {
+    #urlbar:not([zen-floating-urlbar="true"]) :is(.urlbar-input, #zia-url-title, #zia-url-plain) {
+      text-align: center !important;
+      justify-content: center !important;
+    }
   }
 }
 
-
-/* The "paste the copied link" suggestion: just the link, without the
-   search engine's name in a chip at the far right */
-.urlbarView-row:is([type="clipboard"], :has(.urlbarView-favicon[src*="clipboard"])) :is(.urlbarView-action, .urlbarView-button:not(.urlbarView-button-result-menu)) {
-  display: none !important;
-}
-
-/* "Switch to tab:" (and the like) in the address itself, the address's own
-   size rather than Zen's 14px */
-#urlbar[breakout-extend]:not([zia-classic]) :is(#urlbar-label-box, #urlbar-label-box > *) {
-  font-size: var(--zia-text-size) !important;
-  font-weight: var(--zia-tab-weight) !important;
-}
-
-/* Optional: the address bar's text centred in it (off: from the left).
-   Only the toolbar's: the floating bar mid-window (Zen's new tab bar, or
-   its own setting) is a search box, and starts from the left. */
-@media -moz-pref("zia.urlbar.center-text") {
-  #urlbar:not([zen-floating-urlbar="true"]) :is(.urlbar-input, #zia-url-title, #zia-url-plain) {
-    text-align: center !important;
-    justify-content: center !important;
+/* Zen's own address bar: Zia's parts of it put away, Zen's back */
+@media -moz-pref("zia.urlbar.zen-look") {
+  #urlbar :is(#zia-url-title, #zia-url-plain, #zia-copy-link-button) {
+    display: none !important;
   }
 }
 #zia-workspace-slot {
@@ -2424,9 +2439,14 @@ zen-split-fake-tab {
   transition: none !important;
 }
 
-:is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container > label,
-#urlbar:not([breakout-extend]) :is(.urlbar-input, #zia-url-title, #zia-url-plain) {
+:is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container > label {
   font-size: var(--zia-text-size) !important;
+}
+
+@media not -moz-pref("zia.urlbar.zen-look") {
+  #urlbar:not([breakout-extend]) :is(.urlbar-input, #zia-url-title, #zia-url-plain) {
+    font-size: var(--zia-text-size) !important;
+  }
 }
 
 :is(#tabs-newtab-button, #vertical-tabs-newtab-button) > .toolbarbutton-icon {
@@ -5532,15 +5552,17 @@ findbar {
   opacity: 0.7 !important;
 }
 
-#urlbar :is(#page-action-buttons, .urlbar-page-action) image,
-#urlbar .urlbar-icon {
-  width: 14px !important;
-  height: 14px !important;
-}
+@media not -moz-pref("zia.urlbar.zen-look") {
+  #urlbar :is(#page-action-buttons, .urlbar-page-action) image,
+  #urlbar .urlbar-icon {
+    width: 14px !important;
+    height: 14px !important;
+  }
 
-#urlbar #zen-site-data-icon-button image {
-  width: 17px !important;
-  height: 16px !important;
+  #urlbar #zen-site-data-icon-button image {
+    width: 17px !important;
+    height: 16px !important;
+  }
 }
 
 #urlbar-search-mode-indicator,
@@ -6044,9 +6066,11 @@ zen-folder .tab-reset-button {
   fill-opacity: var(--zia-folder-mark-opacity) !important;
 }
 
-#urlbar #identity-icon-label,
-#urlbar .identity-icon-label {
-  display: none !important;
+@media not -moz-pref("zia.urlbar.zen-look") {
+  #urlbar #identity-icon-label,
+  #urlbar .identity-icon-label {
+    display: none !important;
+  }
 }
 
 /* A folder being named by the local model shimmers (zia.uc.js) */
