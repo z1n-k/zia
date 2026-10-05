@@ -4,12 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.94.4] — 2026-10-05
 
 ### Changed
 
 - A page glanced at from an essential shows as a small card of Zia's
   glass, like the essential it sits on.
+- The edge of the glass tile inside a selected essential is a touch
+  dimmer.
 
 ## [2.94.3] — 2026-10-05
 
