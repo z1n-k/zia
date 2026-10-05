@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.94.13] — 2026-10-05
+
+### Changed
+
+- Tab numbers are quieter: a fainter outline round each number, and the
+  numbers a touch dimmer.
+
 ## [2.94.12] — 2026-10-05
 
 ### Fixed
