@@ -235,3 +235,42 @@ tooltip[default="true"] {
   }
 }
 
+
+/* A download flying to the Library button as a row, as in Dia (zia.uc.js):
+   a small glass row with the file's icon and name, as AI renaming's card
+   is drawn, over the page */
+#zia-download-flight {
+  position: fixed;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 240px;
+  height: 32px;
+  padding: 0 12px 0 9px;
+  border-radius: 11px;
+  corner-shape: var(--zia-squircle) !important;
+  background: var(--zia-media-solid, var(--zia-media-card-base));
+  box-shadow: var(--zia-glass-edge), 0 8px 24px rgba(0, 0, 0, 0.32), 0 0 32px rgba(255, 255, 255, 0.1);
+  color: var(--zia-sidebar-ink, rgb(255, 255, 255));
+  font: 500 12.5px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  white-space: nowrap;
+  pointer-events: none;
+  will-change: transform, opacity;
+
+  & > .zia-df-icon {
+    flex: none;
+    width: 16px;
+    height: 16px;
+  }
+
+  & > .zia-df-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+:root[zia-light] #zia-download-flight {
+  box-shadow: var(--zia-glass-edge), 0 8px 24px rgba(0, 0, 0, 0.16);
+}
