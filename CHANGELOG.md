@@ -4,6 +4,21 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.94.5] — 2026-10-05
+
+### Changed
+
+- The glass on the tile inside a selected essential, and on the glance
+  card, is softer: its light top and bottom a touch dimmer, its dark
+  sides a touch lighter.
+- The Library's traffic lights, search and buttons sit as far down from
+  the top as the sidebar's traffic lights do (they were 5px higher).
+
+### Removed
+
+- The blue outline round the Library button while AI renaming names a
+  download.
+
 ## [2.94.4] — 2026-10-05
 
 ### Changed

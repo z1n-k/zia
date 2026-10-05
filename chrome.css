@@ -7519,8 +7519,18 @@ zen-folder .tab-reset-button {
     }
 
     /* search and filters: Zia's field and tiles */
+    /* the traffic lights as far down from the top as in the sidebar (Zen's
+       12px, and the 3px more Zia gives them there, 06-folders-and-sidebar,
+       which they lose on moving in), and the search and its buttons beside
+       them down as much */
+    @media (-moz-platform: macos) {
+      & #zen-library-header {
+        padding-top: 17px !important;
+      }
+    }
+
     & .zen-library-search-top {
-      padding: 10px 10px 6px !important;
+      padding: 15px 10px 6px !important;
     }
 
     & .zen-library-search-box {
@@ -8037,24 +8047,6 @@ zen-folder .tab-reset-button {
   position: relative;
 }
 
-/* While a download's being renamed: just a glowing outline round the
-   Library button, in the loading line's colour, with its shimmer */
-#zen-library-button[zia-renaming] {
-  border-radius: var(--zia-close-radius, 6px);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--zia-loading-color) 80%, transparent),
-    0 0 10px color-mix(in srgb, var(--zia-loading-color) 35%, transparent);
-  animation: zia-loading-shimmer 1.4s ease-in-out infinite;
-
-  & .zen-library-sprite {
-    opacity: 1 !important;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
-  }
-}
-
 .zia-rc-head {
   display: flex;
   align-items: center;
@@ -8251,25 +8243,25 @@ zen-folder .tab-reset-button {
     0.5px 0 0.5px rgba(0, 0, 0, 0.08),
     0 0 0.5px 0.25px rgba(0, 0, 0, 0.04);
   --zia-glass-edge-lit: var(--zia-glass-edge-lit-dark);
-  /* a touch thicker (and a touch dimmer, so it reads no brighter), for
+  /* a touch thicker (and softer: dimmer lights, lighter dark sides), for
      the glass tile inside a selected essential, whose thin edge got lost
      against its colour, and the glance card on an essential */
   --zia-glass-edge-thick-dark:
-    inset 0 1.5px 0.5px -0.5px rgba(255, 255, 255, 0.25),
-    inset 0 -1.5px 0.5px -0.5px rgba(255, 255, 255, 0.23),
-    inset 0 4px 2.5px -2.5px rgba(255, 255, 255, 0.09),
-    inset 0 -4px 2.5px -2.5px rgba(255, 255, 255, 0.07),
-    -1px 0 0.5px rgba(0, 0, 0, 0.5),
-    1px 0 0.5px rgba(0, 0, 0, 0.5),
-    0 0 0.5px 0.5px rgba(0, 0, 0, 0.25);
+    inset 0 1.5px 0.5px -0.5px rgba(255, 255, 255, 0.21),
+    inset 0 -1.5px 0.5px -0.5px rgba(255, 255, 255, 0.19),
+    inset 0 4px 2.5px -2.5px rgba(255, 255, 255, 0.075),
+    inset 0 -4px 2.5px -2.5px rgba(255, 255, 255, 0.06),
+    -1px 0 0.5px rgba(0, 0, 0, 0.4),
+    1px 0 0.5px rgba(0, 0, 0, 0.4),
+    0 0 0.5px 0.5px rgba(0, 0, 0, 0.2);
   --zia-glass-edge-thick-light:
-    inset 0 1.5px 0.5px -0.5px rgba(255, 255, 255, 0.75),
-    inset 0 -1.5px 0.5px -0.5px rgba(255, 255, 255, 0.6),
-    inset 0 4px 2.5px -2.5px rgba(255, 255, 255, 0.25),
-    inset 0 -4px 2.5px -2.5px rgba(255, 255, 255, 0.18),
-    -1px 0 0.5px rgba(0, 0, 0, 0.14),
-    1px 0 0.5px rgba(0, 0, 0, 0.14),
-    0 0 0.5px 0.5px rgba(0, 0, 0, 0.06);
+    inset 0 1.5px 0.5px -0.5px rgba(255, 255, 255, 0.66),
+    inset 0 -1.5px 0.5px -0.5px rgba(255, 255, 255, 0.52),
+    inset 0 4px 2.5px -2.5px rgba(255, 255, 255, 0.22),
+    inset 0 -4px 2.5px -2.5px rgba(255, 255, 255, 0.16),
+    -1px 0 0.5px rgba(0, 0, 0, 0.11),
+    1px 0 0.5px rgba(0, 0, 0, 0.11),
+    0 0 0.5px 0.5px rgba(0, 0, 0, 0.05);
   --zia-glass-edge-thick: var(--zia-glass-edge-thick-dark);
   --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.5);
 
