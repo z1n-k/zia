@@ -51,24 +51,6 @@
   position: relative;
 }
 
-/* While a download's being renamed: just a glowing outline round the
-   Library button, in the loading line's colour, with its shimmer */
-#zen-library-button[zia-renaming] {
-  border-radius: var(--zia-close-radius, 6px);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--zia-loading-color) 80%, transparent),
-    0 0 10px color-mix(in srgb, var(--zia-loading-color) 35%, transparent);
-  animation: zia-loading-shimmer 1.4s ease-in-out infinite;
-
-  & .zen-library-sprite {
-    opacity: 1 !important;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
-  }
-}
-
 .zia-rc-head {
   display: flex;
   align-items: center;
