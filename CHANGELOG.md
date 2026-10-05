@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.14] — 2026-10-05
+
+### Fixed
+
+- The download's flight eases more gently, a little longer, at no more
+  than one and a half times its average speed: mid-flight it crossed
+  over 100px between frames, and read as jumpy.
+
 ## [2.95.13] — 2026-10-05
 
 ### Fixed

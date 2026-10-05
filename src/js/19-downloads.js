@@ -126,8 +126,8 @@
   // animation turns this off too.
   let downloadFlightOn = false;
   const FLIGHT_POP_MS = 120;
-  const FLIGHT_WINDUP_MS = 380;
-  const FLIGHT_LAUNCH_MS = 420;
+  const FLIGHT_WINDUP_MS = 420;
+  const FLIGHT_LAUNCH_MS = 560;
   const FLIGHT_SETTLE_MS = 320;
 
   function flightTarget() {
@@ -229,7 +229,10 @@
     const flightMs = FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
     for (let i = 1; i <= STEPS; i++) {
       const t = i / STEPS;
-      const u = t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2;
+      // (a gentle ease, its top speed only about one and a half times its
+      // average: a steeper one crossed 100px between frames mid-flight,
+      // and read as jumpy)
+      const u = 0.5 - 0.5 * Math.cos(Math.PI * t);
       const here = point(u);
       const tilt = lean * smooth(0, 0.35, t) * (1 - smooth(0.45, 0.9, t));
       frames.push({
