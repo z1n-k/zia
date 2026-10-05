@@ -4,6 +4,19 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.94.10] — 2026-10-05
+
+### Changed
+
+- AI renaming's card takes the space's colour, as the music card does,
+  rather than a fixed grey that looked off on a coloured space.
+
+### Fixed
+
+- The download badge flying from the Library button to the newest
+  download stays the list's icon size, rather than growing to twice its
+  size over the name and snapping small as it landed.
+
 ## [2.94.9] — 2026-10-05
 
 ### Fixed
