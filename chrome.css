@@ -4786,8 +4786,15 @@ findbar {
   backdrop-filter: blur(18px) saturate(1.4);
   border: none !important;
   border-radius: 12px;
-  /* (Zia's glass edge, and a soft lift off the page) */
-  box-shadow: var(--zia-glass-edge-soft-dark), 0 10px 30px rgba(0, 0, 0, 0.35);
+  /* Zia's glass edge, its sides a faint light line rather than dark ones,
+     which went nowhere against a dark page, and a soft lift off it */
+  box-shadow:
+    inset 0 1px 0.75px -0.5px rgba(255, 255, 255, 0.29),
+    inset 0 -1px 0.75px -0.5px rgba(255, 255, 255, 0.27),
+    inset 0 3px 2px -2px rgba(255, 255, 255, 0.11),
+    inset 0 -3px 2px -2px rgba(255, 255, 255, 0.085),
+    0 0 0 0.5px rgba(255, 255, 255, 0.16),
+    0 10px 30px rgba(0, 0, 0, 0.35);
   color: rgba(255, 255, 255, 0.92) !important;
   color-scheme: dark;
   transition: none !important;
