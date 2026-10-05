@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.2] — 2026-10-05
+
+### Fixed
+
+- The download's flight starts above where the pointer is when the
+  download begins: after Save Image As, it started back where the menu
+  had been.
+- Its light is a faint glow trailing the row along its own path, rather
+  than a bright band from start to finish that moved on its own; the
+  bloom where it lands is softer too.
+
 ## [2.95.1] — 2026-10-05
 
 ### Changed
