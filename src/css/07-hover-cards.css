@@ -191,6 +191,28 @@
   }
 }
 
+/* the page's picture, with Firefox's hover previews on (zia.uc.js): full
+   width across the top of the card, its corners following the card's, a
+   faint tile until it's drawn */
+.zia-tab-card-thumb {
+  display: block;
+  width: calc(100% + 28px);
+  height: auto;
+  aspect-ratio: 1 / 0.55;
+  margin: -12px -14px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+:root[zia-light] .zia-tab-card-thumb {
+  background: rgba(0, 0, 0, 0.04);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
 .zia-tab-card-title {
   font-weight: 600;
   font-size: 13px;

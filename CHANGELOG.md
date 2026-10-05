@@ -4,6 +4,24 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.5] — 2026-10-05
+
+### Added
+
+- "Text size in the sidebar" (Default, Small, Smaller or Large), for a
+  narrow sidebar where long tab names were cut short.
+- With Firefox's tab hover previews on (browser.tabs.hoverPreview.enabled),
+  a tab's hover card shows a picture of the page above its name, as
+  Firefox's own preview does, for a loaded page you're not on.
+
+### Fixed
+
+- The compact sidebar keeps its rounded corners on Windows with the page
+  edge to edge: it took the page's corners, which that squares off.
+- The toolbar's buttons and extension icons are always in the same ink
+  as the address: extension icons came out fainter, and on dark sites
+  the buttons were whiter than the address.
+
 ## [2.95.4] — 2026-10-05
 
 ### Removed

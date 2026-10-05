@@ -25,7 +25,10 @@
      corners are a superellipse. Zia's corners are circular, so that stretch
      is divided back out. With page rounding on, the card uses a fixed
      length instead (04). */
-  --zia-card-radius: calc(var(--zen-native-inner-radius, 10.5px) / var(--zen-squircle-value, 1));
+  /* (the page card's corner; edge to edge sets the card's to 0, while the
+     compact sidebar keeps this one, 16-compact-mode) */
+  --zia-card-radius-base: calc(var(--zen-native-inner-radius, 10.5px) / var(--zen-squircle-value, 1));
+  --zia-card-radius: var(--zia-card-radius-base);
 
   --zia-shine-layers:
     linear-gradient(to right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.2) 35%, rgba(255, 255, 255, 0.2) 65%, rgba(255, 255, 255, 0.08)),
@@ -193,3 +196,17 @@
   --zia-urlbar-hover-bg: rgba(0, 0, 0, 0.06);
 }
 
+
+/* The sidebar's text size, an option (zia.uc.js): a touch or two smaller,
+   for a narrow sidebar, or a touch larger */
+:root[zia-text-size="small"] {
+  --zia-text-size: calc(1.22rem - 1.4px);
+}
+
+:root[zia-text-size="smaller"] {
+  --zia-text-size: calc(1.22rem - 2.4px);
+}
+
+:root[zia-text-size="large"] {
+  --zia-text-size: calc(1.22rem + 0.6px);
+}
