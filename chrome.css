@@ -8211,35 +8211,41 @@ zen-folder .tab-reset-button {
 }
 
 @media -moz-pref("zia.liquid-glass") {
-  /* The edge, as on Tahoe's buttons: a light hairline inside along the top
-     and bottom (the top a touch brighter), fading out down the sides; a dark
-     one outside down the sides, fading out at the top and bottom; and a
-     soft lift off whatever's behind. Each is a shadow nudged half a pixel,
-     which follows the corner and thins out round it. */
+  /* The edge, measured pixel by pixel off Tahoe's toolbar buttons: a light
+     grey hairline along the top and bottom (the top a touch brighter), with
+     a soft glow under it fading into the fill over a few pixels; a dark
+     hairline down the sides; no shadow under it. Each is a shadow nudged
+     along one axis, which follows the corner and thins out round it; the
+     inset ones are pulled back half a pixel (their negative spread) so
+     none of their light creeps down the sides. */
   :root {
-    --zia-glass-rim-top: rgba(255, 255, 255, 0.4);
-    --zia-glass-rim-bottom: rgba(255, 255, 255, 0.24);
-    --zia-glass-side: rgba(0, 0, 0, 0.5);
+    --zia-glass-rim-top: rgba(255, 255, 255, 0.27);
+    --zia-glass-rim-bottom: rgba(255, 255, 255, 0.25);
+    --zia-glass-glow-top: rgba(255, 255, 255, 0.15);
+    --zia-glass-glow-bottom: rgba(255, 255, 255, 0.12);
+    --zia-glass-side: rgba(0, 0, 0, 0.6);
     --zia-glass-edge:
-      inset 0 0.5px 0 var(--zia-glass-rim-top),
-      inset 0 -0.5px 0 var(--zia-glass-rim-bottom),
+      inset 0 1px 0.75px -0.5px var(--zia-glass-rim-top),
+      inset 0 -1px 0.75px -0.5px var(--zia-glass-rim-bottom),
+      inset 0 3.5px 2.5px -2.5px var(--zia-glass-glow-top),
+      inset 0 -3.5px 2.5px -2.5px var(--zia-glass-glow-bottom),
       -0.5px 0 0 var(--zia-glass-side),
       0.5px 0 0 var(--zia-glass-side);
-    --zia-glass-lift: 0 1px 4px rgba(0, 0, 0, 0.22);
     --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.5);
   }
 
   :root[zia-light] {
-    --zia-glass-rim-top: rgba(255, 255, 255, 0.95);
-    --zia-glass-rim-bottom: rgba(255, 255, 255, 0.6);
-    --zia-glass-side: rgba(0, 0, 0, 0.13);
-    --zia-glass-lift: 0 1px 4px rgba(0, 0, 0, 0.08);
+    --zia-glass-rim-top: rgba(255, 255, 255, 0.85);
+    --zia-glass-rim-bottom: rgba(255, 255, 255, 0.7);
+    --zia-glass-glow-top: rgba(255, 255, 255, 0.4);
+    --zia-glass-glow-bottom: rgba(255, 255, 255, 0.3);
+    --zia-glass-side: rgba(0, 0, 0, 0.16);
     --zia-glass-pop-lift: 0 16px 48px rgba(0, 0, 0, 0.2);
   }
 
   /* Essentials (the chosen one keeps Zen's picture-coloured look) */
   .tabbrowser-tab[zen-essential]:not([visuallyselected]) > .tab-stack > .tab-background {
-    box-shadow: var(--zia-glass-edge), var(--zia-glass-lift) !important;
+    box-shadow: var(--zia-glass-edge) !important;
 
     &::after {
       display: none !important;
@@ -8263,7 +8269,7 @@ zen-folder .tab-reset-button {
   /* A folder's box, hovered, held after a drop, or pressed */
   :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])):is(:hover, :active, [zia-hover-held]) {
     &::before {
-      box-shadow: var(--zia-glass-edge), var(--zia-glass-lift);
+      box-shadow: var(--zia-glass-edge);
     }
 
     &::after {
@@ -8276,7 +8282,7 @@ zen-folder .tab-reset-button {
   #zia-tab-card,
   #zia-folder-card {
     clip-path: inset(-1px round calc(var(--zia-tab-card-radius) + 1px));
-    box-shadow: var(--zia-glass-edge), var(--zia-glass-lift);
+    box-shadow: var(--zia-glass-edge);
 
     &::after {
       display: none;
@@ -8308,7 +8314,7 @@ zen-folder .tab-reset-button {
 
   /* The music player */
   #zen-media-controls-toolbar .zen-media-card {
-    box-shadow: var(--zia-glass-edge), var(--zia-glass-lift) !important;
+    box-shadow: var(--zia-glass-edge) !important;
   }
 
   /* The Library's icon buttons (Filter, Clear, the filters) and the tile
@@ -8316,7 +8322,7 @@ zen-folder .tab-reset-button {
   @media not -moz-pref("zia.library.zen-look") {
     zen-library :is(.zen-library-filter-button, .zen-library-filter-done, .zia-library-clear, .zen-library-filter-chip),
     zen-library .zia-library-rail {
-      box-shadow: var(--zia-glass-edge), var(--zia-glass-lift) !important;
+      box-shadow: var(--zia-glass-edge) !important;
 
       &::after {
         display: none !important;

@@ -9,8 +9,9 @@ Every release of Zia, newest first. The format follows
 ### Added
 
 - Liquid glass (experimental, off by default): turn on **Liquid glass** in
-  settings for macOS Tahoe's glass edge (a light hairline along the top and
-  bottom, a dark one down the sides, and a soft lift) on essentials, the
+  settings for macOS Tahoe's glass edge, matched pixel by pixel to its
+  toolbar buttons (a soft light grey hairline along the top and bottom
+  glowing into the fill, and a dark one down the sides) on essentials, the
   selected tab, folders as you hover or press them, the tab and folder
   cards, the split cards, the address pop-up, the sidebar as it flies out
   in compact mode, the music player and the Library's buttons. Essentials
