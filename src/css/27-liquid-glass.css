@@ -169,18 +169,18 @@
 
   /* (Clear's icon is its background picture, so it goes without) */
   :root:not(#zia-none) .tabbrowser-tab[zia-glass-press] > .tab-stack > .tab-background,
-  :root:not(#zia-none) zen-library [zia-glass-press]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip) {
+  :root:not(#zia-none) zen-library [zia-glass-press]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip, .zia-library-rail) {
     background-image: radial-gradient(circle 120px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light), var(--zia-press-wash)) !important;
   }
 
   /* and, as Tahoe's do, the button swells a touch while it's held (its
      content stays put): animated, as tiles and tabs turn their own
      transitions off */
-  :root:not(#zia-none) :is(.tabbrowser-tab[zia-glass-press="in"] > .tab-stack > .tab-background, zen-library [zia-glass-press="in"]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip)) {
+  :root:not(#zia-none) :is(.tabbrowser-tab[zia-glass-press="in"] > .tab-stack > .tab-background, zen-library [zia-glass-press="in"]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip, .zia-library-rail)) {
     animation: zia-glass-swell var(--zia-spring-time) var(--zia-spring) forwards;
   }
 
-  :root:not(#zia-none) :is(.tabbrowser-tab[zia-glass-press="out"] > .tab-stack > .tab-background, zen-library [zia-glass-press="out"]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip)) {
+  :root:not(#zia-none) :is(.tabbrowser-tab[zia-glass-press="out"] > .tab-stack > .tab-background, zen-library [zia-glass-press="out"]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip, .zia-library-rail)) {
     animation: zia-glass-settle 0.28s ease-out forwards;
   }
 

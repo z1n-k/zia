@@ -95,6 +95,10 @@
       [".tabbrowser-tab", (hit) => hit, (owner) => owner.querySelector(":scope > .tab-stack > .tab-background")],
       [":is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container", (hit) => hit.parentNode, (owner) => owner],
       ["zen-library :is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip)", (hit) => hit, (owner) => owner],
+      // (a Library section lights the tile that slides behind the chosen
+      // one, where the press is on the section, so the chosen one shines
+      // too, and a newly chosen one's tile arrives lit)
+      ["zen-library .zen-library-tab", (hit) => hit.parentNode.querySelector(":scope > .zia-library-rail"), (owner, hit) => hit],
     ];
     let pressed = null;
     let pressedBox = null;
@@ -125,7 +129,7 @@
           continue;
         }
         const owner = match[1](node);
-        const lit = match[2](owner);
+        const lit = owner && match[2](owner, node);
         if (!lit) {
           return;
         }
