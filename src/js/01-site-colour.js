@@ -31,6 +31,9 @@
   const siteColorOn = () => Services.prefs.getBoolPref("zia.toolbar.site-color", true);
 
   function applyColor(rgb) {
+    // (off, the toolbar's left clear on Zen's own window colour, the
+    // sidebar's, 01-page-card-and-toolbar.css: it was Zia's near-black)
+    setFlag("zia-theme-toolbar", !siteColorOn());
     if (!siteColorOn()) {
       rgb = null;
     }

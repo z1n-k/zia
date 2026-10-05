@@ -118,8 +118,12 @@
    sidebar: the bar above the page holds nothing but the window buttons, so
    it isn't drawn as a toolbar (no site colour, no line under it, no top
    corners), and the page itself is the rounded card, with all four corners
-   round. Drawn as the toolbar, it showed as a dark strip across the top. */
-:root[zen-single-toolbar="true"]:not(#zia-none):not([inDOMFullscreen="true"]):not([popup-window]) {
+   round. Drawn as the toolbar, it showed as a dark strip across the top.
+   The same with "Toolbar in the site's colour" off: the toolbar in Zen's
+   own colour, the window's (the sidebar's), rather than Zia's near-black
+   (zia-theme-toolbar, zia.uc.js; not in compact mode, where the toolbar
+   floats over the page) */
+:root:is([zen-single-toolbar="true"], [zia-theme-toolbar]:not([zen-compact-mode="true"])):not(#zia-none):not([inDOMFullscreen="true"]):not([popup-window]) {
   & #zen-appcontent-wrapper {
     box-shadow: none !important;
   }
