@@ -15,7 +15,7 @@ Every release of Zia, newest first. The format follows
   folders as you hover or press them,
   the tab and folder cards, the split cards, the address pop-up, the
   sidebar as it flies out in compact mode, and the Library's buttons.
-  Pressing an essential, a tab, a folder, a Library button or one of the
+  Pressing an essential, a folder, a Library button or one of the
   Library's sections (the chosen one too, just for the shine) lights it
   up under the pointer as Tahoe's buttons do: the light snaps on, follows
   the pointer while it's held, and fades once let go. Essentials

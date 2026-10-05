@@ -8351,7 +8351,7 @@ zen-folder .tab-reset-button {
   }
 
   /* (Clear's icon is its background picture, so it goes without) */
-  :root:not(#zia-none) .tabbrowser-tab[zia-glass-press] > .tab-stack > .tab-background,
+  :root:not(#zia-none) .tabbrowser-tab[zen-essential][zia-glass-press] > .tab-stack > .tab-background,
   :root:not(#zia-none) zen-library [zia-glass-press]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip, .zia-library-rail) {
     background-image: radial-gradient(circle 48px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), var(--zia-press-wash, transparent)) !important;
   }
