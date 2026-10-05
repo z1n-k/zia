@@ -10,6 +10,8 @@ Every release of Zia, newest first. The format follows
 
 - The find bar's close button is the same grey as its arrows, brighter on
   hover, rather than white beside them.
+- The dark lines down the sides of the folders' boxes and the find bar are
+  softer.
 
 ## [2.94.0] — 2026-10-05
 
