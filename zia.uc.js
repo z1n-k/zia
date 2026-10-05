@@ -728,17 +728,12 @@
             scroll: { capture: true, mozSystemGroup: true },
             DOMContentLoaded: {},
             pageshow: {},
-            // (where the pointer is in the page, for a download's flight,
-            // 19-downloads)
-            mousedown: { capture: true, mozSystemGroup: true },
-            mousemove: { capture: true, mozSystemGroup: true },
           },
         },
         allFrames: false,
         messageManagerGroups: ["browsers"],
         // Firefox only starts a helper inside a website's process when told
-        // it's safe there; this one only reports how far a page scrolled,
-        // and where the pointer is in it.
+        // it's safe there; this one only reports how far a page scrolled.
         safeForUntrustedWebProcess: true,
       });
     } catch (err) {
@@ -6663,7 +6658,7 @@
       x: Math.min(window.innerWidth - width / 2 - 8, Math.max(width / 2 + 8, x)),
       y: Math.min(window.innerHeight - height / 2 - 8, Math.max(height / 2 + 8, y)),
     });
-    // (centred just above the pointer, as in Dia)
+    // (centred just above where you last clicked)
     const p0 = keep(start.clientX, start.clientY - height * 0.9);
     const dx = target.x - p0.x;
     const dy = target.y - p0.y;
@@ -6760,25 +6755,11 @@
     flight.finished.catch(() => stage.remove());
   }
 
-  let lastPointer = null;
-
   function flyDownloadRows() {
     const Downloads = window.Downloads;
     if (!Downloads?.getList) {
       return;
     }
-    // (over the window's own parts; the page's are reported below)
-    const track = (event) => {
-      lastPointer = { clientX: event.clientX, clientY: event.clientY };
-    };
-    for (const type of ["mousemove", "mousedown", "mouseup"]) {
-      document.addEventListener(type, track, { capture: true, passive: true });
-    }
-    // (and inside the page, which the window doesn't see: the page's helper
-    // reports it, in screen terms, actors/ZiaChild.sys.mjs)
-    window.ziaOnPagePointer = (screenX, screenY) => {
-      lastPointer = { clientX: screenX - window.mozInnerScreenX, clientY: screenY - window.mozInnerScreenY };
-    };
     Downloads.getList(Downloads.ALL)
       .then((list) => {
         downloadFlightOn = true;
@@ -6787,9 +6768,7 @@
             try {
               // (only one just started, here, and not those listed on startup)
               const fresh = !download.succeeded && Date.now() - (download.startTime?.getTime?.() ?? 0) < 5000;
-              // where the pointer is now (a save dialog in between, the
-              // last click was the menu's, back where the menu was)
-              const start = lastPointer || window.gZenUIManager?._lastClickPosition;
+              const start = window.gZenUIManager?._lastClickPosition;
               if (
                 !fresh ||
                 !start ||
