@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.12] — 2026-10-05
+
+### Fixed
+
+- The download's flight is smooth: it moved in uneven jumps, as its
+  fading blur and the light's blending were drawn frame by frame
+  alongside everything a download starts. Now it only moves and fades,
+  which the graphics card does.
+
 ## [2.95.11] — 2026-10-05
 
 ### Added
