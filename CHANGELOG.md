@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.95.8] — 2026-10-05
+
+### Fixed
+
+- Cmd/Ctrl+Z after closing several tabs at once (selected with Shift)
+  brings them all back: only some came back, and not always the same
+  ones, as Zen closes them a moment apart.
+
 ## [2.95.7] — 2026-10-05
 
 ### Fixed

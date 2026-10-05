@@ -188,8 +188,13 @@
     }
   }
 
+  // Every tab that just closed comes back: first as Cmd/Ctrl+Shift+T does
+  // (all one close took away), then one at a time until they're all back.
+  // (Counting closes by when they happened, several tabs closed together
+  // were sometimes taken for one close, sometimes for several, as Zen
+  // closes them a moment apart, and only some came back.)
   function undoClosedTabs() {
-    const actions = Math.max(1, undoState.actions);
+    const wanted = Math.max(1, undoState.closed.length);
     const closed = undoState.closed;
     undoState.actions = 0;
     undoState.closed = [];
@@ -199,9 +204,19 @@
     const onOpen = (event) => opened.push(event.target);
     gBrowser.tabContainer.addEventListener("TabOpen", onOpen);
     try {
-      for (let i = 0; i < actions; i++) {
-        if (!reopenLastClose()) {
-          console.warn("[Zia] Undo close: this build didn't reopen the tab.");
+      if (!reopenLastClose()) {
+        console.warn("[Zia] Undo close: this build didn't reopen the tab.");
+      }
+      for (let i = 0; opened.length < wanted && i < wanted; i++) {
+        const before = opened.length;
+        try {
+          window.ziaReopeningUntil = Date.now() + 3000;
+          window.SessionStore?.undoCloseTab?.(window, 0);
+        } catch (err) {
+          noteError("essentials and undo: reopen one", err);
+          break;
+        }
+        if (opened.length === before) {
           break;
         }
       }
