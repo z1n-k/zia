@@ -20,7 +20,7 @@
   }
 
   /* the fine shine round each essential (not the chosen one), the
-     Library's sliding tile and its Filter and Done, as it was: a hairline
+     Library's sliding tile and its Filter, Clear and Done, as it was: a hairline
      ring, brightest along the middle of each side, fading into the
      corners. Its outside is the squircle itself; its inside is cut by a
      mask of the same squircle a hairline in (each corner exact, two bars
@@ -38,7 +38,7 @@
   :root:not(#zia-none) :is(
     .tabbrowser-tab[zen-essential]:not([visuallyselected], [zia-split-tile]) > .tab-stack > .tab-background,
     zen-library .zia-library-rail,
-    zen-library :is(.zen-library-filter-button, .zen-library-filter-done):not(.zia-library-clear)
+    zen-library :is(.zen-library-filter-button, .zen-library-filter-done)
   )::after {
     --zia-sq-hole: calc(var(--zia-sq-r) - var(--zia-shine-width));
     content: "" !important;
