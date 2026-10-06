@@ -12,6 +12,11 @@ Every release of Zia, newest first. The format follows
   list's arrow) have no tile behind them, hovered, pressed or open: only
   their icons brighten.
 
+### Fixed
+
+- Extension icons in the toolbar are the same shade as reload, back and
+  the sidebar button beside them (they were brighter).
+
 ## [2.96.5] — 2026-10-06
 
 ### Fixed
