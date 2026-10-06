@@ -38,10 +38,11 @@
     linear-gradient(to right, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.15) 35%, rgba(255, 255, 255, 0.15) 65%, rgba(255, 255, 255, 0.02)),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.15) 35%, rgba(255, 255, 255, 0.15) 65%, rgba(255, 255, 255, 0.02));
 
-  /* a row's (a folder's box): as Dia's rows, lit along its length only,
-     fading out round each corner, its short ends dark (the colour here; the
-     shape where it's used, 06) */
-  --zia-shine-row-ink: rgba(255, 255, 255, 0.12);
+  /* a row's (a folder's box): the same shine, softer, as Dia's rows
+     (measured off its folder rows: about 0.7 of its essentials') */
+  --zia-shine-row-layers:
+    linear-gradient(to right, rgba(255, 255, 255, 0.014), rgba(255, 255, 255, 0.105) 35%, rgba(255, 255, 255, 0.105) 65%, rgba(255, 255, 255, 0.014)),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.014), rgba(255, 255, 255, 0.105) 35%, rgba(255, 255, 255, 0.105) 65%, rgba(255, 255, 255, 0.014));
 
   --zia-tab-shine-layers:
     linear-gradient(to bottom right, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.18) 25%, rgba(255, 255, 255, 0.13) 50%, rgba(255, 255, 255, 0.18) 75%, rgba(255, 255, 255, 0.26));
@@ -2242,11 +2243,8 @@ zen-split-fake-tab {
     border-radius: calc(var(--zia-folder-box-radius) * var(--zia-squircle-row-grow));
     corner-shape: var(--zia-squircle-row) !important;
     pointer-events: none;
-    /* (Dia's row shine, measured off its folder rows: along the top and
-       bottom only, fading to nothing over half of each corner's length, so
-       the corners are about half as bright and the ends unlit) */
-    --zia-row-fade: calc(var(--zia-folder-box-radius) * var(--zia-squircle-row-grow) * 0.55);
-    background: linear-gradient(to right, transparent, var(--zia-shine-row-ink) var(--zia-row-fade), var(--zia-shine-row-ink) calc(100% - var(--zia-row-fade)), transparent);
+    /* (Dia's row shine: all round, as an essential's, a touch softer) */
+    background: var(--zia-shine-row-layers);
     mask:
       linear-gradient(#000 0 0),
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M100.00 100.00 L0.00 100.00 L0.06 92.79 L0.25 87.35 L0.56 82.43 L1.00 77.84 L1.56 73.48 L2.25 69.32 L3.06 65.33 L3.99 61.48 L5.05 57.76 L6.23 54.17 L7.53 50.70 L8.95 47.35 L10.49 44.11 L12.15 40.98 L13.92 37.96 L15.81 35.05 L17.82 32.26 L19.95 29.57 L22.18 27.00 L24.54 24.54 L27.00 22.18 L29.57 19.95 L32.26 17.82 L35.05 15.81 L37.96 13.92 L40.98 12.15 L44.11 10.49 L47.35 8.95 L50.70 7.53 L54.17 6.23 L57.76 5.05 L61.48 3.99 L65.33 3.06 L69.32 2.25 L73.48 1.56 L77.84 1.00 L82.43 0.56 L87.35 0.25 L92.79 0.06 L100.00 0.00 Z'/%3E%3C/svg%3E") var(--zia-shine-width) var(--zia-shine-width) / var(--zia-folder-hole) var(--zia-folder-hole) no-repeat,
@@ -7505,7 +7503,9 @@ zen-folder .tab-reset-button {
     linear-gradient(to right, rgba(0, 0, 0, 0.01), rgba(0, 0, 0, 0.06) 35%, rgba(0, 0, 0, 0.06) 65%, rgba(0, 0, 0, 0.01)),
     linear-gradient(to bottom, rgba(0, 0, 0, 0.01), rgba(0, 0, 0, 0.06) 35%, rgba(0, 0, 0, 0.06) 65%, rgba(0, 0, 0, 0.01));
   --zia-tab-shine-layers: linear-gradient(rgba(0, 0, 0, 0.07), rgba(0, 0, 0, 0.07));
-  --zia-shine-row-ink: rgba(0, 0, 0, 0.05);
+  --zia-shine-row-layers:
+    linear-gradient(to right, rgba(0, 0, 0, 0.007), rgba(0, 0, 0, 0.042) 35%, rgba(0, 0, 0, 0.042) 65%, rgba(0, 0, 0, 0.007)),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.007), rgba(0, 0, 0, 0.042) 35%, rgba(0, 0, 0, 0.042) 65%, rgba(0, 0, 0, 0.007));
   /* before a site's colour is known, the toolbar (and a page still
      loading) are light rather than near-black, which flashed on every load */
   --zia-fallback-bg: #f6f6f8;

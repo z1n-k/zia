@@ -4,14 +4,19 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.13] — 2026-10-06
+
+### Fixed
+
+- Folders' fine shine runs all the way round again, sides too, as Dia's
+  rows' does (2.96.12 left the ends unlit): as an essential's, a touch
+  softer, its corners about half the sides.
+
 ## [2.96.12] — 2026-10-06
 
 ### Changed
 
-- Folders' fine shine is Dia's rows': measured off Dia's folder rows, lit
-  along the top and bottom only, softer, fading out round each corner to
-  about half, with the short ends unlit (Zia's shone evenly all round, as
-  an essential's does; Dia's essentials do, its rows don't).
+- Folders' fine shine is softer, as Dia's rows' (see 2.96.13).
 
 ### Fixed
 
