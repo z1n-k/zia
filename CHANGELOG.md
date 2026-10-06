@@ -6,13 +6,15 @@ Every release of Zia, newest first. The format follows
 
 ## [2.96.11] — 2026-10-06
 
+### Changed
+
+- The fine shine round the essentials, folders and the Library's tiles is
+  Dia's: as bright down the sides as along the top and bottom, a touch
+  softer overall, and fading much further into the corners (measured off
+  Dia's essentials: the corner about half the sides').
+
 ### Fixed
 
-- With glass off, the fine shine round the essentials and the Library's
-  buttons runs evenly all the way round each corner: Firefox's own curve
-  strayed a fraction of a pixel from the one its inside is cut to, and the
-  hairline thinned to nothing at two points. Tile and shine now share one
-  exact shape. (The corners are as faint as they were before glass.)
 - The card of pages from swiping back or forward has the hover cards'
   spacing, rows and edge: rows as far in from the edge, the same gap
   between them, a tab's height, corner, text and hover, and its hairline

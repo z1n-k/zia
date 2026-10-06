@@ -21,8 +21,8 @@
   --zia-essential-bg: rgba(255, 255, 255, 0.5);
   --zia-folder-hover-bg: rgba(0, 0, 0, 0.05);
   --zia-shine-layers:
-    linear-gradient(to right, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.08) 35%, rgba(0, 0, 0, 0.08) 65%, rgba(0, 0, 0, 0.04)),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.06) 35%, rgba(0, 0, 0, 0.06) 65%, rgba(0, 0, 0, 0.03));
+    linear-gradient(to right, rgba(0, 0, 0, 0.01), rgba(0, 0, 0, 0.06) 35%, rgba(0, 0, 0, 0.06) 65%, rgba(0, 0, 0, 0.01)),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.01), rgba(0, 0, 0, 0.06) 35%, rgba(0, 0, 0, 0.06) 65%, rgba(0, 0, 0, 0.01));
   --zia-tab-shine-layers: linear-gradient(rgba(0, 0, 0, 0.07), rgba(0, 0, 0, 0.07));
   /* before a site's colour is known, the toolbar (and a page still
      loading) are light rather than near-black, which flashed on every load */
