@@ -8,9 +8,9 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
-- The music player's fine shine, with glass off, is fainter: lit along the
-  top, fading down the sides and gone before the bottom, as all the way
-  round it read as an outline.
+- The music player's fine shine, with glass off, is subtler: still the
+  essentials' shine, fading into the corners, at about half its strength, as
+  on a card that dark and long it read as an outline.
 
 ## [2.96.14] — 2026-10-06
 
