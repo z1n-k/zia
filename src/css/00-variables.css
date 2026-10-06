@@ -98,10 +98,11 @@
   --zia-squircle: superellipse(1.93);
   --zia-squircle-grow: 1.5;
   --zia-squircle-soft: superellipse(1.35);
-  /* Dia's rows (a folder, a tab), fitted the same way: a softer squircle
-     than its essentials', about superellipse(1.5), over a tab's corner
-     grown as the essentials' are (about 14px on a 34px row) */
-  --zia-squircle-row: superellipse(1.5);
+  /* Dia's folder rows, fitted the same way: only a touch squarer than a
+     circle, superellipse(1.3), over a 13.8px corner on a 34px row (a
+     tab's 9.5px corner grown by 1.45) */
+  --zia-squircle-row: superellipse(1.3);
+  --zia-squircle-row-grow: 1.45;
   --zia-folder-radius: var(--zia-tab-radius);
   --zia-glass-button-radius: var(--zia-tab-radius);
   --zia-pop-radius: 16.5px;

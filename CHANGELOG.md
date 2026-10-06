@@ -4,6 +4,20 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.4] — 2026-10-06
+
+### Fixed
+
+- Folders have Dia's shape at last: a later rule kept their corners round,
+  so they came out as a big round corner with the shine missing at each
+  one. Now, fitted off Dia's folder row, only a touch squarer than a circle
+  (superellipse(1.3)) over a 13.8px corner, the shine following it.
+
+### Changed
+
+- The space's name sits in Dia's pill: a squircle (superellipse(1.5)) over
+  a 14px corner, fitted off Dia's, where Zia's was a round 10px.
+
 ## [2.96.3] — 2026-10-06
 
 ### Changed

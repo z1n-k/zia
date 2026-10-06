@@ -48,7 +48,7 @@
     position: absolute;
     inset: var(--zia-folder-box-top) var(--zia-folder-box-right) calc(var(--zia-folder-box-bottom) - var(--zia-folder-bottom-extra)) var(--zia-folder-box-left);
     z-index: -1;
-    border-radius: calc(var(--zia-folder-box-radius) * var(--zia-squircle-grow));
+    border-radius: calc(var(--zia-folder-box-radius) * var(--zia-squircle-row-grow));
     corner-shape: var(--zia-squircle-row) !important;
     pointer-events: none;
     background-color: transparent;
@@ -61,17 +61,17 @@
     /* Dia's row squircle; the fine shine round it a hairline ring, its
        inside cut by the same squircle a hairline in (each corner exact,
        two bars between), as a plain content-box cut stays square inside */
-    --zia-folder-hole: calc(var(--zia-folder-box-radius) * var(--zia-squircle-grow) - var(--zia-shine-width));
-    border-radius: calc(var(--zia-folder-box-radius) * var(--zia-squircle-grow));
+    --zia-folder-hole: calc(var(--zia-folder-box-radius) * var(--zia-squircle-row-grow) - var(--zia-shine-width));
+    border-radius: calc(var(--zia-folder-box-radius) * var(--zia-squircle-row-grow));
     corner-shape: var(--zia-squircle-row) !important;
     pointer-events: none;
     background: var(--zia-shine-layers);
     mask:
       linear-gradient(#000 0 0),
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M100.00 100.00 L0.00 100.00 L0.05 89.87 L0.22 83.47 L0.49 78.00 L0.87 73.07 L1.36 68.51 L1.96 64.25 L2.67 60.23 L3.49 56.41 L4.41 52.77 L5.44 49.30 L6.59 45.97 L7.84 42.79 L9.19 39.73 L10.66 36.81 L12.23 34.01 L13.92 31.32 L15.71 28.76 L17.61 26.30 L19.62 23.96 L21.73 21.73 L23.96 19.62 L26.30 17.61 L28.76 15.71 L31.32 13.92 L34.01 12.23 L36.81 10.66 L39.73 9.19 L42.79 7.84 L45.97 6.59 L49.30 5.44 L52.77 4.41 L56.41 3.49 L60.23 2.67 L64.25 1.96 L68.51 1.36 L73.07 0.87 L78.00 0.49 L83.47 0.22 L89.87 0.05 L100.00 0.00 Z'/%3E%3C/svg%3E") var(--zia-shine-width) var(--zia-shine-width) / var(--zia-folder-hole) var(--zia-folder-hole) no-repeat,
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0.00 100.00 L100.00 100.00 L99.95 89.87 L99.78 83.47 L99.51 78.00 L99.13 73.07 L98.64 68.51 L98.04 64.25 L97.33 60.23 L96.51 56.41 L95.59 52.77 L94.56 49.30 L93.41 45.97 L92.16 42.79 L90.81 39.73 L89.34 36.81 L87.77 34.01 L86.08 31.32 L84.29 28.76 L82.39 26.30 L80.38 23.96 L78.27 21.73 L76.04 19.62 L73.70 17.61 L71.24 15.71 L68.68 13.92 L65.99 12.23 L63.19 10.66 L60.27 9.19 L57.21 7.84 L54.03 6.59 L50.70 5.44 L47.23 4.41 L43.59 3.49 L39.77 2.67 L35.75 1.96 L31.49 1.36 L26.93 0.87 L22.00 0.49 L16.53 0.22 L10.13 0.05 L0.00 0.00 Z'/%3E%3C/svg%3E") calc(100% - var(--zia-shine-width)) var(--zia-shine-width) / var(--zia-folder-hole) var(--zia-folder-hole) no-repeat,
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M100.00 0.00 L0.00 0.00 L0.05 10.13 L0.22 16.53 L0.49 22.00 L0.87 26.93 L1.36 31.49 L1.96 35.75 L2.67 39.77 L3.49 43.59 L4.41 47.23 L5.44 50.70 L6.59 54.03 L7.84 57.21 L9.19 60.27 L10.66 63.19 L12.23 65.99 L13.92 68.68 L15.71 71.24 L17.61 73.70 L19.62 76.04 L21.73 78.27 L23.96 80.38 L26.30 82.39 L28.76 84.29 L31.32 86.08 L34.01 87.77 L36.81 89.34 L39.73 90.81 L42.79 92.16 L45.97 93.41 L49.30 94.56 L52.77 95.59 L56.41 96.51 L60.23 97.33 L64.25 98.04 L68.51 98.64 L73.07 99.13 L78.00 99.51 L83.47 99.78 L89.87 99.95 L100.00 100.00 Z'/%3E%3C/svg%3E") var(--zia-shine-width) calc(100% - var(--zia-shine-width)) / var(--zia-folder-hole) var(--zia-folder-hole) no-repeat,
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0.00 0.00 L100.00 0.00 L99.95 10.13 L99.78 16.53 L99.51 22.00 L99.13 26.93 L98.64 31.49 L98.04 35.75 L97.33 39.77 L96.51 43.59 L95.59 47.23 L94.56 50.70 L93.41 54.03 L92.16 57.21 L90.81 60.27 L89.34 63.19 L87.77 65.99 L86.08 68.68 L84.29 71.24 L82.39 73.70 L80.38 76.04 L78.27 78.27 L76.04 80.38 L73.70 82.39 L71.24 84.29 L68.68 86.08 L65.99 87.77 L63.19 89.34 L60.27 90.81 L57.21 92.16 L54.03 93.41 L50.70 94.56 L47.23 95.59 L43.59 96.51 L39.77 97.33 L35.75 98.04 L31.49 98.64 L26.93 99.13 L22.00 99.51 L16.53 99.78 L10.13 99.95 L0.00 100.00 Z'/%3E%3C/svg%3E") calc(100% - var(--zia-shine-width)) calc(100% - var(--zia-shine-width)) / var(--zia-folder-hole) var(--zia-folder-hole) no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M100.00 100.00 L0.00 100.00 L0.06 92.79 L0.25 87.35 L0.56 82.43 L1.00 77.84 L1.56 73.48 L2.25 69.32 L3.06 65.33 L3.99 61.48 L5.05 57.76 L6.23 54.17 L7.53 50.70 L8.95 47.35 L10.49 44.11 L12.15 40.98 L13.92 37.96 L15.81 35.05 L17.82 32.26 L19.95 29.57 L22.18 27.00 L24.54 24.54 L27.00 22.18 L29.57 19.95 L32.26 17.82 L35.05 15.81 L37.96 13.92 L40.98 12.15 L44.11 10.49 L47.35 8.95 L50.70 7.53 L54.17 6.23 L57.76 5.05 L61.48 3.99 L65.33 3.06 L69.32 2.25 L73.48 1.56 L77.84 1.00 L82.43 0.56 L87.35 0.25 L92.79 0.06 L100.00 0.00 Z'/%3E%3C/svg%3E") var(--zia-shine-width) var(--zia-shine-width) / var(--zia-folder-hole) var(--zia-folder-hole) no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0.00 100.00 L100.00 100.00 L99.94 92.79 L99.75 87.35 L99.44 82.43 L99.00 77.84 L98.44 73.48 L97.75 69.32 L96.94 65.33 L96.01 61.48 L94.95 57.76 L93.77 54.17 L92.47 50.70 L91.05 47.35 L89.51 44.11 L87.85 40.98 L86.08 37.96 L84.19 35.05 L82.18 32.26 L80.05 29.57 L77.82 27.00 L75.46 24.54 L73.00 22.18 L70.43 19.95 L67.74 17.82 L64.95 15.81 L62.04 13.92 L59.02 12.15 L55.89 10.49 L52.65 8.95 L49.30 7.53 L45.83 6.23 L42.24 5.05 L38.52 3.99 L34.67 3.06 L30.68 2.25 L26.52 1.56 L22.16 1.00 L17.57 0.56 L12.65 0.25 L7.21 0.06 L0.00 0.00 Z'/%3E%3C/svg%3E") calc(100% - var(--zia-shine-width)) var(--zia-shine-width) / var(--zia-folder-hole) var(--zia-folder-hole) no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M100.00 0.00 L0.00 0.00 L0.06 7.21 L0.25 12.65 L0.56 17.57 L1.00 22.16 L1.56 26.52 L2.25 30.68 L3.06 34.67 L3.99 38.52 L5.05 42.24 L6.23 45.83 L7.53 49.30 L8.95 52.65 L10.49 55.89 L12.15 59.02 L13.92 62.04 L15.81 64.95 L17.82 67.74 L19.95 70.43 L22.18 73.00 L24.54 75.46 L27.00 77.82 L29.57 80.05 L32.26 82.18 L35.05 84.19 L37.96 86.08 L40.98 87.85 L44.11 89.51 L47.35 91.05 L50.70 92.47 L54.17 93.77 L57.76 94.95 L61.48 96.01 L65.33 96.94 L69.32 97.75 L73.48 98.44 L77.84 99.00 L82.43 99.44 L87.35 99.75 L92.79 99.94 L100.00 100.00 Z'/%3E%3C/svg%3E") var(--zia-shine-width) calc(100% - var(--zia-shine-width)) / var(--zia-folder-hole) var(--zia-folder-hole) no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0.00 0.00 L100.00 0.00 L99.94 7.21 L99.75 12.65 L99.44 17.57 L99.00 22.16 L98.44 26.52 L97.75 30.68 L96.94 34.67 L96.01 38.52 L94.95 42.24 L93.77 45.83 L92.47 49.30 L91.05 52.65 L89.51 55.89 L87.85 59.02 L86.08 62.04 L84.19 64.95 L82.18 67.74 L80.05 70.43 L77.82 73.00 L75.46 75.46 L73.00 77.82 L70.43 80.05 L67.74 82.18 L64.95 84.19 L62.04 86.08 L59.02 87.85 L55.89 89.51 L52.65 91.05 L49.30 92.47 L45.83 93.77 L42.24 94.95 L38.52 96.01 L34.67 96.94 L30.68 97.75 L26.52 98.44 L22.16 99.00 L17.57 99.44 L12.65 99.75 L7.21 99.94 L0.00 100.00 Z'/%3E%3C/svg%3E") calc(100% - var(--zia-shine-width)) calc(100% - var(--zia-shine-width)) / var(--zia-folder-hole) var(--zia-folder-hole) no-repeat,
       linear-gradient(#000 0 0) calc(var(--zia-shine-width) + var(--zia-folder-hole) - 1px) var(--zia-shine-width) / calc(100% - 2 * var(--zia-shine-width) - 2 * var(--zia-folder-hole) + 2px) calc(100% - 2 * var(--zia-shine-width)) no-repeat,
       linear-gradient(#000 0 0) var(--zia-shine-width) calc(var(--zia-shine-width) + var(--zia-folder-hole) - 1px) / calc(100% - 2 * var(--zia-shine-width)) calc(100% - 2 * var(--zia-shine-width) - 2 * var(--zia-folder-hole) + 2px) no-repeat;
     mask-composite: subtract, add, add, add, add, add, add;
@@ -303,7 +303,7 @@
 :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) {
   &::before,
   &::after {
-    corner-shape: round !important;
+    corner-shape: var(--zia-squircle-row) !important;
   }
 }
 
@@ -483,8 +483,10 @@
 
   padding: 0 8px;
   height: var(--zia-space-pill-height);
-  border-radius: 10px;
-  corner-shape: round;
+  /* Dia's space name, fitted off its pill edge by edge: a squircle,
+     superellipse(1.5), over a 14px corner (Zia's was a round 10px) */
+  border-radius: 14px;
+  corner-shape: superellipse(1.5) !important;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
