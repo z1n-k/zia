@@ -4,6 +4,22 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.11] — 2026-10-06
+
+### Changed
+
+- The fine shine round the essentials, folders and the Library's tiles is
+  Dia's: as bright down the sides as along the top and bottom, a touch
+  softer overall, and fading much further into the corners (measured off
+  Dia's essentials: the corner about half the sides').
+
+### Fixed
+
+- The card of pages from swiping back or forward has the hover cards'
+  spacing, rows and edge: rows as far in from the edge, the same gap
+  between them, a tab's height, corner, text and hover, and its hairline
+  following its corners (the glass edge, with glass on).
+
 ## [2.96.10] — 2026-10-06
 
 ### Changed
