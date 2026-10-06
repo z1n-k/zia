@@ -14,7 +14,7 @@
   justify-content: center !important;
   height: var(--zia-space-pill-height) !important;
   min-height: var(--zia-space-pill-height) !important;
-  border-radius: 10px !important;
+  border-radius: calc(10px * var(--zia-squircle-grow)) !important;
   corner-shape: var(--zia-squircle) !important;
   background-color: transparent !important;
   background-image: none !important;
@@ -218,7 +218,7 @@ tooltip[default="true"] {
     margin: 0 !important;
     padding: 4px 10px !important;
     border: none !important;
-    border-radius: 9px !important;
+    border-radius: calc(9px * var(--zia-squircle-grow)) !important;
     background: rgba(38, 38, 38, 0.86) !important;
     backdrop-filter: blur(18px) saturate(1.4);
     box-shadow: var(--zia-glass-edge-dark), 0 6px 18px rgba(0, 0, 0, 0.3) !important;
@@ -290,7 +290,7 @@ tooltip[default="true"] {
     max-width: 240px;
     height: 32px;
     padding: 0 12px 0 9px;
-    border-radius: 11px;
+    border-radius: calc(11px * var(--zia-squircle-grow));
     corner-shape: var(--zia-squircle) !important;
     background: var(--zia-media-solid, var(--zia-media-card-base));
     box-shadow: var(--zia-glass-edge), 0 8px 24px rgba(0, 0, 0, 0.32);

@@ -85,12 +85,19 @@
   --zia-media-card-base: light-dark(rgb(235, 235, 235), #1b1b1b);
   --zia-split-gap: 5px;
 
-  /* Zia's squircle: on everything with the glass edge and every small icon
-     button, one shape (below, and wherever a part sets corner-shape:
-     var(--zia-squircle)). Dia's, measured off its essentials: only a touch
-     squarer than a circle, its corner about a third of the tile's height,
-     so the radii are the round corners' own. */
-  --zia-squircle: superellipse(1.35);
+  /* Zia's squircle: on essentials, cards, pop-ups and small buttons, one
+     shape (wherever a part sets corner-shape: var(--zia-squircle)). Dia's,
+     fitted to the edge of its essentials pixel by pixel: a true squircle
+     (an exponent of about 3.8, superellipse(1.93)), its corner running
+     half as far again along each side as a round one of the same depth
+     (18px on a 40px tile, where Zia's round corners are 12px). So each
+     squircle's radius is its round radius grown by that much
+     (--zia-squircle-grow), cutting in as deep at the corner's middle but
+     easing in further. Icon buttons in the toolbars, whose radii are
+     Zen's, keep the softer one (--zia-squircle-soft). */
+  --zia-squircle: superellipse(1.93);
+  --zia-squircle-grow: 1.45;
+  --zia-squircle-soft: superellipse(1.35);
   --zia-folder-radius: var(--zia-tab-radius);
   --zia-glass-button-radius: var(--zia-tab-radius);
   --zia-pop-radius: 16.5px;
@@ -144,7 +151,7 @@
 /* Every small icon button's background, in toolbars and the sidebar (the
    workspaces' icons among them), is Zia's squircle */
 :root :is(toolbarbutton, toolbarbutton > :is(.toolbarbutton-icon, .toolbarbutton-badge-stack, .toolbarbutton-text)):not(menupopup *, panel *, dialog *) {
-  corner-shape: var(--zia-squircle) !important;
+  corner-shape: var(--zia-squircle-soft) !important;
 }
 
 /* The fine edge round essentials, folders and cards is half a pixel: one

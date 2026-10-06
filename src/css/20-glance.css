@@ -6,7 +6,7 @@
   gap: 2px !important;
   max-width: none !important;
   background-color: var(--zia-tab-card-bg);
-  border-radius: var(--zia-tab-card-radius);
+  border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow));
   corner-shape: var(--zia-squircle) !important;
   box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.12), 0 8px 24px rgba(0, 0, 0, 0.35);
 
@@ -23,7 +23,7 @@
     height: 32px !important;
     padding: 8px !important;
     background: transparent !important;
-    border-radius: 9px !important;
+    border-radius: calc(9px * var(--zia-squircle-grow)) !important;
     corner-shape: var(--zia-squircle) !important;
     box-shadow: none !important;
     color: rgb(255, 255, 255) !important;

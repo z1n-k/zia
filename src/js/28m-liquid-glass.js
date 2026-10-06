@@ -65,7 +65,8 @@
       }
     };
     const press = (event) => {
-      if (event.button !== 0) {
+      // (only with Zia's glass on, an option)
+      if (event.button !== 0 || !Services.prefs.getBoolPref("zia.glass", false)) {
         return;
       }
       for (const node of event.composedPath()) {

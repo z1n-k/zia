@@ -36,6 +36,12 @@
   },
   {
     "type": "checkbox",
+    "label": "Glass: essentials, cards and the Library's buttons edged as macOS Tahoe's glass, lighting up where pressed (off: Zia's fine shine)",
+    "property": "zia.glass",
+    "defaultValue": false
+  },
+  {
+    "type": "checkbox",
     "label": "Zia's rounded page corners (off: Zen's)",
     "property": "zia.page.rounding",
     "defaultValue": true

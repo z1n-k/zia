@@ -23,7 +23,7 @@ findbar {
   background: rgba(38, 38, 38, 0.78) !important;
   backdrop-filter: blur(18px) saturate(1.4);
   border: none !important;
-  border-radius: 12px;
+  border-radius: calc(12px * var(--zia-squircle-grow));
   /* Zia's glass edge, its sides a faint light line rather than dark ones,
      which went nowhere against a dark page, and a soft lift off it */
   box-shadow: var(--zia-glass-edge-lit-dark), 0 10px 30px rgba(0, 0, 0, 0.35);

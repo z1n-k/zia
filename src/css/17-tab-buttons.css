@@ -4,7 +4,7 @@ zen-folder .tab-reset-button {
   fill: rgb(255, 255, 255) !important;
   fill-opacity: 1 !important;
   color: rgb(255, 255, 255) !important;
-  border-radius: var(--zia-close-radius) !important;
+  border-radius: calc(var(--zia-close-radius) * var(--zia-squircle-grow)) !important;
   corner-shape: var(--zia-squircle) !important;
   width: var(--zia-close-size) !important;
   height: var(--zia-close-size) !important;

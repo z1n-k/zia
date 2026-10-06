@@ -113,7 +113,7 @@
 }
 
 #urlbar[breakout-extend]:not([zia-classic])[zen-floating-urlbar="true"] {
-  border-radius: var(--zia-pop-radius) !important;
+  border-radius: calc(var(--zia-pop-radius) * var(--zia-squircle-grow)) !important;
   corner-shape: var(--zia-squircle) !important;
   --urlbarview-separator-color: transparent !important;
   --urlbarView-separator-color: transparent !important;

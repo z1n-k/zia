@@ -4,6 +4,25 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.0] — 2026-10-06
+
+### Added
+
+- Glass is now an option, off by default: "Glass" under Look. Off, Zia
+  looks as it did before glass came in: the fine shine round the
+  essentials and the Library's buttons, a hairline round the hover cards,
+  the old edges on the selected essential's tile, a glance's card, the
+  split cards and the find bar, and no light where you press. On, it's the
+  macOS Tahoe glass edge and press light, as in 2.94 and since.
+
+### Changed
+
+- Zia's squircles are Dia's: fitted to the edge of Dia's essentials pixel
+  by pixel, a true squircle (superellipse(1.93)) whose corner eases in
+  half as far again along each side, cutting in as deep at the middle as
+  before. On the essentials, cards, pop-ups, the Library and the small
+  buttons; toolbar icon buttons keep the softer curve.
+
 ## [2.95.20] — 2026-10-05
 
 ### Changed
