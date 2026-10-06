@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.16] — 2026-10-06
+
+### Fixed
+
+- The music player's edge, with glass off, is now only the essentials' fine
+  shine, fading into the corners, and subtler still: an old hairline all the
+  way round it had stayed on top, so it read as an even outline. With glass
+  on, it now gets the glass edge, which that hairline had hidden too.
+
 ## [2.96.15] — 2026-10-06
 
 ### Changed

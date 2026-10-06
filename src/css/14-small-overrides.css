@@ -1,9 +1,3 @@
-@media -moz-pref("zia.features.media-player") {
-#zen-media-controls-toolbar .zen-media-card {
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07) !important;
-}
-}
-
 #zen-loading-progress-bar {
   display: none !important;
 }
