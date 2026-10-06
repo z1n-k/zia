@@ -4,6 +4,20 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.12] — 2026-10-06
+
+### Changed
+
+- Folders' fine shine is Dia's rows': measured off Dia's folder rows, lit
+  along the top and bottom only, softer, fading out round each corner to
+  about half, with the short ends unlit (Zia's shone evenly all round, as
+  an essential's does; Dia's essentials do, its rows don't).
+
+### Fixed
+
+- The Library's media tiles' shine follows their squircle all the way
+  round, as the essentials' does (it thickened into each corner).
+
 ## [2.96.11] — 2026-10-06
 
 ### Changed

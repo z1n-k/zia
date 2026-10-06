@@ -352,6 +352,7 @@
         position: absolute;
         inset: 0;
         border-radius: inherit;
+        corner-shape: var(--zia-squircle) !important;
         pointer-events: none;
         opacity: var(--zia-lift, 0);
         transition: opacity 0.3s ease;
@@ -368,13 +369,22 @@
          thicker) */
       &::after {
         opacity: 1;
-        padding: var(--zia-shine-width);
         background:
           radial-gradient(circle at var(--zia-lift-mx, 50%) var(--zia-lift-my, 50%), color-mix(in srgb, var(--zia-lib-ink) calc(70% * var(--zia-lift, 0)), transparent), transparent 45%),
           var(--zia-shine-layers);
+        /* (its outside the tile's squircle, its inside the same squircle a
+           hairline in, as on the essentials, 27b: a plain content-box cut
+           left the inside square, thick at each corner) */
+        --zia-media-hole: calc(var(--zia-essential-radius) * var(--zia-squircle-grow) - var(--zia-shine-width));
         mask:
-          linear-gradient(#000 0 0) content-box exclude,
-          linear-gradient(#000 0 0);
+          linear-gradient(#000 0 0),
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M100.00 100.00 L0.00 100.00 L0.04 81.72 L0.16 73.71 L0.36 67.49 L0.65 62.23 L1.01 57.59 L1.46 53.40 L1.99 49.56 L2.60 46.01 L3.29 42.70 L4.07 39.60 L4.93 36.68 L5.88 33.93 L6.91 31.33 L8.03 28.87 L9.23 26.54 L10.53 24.34 L11.91 22.25 L13.39 20.27 L14.96 18.40 L16.63 16.63 L18.40 14.96 L20.27 13.39 L22.25 11.91 L24.34 10.53 L26.54 9.23 L28.87 8.03 L31.33 6.91 L33.93 5.88 L36.68 4.93 L39.60 4.07 L42.70 3.29 L46.01 2.60 L49.56 1.99 L53.40 1.46 L57.59 1.01 L62.23 0.65 L67.49 0.36 L73.71 0.16 L81.72 0.04 L100.00 0.00 Z'/%3E%3C/svg%3E") var(--zia-shine-width) var(--zia-shine-width) / var(--zia-media-hole) var(--zia-media-hole) no-repeat,
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0.00 100.00 L100.00 100.00 L99.96 81.72 L99.84 73.71 L99.64 67.49 L99.35 62.23 L98.99 57.59 L98.54 53.40 L98.01 49.56 L97.40 46.01 L96.71 42.70 L95.93 39.60 L95.07 36.68 L94.12 33.93 L93.09 31.33 L91.97 28.87 L90.77 26.54 L89.47 24.34 L88.09 22.25 L86.61 20.27 L85.04 18.40 L83.37 16.63 L81.60 14.96 L79.73 13.39 L77.75 11.91 L75.66 10.53 L73.46 9.23 L71.13 8.03 L68.67 6.91 L66.07 5.88 L63.32 4.93 L60.40 4.07 L57.30 3.29 L53.99 2.60 L50.44 1.99 L46.60 1.46 L42.41 1.01 L37.77 0.65 L32.51 0.36 L26.29 0.16 L18.28 0.04 L0.00 0.00 Z'/%3E%3C/svg%3E") calc(100% - var(--zia-shine-width)) var(--zia-shine-width) / var(--zia-media-hole) var(--zia-media-hole) no-repeat,
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M100.00 0.00 L0.00 0.00 L0.04 18.28 L0.16 26.29 L0.36 32.51 L0.65 37.77 L1.01 42.41 L1.46 46.60 L1.99 50.44 L2.60 53.99 L3.29 57.30 L4.07 60.40 L4.93 63.32 L5.88 66.07 L6.91 68.67 L8.03 71.13 L9.23 73.46 L10.53 75.66 L11.91 77.75 L13.39 79.73 L14.96 81.60 L16.63 83.37 L18.40 85.04 L20.27 86.61 L22.25 88.09 L24.34 89.47 L26.54 90.77 L28.87 91.97 L31.33 93.09 L33.93 94.12 L36.68 95.07 L39.60 95.93 L42.70 96.71 L46.01 97.40 L49.56 98.01 L53.40 98.54 L57.59 98.99 L62.23 99.35 L67.49 99.64 L73.71 99.84 L81.72 99.96 L100.00 100.00 Z'/%3E%3C/svg%3E") var(--zia-shine-width) calc(100% - var(--zia-shine-width)) / var(--zia-media-hole) var(--zia-media-hole) no-repeat,
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0.00 0.00 L100.00 0.00 L99.96 18.28 L99.84 26.29 L99.64 32.51 L99.35 37.77 L98.99 42.41 L98.54 46.60 L98.01 50.44 L97.40 53.99 L96.71 57.30 L95.93 60.40 L95.07 63.32 L94.12 66.07 L93.09 68.67 L91.97 71.13 L90.77 73.46 L89.47 75.66 L88.09 77.75 L86.61 79.73 L85.04 81.60 L83.37 83.37 L81.60 85.04 L79.73 86.61 L77.75 88.09 L75.66 89.47 L73.46 90.77 L71.13 91.97 L68.67 93.09 L66.07 94.12 L63.32 95.07 L60.40 95.93 L57.30 96.71 L53.99 97.40 L50.44 98.01 L46.60 98.54 L42.41 98.99 L37.77 99.35 L32.51 99.64 L26.29 99.84 L18.28 99.96 L0.00 100.00 Z'/%3E%3C/svg%3E") calc(100% - var(--zia-shine-width)) calc(100% - var(--zia-shine-width)) / var(--zia-media-hole) var(--zia-media-hole) no-repeat,
+          linear-gradient(#000 0 0) calc(var(--zia-shine-width) + var(--zia-media-hole) - 1px) var(--zia-shine-width) / calc(100% - 2 * var(--zia-shine-width) - 2 * var(--zia-media-hole) + 2px) calc(100% - 2 * var(--zia-shine-width)) no-repeat,
+          linear-gradient(#000 0 0) var(--zia-shine-width) calc(var(--zia-shine-width) + var(--zia-media-hole) - 1px) / calc(100% - 2 * var(--zia-shine-width)) calc(100% - 2 * var(--zia-shine-width) - 2 * var(--zia-media-hole) + 2px) no-repeat;
+        mask-composite: subtract, add, add, add, add, add, add;
       }
     }
 
