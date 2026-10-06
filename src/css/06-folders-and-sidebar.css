@@ -310,10 +310,6 @@
   padding-bottom: var(--zia-essential-bottom-space) !important;
 }
 
-.tabbrowser-tab[zen-essential] > .tab-stack > .tab-background {
-  border-radius: var(--zia-essential-radius) !important;
-}
-
 .tabbrowser-tab[zen-essential]:not([visuallyselected]) > .tab-stack > .tab-background {
   background: var(--zia-essential-bg) !important;
   box-shadow: var(--zia-glass-edge) !important;

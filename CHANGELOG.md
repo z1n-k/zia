@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.2] — 2026-10-06
+
+### Fixed
+
+- Every essential has Dia's squircle, not only the chosen one: a leftover
+  rule held the others at the old, shorter corner.
+- With glass off, the essentials' and the Library's edge is the fine shine
+  they had before glass, brightest along the middle of each side and
+  fading into the corners, now following the squircle all the way round.
+
 ## [2.96.1] — 2026-10-06
 
 ### Fixed
