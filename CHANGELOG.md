@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.1] — 2026-10-06
+
+### Fixed
+
+- With glass off, the essentials' and the Library's corners are clean:
+  their fine shine is drawn as a hairline that follows the squircle,
+  rather than a ring whose inside stayed square, which thickened into a
+  point at each corner.
+
 ## [2.96.0] — 2026-10-06
 
 ### Added
