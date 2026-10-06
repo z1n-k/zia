@@ -91,13 +91,17 @@
      (an exponent of about 3.8, superellipse(1.93)), its corner running
      half as far again along each side as a round one of the same depth
      (18px on a 40px tile, where Zia's round corners are 12px). So each
-     squircle's radius is its round radius grown by that much
+     squircle's radius is its round radius grown by that much (x1.5)
      (--zia-squircle-grow), cutting in as deep at the corner's middle but
      easing in further. Icon buttons in the toolbars, whose radii are
      Zen's, keep the softer one (--zia-squircle-soft). */
   --zia-squircle: superellipse(1.93);
-  --zia-squircle-grow: 1.45;
+  --zia-squircle-grow: 1.5;
   --zia-squircle-soft: superellipse(1.35);
+  /* Dia's rows (a folder, a tab), fitted the same way: a softer squircle
+     than its essentials', about superellipse(1.5), over a tab's corner
+     grown as the essentials' are (about 14px on a 34px row) */
+  --zia-squircle-row: superellipse(1.5);
   --zia-folder-radius: var(--zia-tab-radius);
   --zia-glass-button-radius: var(--zia-tab-radius);
   --zia-pop-radius: 16.5px;

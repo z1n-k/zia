@@ -4,6 +4,20 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.3] — 2026-10-06
+
+### Changed
+
+- Folders take Dia's row shape: measured off Dia's folder and tab rows, a
+  softer squircle than its essentials' (superellipse(1.5)) over a corner
+  of about 14px. Their fine shine follows it all the way round.
+- The essentials' squircle corner is Dia's 18px.
+
+### Fixed
+
+- The Library's Clear has the same fine shine as Filter and the
+  essentials, with glass off.
+
 ## [2.96.2] — 2026-10-06
 
 ### Fixed
