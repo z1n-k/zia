@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.14] — 2026-10-06
+
+### Fixed
+
+- Essentials, folders and the Library's tiles on a Zen that can't draw
+  squircles (seen on Windows): their corners came out oversized and round,
+  and the fine shine round them showed only along the straight sides. There
+  the corners are now round at their usual size, with the shine round the
+  whole edge, and the music player's progress ring follows suit.
+
 ## [2.96.13] — 2026-10-06
 
 ### Changed
