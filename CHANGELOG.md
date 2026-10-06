@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.7] — 2026-10-06
+
+### Fixed
+
+- The numbers on essentials (and on tabs with the sidebar collapsed) sit in
+  the same squircle key as on tabs: their corner had been left short, so
+  they came out nearly square.
+
 ## [2.96.6] — 2026-10-06
 
 ### Changed

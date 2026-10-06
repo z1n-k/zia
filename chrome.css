@@ -1729,7 +1729,7 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   width: 15px;
   height: 15px;
   margin: 0;
-  border-radius: 4.25px;
+  border-radius: calc(4.25px * var(--zia-squircle-grow));
   background-color: rgba(28, 28, 30, 0.45);
   font-size: 8.75px;
 }
