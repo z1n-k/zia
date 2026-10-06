@@ -5876,12 +5876,6 @@ tooltip[default="true"] {
     box-shadow: var(--zia-glass-edge), 0 8px 24px rgba(0, 0, 0, 0.16);
   }
 }
-@media -moz-pref("zia.features.media-player") {
-#zen-media-controls-toolbar .zen-media-card {
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07) !important;
-}
-}
-
 #zen-loading-progress-bar {
   display: none !important;
 }
@@ -8833,7 +8827,7 @@ zen-folder .tab-reset-button {
   /* the music player: a fine shine round it, following its squircle
      (drawn on its inner box, against the card: Zen keeps the card's own
      ::after as the bridge that holds a stack of cards hovered). The
-     essentials' shine at about half its strength: at theirs, on a card this
+     essentials' shine at under half its strength: at theirs, on a card this
      dark and this long, it read as an outline. */
   :root:not(#zia-none) {
     --zia-media-edge: 0 0 transparent;
@@ -8849,8 +8843,8 @@ zen-folder .tab-reset-button {
       corner-shape: var(--zia-squircle) !important;
       pointer-events: none;
       background:
-        linear-gradient(to right, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.07) 35%, rgba(255, 255, 255, 0.07) 65%, rgba(255, 255, 255, 0.01)),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.07) 35%, rgba(255, 255, 255, 0.07) 65%, rgba(255, 255, 255, 0.01));
+        linear-gradient(to right, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.06) 35%, rgba(255, 255, 255, 0.06) 65%, rgba(255, 255, 255, 0.01)),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.06) 35%, rgba(255, 255, 255, 0.06) 65%, rgba(255, 255, 255, 0.01));
       mask:
         linear-gradient(#000 0 0),
         var(--zia-sq-tl) var(--zia-shine-width) var(--zia-shine-width) / var(--zia-media-hole) var(--zia-media-hole) no-repeat,
