@@ -3069,6 +3069,10 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   border-radius: 0.06em;
   opacity: 0;
   transform-origin: 50% 100%;
+  /* drawn as its own layer always, as the front is: Firefox drew a sheet
+     so while it slid back down as the folder closed, then flat the moment
+     it landed, snapped half a pixel to the whole pixel */
+  will-change: transform;
 }
 
 .zia-fi-s1 {
@@ -3219,6 +3223,8 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   filter: brightness(calc(0.8 + var(--i) * 0.028));
   box-shadow: 0 -0.006em 0 rgba(0, 0, 0, 0.1), -0.008em 0 0.016em rgba(0, 0, 0, 0.22), 0.008em 0 0.016em rgba(0, 0, 0, 0.14);
   transition: transform 0.4s var(--fi-spring), translate 0.35s var(--fi-soft);
+  /* (its own layer always, as the folder's sheets: no snap as it lands) */
+  will-change: transform;
 
   &[zia-on] {
     opacity: 1;
