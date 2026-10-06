@@ -14944,11 +14944,13 @@
         --webextension-menupanel-image: ${image} !important;
         --webextension-menupanel-image-dark: ${image} !important;
       }`);
+      // (in the same shade as reload and the sidebar button beside them,
+      // as the other extensions' are, 02-address-bar)
       if (!entry.own) {
         rules.push(`${selector}, ${selector} .toolbarbutton-icon {
           -moz-context-properties: fill, fill-opacity, stroke, stroke-opacity !important;
-          fill: var(--zia-toolbar-ink, var(--toolbarbutton-icon-fill, currentColor)) !important;
-          stroke: var(--zia-toolbar-ink, var(--toolbarbutton-icon-fill, currentColor)) !important;
+          fill: var(--toolbarbutton-icon-fill, var(--zia-toolbar-ink, currentColor)) !important;
+          stroke: var(--toolbarbutton-icon-fill, var(--zia-toolbar-ink, currentColor)) !important;
           fill-opacity: 1 !important;
           stroke-opacity: 1 !important;
         }`);
