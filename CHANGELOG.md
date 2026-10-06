@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.5] — 2026-10-06
+
+### Fixed
+
+- A folder's paper no longer snaps a touch as it settles after the folder
+  closes: it stays drawn the same way from start to end (and the box's
+  pile with it).
+
 ## [2.96.4] — 2026-10-06
 
 ### Fixed
