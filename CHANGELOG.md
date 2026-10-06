@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.10] — 2026-10-06
+
+### Changed
+
+- Every icon in the toolbar (reload, back and forward, the sidebar button,
+  the menu, extensions) is the same colour as the address, as in Dia,
+  rather than Zen's softer shade.
+
 ## [2.96.9] — 2026-10-06
 
 ### Fixed
