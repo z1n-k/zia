@@ -45,7 +45,7 @@
       font-weight: 500 !important;
 
       &::before {
-        border-radius: var(--zia-essential-radius) !important;
+        border-radius: calc(var(--zia-essential-radius) * var(--zia-squircle-grow)) !important;
         corner-shape: var(--zia-squircle) !important;
         /* (a hover snaps on and off, as on a tab) */
         transition: none !important;
@@ -89,7 +89,7 @@
       top: 0;
       inset-inline: 4px;
       z-index: 0;
-      border-radius: var(--zia-essential-radius);
+      border-radius: calc(var(--zia-essential-radius) * var(--zia-squircle-grow));
       corner-shape: var(--zia-squircle) !important;
       background: var(--zia-lib-tile);
       /* (the glass edge, as on an essential) */
@@ -150,7 +150,7 @@
 
     & :is(.zen-library-filter-button, .zen-library-filter-done) {
       position: relative;
-      border-radius: var(--zia-glass-button-radius) !important;
+      border-radius: calc(var(--zia-glass-button-radius) * var(--zia-squircle-grow)) !important;
       corner-shape: var(--zia-squircle) !important;
       /* (the glass edge, as on an essential) */
       box-shadow: var(--zia-glass-edge) !important;
@@ -179,7 +179,7 @@
 
     & .zen-library-filter-chip {
       padding: 7px 12px !important;
-      border-radius: var(--zia-glass-button-radius) !important;
+      border-radius: calc(var(--zia-glass-button-radius) * var(--zia-squircle-grow)) !important;
       corner-shape: var(--zia-squircle) !important;
       box-shadow: var(--zia-glass-edge) !important;
       background: var(--zia-lib-tile) !important;
@@ -280,7 +280,7 @@
     /* boosts: their icon on an essential-shaped tile */
     & .zen-library-boost-row {
       padding: 5px 10px 5px 5px !important;
-      border-radius: var(--zia-essential-radius) !important;
+      border-radius: calc(var(--zia-essential-radius) * var(--zia-squircle-grow)) !important;
       corner-shape: var(--zia-squircle) !important;
     }
 
@@ -291,7 +291,7 @@
 
       &::before {
         border: none !important;
-        border-radius: var(--zia-essential-radius) !important;
+        border-radius: calc(var(--zia-essential-radius) * var(--zia-squircle-grow)) !important;
         corner-shape: var(--zia-squircle) !important;
         background: var(--zia-lib-tile) !important;
         box-shadow: inset 0 0 0 var(--zia-shine-width) color-mix(in srgb, var(--zia-lib-ink) 16%, transparent) !important;
@@ -312,7 +312,7 @@
 
     & .zen-library-media-item {
       padding: 10px !important;
-      border-radius: var(--zia-essential-radius) !important;
+      border-radius: calc(var(--zia-essential-radius) * var(--zia-squircle-grow)) !important;
       corner-shape: var(--zia-squircle) !important;
       background: var(--zia-lib-tile) !important;
 
@@ -402,7 +402,7 @@
 
     /* the media opt-in, as one of Zia's hover cards */
     & .zen-library-media-opt-in {
-      border-radius: var(--zia-tab-card-radius) !important;
+      border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow)) !important;
       corner-shape: var(--zia-squircle) !important;
       background: var(--zia-tab-card-bg) !important;
       box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.1), 0 16px 40px rgba(0, 0, 0, 0.4) !important;
@@ -469,7 +469,7 @@
       & .zen-library-download-badge:not([downloading]) {
         width: 16px !important;
         height: 16px !important;
-        border-radius: 4px !important;
+        border-radius: calc(4px * var(--zia-squircle-grow)) !important;
         scale: 1 !important;
       }
     }
@@ -484,7 +484,7 @@
   :root:not(#zia-none) #library-button-badge:not([downloading]) {
     width: 16px !important;
     height: 16px !important;
-    border-radius: 4px !important;
+    border-radius: calc(4px * var(--zia-squircle-grow)) !important;
     scale: none !important;
     transform: translate(var(--zen-library-badge-tx, 0px), var(--zen-library-badge-ty, 0px)) !important;
   }

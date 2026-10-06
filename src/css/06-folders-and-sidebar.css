@@ -297,7 +297,7 @@
 }
 
 .tabbrowser-tab[zen-essential] > .tab-stack > .tab-background {
-  border-radius: var(--zia-essential-radius) !important;
+  border-radius: calc(var(--zia-essential-radius) * var(--zia-squircle-grow)) !important;
   corner-shape: var(--zia-squircle) !important;
 }
 
@@ -532,7 +532,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close {
   height: var(--zia-close-size);
   min-width: var(--zia-close-size);
   padding: 4px;
-  border-radius: var(--zia-close-radius);
+  border-radius: calc(var(--zia-close-radius) * var(--zia-squircle-grow));
   corner-shape: var(--zia-squircle) !important;
   flex-shrink: 0;
 

@@ -61,6 +61,7 @@
       noteError("zen defaults: acrylic", err);
     }
     set("zia.urlbar.zia-look", true);
+    set("zia.glass", false);
     // 2.95.11's "Zen's own address bar" is now "Zia's address bar", the other
     // way round, as the other options are: anyone who'd turned Zen's on
     // keeps it

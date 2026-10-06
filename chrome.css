@@ -85,12 +85,19 @@
   --zia-media-card-base: light-dark(rgb(235, 235, 235), #1b1b1b);
   --zia-split-gap: 5px;
 
-  /* Zia's squircle: on everything with the glass edge and every small icon
-     button, one shape (below, and wherever a part sets corner-shape:
-     var(--zia-squircle)). Dia's, measured off its essentials: only a touch
-     squarer than a circle, its corner about a third of the tile's height,
-     so the radii are the round corners' own. */
-  --zia-squircle: superellipse(1.35);
+  /* Zia's squircle: on essentials, cards, pop-ups and small buttons, one
+     shape (wherever a part sets corner-shape: var(--zia-squircle)). Dia's,
+     fitted to the edge of its essentials pixel by pixel: a true squircle
+     (an exponent of about 3.8, superellipse(1.93)), its corner running
+     half as far again along each side as a round one of the same depth
+     (18px on a 40px tile, where Zia's round corners are 12px). So each
+     squircle's radius is its round radius grown by that much
+     (--zia-squircle-grow), cutting in as deep at the corner's middle but
+     easing in further. Icon buttons in the toolbars, whose radii are
+     Zen's, keep the softer one (--zia-squircle-soft). */
+  --zia-squircle: superellipse(1.93);
+  --zia-squircle-grow: 1.45;
+  --zia-squircle-soft: superellipse(1.35);
   --zia-folder-radius: var(--zia-tab-radius);
   --zia-glass-button-radius: var(--zia-tab-radius);
   --zia-pop-radius: 16.5px;
@@ -144,7 +151,7 @@
 /* Every small icon button's background, in toolbars and the sidebar (the
    workspaces' icons among them), is Zia's squircle */
 :root :is(toolbarbutton, toolbarbutton > :is(.toolbarbutton-icon, .toolbarbutton-badge-stack, .toolbarbutton-text)):not(menupopup *, panel *, dialog *) {
-  corner-shape: var(--zia-squircle) !important;
+  corner-shape: var(--zia-squircle-soft) !important;
 }
 
 /* The fine edge round essentials, folders and cards is half a pixel: one
@@ -527,13 +534,13 @@
      its colour, corners, edge and shadow, at its own height (the toolbar's
      31px squeezed it, its text sitting low) */
   #urlbar[zen-floating-urlbar="true"]:not([breakout-extend]):not([zia-classic]) {
-    border-radius: var(--zia-pop-radius) !important;
+    border-radius: calc(var(--zia-pop-radius) * var(--zia-squircle-grow)) !important;
     corner-shape: var(--zia-squircle) !important;
 
     & > .urlbar-background {
       background: var(--zia-urlbar-open-bg) !important;
       border: none !important;
-      border-radius: var(--zia-pop-radius) !important;
+      border-radius: calc(var(--zia-pop-radius) * var(--zia-squircle-grow)) !important;
       corner-shape: var(--zia-squircle) !important;
       box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
     }
@@ -544,7 +551,7 @@
   }
 
   #urlbar[breakout-extend]:not([zia-classic]):not([zen-floating-urlbar="true"]) {
-    border-radius: var(--zia-pop-radius) !important;
+    border-radius: calc(var(--zia-pop-radius) * var(--zia-squircle-grow)) !important;
     corner-shape: var(--zia-squircle) !important;
     translate: var(--zia-urlbar-open-offset-x, 0px) var(--zia-urlbar-open-offset) !important;
     --urlbarview-separator-color: transparent !important;
@@ -552,7 +559,7 @@
 
     & > .urlbar-background {
       background: var(--zia-urlbar-open-bg) !important;
-      border-radius: var(--zia-pop-radius) !important;
+      border-radius: calc(var(--zia-pop-radius) * var(--zia-squircle-grow)) !important;
       corner-shape: var(--zia-squircle) !important;
       box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
       backdrop-filter: none !important;
@@ -1243,7 +1250,7 @@
     &::before {
       corner-shape: var(--zia-squircle) !important;
 
-      border-radius: max(0px, calc(var(--zia-essential-radius) - var(--zen-essential-bg-margin) * var(--zia-essential-inner-tighten))) !important;
+      border-radius: calc(max(0px, calc(var(--zia-essential-radius) - var(--zen-essential-bg-margin) * var(--zia-essential-inner-tighten))) * var(--zia-squircle-grow)) !important;
 
       /* (the glass edge, as on the other essentials, a touch thicker so it
          holds its own against the colour round it) */
@@ -1558,7 +1565,7 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
     aspect-ratio: 4 / 5;
     display: grid !important;
     place-items: center !important;
-    border-radius: var(--zia-essential-radius);
+    border-radius: calc(var(--zia-essential-radius) * var(--zia-squircle-grow));
     corner-shape: var(--zia-squircle) !important;
     background-color: rgba(0, 0, 0, 0.18);
     transition: background-color 0.2s ease, box-shadow 0.2s ease;
@@ -1652,7 +1659,7 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   height: 18px;
   margin: 0 0 0 6px;
   padding: 0;
-  border-radius: 5.5px;
+  border-radius: calc(5.5px * var(--zia-squircle-grow));
   corner-shape: var(--zia-squircle) !important;
   background-color: transparent;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
@@ -2424,7 +2431,7 @@ zen-split-fake-tab {
 }
 
 .tabbrowser-tab[zen-essential] > .tab-stack > .tab-background {
-  border-radius: var(--zia-essential-radius) !important;
+  border-radius: calc(var(--zia-essential-radius) * var(--zia-squircle-grow)) !important;
   corner-shape: var(--zia-squircle) !important;
 }
 
@@ -2659,7 +2666,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close {
   height: var(--zia-close-size);
   min-width: var(--zia-close-size);
   padding: 4px;
-  border-radius: var(--zia-close-radius);
+  border-radius: calc(var(--zia-close-radius) * var(--zia-squircle-grow));
   corner-shape: var(--zia-squircle) !important;
   flex-shrink: 0;
 
@@ -3315,7 +3322,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   box-sizing: border-box;
   padding: 12px 14px 10px;
   background-color: var(--zia-tab-card-bg);
-  border-radius: var(--zia-tab-card-radius);
+  border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow));
   corner-shape: var(--zia-squircle) !important;
   /* (its sides a faint light line, as on the find bar, rather than dark
      ones, which went nowhere against a dark sidebar or page) */
@@ -3431,7 +3438,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   height: 14px;
   margin-inline-start: auto;
   padding: 4px;
-  border-radius: var(--zia-close-radius);
+  border-radius: calc(var(--zia-close-radius) * var(--zia-squircle-grow));
   corner-shape: var(--zia-squircle) !important;
   opacity: 0;
   -moz-context-properties: fill, fill-opacity;
@@ -3560,7 +3567,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   padding: 0;
   width: 30px;
   height: 30px;
-  border-radius: 8px;
+  border-radius: calc(8px * var(--zia-squircle-grow));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3611,7 +3618,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   width: var(--zia-close-size) !important;
   height: var(--zia-close-size) !important;
   min-width: var(--zia-close-size) !important;
-  border-radius: var(--zia-close-radius) !important;
+  border-radius: calc(var(--zia-close-radius) * var(--zia-squircle-grow)) !important;
   /* (the same squircle as the unload button beside it, 17-tab-buttons) */
   corner-shape: var(--zia-squircle) !important;
   margin-inline-end: 0 !important;
@@ -3709,7 +3716,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   & > .tab-stack > .tab-background,
   & > .tab-stack > .tab-background::before {
     border: none !important;
-    border-radius: 9px !important;
+    border-radius: calc(9px * var(--zia-squircle-grow)) !important;
     /* Zia's glass, as on the essential it sits on: its edge and squircle,
        and a soft lift off it (no blur behind it: tilted, it drew a line of
        the colour behind down the side of its box) */
@@ -3749,7 +3756,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 9px;
+  border-radius: calc(9px * var(--zia-squircle-grow));
   background: rgba(255, 255, 255, 0.16);
   box-shadow: var(--zia-glass-edge-thick), 0 1px 4px rgba(0, 0, 0, 0.2);
 
@@ -4588,7 +4595,7 @@ zen-workspace arrowscrollbox::part(scrollbox) {
   width: min(var(--zia-zone-w), 45%);
   height: min(var(--zia-zone-h), 86%);
   translate: var(--zia-zone-tx) calc(-50% + var(--zia-zone-ty));
-  border-radius: var(--zia-split-card-radius);
+  border-radius: calc(var(--zia-split-card-radius) * var(--zia-squircle-grow));
   corner-shape: var(--zia-squircle) !important;
   background: #1f1f1f;
   box-shadow: var(--zia-glass-edge), 0 16px 44px rgba(0, 0, 0, 0.5);
@@ -4885,7 +4892,7 @@ findbar {
   background: rgba(38, 38, 38, 0.78) !important;
   backdrop-filter: blur(18px) saturate(1.4);
   border: none !important;
-  border-radius: 12px;
+  border-radius: calc(12px * var(--zia-squircle-grow));
   /* Zia's glass edge, its sides a faint light line rather than dark ones,
      which went nowhere against a dark page, and a soft lift off it */
   box-shadow: var(--zia-glass-edge-lit-dark), 0 10px 30px rgba(0, 0, 0, 0.35);
@@ -5403,7 +5410,7 @@ findbar {
   justify-content: center !important;
   height: var(--zia-space-pill-height) !important;
   min-height: var(--zia-space-pill-height) !important;
-  border-radius: 10px !important;
+  border-radius: calc(10px * var(--zia-squircle-grow)) !important;
   corner-shape: var(--zia-squircle) !important;
   background-color: transparent !important;
   background-image: none !important;
@@ -5607,7 +5614,7 @@ tooltip[default="true"] {
     margin: 0 !important;
     padding: 4px 10px !important;
     border: none !important;
-    border-radius: 9px !important;
+    border-radius: calc(9px * var(--zia-squircle-grow)) !important;
     background: rgba(38, 38, 38, 0.86) !important;
     backdrop-filter: blur(18px) saturate(1.4);
     box-shadow: var(--zia-glass-edge-dark), 0 6px 18px rgba(0, 0, 0, 0.3) !important;
@@ -5679,7 +5686,7 @@ tooltip[default="true"] {
     max-width: 240px;
     height: 32px;
     padding: 0 12px 0 9px;
-    border-radius: 11px;
+    border-radius: calc(11px * var(--zia-squircle-grow));
     corner-shape: var(--zia-squircle) !important;
     background: var(--zia-media-solid, var(--zia-media-card-base));
     box-shadow: var(--zia-glass-edge), 0 8px 24px rgba(0, 0, 0, 0.32);
@@ -6068,7 +6075,7 @@ zen-folder .tab-reset-button {
   fill: rgb(255, 255, 255) !important;
   fill-opacity: 1 !important;
   color: rgb(255, 255, 255) !important;
-  border-radius: var(--zia-close-radius) !important;
+  border-radius: calc(var(--zia-close-radius) * var(--zia-squircle-grow)) !important;
   corner-shape: var(--zia-squircle) !important;
   width: var(--zia-close-size) !important;
   height: var(--zia-close-size) !important;
@@ -6226,7 +6233,7 @@ zen-folder .tab-reset-button {
 }
 
 #urlbar[breakout-extend]:not([zia-classic])[zen-floating-urlbar="true"] {
-  border-radius: var(--zia-pop-radius) !important;
+  border-radius: calc(var(--zia-pop-radius) * var(--zia-squircle-grow)) !important;
   corner-shape: var(--zia-squircle) !important;
   --urlbarview-separator-color: transparent !important;
   --urlbarView-separator-color: transparent !important;
@@ -6699,7 +6706,7 @@ zen-folder .tab-reset-button {
   gap: 2px !important;
   max-width: none !important;
   background-color: var(--zia-tab-card-bg);
-  border-radius: var(--zia-tab-card-radius);
+  border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow));
   corner-shape: var(--zia-squircle) !important;
   box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.12), 0 8px 24px rgba(0, 0, 0, 0.35);
 
@@ -6716,7 +6723,7 @@ zen-folder .tab-reset-button {
     height: 32px !important;
     padding: 8px !important;
     background: transparent !important;
-    border-radius: 9px !important;
+    border-radius: calc(9px * var(--zia-squircle-grow)) !important;
     corner-shape: var(--zia-squircle) !important;
     box-shadow: none !important;
     color: rgb(255, 255, 255) !important;
@@ -7248,7 +7255,7 @@ zen-folder .tab-reset-button {
     &[open] {
       width: 236px;
       height: var(--zia-swipe-h, 80px);
-      border-radius: var(--zia-tab-card-radius);
+      border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow));
       corner-shape: var(--zia-squircle) !important;
       --zia-swipe-in: 20px;
       opacity: 1;
@@ -7640,7 +7647,7 @@ zen-folder .tab-reset-button {
       font-weight: 500 !important;
 
       &::before {
-        border-radius: var(--zia-essential-radius) !important;
+        border-radius: calc(var(--zia-essential-radius) * var(--zia-squircle-grow)) !important;
         corner-shape: var(--zia-squircle) !important;
         /* (a hover snaps on and off, as on a tab) */
         transition: none !important;
@@ -7684,7 +7691,7 @@ zen-folder .tab-reset-button {
       top: 0;
       inset-inline: 4px;
       z-index: 0;
-      border-radius: var(--zia-essential-radius);
+      border-radius: calc(var(--zia-essential-radius) * var(--zia-squircle-grow));
       corner-shape: var(--zia-squircle) !important;
       background: var(--zia-lib-tile);
       /* (the glass edge, as on an essential) */
@@ -7745,7 +7752,7 @@ zen-folder .tab-reset-button {
 
     & :is(.zen-library-filter-button, .zen-library-filter-done) {
       position: relative;
-      border-radius: var(--zia-glass-button-radius) !important;
+      border-radius: calc(var(--zia-glass-button-radius) * var(--zia-squircle-grow)) !important;
       corner-shape: var(--zia-squircle) !important;
       /* (the glass edge, as on an essential) */
       box-shadow: var(--zia-glass-edge) !important;
@@ -7774,7 +7781,7 @@ zen-folder .tab-reset-button {
 
     & .zen-library-filter-chip {
       padding: 7px 12px !important;
-      border-radius: var(--zia-glass-button-radius) !important;
+      border-radius: calc(var(--zia-glass-button-radius) * var(--zia-squircle-grow)) !important;
       corner-shape: var(--zia-squircle) !important;
       box-shadow: var(--zia-glass-edge) !important;
       background: var(--zia-lib-tile) !important;
@@ -7875,7 +7882,7 @@ zen-folder .tab-reset-button {
     /* boosts: their icon on an essential-shaped tile */
     & .zen-library-boost-row {
       padding: 5px 10px 5px 5px !important;
-      border-radius: var(--zia-essential-radius) !important;
+      border-radius: calc(var(--zia-essential-radius) * var(--zia-squircle-grow)) !important;
       corner-shape: var(--zia-squircle) !important;
     }
 
@@ -7886,7 +7893,7 @@ zen-folder .tab-reset-button {
 
       &::before {
         border: none !important;
-        border-radius: var(--zia-essential-radius) !important;
+        border-radius: calc(var(--zia-essential-radius) * var(--zia-squircle-grow)) !important;
         corner-shape: var(--zia-squircle) !important;
         background: var(--zia-lib-tile) !important;
         box-shadow: inset 0 0 0 var(--zia-shine-width) color-mix(in srgb, var(--zia-lib-ink) 16%, transparent) !important;
@@ -7907,7 +7914,7 @@ zen-folder .tab-reset-button {
 
     & .zen-library-media-item {
       padding: 10px !important;
-      border-radius: var(--zia-essential-radius) !important;
+      border-radius: calc(var(--zia-essential-radius) * var(--zia-squircle-grow)) !important;
       corner-shape: var(--zia-squircle) !important;
       background: var(--zia-lib-tile) !important;
 
@@ -7997,7 +8004,7 @@ zen-folder .tab-reset-button {
 
     /* the media opt-in, as one of Zia's hover cards */
     & .zen-library-media-opt-in {
-      border-radius: var(--zia-tab-card-radius) !important;
+      border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow)) !important;
       corner-shape: var(--zia-squircle) !important;
       background: var(--zia-tab-card-bg) !important;
       box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.1), 0 16px 40px rgba(0, 0, 0, 0.4) !important;
@@ -8064,7 +8071,7 @@ zen-folder .tab-reset-button {
       & .zen-library-download-badge:not([downloading]) {
         width: 16px !important;
         height: 16px !important;
-        border-radius: 4px !important;
+        border-radius: calc(4px * var(--zia-squircle-grow)) !important;
         scale: 1 !important;
       }
     }
@@ -8079,7 +8086,7 @@ zen-folder .tab-reset-button {
   :root:not(#zia-none) #library-button-badge:not([downloading]) {
     width: 16px !important;
     height: 16px !important;
-    border-radius: 4px !important;
+    border-radius: calc(4px * var(--zia-squircle-grow)) !important;
     scale: none !important;
     transform: translate(var(--zen-library-badge-tx, 0px), var(--zen-library-badge-ty, 0px)) !important;
   }
@@ -8250,7 +8257,7 @@ zen-folder .tab-reset-button {
   gap: 4px;
   margin: 0;
   padding: 6px;
-  border-radius: calc(var(--zia-pop-row-radius, 8px) + 6px);
+  border-radius: calc(calc(var(--zia-pop-row-radius, 8px) + 6px) * var(--zia-squircle-grow));
   corner-shape: var(--zia-squircle) !important;
   background: var(--zia-rc-glass);
   box-shadow: var(--zia-glass-edge), 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -8366,7 +8373,7 @@ zen-folder .tab-reset-button {
   width: 20px;
   height: 20px;
   flex: none;
-  border-radius: 5px;
+  border-radius: calc(5px * var(--zia-squircle-grow));
   object-fit: cover;
 }
 
@@ -8377,7 +8384,7 @@ zen-folder .tab-reset-button {
 }
 
 :root:not(#zia-none) #library-button-badge:not([downloading]) {
-  border-radius: 4px !important;
+  border-radius: calc(4px * var(--zia-squircle-grow)) !important;
 }
 
 .zia-rc-name {
@@ -8538,4 +8545,103 @@ zen-folder .tab-reset-button {
    over the sliding tile as it arrives) */
 :root:not(#zia-none) zen-library .zen-library-tab[zia-glass-press]::before {
   background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent)) !important;
+}
+/* Zia's glass is an option (zia.glass), off unless it's turned on. Off,
+   everything it touches looks as it did before it came in (2.93): no glass
+   edge anywhere (each one an empty shadow, so the lifts beside them stay),
+   no light where pressed (zia.uc.js), and back the fine shine round the
+   essentials and the Library's buttons, the hairline round the hover
+   cards, and the old edges on the selected essential's tile, the glance
+   card on an essential, the split cards and the find bar. The squircle
+   corners stay either way. */
+@media not -moz-pref("zia.glass") {
+  :root:not(#zia-none) {
+    --zia-glass-edge-dark: 0 0 transparent;
+    --zia-glass-edge-light: 0 0 transparent;
+    --zia-glass-edge-lit-dark: 0 0 transparent;
+    --zia-glass-edge-soft-light: 0 0 transparent;
+    --zia-glass-edge-thick-dark: 0 0 transparent;
+    --zia-glass-edge-thick-light: 0 0 transparent;
+    --zia-glass-edge: 0 0 transparent;
+    --zia-glass-edge-lit: 0 0 transparent;
+    --zia-glass-edge-thick: 0 0 transparent;
+  }
+
+  /* the fine shine round each essential (not the chosen one), the
+     Library's sliding tile and its Filter and Done: brightest along the
+     middle of each side, fading into the corners */
+  :root:not(#zia-none) :is(
+    .tabbrowser-tab[zen-essential]:not([visuallyselected], [zia-split-tile]) > .tab-stack > .tab-background,
+    zen-library .zia-library-rail,
+    zen-library :is(.zen-library-filter-button, .zen-library-filter-done):not(.zia-library-clear)
+  )::after {
+    content: "" !important;
+    display: block !important;
+    position: absolute !important;
+    inset: 0 !important;
+    padding: var(--zia-shine-width) !important;
+    border-radius: inherit !important;
+    corner-shape: var(--zia-squircle) !important;
+    pointer-events: none !important;
+    background: var(--zia-shine-layers) !important;
+    filter: none !important;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0) !important;
+  }
+
+  .tabbrowser-tab[zen-essential]:not([visuallyselected]) > .tab-stack > .tab-background {
+    position: relative;
+  }
+
+  /* the chosen essential's tile, with its icon's colour round it */
+  @media -moz-pref("zen.theme.essentials-favicon-bg") {
+    .tabbrowser-tab[zen-essential][visuallyselected] > .tab-stack > .tab-background::before {
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.14),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.18) !important;
+    }
+  }
+
+  /* the hover cards: a hairline round them */
+  #zia-tab-card::after,
+  #zia-folder-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 0.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  :root:not(#zia-none) :is(#zia-tab-card, #zia-folder-card)::after {
+    corner-shape: var(--zia-squircle) !important;
+  }
+
+  /* a glance's card on its essential, and the ghost it flies from */
+  .tabbrowser-tab[zen-essential] > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]:not(#zia-none) > .tab-stack > .tab-background,
+  .tabbrowser-tab[zen-essential] > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]:not(#zia-none) > .tab-stack > .tab-background::before {
+    background: rgba(255, 255, 255, 0.2) !important;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  :root:not(#zia-none) .zia-glance-ghost {
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  /* the split cards */
+  .zia-split-zone {
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+
+  /* the find bar */
+  findbar {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+  }
+
+  :root[zia-light] findbar {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16), inset 0 0 0 0.5px rgba(0, 0, 0, 0.1);
+  }
 }

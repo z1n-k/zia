@@ -23,7 +23,7 @@
   gap: 4px;
   margin: 0;
   padding: 6px;
-  border-radius: calc(var(--zia-pop-row-radius, 8px) + 6px);
+  border-radius: calc(calc(var(--zia-pop-row-radius, 8px) + 6px) * var(--zia-squircle-grow));
   corner-shape: var(--zia-squircle) !important;
   background: var(--zia-rc-glass);
   box-shadow: var(--zia-glass-edge), 0 10px 30px rgba(0, 0, 0, 0.3);
@@ -139,7 +139,7 @@
   width: 20px;
   height: 20px;
   flex: none;
-  border-radius: 5px;
+  border-radius: calc(5px * var(--zia-squircle-grow));
   object-fit: cover;
 }
 
@@ -150,7 +150,7 @@
 }
 
 :root:not(#zia-none) #library-button-badge:not([downloading]) {
-  border-radius: 4px !important;
+  border-radius: calc(4px * var(--zia-squircle-grow)) !important;
 }
 
 .zia-rc-name {

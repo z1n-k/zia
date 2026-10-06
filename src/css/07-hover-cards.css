@@ -9,7 +9,7 @@
   box-sizing: border-box;
   padding: 12px 14px 10px;
   background-color: var(--zia-tab-card-bg);
-  border-radius: var(--zia-tab-card-radius);
+  border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow));
   corner-shape: var(--zia-squircle) !important;
   /* (its sides a faint light line, as on the find bar, rather than dark
      ones, which went nowhere against a dark sidebar or page) */
@@ -125,7 +125,7 @@
   height: 14px;
   margin-inline-start: auto;
   padding: 4px;
-  border-radius: var(--zia-close-radius);
+  border-radius: calc(var(--zia-close-radius) * var(--zia-squircle-grow));
   corner-shape: var(--zia-squircle) !important;
   opacity: 0;
   -moz-context-properties: fill, fill-opacity;
@@ -254,7 +254,7 @@
   padding: 0;
   width: 30px;
   height: 30px;
-  border-radius: 8px;
+  border-radius: calc(8px * var(--zia-squircle-grow));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -305,7 +305,7 @@
   width: var(--zia-close-size) !important;
   height: var(--zia-close-size) !important;
   min-width: var(--zia-close-size) !important;
-  border-radius: var(--zia-close-radius) !important;
+  border-radius: calc(var(--zia-close-radius) * var(--zia-squircle-grow)) !important;
   /* (the same squircle as the unload button beside it, 17-tab-buttons) */
   corner-shape: var(--zia-squircle) !important;
   margin-inline-end: 0 !important;
@@ -403,7 +403,7 @@
   & > .tab-stack > .tab-background,
   & > .tab-stack > .tab-background::before {
     border: none !important;
-    border-radius: 9px !important;
+    border-radius: calc(9px * var(--zia-squircle-grow)) !important;
     /* Zia's glass, as on the essential it sits on: its edge and squircle,
        and a soft lift off it (no blur behind it: tilted, it drew a line of
        the colour behind down the side of its box) */
@@ -443,7 +443,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 9px;
+  border-radius: calc(9px * var(--zia-squircle-grow));
   background: rgba(255, 255, 255, 0.16);
   box-shadow: var(--zia-glass-edge-thick), 0 1px 4px rgba(0, 0, 0, 0.2);
 
