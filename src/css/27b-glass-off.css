@@ -102,9 +102,12 @@
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
   }
 
-  /* the music player: the essentials' fine shine round it, following its
-     squircle (drawn on its inner box, against the card: Zen keeps the
-     card's own ::after as the bridge that holds a stack of cards hovered) */
+  /* the music player: a fine shine round it, following its squircle
+     (drawn on its inner box, against the card: Zen keeps the card's own
+     ::after as the bridge that holds a stack of cards hovered). Fainter
+     than the essentials': lit along the top, fading down the sides and gone
+     before the bottom, as all the way round, at a card's length, it read as
+     an outline. */
   :root:not(#zia-none) {
     --zia-media-edge: 0 0 transparent;
   }
@@ -118,7 +121,9 @@
       border-radius: calc(var(--zia-media-radius) * var(--zia-squircle-grow));
       corner-shape: var(--zia-squircle) !important;
       pointer-events: none;
-      background: var(--zia-shine-layers);
+      background:
+        linear-gradient(to right, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.09) 30%, rgba(255, 255, 255, 0.09) 70%, rgba(255, 255, 255, 0.02)) 0 0 / 100% 50% no-repeat,
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.04), transparent 60%);
       mask:
         linear-gradient(#000 0 0),
         var(--zia-sq-tl) var(--zia-shine-width) var(--zia-shine-width) / var(--zia-media-hole) var(--zia-media-hole) no-repeat,

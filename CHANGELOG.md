@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.15] — 2026-10-06
+
+### Changed
+
+- The music player's fine shine, with glass off, is fainter: lit along the
+  top, fading down the sides and gone before the bottom, as all the way
+  round it read as an outline.
+
 ## [2.96.14] — 2026-10-06
 
 ### Fixed
