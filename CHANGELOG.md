@@ -4,6 +4,20 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.11] — 2026-10-06
+
+### Fixed
+
+- With glass off, the fine shine round the essentials and the Library's
+  buttons runs evenly all the way round each corner: Firefox's own curve
+  strayed a fraction of a pixel from the one its inside is cut to, and the
+  hairline thinned to nothing at two points. Tile and shine now share one
+  exact shape. (The corners are as faint as they were before glass.)
+- The card of pages from swiping back or forward has the hover cards'
+  spacing, rows and edge: rows as far in from the edge, the same gap
+  between them, a tab's height, corner, text and hover, and its hairline
+  following its corners (the glass edge, with glass on).
+
 ## [2.96.10] — 2026-10-06
 
 ### Changed

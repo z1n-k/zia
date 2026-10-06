@@ -7308,9 +7308,15 @@ zen-folder .tab-reset-button {
       pointer-events: none;
     }
 
+    /* (the folder hover card's spacing: rows as far in from the card's
+       edges as a tab's icon is from the tab's, and the space between two
+       tabs between two rows) */
+    --zia-swipe-inset: 9.5px;
+    --zia-swipe-gap: calc(2 * var(--zia-tab-gap));
+
     &[open] {
       width: 236px;
-      height: var(--zia-swipe-h, 80px);
+      height: calc(var(--zia-swipe-n, 1) * var(--zia-tab-height) + (var(--zia-swipe-n, 1) - 1) * var(--zia-swipe-gap) + 2 * var(--zia-swipe-inset));
       border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow));
       corner-shape: var(--zia-squircle) !important;
       --zia-swipe-in: 20px;
@@ -7370,9 +7376,10 @@ zen-folder .tab-reset-button {
 
   #zia-swipe .zia-swipe-pages {
     position: absolute;
-    inset: 6px;
+    inset: var(--zia-swipe-inset);
     display: flex;
     flex-direction: column;
+    gap: var(--zia-swipe-gap);
     opacity: 0;
     transition: opacity 0.18s ease 0.06s;
   }
@@ -7382,21 +7389,25 @@ zen-folder .tab-reset-button {
   }
 
   #zia-swipe .zia-swipe-page {
+    /* (as the folder hover card's rows: a tab's height, corner, text and
+       hover) */
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap: 8px;
     flex: none;
-    height: 34px;
-    padding: 0 10px;
-    border-radius: 9px;
-    font: 500 12.5px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
-    color: rgba(255, 255, 255, 0.72);
+    height: var(--zia-tab-height);
+    padding-inline: 9px 6px;
+    border-radius: var(--zia-tab-radius);
+    font-size: var(--zia-text-size);
+    font-weight: var(--zia-tab-weight);
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.78);
     transition: background-color 0.12s ease, color 0.12s ease;
 
     /* the next page, until the pointer picks another */
     &:is([selected], :hover) {
-      background: rgba(255, 255, 255, 0.09);
-      color: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.13);
+      color: rgb(255, 255, 255);
     }
 
     & img {
@@ -7414,7 +7425,24 @@ zen-folder .tab-reset-button {
 
   #zia-swipe .zia-swipe-pages:hover .zia-swipe-page[selected]:not(:hover) {
     background: transparent;
-    color: rgba(255, 255, 255, 0.72);
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  /* its edge as the hover cards': the glass edge, with glass on (the
+     hairline below with it off), and the hairline round the open card's
+     squircle rather than a round corner inside it */
+  :root:not(#zia-none) #zia-swipe {
+    box-shadow: var(--zia-glass-edge-lit);
+  }
+
+  :root:not(#zia-none) #zia-swipe[open]::after {
+    corner-shape: var(--zia-squircle) !important;
+  }
+
+  @media -moz-pref("zia.glass") {
+    #zia-swipe::after {
+      display: none;
+    }
   }
 
   /* behind the open card, over the page: a click anywhere round it closes it */
@@ -8667,6 +8695,27 @@ zen-folder .tab-reset-button {
 
   .tabbrowser-tab[zen-essential]:not([visuallyselected]) > .tab-stack > .tab-background {
     position: relative;
+  }
+
+  /* ...and the tile itself cut to the same exact squircle by a mask, its
+     corners drawn square under it: Firefox's own curve for the corner
+     (fitted at about superellipse(1.83)) strays a fraction of a pixel
+     from the exact one the ring's inside is cut to, and where they parted
+     the hairline thinned to nothing at two points round each corner. Both
+     edges from the one shape, it runs evenly all the way round. */
+  :root:not(#zia-none) :is(
+    .tabbrowser-tab[zen-essential]:not([visuallyselected], [zia-split-tile]) > .tab-stack > .tab-background,
+    zen-library .zia-library-rail,
+    zen-library :is(.zen-library-filter-button, .zen-library-filter-done)
+  ) {
+    border-radius: 0 !important;
+    mask:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M100.00 100.00 L0.00 100.00 L0.04 81.72 L0.16 73.71 L0.36 67.49 L0.65 62.23 L1.01 57.59 L1.46 53.40 L1.99 49.56 L2.60 46.01 L3.29 42.70 L4.07 39.60 L4.93 36.68 L5.88 33.93 L6.91 31.33 L8.03 28.87 L9.23 26.54 L10.53 24.34 L11.91 22.25 L13.39 20.27 L14.96 18.40 L16.63 16.63 L18.40 14.96 L20.27 13.39 L22.25 11.91 L24.34 10.53 L26.54 9.23 L28.87 8.03 L31.33 6.91 L33.93 5.88 L36.68 4.93 L39.60 4.07 L42.70 3.29 L46.01 2.60 L49.56 1.99 L53.40 1.46 L57.59 1.01 L62.23 0.65 L67.49 0.36 L73.71 0.16 L81.72 0.04 L100.00 0.00 Z'/%3E%3C/svg%3E") 0 0 / var(--zia-sq-r) var(--zia-sq-r) no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0.00 100.00 L100.00 100.00 L99.96 81.72 L99.84 73.71 L99.64 67.49 L99.35 62.23 L98.99 57.59 L98.54 53.40 L98.01 49.56 L97.40 46.01 L96.71 42.70 L95.93 39.60 L95.07 36.68 L94.12 33.93 L93.09 31.33 L91.97 28.87 L90.77 26.54 L89.47 24.34 L88.09 22.25 L86.61 20.27 L85.04 18.40 L83.37 16.63 L81.60 14.96 L79.73 13.39 L77.75 11.91 L75.66 10.53 L73.46 9.23 L71.13 8.03 L68.67 6.91 L66.07 5.88 L63.32 4.93 L60.40 4.07 L57.30 3.29 L53.99 2.60 L50.44 1.99 L46.60 1.46 L42.41 1.01 L37.77 0.65 L32.51 0.36 L26.29 0.16 L18.28 0.04 L0.00 0.00 Z'/%3E%3C/svg%3E") 100% 0 / var(--zia-sq-r) var(--zia-sq-r) no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M100.00 0.00 L0.00 0.00 L0.04 18.28 L0.16 26.29 L0.36 32.51 L0.65 37.77 L1.01 42.41 L1.46 46.60 L1.99 50.44 L2.60 53.99 L3.29 57.30 L4.07 60.40 L4.93 63.32 L5.88 66.07 L6.91 68.67 L8.03 71.13 L9.23 73.46 L10.53 75.66 L11.91 77.75 L13.39 79.73 L14.96 81.60 L16.63 83.37 L18.40 85.04 L20.27 86.61 L22.25 88.09 L24.34 89.47 L26.54 90.77 L28.87 91.97 L31.33 93.09 L33.93 94.12 L36.68 95.07 L39.60 95.93 L42.70 96.71 L46.01 97.40 L49.56 98.01 L53.40 98.54 L57.59 98.99 L62.23 99.35 L67.49 99.64 L73.71 99.84 L81.72 99.96 L100.00 100.00 Z'/%3E%3C/svg%3E") 0 100% / var(--zia-sq-r) var(--zia-sq-r) no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0.00 0.00 L100.00 0.00 L99.96 18.28 L99.84 26.29 L99.64 32.51 L99.35 37.77 L98.99 42.41 L98.54 46.60 L98.01 50.44 L97.40 53.99 L96.71 57.30 L95.93 60.40 L95.07 63.32 L94.12 66.07 L93.09 68.67 L91.97 71.13 L90.77 73.46 L89.47 75.66 L88.09 77.75 L86.61 79.73 L85.04 81.60 L83.37 83.37 L81.60 85.04 L79.73 86.61 L77.75 88.09 L75.66 89.47 L73.46 90.77 L71.13 91.97 L68.67 93.09 L66.07 94.12 L63.32 95.07 L60.40 95.93 L57.30 96.71 L53.99 97.40 L50.44 98.01 L46.60 98.54 L42.41 98.99 L37.77 99.35 L32.51 99.64 L26.29 99.84 L18.28 99.96 L0.00 100.00 Z'/%3E%3C/svg%3E") 100% 100% / var(--zia-sq-r) var(--zia-sq-r) no-repeat,
+      linear-gradient(#000 0 0) calc(var(--zia-sq-r) - 1px) 0 / calc(100% - 2 * var(--zia-sq-r) + 2px) 100% no-repeat,
+      linear-gradient(#000 0 0) 0 calc(var(--zia-sq-r) - 1px) / 100% calc(100% - 2 * var(--zia-sq-r) + 2px) no-repeat !important;
   }
 
   /* the chosen essential's tile, with its icon's colour round it */

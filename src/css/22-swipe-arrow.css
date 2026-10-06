@@ -46,9 +46,15 @@
       pointer-events: none;
     }
 
+    /* (the folder hover card's spacing: rows as far in from the card's
+       edges as a tab's icon is from the tab's, and the space between two
+       tabs between two rows) */
+    --zia-swipe-inset: 9.5px;
+    --zia-swipe-gap: calc(2 * var(--zia-tab-gap));
+
     &[open] {
       width: 236px;
-      height: var(--zia-swipe-h, 80px);
+      height: calc(var(--zia-swipe-n, 1) * var(--zia-tab-height) + (var(--zia-swipe-n, 1) - 1) * var(--zia-swipe-gap) + 2 * var(--zia-swipe-inset));
       border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow));
       corner-shape: var(--zia-squircle) !important;
       --zia-swipe-in: 20px;
@@ -108,9 +114,10 @@
 
   #zia-swipe .zia-swipe-pages {
     position: absolute;
-    inset: 6px;
+    inset: var(--zia-swipe-inset);
     display: flex;
     flex-direction: column;
+    gap: var(--zia-swipe-gap);
     opacity: 0;
     transition: opacity 0.18s ease 0.06s;
   }
@@ -120,21 +127,25 @@
   }
 
   #zia-swipe .zia-swipe-page {
+    /* (as the folder hover card's rows: a tab's height, corner, text and
+       hover) */
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap: 8px;
     flex: none;
-    height: 34px;
-    padding: 0 10px;
-    border-radius: 9px;
-    font: 500 12.5px/1 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
-    color: rgba(255, 255, 255, 0.72);
+    height: var(--zia-tab-height);
+    padding-inline: 9px 6px;
+    border-radius: var(--zia-tab-radius);
+    font-size: var(--zia-text-size);
+    font-weight: var(--zia-tab-weight);
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.78);
     transition: background-color 0.12s ease, color 0.12s ease;
 
     /* the next page, until the pointer picks another */
     &:is([selected], :hover) {
-      background: rgba(255, 255, 255, 0.09);
-      color: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.13);
+      color: rgb(255, 255, 255);
     }
 
     & img {
@@ -152,7 +163,24 @@
 
   #zia-swipe .zia-swipe-pages:hover .zia-swipe-page[selected]:not(:hover) {
     background: transparent;
-    color: rgba(255, 255, 255, 0.72);
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  /* its edge as the hover cards': the glass edge, with glass on (the
+     hairline below with it off), and the hairline round the open card's
+     squircle rather than a round corner inside it */
+  :root:not(#zia-none) #zia-swipe {
+    box-shadow: var(--zia-glass-edge-lit);
+  }
+
+  :root:not(#zia-none) #zia-swipe[open]::after {
+    corner-shape: var(--zia-squircle) !important;
+  }
+
+  @media -moz-pref("zia.glass") {
+    #zia-swipe::after {
+      display: none;
+    }
   }
 
   /* behind the open card, over the page: a click anywhere round it closes it */

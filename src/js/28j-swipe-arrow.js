@@ -10,7 +10,6 @@
   const SWIPE_PREF = "zia.swipe.dia-arrow";
   const SWIPE_HOLD_MS = 450;
   const SWIPE_MAX_PAGES = 8;
-  const SWIPE_ROW = 34;
   const SWIPE_LEAVE_MS = 260;
 
   function swipePages(forward) {
@@ -185,7 +184,8 @@
           return row;
         })
       );
-      el.style.setProperty("--zia-swipe-h", `${pages.length * SWIPE_ROW + 12}px`);
+      // (its height from the rows', worked out with the tabs' sizes, 22)
+      el.style.setProperty("--zia-swipe-n", `${pages.length}`);
       el.setAttribute("open", "");
       pinned = true;
       // behind the card, over the page: a click anywhere round it closes it
