@@ -3643,8 +3643,10 @@
     make("stop", { offset: "0", style: "stop-color: var(--zia-media-glow-a)" }, gradient);
     make("stop", { offset: "1", style: "stop-color: var(--zia-media-glow-b)" }, gradient);
     // (Zia's squircle round the artwork's own, starting at the top in the
-    // middle and running clockwise, as progress reads)
-    const shape = { d: "M23.00 1.00 L30.50 1.00 L35.98 1.09 L38.33 1.38 L40.08 1.85 L41.47 2.53 L42.59 3.41 L43.47 4.53 L44.15 5.92 L44.62 7.67 L44.91 10.02 L45.00 15.50 L45.00 30.50 L44.91 35.98 L44.62 38.33 L44.15 40.08 L43.47 41.47 L42.59 42.59 L41.47 43.47 L40.08 44.15 L38.33 44.62 L35.98 44.91 L30.50 45.00 L15.50 45.00 L10.02 44.91 L7.67 44.62 L5.92 44.15 L4.53 43.47 L3.41 42.59 L2.53 41.47 L1.85 40.08 L1.38 38.33 L1.09 35.98 L1.00 30.50 L1.00 15.50 L1.09 10.02 L1.38 7.67 L1.85 5.92 L2.53 4.53 L3.41 3.41 L4.53 2.53 L5.92 1.85 L7.67 1.38 L10.02 1.09 L15.50 1.00 L23.00 1.00 Z", fill: "none", "stroke-width": "2", pathLength: "100" };
+    // middle and running clockwise, as progress reads; round where this
+    // Firefox can't draw a squircle, as the artwork is then)
+    const squircle = typeof CSS === "undefined" || CSS.supports("corner-shape", "round");
+    const shape = { d: squircle ? "M23.00 1.00 L30.50 1.00 L35.98 1.09 L38.33 1.38 L40.08 1.85 L41.47 2.53 L42.59 3.41 L43.47 4.53 L44.15 5.92 L44.62 7.67 L44.91 10.02 L45.00 15.50 L45.00 30.50 L44.91 35.98 L44.62 38.33 L44.15 40.08 L43.47 41.47 L42.59 42.59 L41.47 43.47 L40.08 44.15 L38.33 44.62 L35.98 44.91 L30.50 45.00 L15.50 45.00 L10.02 44.91 L7.67 44.62 L5.92 44.15 L4.53 43.47 L3.41 42.59 L2.53 41.47 L1.85 40.08 L1.38 38.33 L1.09 35.98 L1.00 30.50 L1.00 15.50 L1.09 10.02 L1.38 7.67 L1.85 5.92 L2.53 4.53 L3.41 3.41 L4.53 2.53 L5.92 1.85 L7.67 1.38 L10.02 1.09 L15.50 1.00 L23.00 1.00 Z" : "M23 1 L35 1 A10 10 0 0 1 45 11 L45 35 A10 10 0 0 1 35 45 L11 45 A10 10 0 0 1 1 35 L1 11 A10 10 0 0 1 11 1 Z", fill: "none", "stroke-width": "2", pathLength: "100" };
     make("path", { ...shape, class: "zia-ring-track" }, svg);
     make("path", {
       ...shape,
