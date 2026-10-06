@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.8] — 2026-10-06
+
+### Fixed
+
+- Icons you've given an extension are the same shade as reload and the
+  sidebar button too, as the other extension icons are since 2.96.6 (they
+  were still brighter, in the address's colour).
+
 ## [2.96.7] — 2026-10-06
 
 ### Fixed
