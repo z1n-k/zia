@@ -1075,12 +1075,14 @@
 }
 
 /* Extension icons that take the toolbar's colour (Zia's own icons given to
-   an extension, and extensions' single-colour icons) in the same ink as
-   the address and the buttons, at full strength: they came out fainter */
+   an extension, and extensions' single-colour icons) in the same shade as
+   reload, back and the sidebar button beside them (the toolbar's icon
+   colour, a little softer than the address), at full strength: they came
+   out fainter, and then, in the address's ink, brighter */
 #zen-appcontent-navbar-wrapper :is(.webextension-browser-action, toolbarbutton[id$="-browser-action"], toolbarbutton[id$="-BAP"]),
 #zen-appcontent-navbar-wrapper :is(.webextension-browser-action, toolbarbutton[id$="-browser-action"], toolbarbutton[id$="-BAP"]) :is(.toolbarbutton-icon, .toolbarbutton-badge-stack) {
-  fill: var(--zia-toolbar-ink, currentColor) !important;
-  stroke: var(--zia-toolbar-ink, currentColor) !important;
+  fill: var(--toolbarbutton-icon-fill, var(--zia-toolbar-ink, currentColor)) !important;
+  stroke: var(--toolbarbutton-icon-fill, var(--zia-toolbar-ink, currentColor)) !important;
   fill-opacity: 1 !important;
   stroke-opacity: 1 !important;
 }
@@ -5595,6 +5597,13 @@ findbar {
 
 #zen-sidebar-foot-buttons toolbarbutton:not(#downloads-button):hover > .toolbarbutton-icon {
   opacity: 0.7;
+}
+
+/* No tile behind the sidebar's bottom buttons (the Library, the spaces'
+   dots, the tab list's arrow), hovered, pressed or open: only their icons
+   brighten, as above */
+:root:not(#zia-none) #zen-sidebar-foot-buttons :is(toolbarbutton, toolbarbutton > .toolbarbutton-icon, toolbarbutton > .toolbarbutton-badge-stack) {
+  background-color: transparent !important;
 }
 
 #alltabs-button .toolbarbutton-icon {
