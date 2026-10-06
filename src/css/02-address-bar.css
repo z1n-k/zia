@@ -614,6 +614,14 @@
   stroke-opacity: 1 !important;
 }
 
+/* (Zen's icon colour is each button's own text colour at 70%, and the
+   buttons take the address's ink as their text colour above, but these
+   were left out, so theirs was plain white and their icons came out
+   brighter than reload's: the same ink, so the same 70% of it) */
+#zen-appcontent-navbar-wrapper :is(.webextension-browser-action, toolbarbutton[id$="-browser-action"], toolbarbutton[id$="-BAP"]) {
+  color: var(--zia-toolbar-ink, currentColor) !important;
+}
+
 @media -moz-pref("zia.urlbar.zia-look") {
   :root #urlbar[breakout-extend]:not([zia-classic]) {
     color-scheme: dark !important;
