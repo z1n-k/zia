@@ -4,6 +4,18 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.13] — 2026-10-06
+
+### Changed
+
+- The music player in Zia's own shapes and icons: the card a squircle like
+  Zia's other cards (its glow and the cards stacked behind it too), with
+  the essentials' fine shine round it (the glass edge, with glass on); the
+  artwork a squircle tile like an essential's, its progress ring the same
+  squircle round it, starting from the top in the middle; its buttons
+  Zia's squircle buttons, in Zia's icons (play, pause, back, forward,
+  picture-in-picture, close).
+
 ## [2.96.12] — 2026-10-06
 
 ### Changed

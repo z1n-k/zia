@@ -4133,13 +4133,14 @@ zen-workspace arrowscrollbox::part(scrollbox) {
 #zen-media-controls-toolbar {
   --zia-media-ease: var(--zen-media-stack-easing, cubic-bezier(0.25, 1, 0.5, 1));
 
-  border-radius: var(--zia-media-radius) !important;
-  corner-shape: round !important;
+  /* Zia's squircle, as its other cards (the card, its glow, the stack) */
+  border-radius: calc(var(--zia-media-radius) * var(--zia-squircle-grow)) !important;
+  corner-shape: var(--zia-squircle) !important;
 
   .zen-media-card::before,
   .zen-media-card::after {
     border-radius: inherit !important;
-    corner-shape: round !important;
+    corner-shape: var(--zia-squircle) !important;
   }
 
   .zen-media-card {
@@ -4173,10 +4174,12 @@ zen-workspace arrowscrollbox::part(scrollbox) {
     &:hover::before {
       opacity: 1;
     }
-    border-radius: var(--zia-media-radius) !important;
-    corner-shape: round !important;
+    border-radius: calc(var(--zia-media-radius) * var(--zia-squircle-grow)) !important;
+    corner-shape: var(--zia-squircle) !important;
     outline: none !important;
-    box-shadow: none !important;
+    /* its edge as the essentials': the glass edge with Zia's glass on, a
+       fine hairline with it off (27b) */
+    box-shadow: var(--zia-media-edge, var(--zia-glass-edge)) !important;
     padding: 9px 10px !important;
 
     box-sizing: border-box !important;
@@ -4239,10 +4242,10 @@ zen-workspace arrowscrollbox::part(scrollbox) {
       min-width: var(--zia-media-art-size) !important;
       min-height: var(--zia-media-art-size) !important;
       padding: 0 !important;
-      border-radius: 7px !important;
-      /* (the picture itself too: on Windows it came through square, the
-         rounding only on what's behind it) */
-      clip-path: inset(0 round 7px);
+      /* a squircle tile, as an essential's (the ring round it the same
+         shape, zia.uc.js) */
+      border-radius: calc(7px * var(--zia-squircle-grow)) !important;
+      corner-shape: var(--zia-squircle) !important;
       transition: opacity 0.2s ease, filter 0.2s ease;
     }
 
@@ -4294,6 +4297,14 @@ zen-workspace arrowscrollbox::part(scrollbox) {
 
     &::after {
       display: none !important;
+    }
+  }
+
+  /* (on Windows the picture itself came through square, the rounding only
+     on what's behind it: clipped there, as near the squircle as a clip goes) */
+  @media (-moz-platform: windows) {
+    .zen-media-focus-button :is(.toolbarbutton-icon, image) {
+      clip-path: inset(0 round calc(7px * var(--zia-squircle-grow) * 0.8));
     }
   }
 
@@ -4562,7 +4573,8 @@ zen-workspace arrowscrollbox::part(scrollbox) {
     margin-inline: 0 !important;
     padding: 0 !important;
     justify-self: center;
-    border-radius: 8px !important;
+    border-radius: calc(8px * var(--zia-squircle-grow)) !important;
+    corner-shape: var(--zia-squircle) !important;
     color: rgba(255, 255, 255, 0.92) !important;
     fill: currentColor !important;
     scale: 1 !important;
@@ -4571,7 +4583,8 @@ zen-workspace arrowscrollbox::part(scrollbox) {
       width: 28px !important;
       height: 28px !important;
       padding: 6px !important;
-      border-radius: 8px !important;
+      border-radius: calc(8px * var(--zia-squircle-grow)) !important;
+      corner-shape: var(--zia-squircle) !important;
       background-color: transparent !important;
     }
 
@@ -4582,6 +4595,37 @@ zen-workspace arrowscrollbox::part(scrollbox) {
     &:active {
       scale: 1 !important;
     }
+  }
+
+  /* the buttons in Zia's icons (Tabler, as the rest of Zia) */
+  .zen-media-playpause-button {
+    list-style-image: url("chrome://sine/content/zia/icons/ui/media-play.svg") !important;
+  }
+
+  .zen-media-card.playing .zen-media-playpause-button {
+    list-style-image: url("chrome://sine/content/zia/icons/ui/media-pause.svg") !important;
+  }
+
+  .zen-media-previoustrack-button {
+    list-style-image: url("chrome://sine/content/zia/icons/ui/media-prev.svg") !important;
+  }
+
+  .zen-media-nexttrack-button {
+    list-style-image: url("chrome://sine/content/zia/icons/ui/media-next.svg") !important;
+  }
+
+  .zen-media-pip-button {
+    list-style-image: url("chrome://sine/content/zia/icons/ui/media-pip.svg") !important;
+  }
+
+  .zen-media-close-button {
+    list-style-image: url("chrome://sine/content/zia/icons/ui/x.svg") !important;
+  }
+
+  :is(.zen-media-playpause-button, .zen-media-previoustrack-button, .zen-media-nexttrack-button, .zen-media-pip-button, .zen-media-close-button) > .toolbarbutton-icon {
+    -moz-context-properties: fill, fill-opacity, stroke, stroke-opacity;
+    fill: currentColor !important;
+    fill-opacity: 1 !important;
   }
 
   .zen-media-playpause-button > .toolbarbutton-icon {
@@ -8756,6 +8800,35 @@ zen-folder .tab-reset-button {
   :root:not(#zia-none) .zia-glance-ghost {
     background: rgba(255, 255, 255, 0.2);
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  /* the music player: the essentials' fine shine round it, following its
+     squircle (drawn on its inner box, against the card: Zen keeps the
+     card's own ::after as the bridge that holds a stack of cards hovered) */
+  :root:not(#zia-none) {
+    --zia-media-edge: 0 0 transparent;
+  }
+
+  @media -moz-pref("zia.features.media-player") {
+    :root:not(#zia-none) #zen-media-controls-toolbar .zen-media-card > .zen-media-main-vbox::after {
+      --zia-media-hole: calc(var(--zia-media-radius) * var(--zia-squircle-grow) - var(--zia-shine-width));
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: calc(var(--zia-media-radius) * var(--zia-squircle-grow));
+      corner-shape: var(--zia-squircle) !important;
+      pointer-events: none;
+      background: var(--zia-shine-layers);
+      mask:
+        linear-gradient(#000 0 0),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M100.00 100.00 L0.00 100.00 L0.04 81.72 L0.16 73.71 L0.36 67.49 L0.65 62.23 L1.01 57.59 L1.46 53.40 L1.99 49.56 L2.60 46.01 L3.29 42.70 L4.07 39.60 L4.93 36.68 L5.88 33.93 L6.91 31.33 L8.03 28.87 L9.23 26.54 L10.53 24.34 L11.91 22.25 L13.39 20.27 L14.96 18.40 L16.63 16.63 L18.40 14.96 L20.27 13.39 L22.25 11.91 L24.34 10.53 L26.54 9.23 L28.87 8.03 L31.33 6.91 L33.93 5.88 L36.68 4.93 L39.60 4.07 L42.70 3.29 L46.01 2.60 L49.56 1.99 L53.40 1.46 L57.59 1.01 L62.23 0.65 L67.49 0.36 L73.71 0.16 L81.72 0.04 L100.00 0.00 Z'/%3E%3C/svg%3E") var(--zia-shine-width) var(--zia-shine-width) / var(--zia-media-hole) var(--zia-media-hole) no-repeat,
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0.00 100.00 L100.00 100.00 L99.96 81.72 L99.84 73.71 L99.64 67.49 L99.35 62.23 L98.99 57.59 L98.54 53.40 L98.01 49.56 L97.40 46.01 L96.71 42.70 L95.93 39.60 L95.07 36.68 L94.12 33.93 L93.09 31.33 L91.97 28.87 L90.77 26.54 L89.47 24.34 L88.09 22.25 L86.61 20.27 L85.04 18.40 L83.37 16.63 L81.60 14.96 L79.73 13.39 L77.75 11.91 L75.66 10.53 L73.46 9.23 L71.13 8.03 L68.67 6.91 L66.07 5.88 L63.32 4.93 L60.40 4.07 L57.30 3.29 L53.99 2.60 L50.44 1.99 L46.60 1.46 L42.41 1.01 L37.77 0.65 L32.51 0.36 L26.29 0.16 L18.28 0.04 L0.00 0.00 Z'/%3E%3C/svg%3E") calc(100% - var(--zia-shine-width)) var(--zia-shine-width) / var(--zia-media-hole) var(--zia-media-hole) no-repeat,
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M100.00 0.00 L0.00 0.00 L0.04 18.28 L0.16 26.29 L0.36 32.51 L0.65 37.77 L1.01 42.41 L1.46 46.60 L1.99 50.44 L2.60 53.99 L3.29 57.30 L4.07 60.40 L4.93 63.32 L5.88 66.07 L6.91 68.67 L8.03 71.13 L9.23 73.46 L10.53 75.66 L11.91 77.75 L13.39 79.73 L14.96 81.60 L16.63 83.37 L18.40 85.04 L20.27 86.61 L22.25 88.09 L24.34 89.47 L26.54 90.77 L28.87 91.97 L31.33 93.09 L33.93 94.12 L36.68 95.07 L39.60 95.93 L42.70 96.71 L46.01 97.40 L49.56 98.01 L53.40 98.54 L57.59 98.99 L62.23 99.35 L67.49 99.64 L73.71 99.84 L81.72 99.96 L100.00 100.00 Z'/%3E%3C/svg%3E") var(--zia-shine-width) calc(100% - var(--zia-shine-width)) / var(--zia-media-hole) var(--zia-media-hole) no-repeat,
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0.00 0.00 L100.00 0.00 L99.96 18.28 L99.84 26.29 L99.64 32.51 L99.35 37.77 L98.99 42.41 L98.54 46.60 L98.01 50.44 L97.40 53.99 L96.71 57.30 L95.93 60.40 L95.07 63.32 L94.12 66.07 L93.09 68.67 L91.97 71.13 L90.77 73.46 L89.47 75.66 L88.09 77.75 L86.61 79.73 L85.04 81.60 L83.37 83.37 L81.60 85.04 L79.73 86.61 L77.75 88.09 L75.66 89.47 L73.46 90.77 L71.13 91.97 L68.67 93.09 L66.07 94.12 L63.32 95.07 L60.40 95.93 L57.30 96.71 L53.99 97.40 L50.44 98.01 L46.60 98.54 L42.41 98.99 L37.77 99.35 L32.51 99.64 L26.29 99.84 L18.28 99.96 L0.00 100.00 Z'/%3E%3C/svg%3E") calc(100% - var(--zia-shine-width)) calc(100% - var(--zia-shine-width)) / var(--zia-media-hole) var(--zia-media-hole) no-repeat,
+        linear-gradient(#000 0 0) calc(var(--zia-shine-width) + var(--zia-media-hole) - 1px) var(--zia-shine-width) / calc(100% - 2 * var(--zia-shine-width) - 2 * var(--zia-media-hole) + 2px) calc(100% - 2 * var(--zia-shine-width)) no-repeat,
+        linear-gradient(#000 0 0) var(--zia-shine-width) calc(var(--zia-shine-width) + var(--zia-media-hole) - 1px) / calc(100% - 2 * var(--zia-shine-width)) calc(100% - 2 * var(--zia-shine-width) - 2 * var(--zia-media-hole) + 2px) no-repeat;
+      mask-composite: subtract, add, add, add, add, add, add;
+    }
   }
 
   /* the split cards */
