@@ -1729,7 +1729,7 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   width: 15px;
   height: 15px;
   margin: 0;
-  border-radius: 4.25px;
+  border-radius: calc(4.25px * var(--zia-squircle-grow));
   background-color: rgba(28, 28, 30, 0.45);
   font-size: 8.75px;
 }
@@ -3492,7 +3492,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 }
 
 .zia-folder-card-act[zia-act="mute"] {
-  border-radius: 4px;
+  border-radius: calc(4px * var(--zia-squircle-grow));
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.12);
