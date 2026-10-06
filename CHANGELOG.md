@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.9] — 2026-10-06
+
+### Fixed
+
+- Extension icons in the toolbar really are reload's shade now: Zen draws
+  toolbar icons in each button's own text colour, a little softened, and
+  the extensions' text colour had stayed plain white while the other
+  buttons took the site's ink.
+
 ## [2.96.8] — 2026-10-06
 
 ### Fixed
