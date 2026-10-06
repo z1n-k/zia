@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.6] — 2026-10-06
+
+### Changed
+
+- The sidebar's bottom buttons (the Library, the spaces' dots, the tab
+  list's arrow) have no tile behind them, hovered, pressed or open: only
+  their icons brighten.
+
 ## [2.96.5] — 2026-10-06
 
 ### Fixed

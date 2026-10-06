@@ -166,6 +166,13 @@
   opacity: 0.7;
 }
 
+/* No tile behind the sidebar's bottom buttons (the Library, the spaces'
+   dots, the tab list's arrow), hovered, pressed or open: only their icons
+   brighten, as above */
+:root:not(#zia-none) #zen-sidebar-foot-buttons :is(toolbarbutton, toolbarbutton > .toolbarbutton-icon, toolbarbutton > .toolbarbutton-badge-stack) {
+  background-color: transparent !important;
+}
+
 #alltabs-button .toolbarbutton-icon {
   opacity: 0.4 !important;
 }
