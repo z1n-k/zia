@@ -2,13 +2,14 @@
 #zen-media-controls-toolbar {
   --zia-media-ease: var(--zen-media-stack-easing, cubic-bezier(0.25, 1, 0.5, 1));
 
-  border-radius: var(--zia-media-radius) !important;
-  corner-shape: round !important;
+  /* Zia's squircle, as its other cards (the card, its glow, the stack) */
+  border-radius: calc(var(--zia-media-radius) * var(--zia-squircle-grow)) !important;
+  corner-shape: var(--zia-squircle) !important;
 
   .zen-media-card::before,
   .zen-media-card::after {
     border-radius: inherit !important;
-    corner-shape: round !important;
+    corner-shape: var(--zia-squircle) !important;
   }
 
   .zen-media-card {
@@ -42,10 +43,12 @@
     &:hover::before {
       opacity: 1;
     }
-    border-radius: var(--zia-media-radius) !important;
-    corner-shape: round !important;
+    border-radius: calc(var(--zia-media-radius) * var(--zia-squircle-grow)) !important;
+    corner-shape: var(--zia-squircle) !important;
     outline: none !important;
-    box-shadow: none !important;
+    /* its edge as the essentials': the glass edge with Zia's glass on, a
+       fine hairline with it off (27b) */
+    box-shadow: var(--zia-media-edge, var(--zia-glass-edge)) !important;
     padding: 9px 10px !important;
 
     box-sizing: border-box !important;
@@ -108,10 +111,10 @@
       min-width: var(--zia-media-art-size) !important;
       min-height: var(--zia-media-art-size) !important;
       padding: 0 !important;
-      border-radius: 7px !important;
-      /* (the picture itself too: on Windows it came through square, the
-         rounding only on what's behind it) */
-      clip-path: inset(0 round 7px);
+      /* a squircle tile, as an essential's (the ring round it the same
+         shape, zia.uc.js) */
+      border-radius: calc(7px * var(--zia-squircle-grow)) !important;
+      corner-shape: var(--zia-squircle) !important;
       transition: opacity 0.2s ease, filter 0.2s ease;
     }
 
@@ -163,6 +166,14 @@
 
     &::after {
       display: none !important;
+    }
+  }
+
+  /* (on Windows the picture itself came through square, the rounding only
+     on what's behind it: clipped there, as near the squircle as a clip goes) */
+  @media (-moz-platform: windows) {
+    .zen-media-focus-button :is(.toolbarbutton-icon, image) {
+      clip-path: inset(0 round calc(7px * var(--zia-squircle-grow) * 0.8));
     }
   }
 
@@ -431,7 +442,8 @@
     margin-inline: 0 !important;
     padding: 0 !important;
     justify-self: center;
-    border-radius: 8px !important;
+    border-radius: calc(8px * var(--zia-squircle-grow)) !important;
+    corner-shape: var(--zia-squircle) !important;
     color: rgba(255, 255, 255, 0.92) !important;
     fill: currentColor !important;
     scale: 1 !important;
@@ -440,7 +452,8 @@
       width: 28px !important;
       height: 28px !important;
       padding: 6px !important;
-      border-radius: 8px !important;
+      border-radius: calc(8px * var(--zia-squircle-grow)) !important;
+      corner-shape: var(--zia-squircle) !important;
       background-color: transparent !important;
     }
 
