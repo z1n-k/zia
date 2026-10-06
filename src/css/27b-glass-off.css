@@ -20,30 +20,14 @@
   }
 
   /* the fine shine round each essential (not the chosen one), the
-     Library's sliding tile and its Filter and Done: brightest along the
-     middle of each side, fading into the corners */
+     Library's sliding tile and its Filter and Done: brighter along the top
+     and bottom, thinning out into the corners */
   :root:not(#zia-none) :is(
     .tabbrowser-tab[zen-essential]:not([visuallyselected], [zia-split-tile]) > .tab-stack > .tab-background,
     zen-library .zia-library-rail,
     zen-library :is(.zen-library-filter-button, .zen-library-filter-done):not(.zia-library-clear)
-  )::after {
-    content: "" !important;
-    display: block !important;
-    position: absolute !important;
-    inset: 0 !important;
-    padding: var(--zia-shine-width) !important;
-    border-radius: inherit !important;
-    corner-shape: var(--zia-squircle) !important;
-    pointer-events: none !important;
-    background: var(--zia-shine-layers) !important;
-    filter: none !important;
-    mask:
-      linear-gradient(#000 0 0) content-box exclude,
-      linear-gradient(#000 0 0) !important;
-  }
-
-  .tabbrowser-tab[zen-essential]:not([visuallyselected]) > .tab-stack > .tab-background {
-    position: relative;
+  ) {
+    box-shadow: var(--zia-shine-edge) !important;
   }
 
   /* the chosen essential's tile, with its icon's colour round it */
