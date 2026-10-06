@@ -11,6 +11,8 @@ Every release of Zia, newest first. The format follows
 - The numbers on essentials (and on tabs with the sidebar collapsed) sit in
   the same squircle key as on tabs: their corner had been left short, so
   they came out nearly square.
+- The mute button on a folder's hover card is a squircle too, as the
+  close and unload buttons beside it are.
 
 ## [2.96.6] — 2026-10-06
 
