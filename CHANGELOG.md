@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.28] — 2026-10-07
+
+### Fixed
+
+- Only the space's name (and its icon) at the top of the sidebar folds
+  the space when clicked: a click well past it, in the empty row beside
+  it, did too. That part of the row drags the window again.
+
 ## [2.96.27] — 2026-10-07
 
 ### Fixed

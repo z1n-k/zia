@@ -1341,6 +1341,16 @@
 
     min-width: max-content !important;
 
+    /* Only the name's pill (and the space's icon under it) is clickable:
+       Zen folds the space on a click anywhere in this box, and it reached
+       well past the pill into the empty row beside it. The rest of the row
+       is left to drag the window, as the top row does. */
+    pointer-events: none !important;
+
+    & > :is(#zia-space-label, .zen-current-workspace-indicator-stack, .zen-current-workspace-indicator-name) {
+      pointer-events: auto !important;
+    }
+
     & > #zia-space-label:hover,
     &:has(> .zen-current-workspace-indicator-stack:hover) > #zia-space-label {
       background-color: var(--zia-space-pill-bg) !important;
