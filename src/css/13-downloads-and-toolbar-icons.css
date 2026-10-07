@@ -207,9 +207,7 @@
     gap: 2px !important;
     height: 22px !important;
     min-height: 0 !important;
-    /* (the same gap after it as the icon has before it, Zia's gap
-       between icon and text) */
-    margin: 0 var(--zia-pop-text-gap, 10px) 0 0 !important;
+    margin: 0 !important;
     padding: 0 3px 0 8px !important;
     border: none !important;
     outline: none !important;
@@ -220,11 +218,18 @@
     color: inherit !important;
   }
 
-  /* (Firefox's own room before the text, as well, made the gap after the
-     pill three times the one before it) */
-  #urlbar[searchmode] :is(.urlbar-input-box, .urlbar-input) {
+  /* The text after it starts Zia's gap between icon and text away, the
+     same gap the pill has before it, after the search icon: the room is
+     the text's own (Firefox's was three times that; a margin on the pill
+     didn't make any) */
+  #urlbar[searchmode] .urlbar-input-box {
     margin-inline-start: 0 !important;
     padding-inline-start: 0 !important;
+  }
+
+  #urlbar[searchmode] .urlbar-input {
+    margin-inline-start: 0 !important;
+    padding-inline-start: var(--zia-pop-text-gap, 10px) !important;
   }
 
   #urlbar #urlbar-search-mode-indicator-title {

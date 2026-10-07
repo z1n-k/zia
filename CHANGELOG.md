@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.24] — 2026-10-07
+
+### Fixed
+
+- The keyword search pill's gap after it, before the text, is there: in
+  2.96.23 the text touched the pill. It's the same gap as before it.
+
 ## [2.96.23] — 2026-10-07
 
 ### Fixed
