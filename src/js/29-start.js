@@ -428,6 +428,7 @@
     safely("keepSidebarUnscrolledSideways", keepSidebarUnscrolledSideways);
     safely("watchColorDrift", watchColorDrift);
     safely("watchPopUpColor", watchPopUpColor);
+    safely("addToolbarColorMenuItems", addToolbarColorMenuItems);
     safely("quietZenHaptics", quietZenHaptics);
     safely("watchHapticsMute", watchHapticsMute);
     safely("watchUnloadable", watchUnloadable);

@@ -1184,6 +1184,129 @@
     display: none !important;
   }
 }
+/* Picking a site's toolbar colour by hand (zia.uc.js): the page under a
+   crosshair, a loupe by the cursor with the colour under it, and a small
+   card at the top with what to do, a hex box, Reset and Cancel (each
+   under the id, so their squircles beat the round corners, 00) */
+#zia-color-pick {
+  position: absolute;
+  inset: 0;
+  z-index: 2147483646;
+  cursor: crosshair;
+  -moz-window-dragging: no-drag;
+}
+
+#zia-color-pick .zia-color-pick-loupe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 9px 5px 5px;
+  background-color: var(--zia-tab-card-bg);
+  border-radius: calc(9px * var(--zia-squircle-grow));
+  corner-shape: var(--zia-squircle) !important;
+  box-shadow: var(--zia-glass-edge-lit), 0 4px 14px rgba(0, 0, 0, 0.3);
+  color: rgb(255, 255, 255);
+  font: 500 11.5px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  pointer-events: none;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+#zia-color-pick .zia-color-pick-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: calc(5px * var(--zia-squircle-grow));
+  corner-shape: var(--zia-squircle) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
+#zia-color-pick .zia-color-pick-bar {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 24px);
+  box-sizing: border-box;
+  padding: 6px 6px 6px 14px;
+  background-color: var(--zia-tab-card-bg);
+  border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow));
+  corner-shape: var(--zia-squircle) !important;
+  box-shadow: var(--zia-glass-edge-lit), 0 6px 20px rgba(0, 0, 0, 0.32);
+  color: rgb(255, 255, 255);
+  font-size: var(--zia-text-size);
+  cursor: default;
+  animation: zia-color-pick-in 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+@keyframes zia-color-pick-in {
+  from {
+    opacity: 0;
+    translate: -50% -6px;
+  }
+}
+
+#zia-color-pick .zia-color-pick-hint {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+#zia-color-pick .zia-color-pick-input {
+  flex: none;
+  width: 76px;
+  height: 26px;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0 8px;
+  border: none;
+  border-radius: calc(7px * var(--zia-squircle-grow));
+  corner-shape: var(--zia-squircle) !important;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: rgb(255, 255, 255);
+  font: 500 11.5px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  outline: none;
+
+  &:focus {
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+
+  &[invalid] {
+    color: rgb(255, 140, 130);
+  }
+}
+
+#zia-color-pick :is(.zia-color-pick-reset, .zia-color-pick-cancel) {
+  flex: none;
+  height: 26px;
+  margin: 0;
+  padding: 0 10px;
+  border: none;
+  border-radius: calc(7px * var(--zia-squircle-grow));
+  corner-shape: var(--zia-squircle) !important;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: rgb(255, 255, 255);
+  font: inherit;
+  cursor: default;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.14);
+  }
+
+  &[hidden] {
+    display: none;
+  }
+}
 #zia-workspace-slot {
   display: flex;
 

@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.17] — 2026-10-07
+
+### Added
+
+- A toolbar colour of your own for any site: right-click the address bar or
+  the toolbar, Toolbar Color for This Site…, and click any bit of the page
+  (a dark sidebar, say). The toolbar shows each colour under the cursor as
+  you move, and the click keeps it, for that site from then on; or type a
+  hex colour into the box instead. Its text still turns light or dark to
+  suit. Reset Toolbar Color, in the same menu, gives the site back its own.
+
 ## [2.96.16] — 2026-10-06
 
 ### Fixed
