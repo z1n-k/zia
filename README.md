@@ -379,8 +379,8 @@ In **Settings → Sine Mods → Zia → Rename downloads with AI**, turn it on, 
 | Coloured folders show their colour only when hovered or open | off |
 | Icon picker for folders and spaces (5,166 icons) | on |
 | Name new folders and pick their icons with a local model (a ~25MB download, once) ([see above](#folder-names-and-icons)) | off |
-| Hide the space's name at the top of the sidebar, keeping its icon | off |
 | Show the space's name above the tabs, as Zen does | off |
+| Hide the space's name at the top of the sidebar, keeping its icon (only with the name at the top) | off |
 | Bookmarks, History and Synced Tabs panels in Zia's look | on |
 | Those panels beside the page, full height, as a second sidebar | on |
 | Zen's own Library look (off: Zia's) | off |

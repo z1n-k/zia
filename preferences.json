@@ -246,15 +246,23 @@
   },
   {
     "type": "checkbox",
-    "label": "Hide the space's name at the top of the sidebar, keeping its icon",
-    "property": "zia.sidebar.hide-space-name",
+    "label": "Show the space's name above the tabs, as Zen does",
+    "property": "zia.sidebar.space-name-in-list",
     "defaultValue": false
   },
   {
     "type": "checkbox",
-    "label": "Show the space's name above the tabs, as Zen does",
-    "property": "zia.sidebar.space-name-in-list",
-    "defaultValue": false
+    "label": "Hide the space's name at the top of the sidebar, keeping its icon",
+    "property": "zia.sidebar.hide-space-name",
+    "defaultValue": false,
+    "conditions": [
+      {
+        "if": {
+          "property": "zia.sidebar.space-name-in-list",
+          "value": false
+        }
+      }
+    ]
   },
   {
     "type": "checkbox",
