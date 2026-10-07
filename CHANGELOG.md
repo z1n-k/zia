@@ -4,6 +4,21 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.26] — 2026-10-07
+
+### Fixed
+
+- The keyword search pill has Zia's gap round it at last: the same gap
+  after the search icon and after the pill, before the text. Zia lines the
+  text up with the rows below, and in a keyword search the pill pushing the
+  text along made it shrink that gap to nothing, for the pill and, until
+  the window changed size, for the bar's text afterwards too.
+
+### Changed
+
+- The traffic lights are left as they were while the Library slides
+  (2.96.25 hid them).
+
 ## [2.96.25] — 2026-10-07
 
 ### Changed

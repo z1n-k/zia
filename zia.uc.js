@@ -6102,6 +6102,12 @@
     if (!urlbar?.hasAttribute("breakout-extend")) {
       return;
     }
+    // Not in a keyword search: its pill pushes the text along, and lining
+    // the text up with the rows then shrank the gap after the icon to
+    // nothing, there and everywhere after it (2.96.22)
+    if (urlbar.hasAttribute("searchmode")) {
+      return;
+    }
     const row = results.querySelector(".urlbarView-row");
     const icon = row?.querySelector(".urlbarView-favicon, .urlbarView-type-icon");
     const title = row?.querySelector(".urlbarView-title");
