@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.25] — 2026-10-07
+
+### Changed
+
+- macOS: the traffic lights step out of the way while the Library slides
+  in or out, and are back once it's settled. They stayed solid over the
+  fading sidebar, with the Library's buttons sliding across them; macOS
+  draws them itself, so they can't fade with the rest.
+
 ## [2.96.24] — 2026-10-07
 
 ### Fixed
