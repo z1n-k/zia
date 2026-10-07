@@ -4,6 +4,31 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.19] — 2026-10-07
+
+### Added
+
+- The space icons at the foot of the sidebar and the extension buttons
+  show their names in Zia's cards, as tabs do: the first takes a moment,
+  then sweeping across the rest shows each at once, as in Arc (#339).
+  Thanks to [malachyfernandez](https://github.com/malachyfernandez)
+  ([#342](https://github.com/z1n-k/zia/pull/342)).
+
+### Fixed
+
+- A tab's buttons say what they do: on a tab holding a glance, the close
+  is "Close glance"; on a pinned tab the minus is "Unload tab", as
+  nothing switches (#338). A glance's tab no longer shows the minus,
+  which did what the close does. Thanks to malachyfernandez.
+
+### Changed
+
+- The README is up to date: every setting, in the same eight sections and
+  words as Zia's settings, and the features it was missing (picking a
+  site's toolbar colour, Glass, Dia's squircles, the archive box and Show
+  Icon on Folder, the names of space and extension buttons, where links
+  go, the sidebar's text size, renaming downloads with AI).
+
 ## [2.96.18] — 2026-10-07
 
 ### Fixed

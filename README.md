@@ -52,16 +52,17 @@ Other mods may conflict, and Zia won't be adjusted around them. If something loo
 
 | | |
 | --- | --- |
-| 🎨 [**Site-coloured toolbar**](#the-page-and-the-toolbar) | One rounded card with the page, always readable, animated navigation |
+| 🎨 [**Site-coloured toolbar**](#the-page-and-the-toolbar) | One rounded card with the page, always readable, or a colour you pick for a site |
 | 🔎 [**Address bar**](#the-address-bar) | A pared-back pop-up, at the top or the bottom |
 | 🗂️ [**Sidebar**](#the-sidebar) | Essential tiles, coloured folders, smooth dragging, hover cards, 5,166 icons or your own SVGs |
-| 🧊 [**Glass**](#glass) | Compact sidebar, hover cards and address pop-up frosted over the page |
+| 🧊 [**Glass**](#glass) | Frosted compact sidebar, cards and pop-up, and an optional macOS Tahoe glass edge |
 | ⬛ [**Split view**](#split-view) | Drop cards to make a split, a toolbar for each pane |
-| 🎵 [**Music**](#music) | A player card with the artwork's glow, sound bars on playing tabs |
+| 🎵 [**Music**](#music) | A squircle player card with the artwork's glow, sound bars on playing tabs |
 | 🖼️ [**Picture-in-picture**](#picture-in-picture) | New controls, and throw it off the screen's edge to tuck it away |
 | 📺 [**Multiview**](#multiview) | One tab that grids up to four videos or live streams |
 | 📄 [**PDF viewer**](#pdf-view) | A cleaner toolbar and page sidebar |
 | ✨ [**Smart folders**](#folder-names-and-icons) | Folders named and given icons by a model on your machine |
+| 📥 [**Download names**](#download-names) | Finished downloads renamed by AI, with an undo |
 
 Nearly all of it can be [switched off](#options).
 
@@ -81,8 +82,10 @@ The page and toolbar share one rounded card, and the toolbar takes the colour of
 
 - The colour follows the page as you scroll. Text and buttons stay readable: dark on light sites, white on dark ones, and full white with nothing faint on strong colours like a bright red.
 - Colours are remembered per site, so pages open already in their colour. Every few seconds Zia checks again, so a header that recolours itself after loading, or a first reading that was off, is corrected.
+- Want a different colour for a site, like its dark sidebar rather than its light page? Right-click the address bar or the toolbar and choose **Toolbar Color for This Site…**, then click any part of the page: the toolbar shows each colour under the cursor as you move, and the click keeps it for that site. Or type a hex colour into the box. **Reset Toolbar Color** in the same menu goes back to the automatic colour.
 - While a page loads, a glow runs along the address bar. The address reads as `domain / title`; hover it for the full URL.
 - Right-click an extension's button and choose **Change icon** to give it an SVG of your own or one of Zia's icons, tinted to match the toolbar (or kept in its own colours). Zia warns you if the extension changes its own icon, since a custom one hides that.
+- Optionally, where a link goes shows at the foot of the page as you hover it, in a small pill.
 - Back and forward squeeze on hover and slide away when clicked as a fresh arrow slides in. Hover reload and its arrowhead draws back round the circle; a load spins it into a stop cross that turns back into the arrow when the page is done. With nowhere to go, back and forward fade to dim rather than snapping.
 
 </details>
@@ -104,12 +107,13 @@ Short rows, one size of text, and none of Firefox's chips, row menus or extra en
 - A paperclip beside site settings copies the page's link and pops into a tick.
 - The whole bar can move to the **bottom**, under the page, opening upwards, in a single page or a split.
 - Optionally, its text sits centred instead of starting from the left.
+- Prefer Zen's own address bar? Turn off **Zia's address bar** and the bar and its pop-up are drawn as Zen draws them, with the rest of Zia kept.
 
 </details>
 
 ### The sidebar
 
-Essentials sit as tiles, four to a row (six when the sidebar is wide). A space's colour carries through the whole sidebar, and folders get colours, covers and a gentle spring.
+Essentials sit as tiles, four to a row (six when the sidebar is wide). A space's colour carries through the whole sidebar, and folders get colours, covers and a gentle spring. Essentials, cards, pop-ups and the small buttons have Dia's squircle corners, fitted to Dia's pixel by pixel.
 
 <p>
   <img src="https://github.com/user-attachments/assets/0c439e9d-651e-414c-8b85-d5bc8308aef4" alt="Essentials and folders in the sidebar" width="49%">
@@ -124,13 +128,15 @@ Essentials sit as tiles, four to a row (six when the sidebar is wide). A space's
 - The dragged tab follows the pointer while the rows it passes slide aside; a folder opens up by a row to make room.
 - Over the essentials a tab turns into the tile it's about to become; drag an essential back off and it's a tab again.
 - Hovering a tab shows a card with its title, address and a few actions (pin as an essential, split, copy the link). Hovering a collapsed folder lists what's inside.
+- The space icons at the foot of the sidebar and the extension buttons get the same cards for their names: the first takes a moment, then sweeping across the rest shows each at once, as in Arc.
 - A collapsed folder with an open tab shows just that tab, glow and all. Collapse a whole space by clicking its name and a folder holding the open tab keeps its name above it.
 - Tabs you're not on are a little dimmer, as in Dia, and go white once selected.
 - Dragging gives a haptic tap on a trackpad as rows move, as you cross the separator, and as you go into or out of a folder.
 - **Cmd/Ctrl+Z** reopens what you just closed, for ten seconds: whole folders, splits and groups of tabs come back as they were, a deleted folder with its name.
 - Asleep tabs can be dimmed (tabs, essentials, and folders whose tabs are all asleep).
 - Zen's pop-up notices get a close button, so they don't have to be waited out.
-- Downloads sit next to the space name with a progress ring.
+- A download flies to the Library button as a small row, as in Dia, and the button shows its progress ring.
+- The sidebar's text can be a size or two smaller (or larger), for a narrow sidebar.
 
 </details>
 
@@ -146,8 +152,9 @@ Hold **Cmd** (**Ctrl** on Windows and Linux) and every tab and essential shows i
 <details>
 <summary>Folders</summary>
 
-- A glass folder in the folder's colour (or the space's) unless you give it a cover. It holds a sheet of paper for each tab or folder inside, up to three, so a closed folder shows how full it is. It opens and closes with the folder, the sheets fanning out; a tab dropped in drops a sheet in with it, and one dragged out lifts its sheet away.
-- Hover boxes, icon or emoji covers, and an × to delete them.
+- A glass folder in the folder's colour (or the space's). It holds a sheet of paper for each tab or folder inside, up to three, so a closed folder shows how full it is; past three it becomes a glass archive box, its lid opening as each tab drops in. It opens and closes with the folder, the sheets fanning out; a tab dropped in drops a sheet in with it, and one dragged out lifts its sheet away.
+- Give a folder an icon or emoji and it shows the icon by itself in the folder's place. To wear it on the front of the glass folder instead, right-click the folder and choose **Show Icon on Folder**.
+- Hover boxes, and an × to delete a folder.
 - They open and close as in Dia: the tabs stay where they are while the folder opens over them, and fade out in place as it closes, with a gentle spring (or without).
 - A colour of their own from the right-click menu that tints the whole folder, or, if you prefer, only when it's hovered or open. Optionally, the card of tabs shown on hovering a closed folder takes its colour too.
 - An empty folder shows a dashed *Drag tabs here* slot until its first tab arrives.
@@ -194,7 +201,9 @@ Keep a split of two sites as one essential: drag a two-site split onto the essen
 
 ### Glass
 
-The compact sidebar, the hover cards and the address pop-up are frosted glass: slightly see-through, with the page blurred behind them. Each can be switched back to solid.
+The compact sidebar, the hover cards and the address pop-up are frosted: slightly see-through, with the page blurred behind them. Each can be switched back to solid.
+
+Turn on **Glass** (under Look, off by default) for macOS Tahoe's glass edge on the essentials, cards and the Library's buttons, lighting up where you press. Off, they keep Zia's fine shine.
 
 ![The compact sidebar as frosted glass over a photo](<https://raw.githubusercontent.com/z1n-k/zia/readme-images/glass-compact-sidebar.webp>)
 
@@ -235,7 +244,7 @@ Zen's Library keeps Zen's layout, drawn the way Zia draws the sidebar. Its secti
 
 ### Music
 
-Playing music brings up a card with the track's artwork and a soft glow in its colours, for live streams as well as ordinary videos. Playing tabs and essentials get sound bars instead of Zen's speaker: dots when muted, and a click toggles the sound.
+Playing music brings up a card with the track's artwork and a soft glow in its colours, for live streams as well as ordinary videos. The card, the artwork and its progress ring are Zia's squircles, and its buttons use Zia's icons. Playing tabs and essentials get sound bars instead of Zen's speaker: dots when muted, and a click toggles the sound.
 
 ![The music player card](https://github.com/user-attachments/assets/5b4e2542-61a9-4fd6-b2ee-7fb58970ef5b)
 
@@ -320,82 +329,99 @@ The first folder takes a little while as the model downloads and the icon names 
 
 </details>
 
+### Download names
+
+As a download finishes, an AI service can give it a clearer name: `IMG_4821.jpg` becomes something you'd recognise. The new name shows in a small card above the Library button with an **Undo**. The AI is told the page's address, and for a picture is sent a small copy so it can name it by what it shows. Downloads from private windows are never sent anywhere.
+
+<details>
+<summary>Turn it on (off by default)</summary>
+
+In **Settings → Sine Mods → Zia → Rename downloads with AI**, turn it on, restart Zen, pick a service and add its key: Mistral, OpenAI, Anthropic, Google Gemini, OpenRouter or any OpenAI-compatible endpoint, or Ollama running on your own machine (no key needed). Built from [Tidy Downloads](https://github.com/Vertex-Mods/Zen-Tidy-Downloads) by Bxthesda and Zylaah, with their permission; remove Tidy Downloads if you have it as its own mod.
+
+</details>
+
 ## Options
 
-**Settings → Sine Mods → Zia.** Almost every part of Zia can be switched on or off on its own. Styling changes apply straight away; the ones that change behaviour need a restart.
+**Settings → Sine Mods → Zia**, in eight sections. Almost every part of Zia can be switched on or off on its own, and a setting that only matters with another one shows only while that one's on. Styling changes apply straight away; the ones that change behaviour need a restart. Right-click menus add a few more per folder, extension and site: **Folder Color**, **Show Icon on Folder**, **Change icon** and **Toolbar Color for This Site…**.
 
 <details>
 <summary>All settings and their defaults</summary>
 
 | Setting | Default |
 | --- | --- |
-| **Features** | |
+| **Look** | |
+| Toolbar in the site's colour (off: the theme's) | on |
+| Loading bar in Zen's accent colour (off: Zia blue) | off |
+| Hide the glow around the selected tab | off |
+| Tint the selected tab's glow and sound bars with the site's colours | off |
+| Dim asleep tabs, essentials and folders | off |
+| Glass: essentials, cards and the Library's buttons edged as macOS Tahoe's glass, lighting up where pressed (off: Zia's fine shine) | off |
+| Zia's rounded page corners (off: Zen's) | on |
+| Page fills its space edge to edge, with no gap or shadow | off |
+| **Tabs and essentials** | |
+| Hover cards for tabs and folders | on |
+| Hover cards are see-through, with what's behind blurred | on |
+| A coloured folder's hover card takes its colour | off |
+| Sound bars on playing tabs (off: Zen's speaker) | on |
+| Sound bars move even when your system asks for less motion | off |
+| Hold Cmd/Ctrl to number your tabs, and go to one by its number | on |
+| Tab numbers always showing | off |
+| Colour of the number you type | Zia blue |
+| Cmd/Ctrl+Z reopens a closed tab | on |
+| A glance shows on its tab as a small picture of the page | on |
+| Zia's narrower essentials (off: Zen's widths) | on |
+| Two essentials to a row, for a narrower sidebar | off |
+| The last essential stretches across its row | off |
+| Split essentials: drag a two-site split onto the essentials (experimental) | on |
+| **Sidebar and folders** | |
+| Text size in the sidebar | Default |
+| Folders open and close with a spring | on |
+| Coloured folders show their colour only when hovered or open | off |
+| Icon picker for folders and spaces (5,166 icons) | on |
+| Name new folders and pick their icons with a local model (a ~25MB download, once) ([see above](#folder-names-and-icons)) | off |
+| Hide the space's name at the top of the sidebar, keeping its icon | off |
+| Show the space's name above the tabs, as Zen does | off |
+| Bookmarks, History and Synced Tabs panels in Zia's look | on |
+| Those panels beside the page, full height, as a second sidebar | on |
+| Zen's own Library look (off: Zia's) | off |
+| Compact mode: the sidebar is see-through, the page blurred behind | on |
+| Compact mode: the top toolbar hides while the sidebar is out | off |
+| **Address bar and new tabs** | |
+| Zia's address bar (off: Zen's own, as it looks without Zia) | on |
+| Zia's address bar pop-up (off: Zen's) | on |
+| The pop-up is see-through, the page blurred behind | on |
+| The pop-up takes the toolbar's colour as it opens | off |
+| Show only the page's title, in the domain's colour, until clicked | off |
+| Centre the address bar's text | off |
+| Address bar position | Top |
+| Zia's find in page bar | on |
+| Cmd/Ctrl+T and + New Tab open a real tab (off: Zen's floating address bar) | on |
+| New tabs open your search engine's page (off: Zen's new tab page) | on |
+| New tabs start in the address bar, ready to type | off |
+| **Page** | |
+| Dia's round arrow when swiping back or forward, holding it lists the pages | on |
+| Drop cards when dragging a tab onto the page to split it (off: Zen's) | on |
+| PDFs in Zia's viewer look (reopen a PDF to see it) | on |
+| Show where links go, at the foot of the page, as you hover them | off |
+| Hide the window buttons, for keyboard users (Windows and Linux) | off |
+| Windows: window buttons just dim on hover (off: Windows' own) | off |
+| **Media** | |
 | Music player card | on |
-| Music player card stays when you send its video to picture-in-picture | on |
-| Music player shows a YouTube channel's picture instead of the video's thumbnail | off |
-| Find in page bar | on |
-| Icon picker (5,166 Tabler icons, outline and solid) | on |
-| Undo a closed tab with Cmd/Ctrl+Z | on |
-| Hold Cmd/Ctrl to show each tab's number, and go to it by number | on |
-| Tab numbers show all the time | off |
-| Colour of the tab number you type: Zia blue or the space's colour | Zia blue |
+| The music player stays when its video goes picture-in-picture | on |
+| The music player shows a YouTube channel's picture, not the video's | off |
+| Zia's picture-in-picture controls (off: Firefox's) | on |
+| Push picture-in-picture against a screen edge to tuck it away | on |
+| Picture-in-picture tucks into | The nearest side |
+| "Add to Multiview" on videos and tabs: a tab that grids up videos and streams | on |
+| Multiview tab icon colour | Zia blue |
+| **Rename downloads with AI** | |
+| Rename finished downloads with AI, with an undo (restart after turning on) ([see above](#download-names)) | off |
+| AI service | Mistral AI |
+| The service's key and model (or Ollama's address), shown for the service you pick | |
+| **Welcome tour** | |
 | Show the welcome tour after updates that bring something new | on |
 | Show the welcome tour again (turns itself back off) | off |
 | Show what's new in this version again (turns itself back off) | off |
-| A glance shows on its tab as a small picture of the page, as in Dia | on |
-| Bookmarks, History and Synced Tabs panels in Zia's look | on |
-| Bookmarks, History and Synced Tabs panels beside the page, full height, as a second sidebar | on |
-| Zen's own Library look (off: Zia's) | off |
-| Tab and folder hover cards | on |
-| Hover cards are slightly see-through, with what's behind them blurred | on |
-| Name new folders and choose their icons with a local model ([see above](#folder-names-and-icons)) | off |
-| **Tabs** | |
-| Sound bars on playing tabs (off: Zen's speaker) | on |
-| Sound bars always move, even when your system asks for less motion | off |
-| Tint the selected tab's glow and the sound bars with the site's colours | off |
-| Hide the glow around the selected tab | off |
-| Essentials are Zia's narrower tiles (off: Zen's own widths) | on |
-| Two essentials to a row, so the sidebar can be made narrower | off |
-| The last essential stretches across the rest of its row | off |
-| Split essentials (experimental): drag a two-site split onto the essentials | on |
-| Asleep (unloaded) tabs, essentials and folders look dimmed | off |
-| Compact mode's sidebar is slightly see-through, with the page blurred behind it | on |
-| Compact mode hides the top toolbar while the sidebar is out (off: it stays, cut away under the sidebar) | off |
-| Hide the space's name at the top of the sidebar, keeping its icon (the sidebar no longer widens for a long name) | off |
-| Show the space's name above the tabs, where Zen puts it, rather than at the top of the sidebar | off |
-| **Page** | |
-| Toolbar takes the colour of the site (off: the theme's colour) | on |
-| Zia's rounded page corners (off: Zen's own) | on |
-| The page fills its space edge to edge, with no gap, rounded corners or shadow around it (Zen's `zen.theme.content-element-separation` = 0 does the same) | off |
-| Swiping back or forward shows Dia's round arrow, and holding it lists the pages (off: Firefox's arrow) | on |
-| Split view drop cards when dragging a tab onto the page (off: Zen's own) | on |
-| PDFs open in Zia's viewer look (off: Firefox's own) | on |
-| Hide the window buttons (minimise, maximise, close) on Windows and Linux | off |
-| Windows window buttons just dim on hover (off: Windows' own blocks, red behind close, as in Dia) | off |
-| **Address bar** | |
-| Zia's address bar pop-up (off: Zen's own) | on |
-| Address bar pop-up takes the toolbar's colour as it opens (needs the site-coloured toolbar) | off |
-| Address bar pop-up is slightly see-through, with the page blurred behind it | on |
-| Address bar shows only the page's title, in the domain's colour, until clicked | off |
-| Address bar text is centred | off |
-| Address bar position: top or bottom (not with Zen's single toolbar) | top |
-| **New tabs** | |
-| Cmd/Ctrl+T and **+ New Tab** open a real tab (off: Zen's floating address bar) | on |
-| New tabs open your default search engine's page (off: Zen's new tab page, or an extension's if you use one) | on |
-| Cmd/Ctrl+T leaves the address bar ready to type in, the search page behind it (off: the page's own search box) | off |
-| **Folders** | |
-| Folders open and close with a gentle spring | on |
-| Coloured folders only show their colour when hovered or open | off |
-| A coloured folder's card (its tabs, shown on hover) takes the folder's colour | off |
-| **Loading bar** | |
-| Use Zen's accent colour for the loading bar (off: Zia blue) | off |
-| **Picture-in-picture** | |
-| Zia's picture-in-picture controls (off: Firefox's own) | on |
-| Push picture-in-picture against the side of the screen to tuck it away | on |
-| Picture-in-picture tucks into (the nearest side, a side, the bottom or a bottom corner) | the nearest side |
-| **Multiview** | |
-| **Add to Multiview** on videos and tabs | on |
-| Multiview tab icon colour: Zia blue or the space's colour | Zia blue |
 
 </details>
 
