@@ -306,8 +306,21 @@
       return;
     }
 
+    // (while a colour's being picked by hand, the toolbar shows that)
+    if (colorPick) {
+      return;
+    }
     if (isErrorPage(browser)) {
       showErrorColor();
+      return;
+    }
+    // a site with a toolbar colour of its own (01b) keeps it, unread
+    const manual = manualSiteColor(browser);
+    if (manual) {
+      pendingColor = null;
+      colorRequestId++;
+      applyColor(manual);
+      colorCache.set(browser, manual);
       return;
     }
     if (isLoading(browser) && !duringLoad) {
@@ -391,7 +404,7 @@
   async function checkColor() {
     const browser = gBrowser.selectedBrowser;
     if (checking || document.hidden || !siteColorOn() || !browser || isErrorPage(browser) || isLoading(browser) ||
-        scrollTimer || scrollSampling || !colorCache.has(browser)) {
+        scrollTimer || scrollSampling || !colorCache.has(browser) || colorPick || manualSiteColor(browser)) {
       return;
     }
     checking = true;
@@ -548,8 +561,13 @@
   function snapColorForTab(browser) {
     pendingColor = null;
     setFlag("zia-color-snap", true);
+    const manual = siteColorOn() && !isErrorPage(browser) ? manualSiteColor(browser) : null;
     if (isErrorPage(browser)) {
       showErrorColor();
+    } else if (manual) {
+      colorRequestId++;
+      applyColor(manual);
+      colorCache.set(browser, manual);
     } else if (isLoading(browser) || !colorCache.has(browser)) {
       showFallbackColor();
     } else {
