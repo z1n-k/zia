@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.27] — 2026-10-07
+
+### Fixed
+
+- A glance's picture on its tab is whole again, tipped at the tab's end,
+  rather than cut down to a sliver past it. It was placed from the close
+  button's width, and the close kept out of sight while the tab isn't
+  hovered now comes to nothing wide (Zen 1.23.1), so the picture slid
+  past the tab's end; it's now placed from the tab's end itself.
+
 ## [2.96.26] — 2026-10-07
 
 ### Fixed

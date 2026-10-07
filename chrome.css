@@ -7211,9 +7211,15 @@ zen-folder .tab-reset-button {
   /* the close button stays just where it always is, and the glance goes
    before it, centred under it (36px picture, 22px button). The exit copy
    keeps that seat while it sinks. */
+  /* It sits after the close, pulled back over it, so it's placed from the
+   tab's end: where the close is when it's there, and the same place
+   when it isn't (the close kept out of sight comes to nothing wide on
+   Zen 1.23.1, and a picture set from the close's width slid along past
+   the tab's end and was cut down to a sliver). */
   & > :is(.tabbrowser-tab[zen-glance-tab], .zia-glance-thumb-exit):not(#zia-none) {
-    order: 1;
-    margin-inline-end: calc((36px + var(--zia-close-size)) / -2) !important;
+    order: 3;
+    margin-inline-start: calc((36px + var(--zia-close-size)) / -2) !important;
+    margin-inline-end: calc((var(--zia-close-size) - 36px) / 2) !important;
   }
 
   /* the minus does what the close does while a glance is on the tab, and
