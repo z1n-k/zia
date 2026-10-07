@@ -5905,7 +5905,9 @@ findbar {
     gap: 2px !important;
     height: 22px !important;
     min-height: 0 !important;
-    margin: 0 6px 0 0 !important;
+    /* (the same gap after it as the icon has before it, Zia's gap
+       between icon and text) */
+    margin: 0 var(--zia-pop-text-gap, 10px) 0 0 !important;
     padding: 0 3px 0 8px !important;
     border: none !important;
     outline: none !important;
@@ -5914,6 +5916,13 @@ findbar {
     corner-shape: var(--zia-squircle) !important;
     background-color: color-mix(in srgb, currentColor 12%, transparent) !important;
     color: inherit !important;
+  }
+
+  /* (Firefox's own room before the text, as well, made the gap after the
+     pill three times the one before it) */
+  #urlbar[searchmode] :is(.urlbar-input-box, .urlbar-input) {
+    margin-inline-start: 0 !important;
+    padding-inline-start: 0 !important;
   }
 
   #urlbar #urlbar-search-mode-indicator-title {
