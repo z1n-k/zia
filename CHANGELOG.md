@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.21] — 2026-10-07
+
+### Fixed
+
+- "Hide the space's name at the top of the sidebar" only shows in settings
+  while the name is at the top: with "Show the space's name above the
+  tabs" on, it did nothing ([#340](https://github.com/z1n-k/zia/issues/340)).
+
 ## [2.96.20] — 2026-10-07
 
 ### Fixed
