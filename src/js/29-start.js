@@ -277,6 +277,8 @@
     ifOn("tab-numbers", "watchTabNumbers", watchTabNumbers);
     safely("watchWelcome", watchWelcome);
     safely("watchGlanceThumbs", watchGlanceThumbs);
+    safely("watchButtonTooltips", watchButtonTooltips);
+    safely("watchTipCards", watchTipCards);
     safely("watchSidebarPanels", watchSidebarPanels);
     safely("watchTypedAddress", watchTypedAddress);
     safely("registerScrollActor", registerScrollActor);
