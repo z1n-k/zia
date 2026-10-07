@@ -640,3 +640,15 @@
     opacity: 1;
   }
 }
+
+/* The traffic lights while the Library slides in or out: gone, back once
+   it's settled. Everything round them fades with the slide, but macOS
+   draws them itself, so they can't fade, and they stayed solid over the
+   fading sidebar, the Library's buttons sliding across them, until Zen
+   jumped them into the Library partway. Hidden, they're simply there
+   again at rest, in the sidebar or in the Library. */
+@media (-moz-platform: macos) {
+  :root:has(zen-library[transitioning]) .titlebar-buttonbox-container {
+    visibility: hidden !important;
+  }
+}
