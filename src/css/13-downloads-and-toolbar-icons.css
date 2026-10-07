@@ -200,11 +200,15 @@
   display: none !important;
 }
 
-#tabbrowser-tab-tooltip,
-#tab-preview-panel,
-tooltip,
-tooltip[default="true"] {
-  display: none !important;
+/* A tab's own tip and Firefox's preview give way to Zia's hover cards
+   (only while they're on). Every other tip, a page's own (a link's or a
+   picture's title) among them, shows as ever: they were all hidden, and
+   with them what a page tells you on hovering or focusing something. */
+@media -moz-pref("zia.features.tab-hover-cards") {
+  #tabbrowser-tab-tooltip,
+  #tab-preview-panel {
+    display: none !important;
+  }
 }
 
 /* The status bar, where a link goes as you hover it: hidden, unless "Show
