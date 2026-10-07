@@ -253,7 +253,10 @@
           return;
         }
         const trigger = menu.triggerNode;
-        const onUrlbar = !!trigger?.closest?.("#urlbar") && !trigger.closest(".urlbarView");
+        // (the address's own menu, Cut, Copy, Paste: not a submenu, nor one
+        // of the bar's buttons' menus)
+        const onUrlbar = menu.parentElement?.localName !== "menu" &&
+          !!trigger?.closest?.("#urlbar :is(moz-input-box, .urlbar-input-box, .urlbar-input)");
         const onToolbar = menu.id === "toolbar-context-menu" && !!trigger?.closest?.("#zen-appcontent-navbar-wrapper, #nav-bar");
         let items = added.get(menu);
         if (!onUrlbar && !onToolbar) {
