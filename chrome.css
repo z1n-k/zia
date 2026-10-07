@@ -7223,6 +7223,18 @@ zen-folder .tab-reset-button {
     display: none !important;
   }
 
+  /* the name makes room for them, not the close: on Zen 1.23.1 it kept
+   its width, the close was crushed to a third against the tab's end and
+   the picture pushed past it, so all but a sliver of it was cut away */
+  & > .tab-label-container {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+  }
+
+  & > :is(.tabbrowser-tab[zen-glance-tab], .zia-glance-thumb-exit, .tab-close-button) {
+    flex-shrink: 0 !important;
+  }
+
   & > .tab-close-button {
     order: 2;
     display: flex !important;
