@@ -12,15 +12,17 @@
        cuts that to a round corner whatever its corner-shape, so the chosen
        essential came out rounder than the rest. Each corner is the exact
        squircle (superellipse(1.93)) at the essential's radius, and two bars
-       fill between them, so it fits any width. */
+       fill between them, so it fits any width, a pixel into the corners:
+       meeting them edge to edge, the seams showed as dark lines across
+       the tile while it was held down, shrunk to a part of a pixel off. */
     --zia-sq-r: calc(var(--zia-essential-radius) * var(--zia-squircle-grow));
     mask:
       var(--zia-sq-tl) 0 0 / var(--zia-sq-r) var(--zia-sq-r) no-repeat,
       var(--zia-sq-tr) 100% 0 / var(--zia-sq-r) var(--zia-sq-r) no-repeat,
       var(--zia-sq-bl) 0 100% / var(--zia-sq-r) var(--zia-sq-r) no-repeat,
       var(--zia-sq-br) 100% 100% / var(--zia-sq-r) var(--zia-sq-r) no-repeat,
-      linear-gradient(#000 0 0) var(--zia-sq-r) 0 / calc(100% - 2 * var(--zia-sq-r)) 100% no-repeat,
-      linear-gradient(#000 0 0) 0 var(--zia-sq-r) / 100% calc(100% - 2 * var(--zia-sq-r)) no-repeat !important;
+      linear-gradient(#000 0 0) calc(var(--zia-sq-r) - 1px) 0 / calc(100% - 2 * var(--zia-sq-r) + 2px) 100% no-repeat,
+      linear-gradient(#000 0 0) 0 calc(var(--zia-sq-r) - 1px) / 100% calc(100% - 2 * var(--zia-sq-r) + 2px) no-repeat !important;
 
     &::after {
       inset: -30% !important;
