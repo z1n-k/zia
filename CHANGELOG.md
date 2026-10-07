@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.20] — 2026-10-07
+
+### Fixed
+
+- Tooltips are back: a page's own (a link's or a picture's title, also
+  shown on keyboard focus) and the browser's, all hidden since 2.77
+  ([#341](https://github.com/z1n-k/zia/issues/341)). Only a tab's own tip
+  and Firefox's tab preview stay hidden, for Zia's hover cards, and come
+  back too with the hover cards off.
+
 ## [2.96.19] — 2026-10-07
 
 ### Added
