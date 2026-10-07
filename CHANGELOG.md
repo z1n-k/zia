@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.22] — 2026-10-07
+
+### Fixed
+
+- A keyword search's pill is back in the address bar: type a search
+  keyword (or pick an engine, Bookmarks or Tabs) and the bar says which,
+  in a squircle chip in Zia's look that reads on any pop-up colour, with
+  an x to leave it. It was hidden
+  ([#347](https://github.com/z1n-k/zia/issues/347)).
+
 ## [2.96.21] — 2026-10-07
 
 ### Fixed
