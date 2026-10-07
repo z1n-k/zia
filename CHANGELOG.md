@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.18] — 2026-10-07
+
+### Fixed
+
+- The chosen essential, held down: dark lines no longer show across it.
+  The mask that cuts it to Zia's squircle is made of pieces that met edge
+  to edge, and shrunk under the press their seams showed; they now overlap
+  by a pixel, as the shine rings' already did.
+
 ## [2.96.17] — 2026-10-07
 
 ### Added
