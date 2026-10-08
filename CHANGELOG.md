@@ -18,6 +18,16 @@ Every release of Zia, newest first. The format follows
   do: a tab, split or essential turning into its page's picture over the
   page and back, and a tab or split turning into an essential's tile and
   back. Not with reduced motion.
+- A press on a tab you're not on switches to it as you let go (or once
+  held still a moment), so a tab can be picked up and dragged without
+  switching to it, as in Dia.
+
+### Fixed
+
+- Dragging a tab out to the page for a split no longer flashes: the page
+  switched to the dragged tab as you pressed it and back to yours once it
+  reached the page. A dragged essential no longer wears the chosen
+  essential's coloured glow as it turns from a row into a tile.
 
 ## [2.96.41] — 2026-10-08
 
