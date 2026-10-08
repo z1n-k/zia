@@ -86,7 +86,7 @@ The page and toolbar share one rounded card, and the toolbar takes the colour of
 - While a page loads, a glow runs along the address bar. The address reads as `domain / title`; hover it for the full URL.
 - Right-click an extension's button and choose **Change icon** to give it an SVG of your own or one of Zia's icons, tinted to match the toolbar (or kept in its own colours). Zia warns you if the extension changes its own icon, since a custom one hides that.
 - Optionally, where a link goes shows at the foot of the page as you hover it, in a small pill.
-- Back and forward squeeze on hover and slide away when clicked as a fresh arrow slides in. Hover reload and its arrowhead draws back round the circle; a load spins it into a stop cross that turns back into the arrow when the page is done. With nowhere to go, back and forward fade to dim rather than snapping.
+- Back and forward squeeze on hover and slide away when clicked as a fresh arrow slides in. Hover reload and its arrowhead draws back around the circle; a load spins it into a stop cross that turns back into the arrow when the page is done. With nowhere to go, back and forward fade to dim rather than snapping.
 
 </details>
 
