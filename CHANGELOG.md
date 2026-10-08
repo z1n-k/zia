@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- The swipe's arrow turns into the card of pages as Dia's does: the
+  circle stays round as it widens into the card, quicker (0.2s, from
+  0.34s) with a touch of overshoot, the arrow blurring away and the pages
+  blurring in. Its corners squared off into a blob as it began to change.
+
 ## [2.96.41] — 2026-10-08
 
 ### Changed

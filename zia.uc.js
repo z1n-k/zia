@@ -17339,6 +17339,7 @@
   const SWIPE_HOLD_MS = 450;
   const SWIPE_MAX_PAGES = 8;
   const SWIPE_LEAVE_MS = 260;
+  const SWIPE_SETTLE_MS = 240;
 
   function swipePages(forward) {
     const pages = [];
@@ -17567,6 +17568,9 @@
       // (its height from the rows', worked out with the tabs' sizes, 22)
       el.style.setProperty("--zia-swipe-n", `${pages.length}`);
       el.setAttribute("open", "");
+      // its corners turn to the hover cards' squircle once it's settled
+      const card = el;
+      setTimeout(() => card.setAttribute("settled", ""), SWIPE_SETTLE_MS);
       pinned = true;
       // behind the card, over the page: a click anywhere round it closes it
       backdrop = document.createElementNS(XHTML_NS, "div");
