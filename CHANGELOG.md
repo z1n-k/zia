@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.30] — 2026-10-08
+
+### Changed
+
+- The light through "Drag tabs here" starts on its arrow: the arrow is now
+  drawn as a letter, the same arrow, so the light passes through it on its
+  way to the words.
+
 ## [2.96.29] — 2026-10-08
 
 ### Added

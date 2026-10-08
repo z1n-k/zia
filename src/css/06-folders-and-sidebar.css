@@ -562,6 +562,15 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
 }
 
 
+/* The slot's arrow as a letter in a one-letter font (the same arrow its
+   picture was, drawn solid; icons/zia-slot-arrow.ttf), so the light that
+   passes through the words as the folder opens starts on it */
+@font-face {
+  font-family: "Zia Slot Arrow";
+  src: url(data:font/ttf;base64,AAEAAAAKAIAAAwAgT1MvMiXaNTQAAAEoAAAAYGNtYXAADOBTAAABkAAAADRnbHlmzG97bwAAAcwAAADSaGVhZDD9awQAAACsAAAANmhoZWEG3AQ3AAAA5AAAACRobXR4BgQAAAAAAYgAAAAIbG9jYQBpAAAAAAHEAAAABm1heHAABwBKAAABCAAAACBuYW1lF2PtXwAAAqAAAAB1cG9zdHN4dNgAAAMYAAAALAABAAAAAQAALpfVGF8PPPUAAQPoAAAAAObskwoAAAAA5uyTCgCPAG4DgQOiAAAAAwACAAAAAAAAAAEAAAPo/wYAAAQQAAABHgLyAAEAAAAAAAAAAAAAAAAAAAACAAEAAAACAEgABAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAwMCAZAABQAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAPz8/PwAA4ADgAAPo/wYAAAPoAPoAAAAAAAAAAAAAAAAAAAAgAAAB9AAABBAAAAAAAAIAAAADAAAAFAADAAEAAAAUAAQAIAAAAAQABAABAADgAP//AADgAP//IAEAAQAAAAAAAAAAAGkAAAAEAI8AbgOBA6IAEQAjADUARwAAAQ8DLwMRPwMfAwMXFw8DLwQ/AxcXITc3HwMPBC8DNzcFHwMPAyEvAz8DAjwECxEUFBELBAQLERQUEQsEDwsEBAsRFBQR0AsEBAsRFBQRAVYRFBQRCwQEC9ARFBQRCwQECwFqFBELBAQLERT9dhQRCwQECxEUAWYUEQwEBAwRFAIIExEMBAQMERP+DxETFBEMBAQM0BETFBEMAwMMDAMDDBEUExHQDAQEDBEUExGmBAwRFBMRDAQEDBETFBEMBAAAAAAABAA2AAEAAAAAAAEADgAAAAEAAAAAAAIABwAOAAMAAQQJAAEAHAAVAAMAAQQJAAIADgAxWmlhIFNsb3QgQXJyb3dSZWd1bGFyAFoAaQBhACAAUwBsAG8AdAAgAEEAcgByAG8AdwBSAGUAZwB1AGwAYQByAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAQIFYXJyb3c=) format("truetype");
+  unicode-range: U+E000;
+}
+
 /* An open empty folder shows a dashed "Drag tabs here" slot exactly where
  * the first tab will sit (sized from a real tab by zia.uc.js), outlined in
  * the folder's colour, or a soft white for white and uncoloured folders.
@@ -582,7 +591,8 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
   }
 
   & > .tab-group-container::after {
-    content: url("chrome://sine/content/zia/icons/folder-drop.svg") "\2002 Drag tabs here";
+    content: "\E000\2002 Drag tabs here";
+    font-family: "Zia Slot Arrow", system-ui, sans-serif;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -608,7 +618,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
   /* As the folder opens, a light passes once through the words, left to
      right, the way an AI's answer shines while it's written, then they rest
      in their usual grey (the light is the words' background, cut to their
-     letters; the arrow and the dashes stay as they are) */
+     letters, the arrow's among them; the dashes stay as they are) */
   &:not([collapsed]) > .tab-group-container::after {
     background: linear-gradient(100deg, var(--zia-slot-ink) 40%, var(--zia-slot-glint) 50%, var(--zia-slot-ink) 60%) 0 0 / 300% 100% no-repeat;
     background-clip: text;
