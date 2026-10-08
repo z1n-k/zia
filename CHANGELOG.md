@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Picking a page from the swipe's card, the card scales out where it is,
+  blurring away, as Dia's does, rather than sliding back off the edge.
+  Closed any other way (a click round it, Escape), it still slides off.
+
 ## [2.96.43] — 2026-10-08
 
 ### Fixed

@@ -99,6 +99,22 @@
     &[side="forward"][leaving] {
       --zia-swipe-in: 92px;
     }
+
+    /* a page picked from it: it scales out where it is, blurring away, as
+       Dia's does (closed any other way, it slides back off the edge) */
+    &[leaving][commit] {
+      --zia-swipe-in: 20px;
+      scale: 1.08;
+      filter: blur(8px);
+      transition:
+        opacity 0.2s ease,
+        scale 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+        filter 0.2s ease;
+    }
+
+    &[side="forward"][leaving][commit] {
+      --zia-swipe-in: -20px;
+    }
   }
 
   /* (kept level with the middle as the card's height closes in) */
