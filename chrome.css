@@ -2913,6 +2913,8 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
  * while rows slide aside for a drag. */
 :root[zen-sidebar-expanded="true"] zen-folder[zia-empty] {
   --zia-slot-border: 1.5px dashed rgba(255, 255, 255, 0.28);
+  --zia-slot-ink: rgba(255, 255, 255, 0.5);
+  --zia-slot-glint: rgba(255, 255, 255, 0.88);
 
   /* lightened, so it still stands out against the folder's own tint */
   &[zia-folder-color]:not([zia-folder-color="white"]) {
@@ -2931,7 +2933,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
     overflow: hidden;
     border: var(--zia-slot-border);
     border-radius: var(--zia-tab-radius);
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--zia-slot-ink);
     font-size: 12.5px;
     white-space: nowrap;
     translate: 0 var(--zia-slot-y, 0px);
@@ -2941,6 +2943,21 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
     transition:
       opacity 0s,
       translate 100ms ease-out;
+  }
+
+  /* As the folder opens, a light passes once through the words, left to
+     right, the way an AI's answer shines while it's written, then they rest
+     in their usual grey (the light is the words' background, cut to their
+     letters; the arrow and the dashes stay as they are) */
+  &:not([collapsed]) > .tab-group-container::after {
+    background: linear-gradient(100deg, var(--zia-slot-ink) 40%, var(--zia-slot-glint) 50%, var(--zia-slot-ink) 60%) 0 0 / 300% 100% no-repeat;
+    background-clip: text;
+    color: transparent;
+    animation: zia-slot-shine 1.1s cubic-bezier(0.45, 0, 0.25, 1) 0.15s both;
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
   }
 
   /* Like a tab, it stays where it sits while the folder opens over it or
@@ -3141,6 +3158,16 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
    update */
 .zen-sidebar-notification-link-container[data-l10n-id="zen-sidebar-notification-donate-tooltip"] {
   display: none !important;
+}
+
+@keyframes zia-slot-shine {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: 0 0;
+  }
 }
 
 /* Folders: a glass folder in the folder's
@@ -7940,10 +7967,11 @@ zen-folder .tab-reset-button {
   /* an empty folder's "Drag tabs here" slot */
   &[zen-sidebar-expanded="true"] zen-folder[zia-empty] {
     --zia-slot-border: 1.5px dashed rgba(0, 0, 0, 0.22);
+    --zia-slot-ink: rgba(0, 0, 0, 0.45);
+    --zia-slot-glint: rgba(0, 0, 0, 0.85);
 
     & > .tab-group-container::after {
       content: url("chrome://sine/content/zia/icons/folder-drop-dark.svg") "\2002 Drag tabs here";
-      color: rgba(0, 0, 0, 0.45);
     }
   }
 
