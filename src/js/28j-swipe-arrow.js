@@ -230,9 +230,12 @@
           const title = document.createElementNS(XHTML_NS, "span");
           title.textContent = page.title;
           row.append(icon, title);
+          // the card on its way out first, then the page: going back
+          // straight away kept the browser busy, and the card hung there
+          // before it left
           row.addEventListener("click", () => {
             close();
-            goTo(i + 1, forward);
+            requestAnimationFrame(() => requestAnimationFrame(() => goTo(i + 1, forward)));
           });
           return row;
         })

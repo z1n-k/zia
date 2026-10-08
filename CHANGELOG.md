@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.43] — 2026-10-08
+
+### Fixed
+
+- The swipe card's page names keep the tails of their letters (g, p, y),
+  which were cut off.
+
 ## [2.96.42] — 2026-10-08
 
 ### Changed
