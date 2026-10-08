@@ -4,6 +4,21 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- The site panel (the site icon at the start of the address bar) is drawn
+  as Zia draws the rest: Zia's card, its share, reader view, screenshot
+  and bookmark buttons and its extensions as Zia's tiles, the headings
+  small and quiet as the Library's, and the settings as rows that light
+  up as tabs do, their icons on a tile rather than a bright disc, with no
+  lines between them. Light spaces get a light panel.
+- Creating a space: the form in the sidebar is drawn as Zia's too, the
+  name and profile in soft wells at a tab's height, Edit Theme and Cancel
+  as Zia's tiles, and Create in white with dark text, quiet until the
+  space has a name.
+
 ## [2.96.48] — 2026-10-08
 
 ### Fixed

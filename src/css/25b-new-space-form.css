@@ -1,0 +1,121 @@
+/* Creating a space: the form in the sidebar, drawn as Zia draws the rest.
+   The heading at the tabs' sizes, the fields as the Library's search field
+   (a soft well, a tab's corner and height), the profile and theme buttons
+   as Zia's tiles (a squircle, the glass edge), Create in the sidebar's ink
+   (white, dark text) as the Library's chosen filter is, and Cancel a tile.
+   Light spaces follow from the sidebar's tokens. */
+zen-workspace-creation {
+  --zia-form-ink: var(--zia-sidebar-ink, rgb(255, 255, 255));
+  --zia-form-field: rgba(0, 0, 0, 0.16);
+  --zia-form-tile: var(--zia-essential-bg);
+  --zia-form-tile-hover: color-mix(in srgb, var(--zia-form-ink) 8%, var(--zia-essential-bg));
+  --zia-form-radius: calc(var(--zia-glass-button-radius) * var(--zia-squircle-grow));
+
+  & .zen-workspace-creation {
+    & .zen-workspace-creation-title {
+      font-size: 15px !important;
+      font-weight: 600 !important;
+      margin-bottom: 4px !important;
+    }
+
+    & .zen-workspace-creation-label {
+      font-size: var(--zia-text-size) !important;
+      opacity: 0.5 !important;
+    }
+
+    & form {
+      font-size: var(--zia-text-size);
+
+      & .zen-workspace-creation-form {
+        gap: 6px !important;
+      }
+
+      /* the name, with its icon, and the profile: soft wells */
+      & :is(.zen-workspace-creation-name-wrapper, .zen-workspace-creation-profile-wrapper) {
+        min-height: var(--zia-tab-height);
+        box-sizing: border-box;
+        background-color: var(--zia-form-field) !important;
+        border-radius: var(--zia-tab-radius) !important;
+        corner-shape: round !important;
+      }
+
+      & .zen-workspace-creation-name-wrapper {
+        padding: 0 8px !important;
+
+        & .zen-workspace-creation-name {
+          font-size: inherit !important;
+        }
+
+        /* the icon to pick: a dashed box as the empty folder's slot */
+        & .zen-workspace-creation-icon-label::before {
+          border: 1px dashed color-mix(in srgb, var(--zia-form-ink) 28%, transparent) !important;
+          border-radius: 6px !important;
+        }
+      }
+
+      & .zen-workspace-creation-profile-wrapper {
+        padding: 3px 3px 3px 10px !important;
+
+        & .zen-workspace-creation-profile {
+          padding: 5px 10px !important;
+          background: var(--zia-form-tile) !important;
+          border-radius: var(--zia-form-radius) !important;
+          corner-shape: var(--zia-squircle) !important;
+          box-shadow: var(--zia-glass-edge) !important;
+          font-weight: 500 !important;
+
+          &:hover {
+            background: var(--zia-form-tile-hover) !important;
+          }
+        }
+      }
+
+      /* Edit Theme, and Cancel: Zia's tiles */
+      & :is(.zen-workspace-creation-edit-theme-button, .zen-workspace-creation-cancel-button) {
+        min-height: var(--zia-tab-height);
+        padding: 0 10px !important;
+        background: var(--zia-form-tile) !important;
+        border: none !important;
+        border-radius: var(--zia-form-radius) !important;
+        corner-shape: var(--zia-squircle) !important;
+        box-shadow: var(--zia-glass-edge) !important;
+        color: inherit !important;
+        font-weight: 500 !important;
+
+        &:hover {
+          background: var(--zia-form-tile-hover) !important;
+        }
+      }
+
+      /* Create: the sidebar's ink, as the Library's chosen filter; quiet
+         until the space has a name */
+      & .zen-workspace-creation-buttons {
+        gap: 6px !important;
+
+        & .zen-workspace-creation-create-button {
+          min-height: var(--zia-tab-height);
+          background: var(--zia-form-ink) !important;
+          color: rgb(28, 28, 32) !important;
+          border: none !important;
+          border-radius: var(--zia-form-radius) !important;
+          corner-shape: var(--zia-squircle) !important;
+          box-shadow: none !important;
+          font-weight: 600 !important;
+          transition: opacity 0.15s ease;
+
+          &[disabled] {
+            opacity: 0.35;
+          }
+        }
+      }
+    }
+  }
+}
+
+:root[zia-light]:not(#zia-none) zen-workspace-creation {
+  --zia-form-field: rgba(0, 0, 0, 0.05);
+
+  & .zen-workspace-creation-create-button {
+    color: rgb(255, 255, 255) !important;
+  }
+}

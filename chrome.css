@@ -8824,6 +8824,297 @@ zen-folder .tab-reset-button {
     opacity: 1;
   }
 }
+/* The site panel (the site icon at the start of the address bar), drawn as
+   Zia draws the rest: Zia's card (the hover cards' surface, squircle and
+   edge), its buttons and extensions as Zia's tiles (flat, a squircle, the
+   glass edge), the headings small and quiet as the Library's, and the
+   settings as rows that light up as tabs do, their icons on a tile rather
+   than a bright disc, with no lines between them. Light spaces and light
+   mode follow, the tiles mixed from the panel's own text colour. */
+#zen-unified-site-data-panel {
+  --panel-background: var(--zia-tab-card-bg) !important;
+  --panel-border-color: transparent !important;
+  --panel-border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow)) !important;
+  --arrowpanel-background: var(--zia-tab-card-bg) !important;
+  --arrowpanel-border-color: transparent !important;
+  --arrowpanel-border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow)) !important;
+  --zia-site-tile: color-mix(in srgb, currentColor 7%, transparent);
+  --zia-site-tile-hover: color-mix(in srgb, currentColor 12%, transparent);
+  --zia-site-tile-on: color-mix(in srgb, currentColor 20%, transparent);
+  --zia-site-tile-radius: calc(var(--zia-glass-button-radius) * var(--zia-squircle-grow));
+  --zia-site-tile-edge: var(--zia-glass-edge), inset 0 0 0 0.5px color-mix(in srgb, currentColor 6%, transparent);
+  /* (its ink the card's, as the hover cards': Zen's followed the system's
+     light or dark, which a light space's light card doesn't) */
+  --panel-color: rgb(255, 255, 255) !important;
+  --arrowpanel-color: rgb(255, 255, 255) !important;
+  color: rgb(255, 255, 255) !important;
+  font-size: var(--zia-text-size);
+
+  :root[zia-light]:not(#zia-none) & {
+    --panel-color: rgb(28, 28, 32) !important;
+    --arrowpanel-color: rgb(28, 28, 32) !important;
+    color: rgb(28, 28, 32) !important;
+  }
+
+  &::part(content) {
+    corner-shape: var(--zia-squircle) !important;
+    border: none !important;
+    box-shadow: var(--zia-glass-edge-lit) !important;
+  }
+}
+
+/* the four buttons along the top: share, reader view, screenshot, bookmark */
+#zen-site-data-header toolbarbutton {
+  &::before {
+    background: var(--zia-site-tile) !important;
+    border: none !important;
+    border-radius: var(--zia-site-tile-radius) !important;
+    corner-shape: var(--zia-squircle) !important;
+    box-shadow: var(--zia-site-tile-edge) !important;
+    transition: background-color 0.12s ease, transform 0.12s ease !important;
+  }
+
+  &:hover::before {
+    background: var(--zia-site-tile-hover) !important;
+    transform: none !important;
+  }
+
+  &:active:hover::before {
+    transform: scale(0.97) !important;
+  }
+
+  /* (on: reader view open, the page bookmarked) */
+  &.active {
+    color: inherit !important;
+
+    &::before {
+      background: var(--zia-site-tile-on) !important;
+    }
+  }
+}
+
+/* the extensions, and the + to add one */
+#zen-site-data-addons :is(#overflowed-extensions-list, #unified-extensions-area, .unified-extensions-list, #zen-site-data-new-addon-button-container) > * {
+  background: var(--zia-site-tile) !important;
+  border-radius: var(--zia-site-tile-radius) !important;
+  corner-shape: var(--zia-squircle) !important;
+  box-shadow: var(--zia-site-tile-edge) !important;
+
+  & toolbarbutton {
+    border-radius: var(--zia-site-tile-radius) !important;
+    corner-shape: var(--zia-squircle) !important;
+  }
+
+  &:hover {
+    background: var(--zia-site-tile-hover) !important;
+    transform: none !important;
+  }
+
+  &:active:hover {
+    transform: scale(0.97) !important;
+  }
+}
+
+/* the headings: small and quiet, as the Library's ("Manage", "More" beside
+   them as before, on hover) */
+.zen-site-data-section-header {
+  font-size: 11.5px !important;
+  font-weight: 500 !important;
+
+  & > label:first-child {
+    opacity: 0.55;
+  }
+
+  & > label:nth-child(2):hover {
+    background-color: var(--zia-site-tile-hover) !important;
+  }
+}
+
+/* the settings and boosts: rows that light up as tabs do */
+#zen-site-data-settings-list,
+#zen-site-data-boost-list {
+  gap: 2px;
+
+  & toolbarseparator {
+    display: none !important;
+  }
+}
+
+:is(.permission-popup-permission-item, .permission-popup-boost-item) {
+  margin-inline: -5px !important;
+  padding: 4px 5px !important;
+  border-radius: var(--zia-tab-radius) !important;
+  transition: background-color 0.12s ease;
+
+  &:hover {
+    background-color: color-mix(in srgb, currentColor 7%, transparent);
+  }
+}
+
+/* each one's icon on a tile, brighter while it's allowed or on, rather than
+   a bright disc */
+:is(.permission-popup-permission-icon, .permission-popup-boost-icon) {
+  fill: currentColor !important;
+  fill-opacity: 0.85;
+
+  &::before {
+    inset: 1px !important;
+    background: var(--zia-site-tile) !important;
+    opacity: 1 !important;
+    border-radius: var(--zia-site-tile-radius) !important;
+    corner-shape: var(--zia-squircle) !important;
+    box-shadow: var(--zia-site-tile-edge);
+    transform: none !important;
+  }
+
+  .permission-popup-permission-item[state="allow"] &::before,
+  .permission-popup-boost-item[state="enabled"] &::before {
+    background: var(--zia-site-tile-on) !important;
+  }
+}
+
+/* the foot: how secure the site is, a new boost, and more; no line above */
+#zen-site-data-footer {
+  border-top: none !important;
+  padding-top: 2px !important;
+
+  & .zen-interactive-button {
+    background: var(--zia-site-tile) !important;
+    border-radius: var(--zia-site-tile-radius) !important;
+    corner-shape: var(--zia-squircle) !important;
+    box-shadow: var(--zia-site-tile-edge) !important;
+    font-weight: 500 !important;
+
+    &:hover {
+      background: var(--zia-site-tile-hover) !important;
+    }
+
+    &:active:hover {
+      transform: scale(0.97) !important;
+    }
+  }
+}
+/* Creating a space: the form in the sidebar, drawn as Zia draws the rest.
+   The heading at the tabs' sizes, the fields as the Library's search field
+   (a soft well, a tab's corner and height), the profile and theme buttons
+   as Zia's tiles (a squircle, the glass edge), Create in the sidebar's ink
+   (white, dark text) as the Library's chosen filter is, and Cancel a tile.
+   Light spaces follow from the sidebar's tokens. */
+zen-workspace-creation {
+  --zia-form-ink: var(--zia-sidebar-ink, rgb(255, 255, 255));
+  --zia-form-field: rgba(0, 0, 0, 0.16);
+  --zia-form-tile: var(--zia-essential-bg);
+  --zia-form-tile-hover: color-mix(in srgb, var(--zia-form-ink) 8%, var(--zia-essential-bg));
+  --zia-form-radius: calc(var(--zia-glass-button-radius) * var(--zia-squircle-grow));
+
+  & .zen-workspace-creation {
+    & .zen-workspace-creation-title {
+      font-size: 15px !important;
+      font-weight: 600 !important;
+      margin-bottom: 4px !important;
+    }
+
+    & .zen-workspace-creation-label {
+      font-size: var(--zia-text-size) !important;
+      opacity: 0.5 !important;
+    }
+
+    & form {
+      font-size: var(--zia-text-size);
+
+      & .zen-workspace-creation-form {
+        gap: 6px !important;
+      }
+
+      /* the name, with its icon, and the profile: soft wells */
+      & :is(.zen-workspace-creation-name-wrapper, .zen-workspace-creation-profile-wrapper) {
+        min-height: var(--zia-tab-height);
+        box-sizing: border-box;
+        background-color: var(--zia-form-field) !important;
+        border-radius: var(--zia-tab-radius) !important;
+        corner-shape: round !important;
+      }
+
+      & .zen-workspace-creation-name-wrapper {
+        padding: 0 8px !important;
+
+        & .zen-workspace-creation-name {
+          font-size: inherit !important;
+        }
+
+        /* the icon to pick: a dashed box as the empty folder's slot */
+        & .zen-workspace-creation-icon-label::before {
+          border: 1px dashed color-mix(in srgb, var(--zia-form-ink) 28%, transparent) !important;
+          border-radius: 6px !important;
+        }
+      }
+
+      & .zen-workspace-creation-profile-wrapper {
+        padding: 3px 3px 3px 10px !important;
+
+        & .zen-workspace-creation-profile {
+          padding: 5px 10px !important;
+          background: var(--zia-form-tile) !important;
+          border-radius: var(--zia-form-radius) !important;
+          corner-shape: var(--zia-squircle) !important;
+          box-shadow: var(--zia-glass-edge) !important;
+          font-weight: 500 !important;
+
+          &:hover {
+            background: var(--zia-form-tile-hover) !important;
+          }
+        }
+      }
+
+      /* Edit Theme, and Cancel: Zia's tiles */
+      & :is(.zen-workspace-creation-edit-theme-button, .zen-workspace-creation-cancel-button) {
+        min-height: var(--zia-tab-height);
+        padding: 0 10px !important;
+        background: var(--zia-form-tile) !important;
+        border: none !important;
+        border-radius: var(--zia-form-radius) !important;
+        corner-shape: var(--zia-squircle) !important;
+        box-shadow: var(--zia-glass-edge) !important;
+        color: inherit !important;
+        font-weight: 500 !important;
+
+        &:hover {
+          background: var(--zia-form-tile-hover) !important;
+        }
+      }
+
+      /* Create: the sidebar's ink, as the Library's chosen filter; quiet
+         until the space has a name */
+      & .zen-workspace-creation-buttons {
+        gap: 6px !important;
+
+        & .zen-workspace-creation-create-button {
+          min-height: var(--zia-tab-height);
+          background: var(--zia-form-ink) !important;
+          color: rgb(28, 28, 32) !important;
+          border: none !important;
+          border-radius: var(--zia-form-radius) !important;
+          corner-shape: var(--zia-squircle) !important;
+          box-shadow: none !important;
+          font-weight: 600 !important;
+          transition: opacity 0.15s ease;
+
+          &[disabled] {
+            opacity: 0.35;
+          }
+        }
+      }
+    }
+  }
+}
+
+:root[zia-light]:not(#zia-none) zen-workspace-creation {
+  --zia-form-field: rgba(0, 0, 0, 0.05);
+
+  & .zen-workspace-creation-create-button {
+    color: rgb(255, 255, 255) !important;
+  }
+}
 /* The rename card (tidy-downloads/tidy-downloads.js; Tidy Downloads, by
    Bxthesda and Zylaah, with their permission): a small copy of Zia's glass
    address pop-up, floating just above the sidebar's foot as Zen's own

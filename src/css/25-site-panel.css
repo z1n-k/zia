@@ -1,0 +1,170 @@
+/* The site panel (the site icon at the start of the address bar), drawn as
+   Zia draws the rest: Zia's card (the hover cards' surface, squircle and
+   edge), its buttons and extensions as Zia's tiles (flat, a squircle, the
+   glass edge), the headings small and quiet as the Library's, and the
+   settings as rows that light up as tabs do, their icons on a tile rather
+   than a bright disc, with no lines between them. Light spaces and light
+   mode follow, the tiles mixed from the panel's own text colour. */
+#zen-unified-site-data-panel {
+  --panel-background: var(--zia-tab-card-bg) !important;
+  --panel-border-color: transparent !important;
+  --panel-border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow)) !important;
+  --arrowpanel-background: var(--zia-tab-card-bg) !important;
+  --arrowpanel-border-color: transparent !important;
+  --arrowpanel-border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow)) !important;
+  --zia-site-tile: color-mix(in srgb, currentColor 7%, transparent);
+  --zia-site-tile-hover: color-mix(in srgb, currentColor 12%, transparent);
+  --zia-site-tile-on: color-mix(in srgb, currentColor 20%, transparent);
+  --zia-site-tile-radius: calc(var(--zia-glass-button-radius) * var(--zia-squircle-grow));
+  --zia-site-tile-edge: var(--zia-glass-edge), inset 0 0 0 0.5px color-mix(in srgb, currentColor 6%, transparent);
+  /* (its ink the card's, as the hover cards': Zen's followed the system's
+     light or dark, which a light space's light card doesn't) */
+  --panel-color: rgb(255, 255, 255) !important;
+  --arrowpanel-color: rgb(255, 255, 255) !important;
+  color: rgb(255, 255, 255) !important;
+  font-size: var(--zia-text-size);
+
+  :root[zia-light]:not(#zia-none) & {
+    --panel-color: rgb(28, 28, 32) !important;
+    --arrowpanel-color: rgb(28, 28, 32) !important;
+    color: rgb(28, 28, 32) !important;
+  }
+
+  &::part(content) {
+    corner-shape: var(--zia-squircle) !important;
+    border: none !important;
+    box-shadow: var(--zia-glass-edge-lit) !important;
+  }
+}
+
+/* the four buttons along the top: share, reader view, screenshot, bookmark */
+#zen-site-data-header toolbarbutton {
+  &::before {
+    background: var(--zia-site-tile) !important;
+    border: none !important;
+    border-radius: var(--zia-site-tile-radius) !important;
+    corner-shape: var(--zia-squircle) !important;
+    box-shadow: var(--zia-site-tile-edge) !important;
+    transition: background-color 0.12s ease, transform 0.12s ease !important;
+  }
+
+  &:hover::before {
+    background: var(--zia-site-tile-hover) !important;
+    transform: none !important;
+  }
+
+  &:active:hover::before {
+    transform: scale(0.97) !important;
+  }
+
+  /* (on: reader view open, the page bookmarked) */
+  &.active {
+    color: inherit !important;
+
+    &::before {
+      background: var(--zia-site-tile-on) !important;
+    }
+  }
+}
+
+/* the extensions, and the + to add one */
+#zen-site-data-addons :is(#overflowed-extensions-list, #unified-extensions-area, .unified-extensions-list, #zen-site-data-new-addon-button-container) > * {
+  background: var(--zia-site-tile) !important;
+  border-radius: var(--zia-site-tile-radius) !important;
+  corner-shape: var(--zia-squircle) !important;
+  box-shadow: var(--zia-site-tile-edge) !important;
+
+  & toolbarbutton {
+    border-radius: var(--zia-site-tile-radius) !important;
+    corner-shape: var(--zia-squircle) !important;
+  }
+
+  &:hover {
+    background: var(--zia-site-tile-hover) !important;
+    transform: none !important;
+  }
+
+  &:active:hover {
+    transform: scale(0.97) !important;
+  }
+}
+
+/* the headings: small and quiet, as the Library's ("Manage", "More" beside
+   them as before, on hover) */
+.zen-site-data-section-header {
+  font-size: 11.5px !important;
+  font-weight: 500 !important;
+
+  & > label:first-child {
+    opacity: 0.55;
+  }
+
+  & > label:nth-child(2):hover {
+    background-color: var(--zia-site-tile-hover) !important;
+  }
+}
+
+/* the settings and boosts: rows that light up as tabs do */
+#zen-site-data-settings-list,
+#zen-site-data-boost-list {
+  gap: 2px;
+
+  & toolbarseparator {
+    display: none !important;
+  }
+}
+
+:is(.permission-popup-permission-item, .permission-popup-boost-item) {
+  margin-inline: -5px !important;
+  padding: 4px 5px !important;
+  border-radius: var(--zia-tab-radius) !important;
+  transition: background-color 0.12s ease;
+
+  &:hover {
+    background-color: color-mix(in srgb, currentColor 7%, transparent);
+  }
+}
+
+/* each one's icon on a tile, brighter while it's allowed or on, rather than
+   a bright disc */
+:is(.permission-popup-permission-icon, .permission-popup-boost-icon) {
+  fill: currentColor !important;
+  fill-opacity: 0.85;
+
+  &::before {
+    inset: 1px !important;
+    background: var(--zia-site-tile) !important;
+    opacity: 1 !important;
+    border-radius: var(--zia-site-tile-radius) !important;
+    corner-shape: var(--zia-squircle) !important;
+    box-shadow: var(--zia-site-tile-edge);
+    transform: none !important;
+  }
+
+  .permission-popup-permission-item[state="allow"] &::before,
+  .permission-popup-boost-item[state="enabled"] &::before {
+    background: var(--zia-site-tile-on) !important;
+  }
+}
+
+/* the foot: how secure the site is, a new boost, and more; no line above */
+#zen-site-data-footer {
+  border-top: none !important;
+  padding-top: 2px !important;
+
+  & .zen-interactive-button {
+    background: var(--zia-site-tile) !important;
+    border-radius: var(--zia-site-tile-radius) !important;
+    corner-shape: var(--zia-squircle) !important;
+    box-shadow: var(--zia-site-tile-edge) !important;
+    font-weight: 500 !important;
+
+    &:hover {
+      background: var(--zia-site-tile-hover) !important;
+    }
+
+    &:active:hover {
+      transform: scale(0.97) !important;
+    }
+  }
+}
