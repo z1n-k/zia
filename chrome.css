@@ -7696,15 +7696,20 @@ zen-folder .tab-reset-button {
     top: 50%;
     left: 0;
     z-index: 10;
-    width: 80px;
-    height: 80px;
-    border-radius: 40px;
+    /* as Dia's: a little smaller while it slides in, full size once letting
+       go would go back ([will]), growing from its middle. Its size changes
+       rather than scaling it: scaled, Firefox now and then left a
+       see-through cross in it (the middle of a rounded box, drawn in
+       pieces, dropping out) */
+    --zia-swipe-size: 70px;
+    --zia-swipe-grow: 0.25s cubic-bezier(0.34, 1.4, 0.6, 1);
+    margin-left: calc((80px - var(--zia-swipe-size)) / 2);
+    width: var(--zia-swipe-size);
+    height: var(--zia-swipe-size);
+    border-radius: calc(var(--zia-swipe-size) / 2);
     overflow: hidden;
     pointer-events: none;
     translate: var(--zia-swipe-in) -50%;
-    /* as Dia's: a little smaller while it slides in, full size once letting
-       go would go back ([will]) */
-    scale: 0.875;
     opacity: calc(var(--p) * 1.6);
     /* the tab and folder hover cards' surface: their background (see-through
        and blurred with theirs, below), their hairline edge (::after) */
@@ -7718,16 +7723,28 @@ zen-folder .tab-reset-button {
       width var(--zia-swipe-morph),
       height var(--zia-swipe-morph),
       border-radius var(--zia-swipe-morph),
-      scale 0.25s cubic-bezier(0.34, 1.4, 0.6, 1),
+      margin var(--zia-swipe-grow),
       opacity 0.12s linear;
 
-    &:is([will], [open]) {
-      scale: 1;
+    &[will]:not([open]) {
+      --zia-swipe-size: 80px;
+      transition:
+        width var(--zia-swipe-grow),
+        height var(--zia-swipe-grow),
+        border-radius var(--zia-swipe-grow),
+        margin var(--zia-swipe-grow),
+        opacity 0.12s linear;
+    }
+
+    &[open] {
+      --zia-swipe-size: 80px;
     }
 
     &[side="forward"] {
       left: auto;
       right: 0;
+      margin-left: 0;
+      margin-right: calc((80px - var(--zia-swipe-size)) / 2);
       --zia-swipe-in: calc(92px - var(--p) * 112px);
     }
 
@@ -7808,9 +7825,9 @@ zen-folder .tab-reset-button {
     left: 0;
     display: grid;
     place-items: center;
-    width: 80px;
+    width: var(--zia-swipe-size);
     color: rgba(255, 255, 255, 0.6);
-    transition: color 0.18s ease, opacity 0.12s ease, filter 0.12s ease, scale 0.25s cubic-bezier(0.34, 1.5, 0.6, 1);
+    transition: color 0.18s ease, opacity 0.12s ease, filter 0.12s ease, width var(--zia-swipe-grow);
 
     & svg {
       width: 40px;

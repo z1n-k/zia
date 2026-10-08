@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.47] — 2026-10-08
+
+### Fixed
+
+- The swipe's circle no longer now and then shows a see-through cross as
+  it grows once fully in: it grew by being scaled, which Firefox sometimes
+  drew with the middle of the rounded box missing; it now grows in size.
+
 ## [2.96.46] — 2026-10-08
 
 ### Fixed
