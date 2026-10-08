@@ -8,8 +8,8 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
-- The swipe's arrow turns into the card of pages sooner: after 0.3s held
-  there, from about half a second.
+- The swipe's arrow turns into the card of pages a little sooner when
+  held still: after 0.45s, from about 0.57s.
 
 ### Fixed
 
