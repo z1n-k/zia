@@ -9017,7 +9017,7 @@
   // the box came back to its start uneven.
   const SLOT_DASH = 3;
   const SLOT_GAP = 3;
-  function slotDashesImage(width, height, radius, dpr) {
+  function slotDashesPath(width, height, radius, dpr) {
     const snap = (n) => Math.round(n * dpr) / dpr;
     const c = radius - 0.5;
     const arc = (Math.PI / 2) * c;
@@ -9058,29 +9058,92 @@
     side(radius, width - radius, bottom, true);
     corner(radius, height - radius, Math.PI / 2);
     side(radius, height - radius, 0.5, false);
+    return parts.join("");
+  }
+
+  function slotDashesImage(width, height, radius, dpr) {
     const svg =
       `<svg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}' viewBox='0 0 ${width} ${height}' preserveAspectRatio='none'>` +
-      `<path d='${parts.join("")}' fill='none' stroke='context-stroke' stroke-width='1'/></svg>`;
+      `<path d='${slotDashesPath(width, height, radius, dpr)}' fill='none' stroke='context-stroke' stroke-width='1'/></svg>`;
     return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+  }
+
+  // The slot shows its dashes from a canvas of its folder's (-moz-element),
+  // redrawn to size at every step of a sidebar resize: a canvas shows its
+  // new drawing at once, where a new picture blanked while it loaded, and
+  // the last one stretched while it waited. The canvases sit off screen.
+  let slotCanvasHolder = null;
+  let slotCanvasCount = 0;
+  const slotCanvases = new Set();
+
+  function drawSlotCanvas(folder, container, width, height, radius, dpr) {
+    let canvas = folder.ziaSlotCanvas;
+    if (!canvas) {
+      if (!slotCanvasHolder) {
+        slotCanvasHolder = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+        slotCanvasHolder.id = "zia-slot-canvases";
+        slotCanvasHolder.setAttribute("aria-hidden", "true");
+        slotCanvasHolder.style.cssText = "position: fixed; top: 0; left: -10000px; pointer-events: none;";
+        (document.body || document.documentElement).appendChild(slotCanvasHolder);
+      }
+      canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+      canvas.id = `zia-slot-dashes-${++slotCanvasCount}`;
+      canvas.style.display = "block";
+      slotCanvasHolder.appendChild(canvas);
+      canvas.ziaFolder = folder;
+      folder.ziaSlotCanvas = canvas;
+      slotCanvases.add(canvas);
+      folder.style.setProperty("--zia-slot-dashes-live", `-moz-element(#${canvas.id})`);
+    }
+    const color = getComputedStyle(container, "::after").stroke;
+    const key = `${width}x${height}@${dpr}:${color}`;
+    if (canvas.ziaKey === key) {
+      return;
+    }
+    canvas.ziaKey = key;
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    const context = canvas.getContext("2d");
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    context.clearRect(0, 0, width, height);
+    context.lineWidth = 1;
+    // (a colour the canvas can't read leaves the stand-in)
+    context.strokeStyle = "rgba(255, 255, 255, 0.13)";
+    if (color && color !== "none") {
+      context.strokeStyle = color;
+    }
+    context.stroke(new Path2D(slotDashesPath(width, height, radius, dpr)));
+  }
+
+  function dropGoneSlotCanvases() {
+    for (const canvas of slotCanvases) {
+      if (!canvas.ziaFolder.isConnected) {
+        canvas.remove();
+        slotCanvases.delete(canvas);
+      }
+    }
   }
 
   // Each empty folder's slot gets its own (a folder inside another is
   // narrower); the page's keeps the latest, for a tab dragged in from
-  // outside any folder. While the sidebar's being resized the drawing in
-  // place stretches with it, and it's drawn afresh once the width has
-  // held still for a moment, swapped in only once it's ready: drawn at
-  // every step, each new one blanked the dashes while it loaded.
+  // outside any folder. The slot's canvas is redrawn at once; the picture
+  // a dragged tab wears is drawn afresh once the width has held still for
+  // a moment, swapped in only once it's ready: drawn at every step, each
+  // new one blanked the dashes while it loaded.
   const SLOT_DASHES_SETTLE_MS = 200;
   let lastSlotDashes = "";
   let slotDashesTimer = 0;
   function drawSlotDashes() {
     clearTimeout(slotDashesTimer);
+    drawSlotDashesNow(true);
     // (a slot not drawn yet, a folder just made or opened, is drawn at once)
     if ([...document.querySelectorAll("zen-folder[zia-empty]")].some((folder) => !folder.ziaSlotDashes)) {
       drawSlotDashesNow();
       return;
     }
-    slotDashesTimer = setTimeout(drawSlotDashesNow, SLOT_DASHES_SETTLE_MS);
+    slotDashesTimer = setTimeout(() => drawSlotDashesNow(), SLOT_DASHES_SETTLE_MS);
   }
 
   function useSlotDashes(target, image) {
@@ -9090,7 +9153,8 @@
     picture.decode().catch(() => {}).then(() => target.style.setProperty("--zia-slot-dashes-image", image));
   }
 
-  function drawSlotDashesNow() {
+  function drawSlotDashesNow(canvasOnly = false) {
+    dropGoneSlotCanvases();
     const vars = getComputedStyle(root);
     const px = (name, fallback) => parseFloat(vars.getPropertyValue(name)) || fallback;
     const height = px("--zia-slot-h", 35);
@@ -9105,6 +9169,10 @@
         ? Math.round((box.width - (parseFloat(style.paddingLeft) || 0) - (parseFloat(style.paddingRight) || 0) - inset) * dpr) / dpr
         : 0;
       if (width < 2 * radius + 2 * SLOT_DASH || height < 2 * radius) {
+        continue;
+      }
+      drawSlotCanvas(folder, container, width, height, radius, dpr);
+      if (canvasOnly) {
         continue;
       }
       const key = `${width}x${height}@${dpr}`;
@@ -9160,6 +9228,10 @@
       }
     };
     new MutationObserver(schedule).observe(tabs, { childList: true, subtree: true });
+    // (the slot's canvas takes its dashes' colour: redrawn when a folder's
+    // colour changes, or the space turns light or dark)
+    new MutationObserver(schedule).observe(tabs, { subtree: true, attributes: true, attributeFilter: ["zia-folder-color"] });
+    new MutationObserver(schedule).observe(root, { attributes: true, attributeFilter: ["zia-light"] });
     // An empty folder opens by sliding its slot down into view, as a folder
     // does its tabs. Emptied (its last tab dragged out) and shut, Zen had
     // measured it with no slot showing, so it was only 4px up out of view

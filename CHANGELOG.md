@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- "Drag tabs here": its dashes no longer stretch while you resize the
+  sidebar. They're drawn on a canvas, redrawn to size at every step, so
+  they stay 3px on and 3px off throughout, rather than stretching until
+  the sidebar held still.
+
 ## [2.96.39] — 2026-10-08
 
 ### Fixed
