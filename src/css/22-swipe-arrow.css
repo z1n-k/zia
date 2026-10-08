@@ -1,7 +1,4 @@
-/* Swiping back or forward (zia.uc.js): Dia's round arrow slides in from
-   the page's edge at the pointer's height, in place of Firefox's, and held
-   there it opens into a card of the pages the swipe goes through. */
-/* (Zia's arrow only exists while it's on; Firefox's is hidden then) */
+/* Dia's swipe arrow and card of pages (28j-swipe-arrow.js), hiding Firefox's arrow */
 :root[zia-swipe-arrow] #historySwipeAnimationContainer svg {
   opacity: 0 !important;
 }
@@ -13,11 +10,7 @@
     top: 50%;
     left: 0;
     z-index: 10;
-    /* as Dia's: a little smaller while it slides in, full size once letting
-       go would go back ([will]), growing from its middle. Its size changes
-       rather than scaling it: scaled, Firefox now and then left a
-       see-through cross in it (the middle of a rounded box, drawn in
-       pieces, dropping out) */
+    /* sized, not scaled: scaling it left a see-through cross in it */
     --zia-swipe-size: 70px;
     --zia-swipe-grow: 0.25s cubic-bezier(0.34, 1.4, 0.6, 1);
     margin-left: calc((80px - var(--zia-swipe-size)) / 2);
@@ -28,14 +21,9 @@
     pointer-events: none;
     translate: var(--zia-swipe-in) -50%;
     opacity: calc(var(--p) * 1.6);
-    /* the tab and folder hover cards' surface: their background (see-through
-       and blurred with theirs, below), their glass edge with glass on, and
-       their hairline edge (::after) with it off */
     background: var(--zia-tab-card-bg);
     box-shadow: var(--zia-glass-edge-lit);
     color: rgba(255, 255, 255, 0.92);
-    /* turning into the card as Dia's does: quick, with a touch of
-       overshoot, staying round all the way (see [open]) */
     --zia-swipe-morph: 0.2s cubic-bezier(0.3, 1.18, 0.5, 1);
     transition:
       width var(--zia-swipe-morph),
@@ -66,16 +54,10 @@
       pointer-events: none;
     }
 
-    /* (the folder hover card's spacing: rows as far in from the card's
-       edges as a tab's icon is from the tab's, and the space between two
-       tabs between two rows) */
     --zia-swipe-inset: 9.5px;
     --zia-swipe-gap: calc(2 * var(--zia-tab-gap));
 
-    /* The circle's round corners shrink to the card's, still round, and
-       only once it has settled ([settled], zia.uc.js) do they become the
-       hover cards' squircle, drawn to look the same: a squircle from the
-       start squared the circle off into a blob as it began to change. */
+    /* squircle only once [settled]: applied mid-morph, it turned the circle into a blob */
     &[open] {
       --zia-swipe-size: 80px;
       width: var(--zia-tab-card-width);
@@ -85,8 +67,6 @@
       opacity: 1;
     }
 
-    /* (the hairline too, round the squircle rather than a round corner
-       inside it) */
     &[open][settled],
     &[open][settled]::after {
       corner-shape: var(--zia-squircle) !important;
@@ -101,7 +81,6 @@
       --zia-swipe-in: -20px;
     }
 
-    /* open, it stays to pick from */
     &[open]:not([leaving]) {
       pointer-events: auto;
     }
@@ -116,9 +95,6 @@
       --zia-swipe-in: 92px;
     }
 
-    /* the open card closing (a page picked, a click round it, Escape): it
-       scales out where it is, blurring away, as Dia's does (the arrow
-       alone slides back off the edge) */
     &[leaving][commit] {
       --zia-swipe-in: 20px;
       scale: 1.08;
@@ -134,7 +110,6 @@
     }
   }
 
-  /* (kept level with the middle as the card's height closes in) */
   #zia-swipe .zia-swipe-arrow {
     position: absolute;
     inset-block: 0;
@@ -155,13 +130,10 @@
     scale: -1 1;
   }
 
-  /* past the point where letting go navigates: the arrow full white */
   #zia-swipe[will] .zia-swipe-arrow {
     color: rgb(232, 232, 234);
   }
 
-  /* as Dia's: the arrow blurs away as the card opens, and the pages blur
-     in */
   #zia-swipe[open] .zia-swipe-arrow {
     opacity: 0;
     filter: blur(6px);
@@ -184,8 +156,6 @@
   }
 
   #zia-swipe .zia-swipe-page {
-    /* (as the folder hover card's rows: a tab's height, corner, text and
-       hover) */
     display: flex;
     align-items: center;
     gap: 8px;
@@ -199,7 +169,6 @@
     color: rgba(255, 255, 255, 0.78);
     transition: background-color 0.12s ease, color 0.12s ease;
 
-    /* the next page, until the pointer picks another */
     &:is([selected], :hover) {
       background: rgba(255, 255, 255, 0.13);
       color: rgb(255, 255, 255);
@@ -211,8 +180,7 @@
       height: 16px;
     }
 
-    /* (room below the line for the tails of g, p and y, which its
-       overflow clipped with the row's line-height of 1) */
+    /* room for descenders, which overflow clipped at line-height 1 */
     & span {
       overflow: hidden;
       white-space: nowrap;
@@ -232,7 +200,6 @@
     }
   }
 
-  /* behind the open card, over the page: a click anywhere round it closes it */
   #zia-swipe-backdrop {
     position: absolute;
     inset: 0;
@@ -246,7 +213,6 @@
     }
   }
 
-/* see-through like the hover cards, when they are */
 @media -moz-pref("zia.cards.blur") {
   :root[zia-swipe-arrow] #zia-swipe {
     background: color-mix(in srgb, var(--zia-tab-card-bg) 76%, transparent);

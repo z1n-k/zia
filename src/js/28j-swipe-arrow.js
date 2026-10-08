@@ -1,12 +1,5 @@
-  // Swiping back or forward with two fingers: Dia's round arrow slides in
-  // from the page's edge, level with the middle of the page, in place of
-  // Firefox's, with a tap as it comes fully in. Hold the swipe there and it
-  // opens, with another tap, into a card of the pages it goes back (or
-  // forward) through, the next one first; the card stays once the fingers
-  // lift, to click the page wanted, and a click anywhere else closes it.
-  // A quick swipe just goes back a page, as before. Firefox does the
-  // navigating; Zia wraps its swipe animation (gHistorySwipeAnimation) and
-  // gesture handling (gGestureSupport) to follow the gesture.
+  // Dia's swipe arrow and card of pages, in place of Firefox's arrow. Firefox
+  // still navigates; this wraps gHistorySwipeAnimation and gGestureSupport.
   const SWIPE_PREF = "zia.swipe.dia-arrow";
   const SWIPE_HOLD_MS = 450;
   const SWIPE_MAX_PAGES = 8;
@@ -43,11 +36,8 @@
     return svg;
   }
 
-  // The card's tap, asked of macOS to play now. Zen's own tap leaves the
-  // timing to macOS, which with the fingers held still (no trackpad events
-  // coming) never plays it, even from a timer; Dia asks for it at once.
-  // Called straight into AppKit (NSHapticFeedbackManager) with js-ctypes;
-  // null where that can't be done, and Zen's tap is used instead.
+  // Zen's tap leaves the timing to macOS, which never plays it with the fingers
+  // held still; this asks AppKit to play it now (null where it can't).
   let tapNow;
   function nativeTapNow() {
     if (tapNow !== undefined) {
@@ -79,7 +69,7 @@
     return tapNow;
   }
 
-  // a tap on the trackpad, if Zen's haptics are on; now: macOS's at once
+  // now: play macOS's tap at once rather than Zen's
   function swipeTap(now = false) {
     try {
       if (!Services.prefs.getBoolPref(HAPTIC_PREF, true)) {
@@ -103,25 +93,22 @@
     }
     swipe.ziaWrapped = true;
     const on = () => Services.prefs.getBoolPref(SWIPE_PREF, true);
-    // Firefox's own arrow is hidden while Zia's is on (zia.css)
+    // hides Firefox's own arrow (22-swipe-arrow.css)
     const mark = () => setFlag("zia-swipe-arrow", on());
     mark();
     Services.prefs.addObserver(SWIPE_PREF, mark);
     window.addEventListener("unload", () => Services.prefs.removeObserver(SWIPE_PREF, mark));
 
-    // between a swipe starting and ending; Firefox calls its animation's
-    // methods for every swipe, whether or not its own arrow is shown
+    // Firefox calls its animation's methods on every swipe, arrow shown or not
     let swiping = false;
     let el = null;
     let backdrop = null;
     let holdTimer = null;
     let side = null;
     let pinned = false;
-    // Zen's tap only plays while a trackpad event is being handled, so the
-    // card opens on the swipe's own updates once the hold is long enough,
-    // or, held quite still (no updates coming), on a timer, its tap then
-    // asked of macOS at once (swipeTap(true)); where that can't be done, it
-    // waits for the next update or the fingers lifting
+    // Zen's tap only plays inside a trackpad event, so the card opens on an
+    // update; held still (no updates), a timer opens it with macOS's tap, and
+    // where that can't be done the tap waits for the next update or the lift
     let willSince = 0;
     let tapOwed = false;
     const payTap = () => {
@@ -144,8 +131,6 @@
       el = backdrop = side = null;
     };
 
-    // (the open card scales out where it is however it's closed, as Dia's
-    // does; the arrow alone slides back off the edge)
     const close = () => {
       const node = el;
       el = null;
@@ -188,8 +173,6 @@
       stack.append(el);
     };
 
-    // The card of pages, the next one first. It stays from here on, a click
-    // on a page going to it and a click anywhere round it closing it.
     const open = (fromEvent = false) => {
       clearHold();
       if (!el || el.hasAttribute("open")) {
@@ -213,9 +196,8 @@
           const title = document.createElementNS(XHTML_NS, "span");
           title.textContent = page.title;
           row.append(icon, title);
-          // the card on its way out first, then the page: going back
-          // straight away kept the browser busy, and the card hung there
-          // before it left
+          // close first, then navigate: navigating at once kept the browser busy
+          // and the card hung before it left
           row.addEventListener("click", () => {
             close();
             requestAnimationFrame(() => requestAnimationFrame(() => goTo(i + 1, forward)));
@@ -223,21 +205,16 @@
           return row;
         })
       );
-      // (its height from the rows', worked out with the tabs' sizes, 22)
       el.style.setProperty("--zia-swipe-n", `${pages.length}`);
       el.setAttribute("open", "");
-      // its corners turn to the hover cards' squircle once it's settled
+      // squircle only once the morph ends (see 22-swipe-arrow.css)
       const card = el;
       setTimeout(() => card.setAttribute("settled", ""), SWIPE_SETTLE_MS);
       pinned = true;
-      // behind the card, over the page: a click anywhere round it closes it
       backdrop = document.createElementNS(XHTML_NS, "div");
       backdrop.id = "zia-swipe-backdrop";
       backdrop.addEventListener("mousedown", close);
       el.before(backdrop);
-      // the arrow turning into the card
-      // (held still, no trackpad event comes to carry Zen's tap: asked of
-      // macOS to play at once; failing that, it waits for the next update)
       if (fromEvent || nativeTapNow()) {
         swipeTap(!fromEvent);
       } else {
@@ -273,7 +250,6 @@
       el.style.setProperty("--p", `${progress}`);
       const will = progress >= 1;
       if (will && !el.hasAttribute("will")) {
-        // the arrow fully in: letting go now goes back
         swipeTap();
         willSince = Date.now();
       }
@@ -291,7 +267,6 @@
 
     const leave = () => {
       payTap();
-      // the card stays once the fingers lift
       if (!pinned) {
         close();
       }
@@ -338,8 +313,7 @@
     };
     gBrowser.tabContainer.addEventListener("TabSelect", discard);
 
-    // Letting go with the card open: no going back, the card stays to pick
-    // from; otherwise Firefox's one page back
+    // letting go with the card open: no navigating, the card stays
     const gestures = window.gGestureSupport;
     const coordinate = gestures?._coordinateSwipeEventWithAnimation;
     if (gestures && coordinate) {
