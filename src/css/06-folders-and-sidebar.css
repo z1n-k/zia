@@ -276,6 +276,27 @@
     width: 24px;
     height: 24px;
   }
+
+  /* as Dia's morphs: the page's picture comes into focus out of a blur as
+     the row grows into it, and blurs away as it shrinks back */
+  @media (prefers-reduced-motion: no-preference) {
+    & > * {
+      animation: zia-morph-focus 150ms ease-out backwards;
+      transition: filter 120ms ease-in, opacity 120ms ease-in;
+    }
+
+    &[zia-leaving] > * {
+      filter: blur(6px);
+      opacity: 0;
+    }
+  }
+}
+
+@keyframes zia-morph-focus {
+  from {
+    filter: blur(6px);
+    opacity: 0;
+  }
 }
 
 #zia-split-drag-picture {

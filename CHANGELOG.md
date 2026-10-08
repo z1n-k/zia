@@ -4,6 +4,21 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.42] — 2026-10-08
+
+### Changed
+
+- The swipe's arrow turns into the card of pages as Dia's does: the
+  circle stays round as it widens into the card, quicker (0.2s, from
+  0.34s) with a touch of overshoot, the arrow blurring away and the pages
+  blurring in. Its corners squared off into a blob as it began to change.
+- The swipe's circle is a little smaller as it slides in and grows to full
+  size once letting go would go back, as Dia's does (only its arrow grew).
+- Every morph of a dragged tab comes into focus out of a blur, as Dia's
+  do: a tab, split or essential turning into its page's picture over the
+  page and back, and a tab or split turning into an essential's tile and
+  back. Not with reduced motion.
+
 ## [2.96.41] — 2026-10-08
 
 ### Changed
