@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Picking a page from the swipe's card, the card leaves at once: it hung
+  there a moment before it went, while the browser started going back.
+
 ## [2.96.42] — 2026-10-08
 
 ### Changed
