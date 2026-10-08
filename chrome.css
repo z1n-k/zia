@@ -8215,9 +8215,12 @@ zen-folder .tab-reset-button {
       min-width: 84px !important;
     }
 
+    /* (the sections, the search and the lists all as far in from the
+       Library's edges as the sidebar's tabs are from its: the sidebar's own
+       padding, 6px on macOS and 5px elsewhere) */
     & #zen-library-sidebar-tabs {
       gap: 8px !important;
-      padding-inline: 4px !important;
+      padding-inline: var(--zen-toolbox-padding) !important;
     }
 
     & .zen-library-tab {
@@ -8272,7 +8275,7 @@ zen-folder .tab-reset-button {
     & .zia-library-rail {
       position: absolute;
       top: 0;
-      inset-inline: 4px;
+      inset-inline: var(--zen-toolbox-padding);
       z-index: 0;
       border-radius: calc(var(--zia-essential-radius) * var(--zia-squircle-grow));
       corner-shape: var(--zia-squircle) !important;
@@ -8317,7 +8320,7 @@ zen-folder .tab-reset-button {
     }
 
     & .zen-library-search-top {
-      padding: 20px 10px 6px !important;
+      padding: 20px var(--zen-toolbox-padding) 6px !important;
     }
 
     & .zen-library-search-box {
@@ -8391,7 +8394,7 @@ zen-folder .tab-reset-button {
     }
 
     & .zen-library-search-results {
-      padding: 0 6px 8px !important;
+      padding: 0 var(--zen-toolbox-padding) 8px !important;
 
       &[scrolled] {
         border-top-color: color-mix(in srgb, var(--zia-lib-ink) 10%, transparent) !important;

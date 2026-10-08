@@ -24,6 +24,10 @@ Every release of Zia, newest first. The format follows
   beside each is smaller and on in Dia's blue rather than green, its knob
   going all the way to the end (it stopped 2px short); each boost's tile
   sits as far in from the row's left edge as from its top and bottom.
+- The Library's sections, its search and its lists are as far in from its
+  edges as the sidebar's tabs are from the sidebar's (6px on macOS, 5px
+  elsewhere): the sections sat closer to the edges (4px), the search
+  further in (10px).
 
 ## [2.96.48] — 2026-10-08
 
