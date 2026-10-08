@@ -3645,46 +3645,44 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   display: block;
 }
 
-#zia-tab-card,
-#zia-folder-card {
-  /* (clipped to its own squircle; its shadows, the glass edge's sides
-     among them, fall outside the clip) */
-  overflow: clip;
+/* the tab, folder and tip cards (tip: 28o-tooltips.js) */
+:is(#zia-tab-card, #zia-folder-card, #zia-tip-card) {
   position: fixed;
   z-index: 2147483647;
-  width: var(--zia-tab-card-width);
   box-sizing: border-box;
-  padding: 12px 14px 10px;
   background-color: var(--zia-tab-card-bg);
   border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow));
   corner-shape: var(--zia-squircle) !important;
-  /* (its sides a faint light line, as on the find bar, rather than dark
-     ones, which went nowhere against a dark sidebar or page) */
+  /* a faint light edge: a dark one went nowhere against a dark sidebar or page */
   box-shadow: var(--zia-glass-edge-lit);
   color: rgb(255, 255, 255);
-  pointer-events: auto;
   -moz-window-dragging: no-drag;
+
+  &[zia-open] {
+    animation: zia-tab-card-in 0.26s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  }
+
+  &[zia-snap] {
+    animation: none;
+  }
+
+  &[zia-closing] {
+    animation: zia-tab-card-out 0.12s ease-in forwards;
+    pointer-events: none;
+  }
 }
 
-#zia-tab-card[hidden],
-#zia-folder-card[hidden] {
-  display: none;
+:is(#zia-tab-card, #zia-folder-card, #zia-tip-card, .zia-tab-card-thumb, .zia-tab-card-sub, #zia-tab-card-actions, .zia-tab-card-action)[hidden] {
+  display: none !important;
 }
 
-#zia-tab-card[zia-open],
-#zia-folder-card[zia-open] {
-  animation: zia-tab-card-in 0.26s cubic-bezier(0.2, 0.9, 0.3, 1.2);
-}
-
-#zia-tab-card[zia-snap],
-#zia-folder-card[zia-snap] {
-  animation: none;
-}
-
-#zia-tab-card[zia-closing],
-#zia-folder-card[zia-closing] {
-  animation: zia-tab-card-out 0.12s ease-in forwards;
-  pointer-events: none;
+#zia-tab-card,
+#zia-folder-card {
+  /* clip, so the shadows (the glass edge's sides) fall outside it */
+  overflow: clip;
+  width: var(--zia-tab-card-width);
+  padding: 12px 14px 10px;
+  pointer-events: auto;
 }
 
 @keyframes zia-tab-card-out {
@@ -3702,24 +3700,13 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 #zia-folder-card {
   width: 222px;
   padding: 0;
-  box-sizing: border-box;
   overflow: hidden;
 }
 
-/* the same card, just a name in it: the spaces' and add-ons' tips
-   (zia.uc.js, tip cards) */
 #zia-tip-card {
-  position: fixed;
-  z-index: 2147483647;
-  box-sizing: border-box;
   width: max-content;
   max-width: var(--zia-tab-card-width);
   padding: 10px 14px;
-  background-color: var(--zia-tab-card-bg);
-  border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow));
-  corner-shape: var(--zia-squircle) !important;
-  box-shadow: var(--zia-glass-edge-lit);
-  color: rgb(255, 255, 255);
   font-weight: 600;
   font-size: 13px;
   line-height: 1.35;
@@ -3727,36 +3714,13 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   overflow: hidden;
   text-overflow: ellipsis;
   pointer-events: none;
-  -moz-window-dragging: no-drag;
-}
-
-#zia-tip-card[hidden] {
-  display: none;
-}
-
-#zia-tip-card[zia-open] {
-  animation: zia-tab-card-in 0.26s cubic-bezier(0.2, 0.9, 0.3, 1.2);
-}
-
-#zia-tip-card[zia-snap] {
-  animation: none;
-}
-
-#zia-tip-card[zia-closing] {
-  animation: zia-tab-card-out 0.12s ease-in forwards;
-  pointer-events: none;
 }
 
 .zia-folder-card-list {
-  /* the rows sit as far in from the card's edges, all round, as a tab's
-     icon sits in from the tab's edge (measured off a tab: zia.uc.js); at
-     the top and bottom, less the margin each row already has */
+  /* a tab's icon inset (measured: 27-hover-cards.js), less each row's own margin */
   --zia-folder-card-inset: 9.5px;
   padding: calc(var(--zia-folder-card-inset) - var(--zia-folder-card-gap)) var(--zia-folder-card-inset);
-  /* ten rows exactly: each is the tab's height with a margin above and
-     below, and between two rows those margins are one, so ten take ten
-     heights and eleven margins. The margin is the space between two tabs
-     in the sidebar (their gap above and below each). */
+  /* ten rows exactly: ten tab heights and eleven margins */
   --zia-folder-card-gap: calc(2 * var(--zia-tab-gap));
   max-height: calc(10 * var(--zia-tab-height) + 11 * var(--zia-folder-card-gap) + 2 * (var(--zia-folder-card-inset) - var(--zia-folder-card-gap)));
   box-sizing: border-box;
@@ -3786,12 +3750,10 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 }
 
 .zia-folder-card-row[zia-selected] {
-  /* dark on the card's lighter grey, as on a folder's box in the sidebar */
   background-color: var(--zia-active-tab-bg-folder);
   color: rgb(255, 255, 255);
   position: relative;
 
-  /* the selected tab's thin edge, without its glow */
   &::after {
     content: "";
     position: absolute;
@@ -3841,22 +3803,21 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   color: rgba(255, 255, 255, 0.55);
 }
 
-.zia-folder-card-icon {
-  flex: none;
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
-  -moz-context-properties: fill, fill-opacity;
-  fill: currentColor;
-}
-
+.zia-folder-card-icon,
 .zia-folder-card-sound {
   flex: none;
   width: 16px;
   height: 16px;
-  margin-inline: 2px 6px;
   -moz-context-properties: fill, fill-opacity;
   fill: currentColor;
+}
+
+.zia-folder-card-icon {
+  object-fit: contain;
+}
+
+.zia-folder-card-sound {
+  margin-inline: 2px 6px;
 }
 
 .zia-folder-card-label {
@@ -3879,9 +3840,6 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   }
 }
 
-/* the page's picture, with Firefox's hover previews on (zia.uc.js): full
-   width across the top of the card, its corners following the card's, a
-   faint tile until it's drawn */
 .zia-tab-card-thumb {
   display: block;
   width: calc(100% + 28px);
@@ -3890,10 +3848,6 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   margin: -12px -14px 10px;
   background: rgba(255, 255, 255, 0.05);
   border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
-
-  &[hidden] {
-    display: none;
-  }
 }
 
 :root[zia-light] .zia-tab-card-thumb {
@@ -3920,19 +3874,10 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   text-overflow: ellipsis;
 }
 
-.zia-tab-card-sub[hidden] {
-  display: none;
-}
-
 #zia-tab-card-actions {
   display: flex;
   gap: 2px;
   margin: 8px -6px -4px;
-}
-
-#zia-tab-card-actions[hidden],
-.zia-tab-card-action[hidden] {
-  display: none !important;
 }
 
 .zia-tab-card-action {
@@ -3953,8 +3898,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   corner-shape: var(--zia-squircle) !important;
 }
 
-/* (faded as a whole, not each shape: where an icon's strokes overlap, the
-   pin's corners and the split's middle, they showed brighter) */
+/* faded as a whole: faded per shape, overlapping strokes showed brighter */
 .zia-tab-card-action img {
   width: 17px;
   height: 17px;
@@ -4004,9 +3948,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   padding-inline-end: calc((var(--zia-tab-height) - var(--zia-close-size)) / 2) !important;
 }
 
-/* A page peeked at with Option-click shows as a small tab tucked into the
-   right of the tab it came from: a soft light tile behind its icon, with
-   none of the selected tab's glow or edge. */
+/* a glance (Option-click peek) tab: a soft light tile, no glow or edge */
 .tabbrowser-tab[zen-glance-tab]:not(#zia-none) > .tab-stack > .tab-background {
   background: rgba(255, 255, 255, 0.1) !important;
   box-shadow: none !important;
@@ -4017,8 +3959,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   display: none !important;
 }
 
-/* ...and a true square, the icon in its middle: Zia's usual tab height and
-   padding would otherwise stretch it wider than it is tall. */
+/* a true square: Zia's tab height and padding would stretch it */
 .tabbrowser-tab[zen-glance-tab]:not(#zia-none) {
   --zia-glance-size: var(--size-item-medium, 26px);
   width: var(--zia-glance-size) !important;
@@ -4050,7 +3991,6 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
     padding: 0 !important;
   }
 
-  /* only the icon: nothing beside it to push it off centre */
   & .tab-content > :not(.tab-icon-stack) {
     display: none !important;
   }
@@ -4060,9 +4000,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   }
 }
 
-/* ...but on an essential, a small card fanned out from behind the
-   essential's icon, which steps aside for it. It springs out of the icon;
-   closing, a stand-in (.zia-glance-ghost, zia.uc.js) is sucked back in. */
+/* on an essential: a small tilted card behind its icon (.zia-glance-ghost: the closing stand-in) */
 .tabbrowser-tab[zen-essential] > .tab-stack > .tab-content > :is(.tabbrowser-tab[zen-glance-tab], .zia-glance-ghost):not(#zia-none) {
   position: absolute !important;
   top: 6px !important;
@@ -4092,9 +4030,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   & > .tab-stack > .tab-background::before {
     border: none !important;
     border-radius: calc(9px * var(--zia-squircle-grow)) !important;
-    /* Zia's glass, as on the essential it sits on: its edge and squircle,
-       and a soft lift off it (no blur behind it: tilted, it drew a line of
-       the colour behind down the side of its box) */
+    /* no backdrop blur: tilted, it drew a line of the colour behind down its side */
     corner-shape: var(--zia-squircle) !important;
     background: rgba(255, 255, 255, 0.16) !important;
     backdrop-filter: none !important;
@@ -4107,9 +4043,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
     animation: zia-glance-icon-in 0.34s cubic-bezier(0.3, 1.4, 0.5, 1) both;
   }
 
-  /* Nothing while the page is still loading (Zen's placeholder logo, the
-     loading spinner): the card stays empty until the site's own icon comes,
-     which then fades and grows in (showing again restarts the animation). */
+  /* empty until the site's own icon arrives, which then grows in */
   & :is(.tab-throbber, .tab-icon-pending),
   &[busy] .tab-icon-image,
   & .tab-icon-image:is(:not([src]), [src=""], [src="chrome://branding/content/icon32.png"], :-moz-broken) {
@@ -4155,9 +4089,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 }
 
 
-/* Optionally the tab, folder and essential hover cards are a touch
-   see-through, with what's behind them blurred, like the compact sidebar
-   and the address bar pop-up. */
+/* see-through cards (zia.cards.blur) */
 @media -moz-pref("zia.cards.blur") {
   #zia-tab-card,
   #zia-folder-card,
@@ -4173,8 +4105,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   }
 }
 
-/* Optional: a coloured folder's card takes the folder's colour, as its row
-   in the sidebar does (the same wash, over the card's own background) */
+/* a coloured folder's card takes its colour (zia.folders.tint-card) */
 @media -moz-pref("zia.folders.tint-card") {
   #zia-folder-card {
     &[zia-folder-color="green"] { --zia-folder-swatch: var(--zia-fc-green); }
@@ -4191,8 +4122,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
     }
   }
 
-  /* (with the cards see-through, as see-through: the setting's own
-     background, which overrode it, left it grey) */
+  /* see-through too: the blur setting's background overrode the tint, leaving it grey */
   @media -moz-pref("zia.cards.blur") {
     #zia-folder-card[zia-folder-color]:not([zia-folder-color="white"]) {
       background-color: color-mix(in srgb, var(--zia-folder-card-bg) 76%, transparent) !important;
@@ -4200,9 +4130,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   }
 }
 
-/* Light mode (a light space, or no space colour in light mode): the tab,
-   folder and essential cards are light cards with dark ink, like the
-   sidebar they come out of */
+/* light mode: light cards with dark ink */
 :root[zia-light]:not(#zia-none) {
   --zia-tab-card-bg: rgb(250, 250, 251);
   --zia-tab-card-sub: rgba(28, 28, 32, 0.55);
