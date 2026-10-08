@@ -2154,6 +2154,13 @@ zen-essentials-promo {
   transition: min-height 140ms ease-out;
 }
 
+/* (and the list under them moves at once as Zen's drop cell opens or
+   closes a row of essentials: Zen's slide trailed the dragged tab, which
+   lagged and dipped the top of the list) */
+:root[zia-dragging-tab] zen-workspace {
+  transition: none !important;
+}
+
 :is(#zen-essentials, .zen-essentials-container)[zia-make-room] {
   min-height: var(--zia-room) !important;
 }
@@ -5179,7 +5186,11 @@ tab-group[split-view-group] .tab-group-container > .tabbrowser-tab::after {
 
 :root[zen-sidebar-expanded="true"] tab-group[split-view-group]:is([hasactivetab], :has(.tabbrowser-tab[visuallyselected])) .tab-group-container {
   background: var(--zia-active-tab-bg) !important;
-  box-shadow: 0 0 var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color) !important;
+  /* the selected tab's glow, all three layers (04): with the first alone it was fainter */
+  box-shadow:
+    0 0 var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color),
+    0 calc(-1 * var(--zia-active-glow-reach)) var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color),
+    0 var(--zia-active-glow-reach) var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color) !important;
 
   &::after {
     content: "";

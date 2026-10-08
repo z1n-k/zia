@@ -15,6 +15,12 @@ Every release of Zia, newest first. The format follows
 - Dragging an essential out over the page (to split it): only its page's
   picture shows, as for a tab. Its tile stayed behind at the sidebar's
   edge as well.
+- A tab dragged into the essentials and back out (before it became one)
+  can go straight to the top of the list. It came back below the first
+  folder, so you had to go down and back up; and it now settles into its
+  row at once, where it dipped and jolted while the list caught up.
+- A selected split glows as brightly as a selected tab (it had only part
+  of the tab's glow).
 
 ## [2.97.1] — 2026-10-08
 

@@ -177,6 +177,13 @@ zen-essentials-promo {
   transition: min-height 140ms ease-out;
 }
 
+/* (and the list under them moves at once as Zen's drop cell opens or
+   closes a row of essentials: Zen's slide trailed the dragged tab, which
+   lagged and dipped the top of the list) */
+:root[zia-dragging-tab] zen-workspace {
+  transition: none !important;
+}
+
 :is(#zen-essentials, .zen-essentials-container)[zia-make-room] {
   min-height: var(--zia-room) !important;
 }

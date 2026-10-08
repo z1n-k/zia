@@ -12491,6 +12491,8 @@
     let proxyLeaveTimer = 0;
     let landingTab = null;
     const PROXY_MS = 140;
+    // (back into a row quicker than it became a tile: as long, it lagged)
+    const PROXY_BACK_MS = 100;
 
     // The copies a drag shows are clones of the tab, so Zen can take one for
     // a real tab: taking an essential out of the essentials mid-drag, it moved
@@ -12691,7 +12693,6 @@
         return;
       }
       proxy.ziaLeaving = true;
-      const row = drag.moving.getBoundingClientRect();
       // (it goes back to its row, not a tile stretched to a row's size:
       // a tab as a split does)
       if (proxy.hasAttribute("zen-essential")) {
@@ -12700,20 +12701,38 @@
         proxy.removeAttribute("pinned");
         sizeProxy(proxy, current.width, current.height);
         proxy.getBoundingClientRect();
-        fadeSplitContent(proxy, PROXY_MS);
+        fadeSplitContent(proxy, PROXY_BACK_MS);
       }
-      proxy.style.setProperty("transition", `all ${PROXY_MS}ms ease-out`, "important");
-      sizeProxy(proxy, row.width, row.height);
-      moveProxy(row.left + row.width / 2, row.top + row.height / 2);
+      // Eased frame by frame to wherever its row is now: Zen slides the list
+      // up as its cell in the essentials goes, so the row's place moves as
+      // the tile travels (sent to where it was, it landed off and jumped)
       const leaving = proxy;
       const moving = drag.moving;
+      const from = leaving.getBoundingClientRect();
+      const began = performance.now();
+      leaving.style.setProperty("transition", "none", "important");
+      const step = (now) => {
+        if (proxy !== leaving || !leaving.ziaLeaving) {
+          return;
+        }
+        const t = Math.min(1, (now - began) / PROXY_BACK_MS);
+        const k = 1 - (1 - t) * (1 - t);
+        const row = moving.getBoundingClientRect();
+        const at = (a, b) => a + (b - a) * k;
+        sizeProxy(leaving, at(from.width, row.width), at(from.height, row.height));
+        moveProxy(at(from.left + from.width / 2, row.left + row.width / 2), at(from.top + from.height / 2, row.top + row.height / 2));
+        if (t < 1) {
+          requestAnimationFrame(step);
+        }
+      };
+      requestAnimationFrame(step);
       proxyLeaveTimer = setTimeout(() => {
         if (proxy === leaving && leaving.ziaLeaving) {
           leaving.remove();
           proxy = null;
           moving.removeAttribute("zia-to-essential");
         }
-      }, PROXY_MS);
+      }, PROXY_BACK_MS);
     };
 
     const landProxy = (tab) => {
@@ -13200,6 +13219,7 @@
         shifted: new Set(),
         sepTop,
         sepDelta: 0,
+        tilesBottom: essentialsBottom(),
         clientY: event.clientY || pending?.clientY || 0,
         screenY: event.screenY || pending?.screenY || 0,
       };
@@ -13408,6 +13428,13 @@
         drag.firstTop = drag.rows?.length ? Math.min(...drag.rows.map((row) => row.top)) : null;
         if (!overEssentials && !hasTiles && drag.firstTop != null) {
           overEssentials = point.y < drag.firstTop + 4;
+        }
+        // (no lower than the essentials' bottom as the drag began: Zen's cell
+        // for the tab can open a row below them, which went once the pointer
+        // left it, the list jumping up a row under the pointer, so the tab
+        // came back below the first row and couldn't reach the top)
+        if (hasTiles && point.y > drag.tilesBottom + 6) {
+          overEssentials = false;
         }
         drag.hasTiles = hasTiles;
         debugDrag(event, point, sidebar, essentials);
