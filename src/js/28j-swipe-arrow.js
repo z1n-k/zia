@@ -8,7 +8,7 @@
   // navigating; Zia wraps its swipe animation (gHistorySwipeAnimation) and
   // gesture handling (gGestureSupport) to follow the gesture.
   const SWIPE_PREF = "zia.swipe.dia-arrow";
-  const SWIPE_HOLD_MS = 450;
+  const SWIPE_HOLD_MS = 300;
   const SWIPE_MAX_PAGES = 8;
   const SWIPE_LEAVE_MS = 260;
 
@@ -295,7 +295,7 @@
         if (Date.now() - willSince >= SWIPE_HOLD_MS) {
           open(true);
         } else if (!holdTimer) {
-          holdTimer = setTimeout(open, SWIPE_HOLD_MS + 120);
+          holdTimer = setTimeout(open, SWIPE_HOLD_MS);
         }
       } else {
         clearHold();

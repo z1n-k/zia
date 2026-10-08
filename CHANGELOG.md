@@ -6,6 +6,11 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- The swipe's arrow turns into the card of pages sooner: after 0.3s held
+  there, from about half a second.
+
 ### Fixed
 
 - macOS: holding a swipe still until its arrow turns into the card of
