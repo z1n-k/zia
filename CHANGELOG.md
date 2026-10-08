@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.29] — 2026-10-08
+
+### Added
+
+- As an empty folder opens, a light passes once through its "Drag tabs
+  here", left to right, the way an AI's answer shines as it's written,
+  then the words rest in their usual grey. Not with reduced motion.
+
 ## [2.96.28] — 2026-10-07
 
 ### Fixed
