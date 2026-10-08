@@ -2622,6 +2622,27 @@ zen-split-fake-tab {
     width: 24px;
     height: 24px;
   }
+
+  /* as Dia's morphs: the page's picture comes into focus out of a blur as
+     the row grows into it, and blurs away as it shrinks back */
+  @media (prefers-reduced-motion: no-preference) {
+    & > * {
+      animation: zia-morph-focus 150ms ease-out backwards;
+      transition: filter 120ms ease-in, opacity 120ms ease-in;
+    }
+
+    &[zia-leaving] > * {
+      filter: blur(6px);
+      opacity: 0;
+    }
+  }
+}
+
+@keyframes zia-morph-focus {
+  from {
+    filter: blur(6px);
+    opacity: 0;
+  }
 }
 
 #zia-split-drag-picture {
@@ -7679,6 +7700,9 @@ zen-folder .tab-reset-button {
     overflow: hidden;
     pointer-events: none;
     translate: var(--zia-swipe-in) -50%;
+    /* as Dia's: a little smaller while it slides in, full size once letting
+       go would go back ([will]) */
+    scale: 0.875;
     opacity: calc(var(--p) * 1.6);
     /* the tab and folder hover cards' surface: their background (see-through
        and blurred with theirs, below), their hairline edge (::after) */
@@ -7692,7 +7716,12 @@ zen-folder .tab-reset-button {
       width var(--zia-swipe-morph),
       height var(--zia-swipe-morph),
       border-radius var(--zia-swipe-morph),
+      scale 0.25s cubic-bezier(0.34, 1.4, 0.6, 1),
       opacity 0.12s linear;
+
+    &:is([will], [open]) {
+      scale: 1;
+    }
 
     &[side="forward"] {
       left: auto;
@@ -7777,7 +7806,6 @@ zen-folder .tab-reset-button {
   /* past the point where letting go navigates: the arrow full white */
   #zia-swipe[will] .zia-swipe-arrow {
     color: rgb(232, 232, 234);
-    scale: 1.06;
   }
 
   /* as Dia's: the arrow blurs away as the card opens, and the pages blur

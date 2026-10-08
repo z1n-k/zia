@@ -12918,13 +12918,19 @@
     // A stand-in changing shape between a row and a tile (a split's, or any
     // essential's): what's in it is hidden while the box morphs, and shows
     // again once it's the new shape (an essential's icon stretched across a
-    // row's width, or a split's icons slid about, looked broken)
+    // row's width, or a split's icons slid about, looked broken), coming
+    // into focus out of a blur as it does, as Dia's morphs do
     const fadeSplitContent = (node, ms) => {
       if (!node) {
         return;
       }
+      const blur = matchMedia("(prefers-reduced-motion: reduce)").matches ? "blur(0px)" : "blur(6px)";
       node.querySelector(".tab-content")?.animate(
-        [{ opacity: 0 }, { opacity: 0, offset: 0.6 }, { opacity: 1 }],
+        [
+          { opacity: 0, filter: blur },
+          { opacity: 0, filter: blur, offset: 0.45 },
+          { opacity: 1, filter: "blur(0px)" },
+        ],
         { duration: Math.round(ms * 1.5), easing: "ease-out" }
       );
     };
