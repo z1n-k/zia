@@ -29,9 +29,10 @@
     translate: var(--zia-swipe-in) -50%;
     opacity: calc(var(--p) * 1.6);
     /* the tab and folder hover cards' surface: their background (see-through
-       and blurred with theirs, below), their hairline edge (::after) */
+       and blurred with theirs, below), their glass edge with glass on, and
+       their hairline edge (::after) with it off */
     background: var(--zia-tab-card-bg);
-    box-shadow: var(--zia-hover-card-shadow);
+    box-shadow: var(--zia-glass-edge-lit);
     color: rgba(255, 255, 255, 0.92);
     /* turning into the card as Dia's does: quick, with a touch of
        overshoot, staying round all the way (see [open]) */
@@ -45,16 +46,7 @@
 
     &[will]:not([open]) {
       --zia-swipe-size: 80px;
-      transition:
-        width var(--zia-swipe-grow),
-        height var(--zia-swipe-grow),
-        border-radius var(--zia-swipe-grow),
-        margin var(--zia-swipe-grow),
-        opacity 0.12s linear;
-    }
-
-    &[open] {
-      --zia-swipe-size: 80px;
+      --zia-swipe-morph: var(--zia-swipe-grow);
     }
 
     &[side="forward"] {
@@ -85,6 +77,7 @@
        hover cards' squircle, drawn to look the same: a squircle from the
        start squared the circle off into a blob as it began to change. */
     &[open] {
+      --zia-swipe-size: 80px;
       width: var(--zia-tab-card-width);
       height: calc(var(--zia-swipe-n, 1) * var(--zia-tab-height) + (var(--zia-swipe-n, 1) - 1) * var(--zia-swipe-gap) + 2 * var(--zia-swipe-inset));
       border-radius: var(--zia-tab-card-radius);
@@ -92,9 +85,15 @@
       opacity: 1;
     }
 
+    /* (the hairline too, round the squircle rather than a round corner
+       inside it) */
+    &[open][settled],
+    &[open][settled]::after {
+      corner-shape: var(--zia-squircle) !important;
+    }
+
     &[open][settled] {
       border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow));
-      corner-shape: var(--zia-squircle) !important;
       transition: opacity 0.12s linear;
     }
 
@@ -225,17 +224,6 @@
   #zia-swipe .zia-swipe-pages:hover .zia-swipe-page[selected]:not(:hover) {
     background: transparent;
     color: rgba(255, 255, 255, 0.78);
-  }
-
-  /* its edge as the hover cards': the glass edge, with glass on (the
-     hairline below with it off), and the hairline round the open card's
-     squircle rather than a round corner inside it */
-  :root:not(#zia-none) #zia-swipe {
-    box-shadow: var(--zia-glass-edge-lit);
-  }
-
-  :root:not(#zia-none) #zia-swipe[open][settled]::after {
-    corner-shape: var(--zia-squircle) !important;
   }
 
   @media -moz-pref("zia.glass") {

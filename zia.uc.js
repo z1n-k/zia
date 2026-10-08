@@ -17377,17 +17377,6 @@
     return svg;
   }
 
-  // a tap on the trackpad, if Zen's haptics are on
-  function swipeTap() {
-    try {
-      if (Services.prefs.getBoolPref(HAPTIC_PREF, true)) {
-        zenHaptic?.();
-      }
-    } catch (err) {
-      noteError("swipe arrow: tap", err);
-    }
-  }
-
   // The card's tap, asked of macOS to play now. Zen's own tap leaves the
   // timing to macOS, which with the fingers held still (no trackpad events
   // coming) never plays it, even from a timer; Dia asks for it at once.
@@ -17424,19 +17413,20 @@
     return tapNow;
   }
 
-  function swipeTapNow() {
+  // a tap on the trackpad, if Zen's haptics are on; now: macOS's at once
+  function swipeTap(now = false) {
     try {
       if (!Services.prefs.getBoolPref(HAPTIC_PREF, true)) {
         return;
       }
-      const tap = nativeTapNow();
+      const tap = now && nativeTapNow();
       if (tap) {
         tap();
       } else {
         zenHaptic?.();
       }
     } catch (err) {
-      noteError("swipe arrow: tap now", err);
+      noteError("swipe arrow: tap", err);
     }
   }
 
@@ -17464,7 +17454,7 @@
     // Zen's tap only plays while a trackpad event is being handled, so the
     // card opens on the swipe's own updates once the hold is long enough,
     // or, held quite still (no updates coming), on a timer, its tap then
-    // asked of macOS at once (swipeTapNow); where that can't be done, it
+    // asked of macOS at once (swipeTap(true)); where that can't be done, it
     // waits for the next update or the fingers lifting
     let willSince = 0;
     let tapOwed = false;
@@ -17480,37 +17470,25 @@
       holdTimer = null;
     };
 
-    const fade = (node) => {
-      if (!node) {
-        return;
-      }
-      node.setAttribute("leaving", "");
-      setTimeout(() => node.remove(), SWIPE_LEAVE_MS);
-    };
-
     const discard = () => {
       clearHold();
       pinned = false;
       el?.remove();
       backdrop?.remove();
-      el = null;
-      backdrop = null;
-      side = null;
+      el = backdrop = side = null;
     };
 
     // (the open card scales out where it is however it's closed, as Dia's
     // does; the arrow alone slides back off the edge)
     const close = () => {
-      if (el?.hasAttribute("open")) {
-        el.setAttribute("commit", "");
-      }
-      clearHold();
-      pinned = false;
-      fade(el);
-      backdrop?.remove();
+      const node = el;
       el = null;
-      backdrop = null;
-      side = null;
+      discard();
+      if (node) {
+        node.toggleAttribute("commit", node.hasAttribute("open"));
+        node.setAttribute("leaving", "");
+        setTimeout(() => node.remove(), SWIPE_LEAVE_MS);
+      }
     };
 
     const goTo = (depth, forward) => {
@@ -17551,11 +17529,11 @@
       if (!el || el.hasAttribute("open")) {
         return;
       }
-      const pages = swipePages(side === "forward");
+      const forward = side === "forward";
+      const pages = swipePages(forward);
       if (!pages.length) {
         return;
       }
-      const forward = side === "forward";
       const list = el.querySelector(".zia-swipe-pages");
       list.replaceChildren(
         ...pages.map((page, i) => {
@@ -17594,10 +17572,8 @@
       // the arrow turning into the card
       // (held still, no trackpad event comes to carry Zen's tap: asked of
       // macOS to play at once; failing that, it waits for the next update)
-      if (fromEvent) {
-        swipeTap();
-      } else if (nativeTapNow()) {
-        swipeTapNow();
+      if (fromEvent || nativeTapNow()) {
+        swipeTap(!fromEvent);
       } else {
         tapOwed = true;
       }
@@ -17621,8 +17597,7 @@
         clearHold();
         return;
       }
-      const wanted = forward ? "forward" : "back";
-      if (!el || side !== wanted) {
+      if (!el || side !== (forward ? "forward" : "back")) {
         build(forward);
       }
       if (!el) {
@@ -17651,10 +17626,9 @@
     const leave = () => {
       payTap();
       // the card stays once the fingers lift
-      if (pinned) {
-        return;
+      if (!pinned) {
+        close();
       }
-      close();
     };
 
     window.addEventListener(
