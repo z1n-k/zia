@@ -4,13 +4,20 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.45] — 2026-10-08
+
+### Changed
+
+- The folder icon's tab, at the top left behind it, is about half as wide
+  again.
+
 ## [2.96.44] — 2026-10-08
 
 ### Changed
 
 - The swipe's card closes as Dia's does, scaling out where it is and
   blurring away, rather than sliding back off the edge: a page picked
-  from it, a click round it, or Escape.
+  from it, a click around it, or Escape.
 
 ## [2.96.43] — 2026-10-08
 
@@ -79,8 +86,8 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
-- "Drag tabs here": its dashes are even all the way round at any sidebar
-  width. 2.96.36's ran round from the top-left and came back to it short
+- "Drag tabs here": its dashes are even all the way around at any sidebar
+  width. 2.96.36's ran around from the top-left and came back to it short
   or long; each slot's are now drawn to its size, two dashes on each
   corner and the sides' spread evenly between, every one on a whole
   pixel. A tab dragged in wears the same.
@@ -172,7 +179,7 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
-- The keyword search pill has Zia's gap round it at last: the same gap
+- The keyword search pill has Zia's gap around it at last: the same gap
   after the search icon and after the pill, before the text. Zia lines the
   text up with the rows below, and in a keyword search the pill pushing the
   text along made it shrink that gap to nothing, for the pill and, until
@@ -286,7 +293,7 @@ Every release of Zia, newest first. The format follows
 
 - The music player's edge, with glass off, is now only the essentials' fine
   shine, fading into the corners, and subtler still: an old hairline all the
-  way round it had stayed on top, so it read as an even outline. With glass
+  way around it had stayed on top, so it read as an even outline. With glass
   on, it now gets the glass edge, which that hairline had hidden too.
 
 ## [2.96.15] — 2026-10-06
@@ -303,8 +310,8 @@ Every release of Zia, newest first. The format follows
 
 - Essentials, folders and the Library's tiles on a Zen that can't draw
   squircles (seen on Windows): their corners came out oversized and round,
-  and the fine shine round them showed only along the straight sides. There
-  the corners are now round at their usual size, with the shine round the
+  and the fine shine around them showed only along the straight sides. There
+  the corners are now round at their usual size, with the shine around the
   whole edge, and the music player's progress ring follows suit.
 
 ## [2.96.13] — 2026-10-06
@@ -313,9 +320,9 @@ Every release of Zia, newest first. The format follows
 
 - The music player in Zia's own shapes and icons: the card a squircle like
   Zia's other cards (its glow and the cards stacked behind it too), with
-  the essentials' fine shine round it (the glass edge, with glass on); the
+  the essentials' fine shine around it (the glass edge, with glass on); the
   artwork a squircle tile like an essential's, its progress ring the same
-  squircle round it, starting from the top in the middle; its buttons
+  squircle around it, starting from the top in the middle; its buttons
   Zia's squircle buttons, in Zia's icons (play, pause, back, forward,
   picture-in-picture, close).
 
@@ -324,20 +331,20 @@ Every release of Zia, newest first. The format follows
 ### Changed
 
 - Folders' fine shine is Dia's rows': measured off Dia's folder rows, lit
-  along the top and bottom only, softer, fading out round each corner to
-  about half, with the short ends unlit (Zia's shone evenly all round, as
+  along the top and bottom only, softer, fading out around each corner to
+  about half, with the short ends unlit (Zia's shone evenly all around, as
   an essential's does; Dia's essentials do, its rows don't).
 
 ### Fixed
 
 - The Library's media tiles' shine follows their squircle all the way
-  round, as the essentials' does (it thickened into each corner).
+  around, as the essentials' does (it thickened into each corner).
 
 ## [2.96.11] — 2026-10-06
 
 ### Changed
 
-- The fine shine round the essentials, folders and the Library's tiles is
+- The fine shine around the essentials, folders and the Library's tiles is
   Dia's: as bright down the sides as along the top and bottom, a touch
   softer overall, and fading much further into the corners (measured off
   Dia's essentials: the corner about half the sides').
@@ -425,7 +432,7 @@ Every release of Zia, newest first. The format follows
 
 - Folders take Dia's row shape: measured off Dia's folder and tab rows, a
   softer squircle than its essentials' (superellipse(1.5)) over a corner
-  of about 14px. Their fine shine follows it all the way round.
+  of about 14px. Their fine shine follows it all the way around.
 - The essentials' squircle corner is Dia's 18px.
 
 ### Fixed
@@ -441,7 +448,7 @@ Every release of Zia, newest first. The format follows
   rule held the others at the old, shorter corner.
 - With glass off, the essentials' and the Library's edge is the fine shine
   they had before glass, brightest along the middle of each side and
-  fading into the corners, now following the squircle all the way round.
+  fading into the corners, now following the squircle all the way around.
 
 ## [2.96.1] — 2026-10-06
 
@@ -452,15 +459,15 @@ Every release of Zia, newest first. The format follows
   rather than a ring whose inside stayed square, which thickened into a
   point at each corner.
 - The chosen essential keeps the same squircle as the others: the colour
-  round it was cut to a round corner, so it came out rounder.
+  around it was cut to a round corner, so it came out rounder.
 
 ## [2.96.0] — 2026-10-06
 
 ### Added
 
 - Glass is now an option, off by default: "Glass" under Look. Off, Zia
-  looks as it did before glass came in: the fine shine round the
-  essentials and the Library's buttons, a hairline round the hover cards,
+  looks as it did before glass came in: the fine shine around the
+  essentials and the Library's buttons, a hairline around the hover cards,
   the old edges on the selected essential's tile, a glance's card, the
   split cards and the find bar, and no light where you press. On, it's the
   macOS Tahoe glass edge and press light, as in 2.94 and since.
@@ -686,7 +693,7 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
-- Tab numbers are quieter: a fainter outline round each number, and the
+- Tab numbers are quieter: a fainter outline around each number, and the
   numbers a touch dimmer.
 
 ## [2.94.12] — 2026-10-05
@@ -775,7 +782,7 @@ Every release of Zia, newest first. The format follows
 
 ### Removed
 
-- The blue outline round the Library button while AI renaming names a
+- The blue outline around the Library button while AI renaming names a
   download.
 
 ## [2.94.4] — 2026-10-05
@@ -856,7 +863,7 @@ Every release of Zia, newest first. The format follows
   you have it as its own mod; Zia's copy uses the same settings. Its code
   is slimmed for Zia (about 4,800 lines to 1,300, leftovers of an older
   download pile gone). While a file's being renamed, only a glowing
-  outline shows round the Library button; once it has its new name, a
+  outline shows around the Library button; once it has its new name, a
   small glass pop-up in Zia's look floats above the sidebar's foot,
   moving nothing, out of the way while the Library is open; in compact
   mode a toast says it, with an Undo. Downloads from private
@@ -908,7 +915,7 @@ Every release of Zia, newest first. The format follows
 
 - The Library's sliding section tile, Filter and Clear, and Media's tiles
   have the essentials' fine edge, brightest along the middle of each side
-  and fading into the corners, rather than an even line all round.
+  and fading into the corners, rather than an even line all around.
 
 ## [2.93.1] — 2026-10-04
 
@@ -1043,7 +1050,7 @@ Every release of Zia, newest first. The format follows
   update, a card was dropped as it was made if the stream didn't say
   where it was up to, which Kick's live player doesn't; and Kick's player
   then gives a few seconds' position at a time, which showed as a
-  progress line looping round every three seconds.
+  progress line looping around every three seconds.
 - Switching spaces, the tabs no longer slide in under the essentials.
   Zen keeps every space's tabs clear of the essentials, but a space made
   since Zen started wasn't always given that room (seen on Windows); Zia
@@ -1054,7 +1061,7 @@ Every release of Zia, newest first. The format follows
 ### Fixed
 
 - In a split, each pane's corners (and the focused pane's outline) sit
-  evenly inside the frame round them. On Windows they were rounder or
+  evenly inside the frame around them. On Windows they were rounder or
   tighter than the page's corners, which take the window's.
 
 ## [2.91.2] — 2026-10-04
@@ -1079,7 +1086,7 @@ Every release of Zia, newest first. The format follows
 ### Changed
 
 - A folder's hover card (the card listing its tabs) keeps its tabs as
-  far in from its edges, all round, as a tab's icon sits in from the
+  far in from its edges, all around, as a tab's icon sits in from the
   tab's edge in the sidebar.
 
 ### Fixed
@@ -1223,7 +1230,7 @@ Every release of Zia, newest first. The format follows
 
 - Light spaces: the music card was a grey wash with white writing, the
   essentials faint white tiles, the buttons on tabs (close, unload) white,
-  and an open folder's box and the fine edges round tabs and folders
+  and an open folder's box and the fine edges around tabs and folders
   white on cream, so they all but disappeared; so did the glass folder in
   the space's pale colour, and the arrow in an empty folder's "Drag tabs
   here". The music card is now a white card in the dark ink, the
@@ -1309,7 +1316,7 @@ Every release of Zia, newest first. The format follows
   Firefox's, with a tap on the trackpad as it comes fully in. Hold the
   swipe and it opens, with another tap, into a card of the pages it goes
   through, the next one first; it stays when you let go, to click the
-  page you want, and a click anywhere round it (or Escape) closes it. A
+  page you want, and a click anywhere around it (or Escape) closes it. A
   quick swipe goes back a page as before (Settings → Sine Mods → Zia →
   Page, on by default).
 - Optional: hide the glow around the selected tab, keeping its highlight
@@ -1325,7 +1332,7 @@ Every release of Zia, newest first. The format follows
 
 - Windows: the page's corners match the window's own. Windows 11's
   corner is 8px and the page sits a few pixels inside it, so the page's
-  8px corners looked rounder than the window round them; they're the
+  8px corners looked rounder than the window around them; they're the
   window's curve less that gap now, the two sitting evenly together.
 - While a glance is open, the toolbar steps back: clear on the window's
   own background, in the sidebar's ink, rather than in the glanced site's
@@ -1802,7 +1809,7 @@ Every release of Zia, newest first. The format follows
 - Tab hover card: its buttons' icons are drawn with thinner lines, as in Dia,
   and split is a wider box.
 - The selected tab, as in Dia: its background a touch lighter, and its edge
-  an even thin line all the way round instead of bright corners.
+  an even thin line all the way around instead of bright corners.
 
 ## [2.72.19] — 2026-09-30
 
@@ -1852,7 +1859,7 @@ Every release of Zia, newest first. The format follows
 
 - Dropping a folder into a closed folder: it stays closed, without opening
   to show all its tabs (the dropped folder missing from them for a frame).
-- The fine edge round essentials, folders and cards shows on 1x screens
+- The fine edge around essentials, folders and cards shows on 1x screens
   (most Windows ones): at half a pixel it rounded to nothing there.
 
 ## [2.72.13] — 2026-09-29
@@ -1895,7 +1902,7 @@ Every release of Zia, newest first. The format follows
 ### Fixed
 
 - Folders: an empty folder's drop box shows at once as it opens and fades as
-  it closes, as its tabs would (it was the wrong way round).
+  it closes, as its tabs would (it was the wrong way around).
 
 ## [2.72.8] — 2026-09-29
 
@@ -1957,7 +1964,7 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
-- A split dragged over an empty folder now wears the dashed outline, round
+- A split dragged over an empty folder now wears the dashed outline, around
   its box (2.72.4 put it on its tabs, which a split draws no background
   for, so it never showed).
 
@@ -2110,7 +2117,7 @@ Every release of Zia, newest first. The format follows
 - Opening a folder that showed just its open tab, its other tabs fade in
   as they grow back, instead of a strip of each showing for a moment.
 - Clicking the name of a closed folder kept inside a closed folder opens
-  it as well as the folder round it (it only opened the outer one).
+  it as well as the folder around it (it only opened the outer one).
 - A closed folder showing its selected tab no longer leaves a gap under
   it when a folder inside it is open (the fix in 2.70.9 lost out to
   another rule).
@@ -2160,7 +2167,7 @@ Every release of Zia, newest first. The format follows
   one, no longer leaves its "Drag tabs here" box showing.
 - A closed folder showing a selected tab that sits in a folder inside it
   keeps that inner folder's name above the tab, as it is open, instead of
-  a bare box round the tab.
+  a bare box around the tab.
 - Unloading a closed folder showing its selected tab, its tabs no longer
   flash up piled on one row as it shuts.
 - When the front music player goes away, the one behind shows as it moves
@@ -2559,7 +2566,7 @@ Every release of Zia, newest first. The format follows
   lands: the narrower look it has over the folder now goes before the
   glide, which starts from where its background showed.
 - A tab dropped into a folder (or pulled out of one) no longer flashes an
-  × before its − (or the other way round): it swaps the moment it's let go.
+  × before its − (or the other way around): it swaps the moment it's let go.
 - Dropping an essential no longer throws an error in the Browser Console
   (and skips the end of the drop's tidy-up).
 - Dragging an essential again straight after dropping one now opens a gap
@@ -2954,7 +2961,7 @@ Every release of Zia, newest first. The format follows
   arrow spins as it shrinks away and the stop cross grows out of a small
   plus; when it's done, the cross turns back into a plus as it shrinks and
   the arrow spins back in. Hovering reload draws its arrowhead back a
-  little round the circle.
+  little around the circle.
 
 ### Fixed
 
@@ -2984,7 +2991,7 @@ Every release of Zia, newest first. The format follows
   swap in a single frame.
 - **The reload button is Dia's.** A slightly bigger circle, with no tail
   on the arrow: just the arrowhead sitting on top of the circle, a little
-  right of centre, and the gap running from it round to three o'clock.
+  right of centre, and the gap running from it around to three o'clock.
 
 ### Fixed
 
@@ -3513,7 +3520,7 @@ finally stands.
   move to another tab, folder or essential, and shrink out when they go. They
   stay up while the pointer is on them and go when it leaves. Copy link and
   Bookmark keep the card up.
-- Hover cards have an even hairline edge all round, as in Dia, with no
+- Hover cards have an even hairline edge all around, as in Dia, with no
   shadow, and the grey address on them is a size bigger.
 - The folder card keeps working like the sidebar: closing or unloading tabs
   from it keeps it open, its "−" turns into ✕ once a tab is unloaded, its
@@ -3619,7 +3626,7 @@ finally stands.
   the whole address even while the page loads, and typing no longer loses a
   letter when Firefox fills in an address starting with "www.".
 - A loading tab's address no longer shows bright white before dimming.
-- Hover cards no longer have a thin black line round them, and Add to Split
+- Hover cards no longer have a thin black line around them, and Add to Split
   shows its full icon.
 - A coloured folder's name keeps its tint when the folder is open.
 - Hovering a collapsed folder no longer lights up a hidden tab under its
@@ -3655,7 +3662,7 @@ finally stands.
   darkens the bar, or lightens it when the bar is black.
 - **The address never shows `https://`, `http://`, or a leading `www.`**,
   including once the bar is open. `www.twitch.tv/xqc` shows as `twitch.tv/xqc`.
-- **Split view spacing like Dia's:** 10px between panes, a frame round them,
+- **Split view spacing like Dia's:** 10px between panes, a frame around them,
   on a slightly darker backdrop.
 - **The hover card's border matches the essentials':** 1px and a little
   dimmer, brightest along the sides, soft at the corners. The card grows in a
