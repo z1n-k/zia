@@ -11228,30 +11228,20 @@
       return blank;
     };
 
-    const setDragImage = DataTransfer.prototype.setDragImage;
-    const updateDragImage = DataTransfer.prototype.updateDragImage;
-    // What's dragged in the sidebar has Zia's own stand-in, so the system's
-    // snapshot picture is blanked: a tab's, and while an essential is
-    // dragged, anything (it showed as a blurred band the width of the
-    // window, the whole essentials row in it).
+    // What's dragged in the sidebar has Zia's own stand-in, so the system's picture is
+    // blanked (for an essential, anything: it showed as a window-wide blurred band).
     const isTabGhost = (node) =>
       !!(node?.querySelector?.("[drag-image]") || node?.hasAttribute?.("drag-image")) ||
       !!essentialDragging ||
       !!node?.closest?.("#zen-essentials, .zen-essentials-container") ||
       !!node?.querySelector?.(".tabbrowser-tab[zen-essential]");
     let essentialDragging = false;
-    DataTransfer.prototype.setDragImage = function (node, x, y) {
-      if (isTabGhost(node)) {
-        return setDragImage.call(this, blankImage(), 0, 0);
-      }
-      return setDragImage.call(this, node, x, y);
-    };
-    DataTransfer.prototype.updateDragImage = function (node, x, y) {
-      if (isTabGhost(node)) {
-        return updateDragImage.call(this, blankImage(), 0, 0);
-      }
-      return updateDragImage.call(this, node, x, y);
-    };
+    for (const name of ["setDragImage", "updateDragImage"]) {
+      const original = DataTransfer.prototype[name];
+      DataTransfer.prototype[name] = function (node, x, y) {
+        return isTabGhost(node) ? original.call(this, blankImage(), 0, 0) : original.call(this, node, x, y);
+      };
+    }
 
     const tabFromEvent = (event) => {
       const seen = [event.explicitOriginalTarget, event.originalTarget, event.target];
@@ -11282,34 +11272,30 @@
         if (item.hasAttribute?.("zen-essential")) {
           continue;
         }
-        // a split essential's own tabs are kept hidden in the list: not rows
-        // (as rows of no height they came between a folder and the next row,
-        // and no tab could be dropped into the folder)
+        // a split essential's own tabs, kept hidden in the list, aren't rows (as 0-high rows
+        // between a folder and the next, no tab could be dropped into the folder)
         if (item.hasAttribute?.("zia-split-of") || item.group?.querySelector?.(":scope .tabbrowser-tab[zia-split-of]")) {
           continue;
         }
         let node = nodeToMove(item);
-        // A closed folder is one row, the whole of it: its name and the tab
-        // it shows, if any. (The tab it shows was a row of its own too, so
-        // it moved aside twice, once with its folder and once more, and came
-        // apart from it; the tabs it hides could be uncovered.)
+        // A closed folder is one row, its name and the tab it shows (that tab as a row too
+        // moved aside twice and came apart from it, uncovering the tabs it hides).
         let closed = null;
         for (
-          let host = node?.closest?.("zen-folder, tab-group:not([split-view-group])");
+          let host = node?.closest?.(FOLDER_SELECTOR);
           host;
-          host = host.parentElement?.closest?.("zen-folder, tab-group:not([split-view-group])")
+          host = host.parentElement?.closest?.(FOLDER_SELECTOR)
         ) {
           if (host !== node && (host.hasAttribute("collapsed") || host.collapsed) && !host.contains(keepOpen)) {
             closed = host;
           }
         }
-        // (only a folder showing a tab: a plain closed folder is its name,
-        // as before, and a tab dragged up past the separator lands below
-        // it first)
+        // (only a folder showing a tab: a plain closed folder is its name, so a tab dragged
+        // up past the separator lands below it first)
         if (closed?.hasAttribute("has-active")) {
           node = closed;
         } else {
-          const host = node?.closest?.("zen-folder, tab-group:not([split-view-group])");
+          const host = node?.closest?.(FOLDER_SELECTOR);
           if (
             host &&
             host !== node &&
@@ -11325,8 +11311,7 @@
         }
         seen.add(node);
         const box = layoutTop(node);
-        // (a closed folder showing its open tab: its name's height, where a
-        // tab can go in above the one it shows)
+        // (showing its open tab: the name's height, where a tab can go in above that one)
         const header = closed?.hasAttribute("has-active") && node === closed ? headerOf(closed) : null;
         const head = header ? layoutTop(header).height : 0;
         rows.push({
@@ -11340,10 +11325,8 @@
           delta: 0,
         });
       }
-      // Numbered by where they are in the sidebar, not Firefox's count of
-      // tabs: that count can lag a move for a moment, and a tab dragged a
-      // little then counted as above the folders it sat under, which all
-      // moved up out of its way
+      // Numbered by place in the sidebar, not Firefox's tab count: that can lag a move,
+      // and the folders a tab sat under all moved up out of its way
       rows.sort((a, b) => (a.node === b.node ? 0 : a.node.compareDocumentPosition(b.node) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
       rows.forEach((row, i) => {
         row.index = i;
@@ -11363,11 +11346,9 @@
       if (slotFolder) {
         slotFolder.style.removeProperty("--zia-slot-y");
       }
-      node.style.removeProperty("top");
-      node.style.removeProperty("position");
-      node.style.removeProperty("z-index");
-      node.style.removeProperty("transform");
-      node.style.removeProperty("--zia-drag-y");
+      for (const name of ["top", "position", "z-index", "transform", "--zia-drag-y"]) {
+        node.style.removeProperty(name);
+      }
       node.removeAttribute("zia-dragging");
       node.removeAttribute("zia-shift");
     };
@@ -11404,10 +11385,9 @@
     const headerOf = (folder) => folder?.querySelector?.(":scope > .tab-group-label-container") || null;
     const isCollapsed = (folder) => !!folder && (folder.collapsed === true || folder.hasAttribute("collapsed"));
 
-    // An open empty folder's "Drag tabs here" slot takes a tab's room under its
-    // header without being a row. Its height, measured once per drag (the
-    // layout never changes mid-drag), counts toward the folder's size, and a
-    // tab dragged into the folder takes its place instead of more room.
+    // An open empty folder's slot takes a tab's room under its header without being a
+    // row: its height (measured once per drag) counts toward the folder's size, and a
+    // tab dragged in takes its place instead of more room.
     const slotPitchOf = (folder) => {
       if (!drag || !folder?.hasAttribute?.("zia-empty") || isCollapsed(folder)) {
         return 0;
@@ -11433,7 +11413,7 @@
       if (node.classList?.contains("tab-group-label-container")) {
         return isFolderEl(node.parentElement) ? node.parentElement : null;
       }
-      return node.parentElement?.closest?.("zen-folder, tab-group:not([split-view-group])") || null;
+      return node.parentElement?.closest?.(FOLDER_SELECTOR) || null;
     };
     const isFolderStart = (row, folder) => !!row && !!folder && (row.node === folder || row.node === headerOf(folder));
     const notARow = (row) => row.node === drag.moving || (drag.folder && drag.folder.contains(row.node));
@@ -11452,19 +11432,16 @@
       if (!drag || drag.slot === folder) {
         return;
       }
-
       drag.slot?.removeAttribute("zia-drop-slot");
       drag.slot = folder || null;
       folder?.setAttribute("zia-drop-slot", "true");
-      // The folder it came from loses its highlight as soon as it's dragged
-      // out (Firefox keeps it hovered until the mouse next moves, so it
-      // lingered after the drop), and gets it back dragged into it again
-      for (let home = drag.moving?.parentElement?.closest?.("zen-folder, tab-group:not([split-view-group])"); home; home = home.parentElement?.closest?.("zen-folder, tab-group:not([split-view-group])")) {
+      // The folder it came from loses its highlight once it's dragged out (Firefox kept
+      // it hovered until the mouse next moved, after the drop), and regains it coming back
+      for (let home = drag.moving?.parentElement?.closest?.(FOLDER_SELECTOR); home; home = home.parentElement?.closest?.(FOLDER_SELECTOR)) {
         home.toggleAttribute("zia-left", !folder || (folder !== home && !home.contains(folder)));
       }
-      // Over an empty folder the tab covers its slot, so the tab carries the
+      // Over an empty folder the tab (or a split's box) covers its slot, so it wears the
       // slot's dashes instead (chrome.css), in the folder's colour.
-      // (a split too: its box, round both its tabs, wears them)
       const tabs = drag.moving === drag.tab || (drag.split && drag.moving === drag.split) ? [drag.moving] : [];
       const into = !!folder?.hasAttribute("zia-empty");
       const border = into ? getComputedStyle(folder).getPropertyValue("--zia-slot-border") : "";
@@ -11476,9 +11453,8 @@
       }
     };
 
-    // The room for a tab going in at the top of a closed folder showing its
-    // open tab: that tab (and the folder's contents) move down a tab's
-    // height, or, coming from above, the folder's name moves up
+    // Room for a tab going in at the top of a closed folder showing its open tab: that
+    // tab moves down a tab's height or, coming from above, the folder's name moves up
     let topRoom = null;
     const roomAtTop = (folder, way) => {
       const key = folder ? `${way}` : null;
@@ -11531,22 +11507,15 @@
       };
       let cut = slotTop != null ? slotTop + drag.height / 2 - 2 : null;
       if (prev && same(prev)) {
-        // the last folder before the separator has no row after it: its
-        // slot is a whole tab tall, not the sliver down to the separator
+        // the last folder before the separator: its slot is a whole tab tall, not the sliver
+        // down to the separator
         if (!same(next) && slotTop != null) {
-          // Coming up past the separator, the tab lands below the last
-          // folder first, and goes in once its middle is a little way into
-          // the slot that opens there. (Halfway left a band of a few
-          // pixels, so it seemed to drop straight in; the top third left
-          // one so tall it seemed not to go in at the folder's edge; only
-          // over the folder's own end, it went in sitting over the folder's
-          // name, with the room made for it empty below.)
-          // (from below, it counts as past the separator a fifth of the way
-          // into the space that opens, so there's a gap before this point;
-          // lower, and it went in sitting over the folder's name)
-          // Leaving it, going down, it stays in until its bottom meets the
-          // folder's (the room made for it): at the same point it went in,
-          // it left a little early, a tiny gap under the folder.
+          // Coming up past the separator, the tab lands below the last folder first and goes
+          // in once its middle is a little way into the slot (half: a band of a few pixels,
+          // so it seemed to drop straight in; a third: so tall it seemed not to go in at all;
+          // 4 tenths from below, where it counts as past the separator a fifth of the way in).
+          // Leaving downward it stays in until its bottom meets the folder's (any earlier left
+          // a tiny gap under the folder).
           const fromBelow = drag.sepTop != null && drag.origin > drag.sepTop;
           const inIt = drag.target?.folder === pf;
           cut = slotTop + drag.height * (fromBelow && !inIt ? 0.4 : 0.5);
@@ -11567,11 +11536,10 @@
       } else if (nf && !isFolderStart(next, nf)) {
         folder = nf;
       }
-      // Between two rows inside the same open folder (past a folder inside
-      // it, before the next one's name, say): that folder, not the list
-      // (it went full width, though it was still inside the folder)
+      // Between two rows inside the same open folder: that folder, not the list (it went
+      // full width though still inside)
       if (!folder && prev && next && same(prev) && same(next)) {
-        const holder = (node) => node?.parentElement?.closest?.("zen-folder, tab-group:not([split-view-group])") || null;
+        const holder = (node) => node?.parentElement?.closest?.(FOLDER_SELECTOR) || null;
         let common = holder(prev.node);
         while (common && !common.contains(next.node)) {
           common = holder(common);
@@ -11580,11 +11548,10 @@
           folder = common;
         }
       }
-      // Out past the end of a folder inside another that ends there too:
-      // the outer one takes it first, then the list (it went straight to
-      // the list, full width for a moment, though still in the outer one)
+      // Out past the end of a folder inside another that ends there too: the outer one
+      // takes it before the list (it went full width for a moment, still inside)
       if (!folder && pf && cut != null && visualMid >= cut) {
-        const outer = pf.parentElement?.closest?.("zen-folder, tab-group:not([split-view-group])");
+        const outer = pf.parentElement?.closest?.(FOLDER_SELECTOR);
         if (outer && !isCollapsed(outer) && outer.contains(prev.node) && !(next && outer.contains(next.node)) && !drag.moving.contains?.(outer)) {
           const down = same(next) ? leaveDown(next) : null;
           const outerCut = down != null && down > cut ? (cut + down) / 2 : cut + drag.height / 2;
@@ -11594,9 +11561,8 @@
           }
         }
       }
-      // Between a closed folder's name and the tab it shows: into it, at
-      // the top (a tab only; the one it shows moves down to make room, or
-      // the name up)
+      // Between a closed folder's name and the tab it shows: into it at the top (a tab only;
+      // the shown tab moves down to make room, or the name up)
       let first = null;
       const shows = (row) => !!row?.head && isFolderEl(row.node) && isCollapsed(row.node) && same(row);
       if (!drag.folder) {
@@ -11623,22 +11589,18 @@
 
       const crosses = below === !!drag.tab.pinned;
 
-      // A split is always Zia's to place: Zen won't take one across the
-      // separator, dropped it outside a closed or empty folder, and went by
-      // what's under the pointer (the room made for it), so at the top of
-      // the list it went below the first folder or back where it came from
-      const hand = drag.folder
-        ? true
-        : drag.split ? true : !!folder || !!pf || (!!nf && isFolderStart(next, nf)) || crosses;
-      // A tap on going into a folder, open or closed, or out of one (Zen's
-      // own taps are muted during a drag). Not for the one it's in as it
-      // starts.
+      // A split is always Zia's to place: Zen won't take one across the separator, dropped
+      // it outside a closed or empty folder, and went by what's under the pointer (at the
+      // top of the list, below the first folder or back where it came from)
+      const hand = !!(drag.folder || drag.split || folder || pf || (nf && isFolderStart(next, nf)) || crosses);
+      // a tap going into or out of a folder (Zen's own are muted during a drag), not for
+      // the one it's in as it starts
       if (drag.target && folder !== drag.target.folder) {
         tap();
       }
       drag.target = { folder, atEnd, first: !!first, prev, next, below, sameNext: same(next), slotTop, hand };
       setDropSlot(folder);
-      // (zia.debug.drag in about:config: each decision, for a bug report)
+      // (window.ziaDragDebug, an array set from the console: each decision, for a bug report)
       if (window.ziaDragDebug) {
         const name = (row) => (row ? `${row.node.localName}${row.node.label ? `"${row.node.label}"` : ""}@${Math.round(row.top + (row.delta || 0))}+${Math.round(row.height)}` : "-");
         const line = `mid=${Math.round(visualMid)} prev=${name(prev)} next=${name(next)} pf=${pf?.label || "-"} nf=${nf?.label || "-"} slotTop=${slotTop == null ? "-" : Math.round(slotTop)} cut=${cut == null ? "-" : Math.round(cut)} below=${below} sepTop=${drag.sepTop == null ? "-" : Math.round(drag.sepTop)} → ${folder ? `INTO "${folder.label}"${atEnd ? " atEnd" : ""}${first ? " first" : ""}` : "list"}`;
@@ -11653,7 +11615,7 @@
       const target = drag.target;
       const folders = new Set();
       for (const row of drag.rows) {
-        for (let f = rowFolder(row); f; f = f.parentElement?.closest?.("zen-folder, tab-group:not([split-view-group])")) {
+        for (let f = rowFolder(row); f; f = f.parentElement?.closest?.(FOLDER_SELECTOR)) {
           folders.add(f);
         }
       }
@@ -11696,9 +11658,8 @@
           if (Number.isFinite(origBottom) && Number.isFinite(shownBottom)) {
             grow = shownBottom - origBottom;
           }
-          // Closed, its open tab dragged out of it, it loses the padding below
-          // that tab too (chrome.css): the box closed up to the name less
-          // that, and snapped the rest of the way on the drop
+          // closed, its open tab dragged out, it loses the padding below that tab too
+          // (chrome.css): the box closed up less that and snapped the rest on the drop
           if (isCollapsed(f) && !showsTab) {
             grow -= parseFloat(getComputedStyle(f).getPropertyValue("--zia-folder-inner-gap")) || 0;
           }
@@ -11752,8 +11713,7 @@
       if (folder) {
         const own = sampleTab(folder);
         if (own && own.group === folder) {
-          const box = showing(own);
-          return { left: box.left, right: box.right };
+          return showing(own);
         }
         let inset = FOLDER_TAB_INSET;
         const other = [...gBrowser.visibleTabs].find(
@@ -11771,15 +11731,14 @@
         (tab) => tab !== drag.tab && !tab.group && !tab.hasAttribute("zen-essential") && !tab.hasAttribute("zen-empty-tab") && showing(tab)
       );
       if (plain) {
-        const box = showing(plain);
-        return { left: box.left, right: box.right };
+        return showing(plain);
       }
       const anyFolder = document.querySelector("#tabbrowser-tabs zen-folder");
       return anyFolder ? folderBox(anyFolder) : null;
     };
 
-    // A dragged folder narrows the same way over a folder it would go into,
-    // to the width of the folders already inside one (its margins, eased)
+    // A dragged folder narrows the same way over a folder it would go into, to the
+    // width of folders already inside one (its margins, eased)
     const morphFolderWidth = (into) => {
       const moving = drag.folder;
       const key = into || "plain";
@@ -11797,7 +11756,7 @@
       }
       const base = drag.folderBase;
       // (back among the rows it started in, it's its own width again)
-      const startedIn = moving.parentElement?.closest?.("zen-folder, tab-group:not([split-view-group])") || null;
+      const startedIn = moving.parentElement?.closest?.(FOLDER_SELECTOR) || null;
       const want = into || startedIn ? widthFor(into) : null;
       let start = want ? want.left - base.box.left : 0;
       let end = want ? base.box.right - want.right : 0;
@@ -11847,14 +11806,12 @@
         return;
       }
       const key = folder || "plain";
-      // (out of a folder inside another into no folder waits a moment:
-      // passing to the outer one, it counted as in none for a sliver of the
-      // way and went full width in between. Out of any other folder it goes
-      // at once, as it narrowed going in)
+      // (out of a folder inside another into none waits a moment: passing to the outer
+      // one it counted as in none for a sliver and went full width in between)
       if (key !== "plain" || drag.widthKey === "plain") {
         clearTimeout(drag.widthTimer);
         drag.widthTimer = 0;
-      } else if (!drag.widthGo && drag.widthKey && drag.widthKey !== "plain" && drag.widthKey.parentElement?.closest?.("zen-folder, tab-group:not([split-view-group])")) {
+      } else if (!drag.widthGo && drag.widthKey && drag.widthKey !== "plain" && drag.widthKey.parentElement?.closest?.(FOLDER_SELECTOR)) {
         if (!drag.widthTimer) {
           const current = drag;
           drag.widthTimer = setTimeout(() => {
@@ -11876,12 +11833,10 @@
       const want = widthFor(folder);
       let start = want ? want.left - drag.bgBox.left : 0;
       let end = want ? drag.bgBox.right - want.right : 0;
-
       if (Math.abs(start) > 40 || Math.abs(end) > 40) {
         start = 0;
         end = 0;
       }
-
       const tab = drag.split || drag.tab;
       tab.style.setProperty("--zia-morph-bg-start", `${drag.bgBase.start + start}px`);
       tab.style.setProperty("--zia-morph-bg-end", `${drag.bgBase.end + end}px`);
@@ -11890,18 +11845,10 @@
       tab.setAttribute("zia-morph", "true");
     };
 
-    // The narrower look a dragged row takes over a folder eases out to the
-    // row's own width once it's dropped (both edges): let go at once, a row
-    // whose own place differed from the look (the look is worked out from
-    // the rows around it, and was out by a few pixels in an empty folder)
-    // jumped, and a closed folder that gives the row its indent a moment
-    // later showed it full width in between
-    // Dropped, its narrower look (margins inside its row) goes straight to
-    // the row's own, and the landing glide starts from there: the row itself
-    // changes as it goes into a folder or out of one (the folder's indent),
-    // and eased out while the glide moved the row the other way, the two
-    // didn't cancel, so it bulged sideways and drifted back. Only a width
-    // that differs from the one it was let go at eases, by its right edge.
+    // Dropped, its narrower look goes straight to the row's own and the landing glide
+    // starts from there: eased while the glide moved the row the other way (a folder's
+    // indent changing), the two didn't cancel and it bulged sideways. Only a width that
+    // differs from the one it was let go at eases, by its right edge.
     const settleDroppedWidth = (tab, width) => {
       const node = [tab, tab?.group?.hasAttribute?.("split-view-group") ? tab.group : null].find((n) => n?.hasAttribute?.("zia-morph"));
       if (!node) {
@@ -13575,7 +13522,7 @@
       if (!target) {
         return;
       }
-      const folder = target.node.closest?.("zen-folder, tab-group:not([split-view-group])");
+      const folder = target.node.closest?.(FOLDER_SELECTOR);
       const header = folder?.querySelector(":scope > .tab-group-label-container");
       const headerBox = header ? window.windowUtils.getBoundsWithoutFlushing(header) : null;
       if (folder && headerBox && y > headerBox.top + headerBox.height * 0.2 && y < headerBox.bottom - headerBox.height * 0.2) {
@@ -13693,7 +13640,7 @@
       const splitBox = sample
         ? null
         : [...document.querySelectorAll("#tabbrowser-tabs tab-group[split-view-group] > .tab-group-container")].find(
-            (box) => !box.closest("zen-folder, tab-group:not([split-view-group])") && box.getBoundingClientRect().height > 8
+            (box) => !box.closest(FOLDER_SELECTOR) && box.getBoundingClientRect().height > 8
           );
       const bg = (sample?.querySelector(".tab-background") || splitBox)?.getBoundingClientRect();
       if (bg?.width) {
@@ -13926,7 +13873,7 @@
         return y < prev.top + prev.height ? prev.node : null;
       }
       const label = prev.node.classList?.contains("tab-group-label-container");
-      const folder = label ? prev.node.parentElement : prev.node.parentElement?.closest?.("zen-folder, tab-group:not([split-view-group])");
+      const folder = label ? prev.node.parentElement : prev.node.parentElement?.closest?.(FOLDER_SELECTOR);
       if (!folder || !isFolderEl(folder) || isCollapsed(folder)) {
         return null;
       }
