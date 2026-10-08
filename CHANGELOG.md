@@ -8,8 +8,6 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
-- Picking a page from the swipe's card, the card leaves at once: it hung
-  there a moment before it went, while the browser started going back.
 - The swipe card's page names keep the tails of their letters (g, p, y),
   which were cut off.
 
