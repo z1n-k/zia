@@ -20,6 +20,10 @@ Every release of Zia, newest first. The format follows
   caught up.
 - A selected split glows as brightly as a selected tab (it had only part
   of the tab's glow).
+- The first essential clicked after starting Zen no longer shows a black
+  cross: essentials don't shrink when pressed (tabs already didn't).
+- Dragging a space's only essential down into the list: the list stays
+  still, where it jumped up and the tab flashed over the first one.
 - An empty folder's "Drag tabs here" box fades as the folder closes over
   it, as the tabs in a folder do; it was gone before the folder moved.
 - Dropping a tab: its × (or −) stays on, where it blinked off until the

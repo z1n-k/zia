@@ -14083,8 +14083,12 @@
           "important"
         );
         // (the other essentials close up behind it once it's out over the
-        // list, sliding, and open again if it comes back: it left a gap)
-        slideTiles(() => state.tab.toggleAttribute("zia-essential-out", asTab));
+        // list, sliding, and open again if it comes back: it left a gap.
+        // The only one keeps its cell: given up, the essentials emptied, the
+        // list jumped up under the pointer and the row it became flashed
+        // over the first tab)
+        const others = [...(essentialsGrid()?.querySelectorAll(".tabbrowser-tab[zen-essential]:not([zia-essential-proxy])") || [])].some((tile) => tile !== state.tab);
+        slideTiles(() => state.tab.toggleAttribute("zia-essential-out", asTab && others));
         if (asTab) {
           const current = copy.getBoundingClientRect();
           moveCopyTo(copy, document.getElementById("tabbrowser-tabs") || root);

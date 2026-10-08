@@ -1659,7 +1659,9 @@
     0 var(--zia-active-glow-reach) var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color) !important;
 }
 
-.tabbrowser-tab:not([zen-essential]) {
+/* (essentials too: shrunk on the first press after a start, a squircle
+   tile with the glass edge showed a black cross, drawn in pieces) */
+.tabbrowser-tab {
   --zen-active-tab-scale: 1 !important;
 }
 
