@@ -581,13 +581,13 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
  * spring, zia.uc.js), and --zia-slot-y moves it with its folder's header
  * while rows slide aside for a drag. */
 :root[zen-sidebar-expanded="true"] zen-folder[zia-empty] {
-  --zia-slot-border: 1.5px dashed rgba(255, 255, 255, 0.18);
+  --zia-slot-border: 1.5px dashed rgba(255, 255, 255, 0.13);
   --zia-slot-ink: rgba(255, 255, 255, 0.5);
   --zia-slot-glint: rgba(255, 255, 255, 0.88);
 
   /* lightened, so it still stands out against the folder's own tint */
   &[zia-folder-color]:not([zia-folder-color="white"]) {
-    --zia-slot-border: 1.5px dashed color-mix(in srgb, color-mix(in srgb, var(--zia-folder-swatch), white 45%) 48%, transparent);
+    --zia-slot-border: 1.5px dashed color-mix(in srgb, color-mix(in srgb, var(--zia-folder-swatch), white 45%) 35%, transparent);
   }
 
   & > .tab-group-container::after {
@@ -601,7 +601,10 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
     margin-block: var(--zia-slot-mt, 2px) var(--zia-slot-mb, 2px);
     margin-inline: var(--zia-slot-ms, 16px) var(--zia-slot-me, 7px);
     overflow: hidden;
-    border: var(--zia-slot-border);
+    /* (the dashes an outline, not a border: Firefox drew a dashed border's
+       right side brighter than its other three) */
+    outline: var(--zia-slot-border);
+    outline-offset: -1.5px;
     border-radius: var(--zia-tab-radius);
     color: var(--zia-slot-ink);
     font-size: 12.5px;
@@ -648,12 +651,12 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
   :is(zen-folder, tab-group:not([split-view-group]))[collapsed] & > .tab-group-container::after {
     height: 0;
     margin-block: 0;
-    border-width: 0;
+    outline-width: 0;
     opacity: 0;
     transition:
       height 0s var(--zia-slot-time, 0.18s),
       margin 0s var(--zia-slot-time, 0.18s),
-      border-width 0s var(--zia-slot-time, 0.18s),
+      outline-width 0s var(--zia-slot-time, 0.18s),
       opacity 90ms ease-out,
       translate 100ms ease-out;
   }
@@ -663,7 +666,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
     transition:
       height var(--zia-slot-time, 0.18s) cubic-bezier(0.42, 0, 0.58, 1),
       margin var(--zia-slot-time, 0.18s) cubic-bezier(0.42, 0, 0.58, 1),
-      border-width var(--zia-slot-time, 0.18s) cubic-bezier(0.42, 0, 0.58, 1),
+      outline-width var(--zia-slot-time, 0.18s) cubic-bezier(0.42, 0, 0.58, 1),
       opacity var(--zia-slot-time, 0.18s) ease-out,
       translate 100ms ease-out;
   }

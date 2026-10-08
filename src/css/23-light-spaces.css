@@ -132,7 +132,7 @@
 
   /* an empty folder's "Drag tabs here" slot */
   &[zen-sidebar-expanded="true"] zen-folder[zia-empty] {
-    --zia-slot-border: 1.5px dashed rgba(0, 0, 0, 0.14);
+    --zia-slot-border: 1.5px dashed rgba(0, 0, 0, 0.10);
     --zia-slot-ink: rgba(0, 0, 0, 0.45);
     --zia-slot-glint: rgba(0, 0, 0, 0.85);
   }
