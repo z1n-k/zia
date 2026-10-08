@@ -2294,6 +2294,8 @@ tab-group[split-view-group][zia-no-glow] > .tab-group-container {
 .tabbrowser-tab:not([zen-essential]):is([pinned], [zia-held-pinned]) .tab-reset-button[zia-held-shown]:not(#zia-a):not(#zia-b) {
   display: flex !important;
   opacity: 1 !important;
+  /* (Zen 1.23 hides them unhovered with visibility, not display) */
+  visibility: visible !important;
   /* (a tab dropped into a folder swaps its x for a -: straight away, not
      fading in) */
   transition: none !important;

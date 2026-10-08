@@ -14453,6 +14453,9 @@
             event.preventDefault();
             event.stopPropagation();
           }
+          // (the folder it goes into keeps its hover box too, as for a tab:
+          // it went blank until the pointer next moved)
+          heldFolder = target.folder || null;
           pendingFinish = true;
           setTimeout(() => {
             try {

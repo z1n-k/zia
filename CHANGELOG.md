@@ -21,6 +21,9 @@ Every release of Zia, newest first. The format follows
   row at once, where it dipped and jolted while the list caught up.
 - A selected split glows as brightly as a selected tab (it had only part
   of the tab's glow).
+- Dropping a tab: its × (or −) stays on, where it blinked off until the
+  pointer moved (Zen 1.23 hides them a new way). Dropping a folder into
+  another: the outer folder's box stays lit rather than blinking off.
 
 ## [2.97.1] — 2026-10-08
 
