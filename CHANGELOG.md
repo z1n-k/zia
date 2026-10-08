@@ -19,6 +19,10 @@ Every release of Zia, newest first. The format follows
   name and profile in soft wells at a tab's height, Edit Theme and Cancel
   as Zia's tiles, and Create in white with dark text, quiet until the
   space has a name.
+- The Library's boosts: one that's off has its tile and icon faded and
+  the icon grey, rather than a line struck through them, and the switch
+  beside each is smaller and in the sidebar's ink rather than green (off a
+  faint track, on a solid one).
 
 ## [2.96.48] — 2026-10-08
 

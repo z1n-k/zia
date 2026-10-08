@@ -8196,6 +8196,7 @@ zen-folder .tab-reset-button {
     --zia-lib-tile: var(--zia-essential-bg);
     --zia-lib-tile-hover: color-mix(in srgb, var(--zia-lib-ink) 8%, var(--zia-essential-bg));
     --zia-lib-field: rgba(0, 0, 0, 0.16);
+    --zia-lib-paper: rgb(30, 30, 32);
     --zen-library-pill-bg: var(--zia-lib-tile) !important;
     --zen-library-pill-hover-bg: var(--zia-lib-tile-hover) !important;
     --zen-library-radius: var(--zia-tab-radius) !important;
@@ -8482,11 +8483,44 @@ zen-folder .tab-reset-button {
       }
     }
 
+    /* a boost that's off: its tile and icon faded and the icon grey, rather
+       than Zen's line struck through them */
+    & .zen-library-boost-row[disabled] .zen-library-boost-icon {
+      &::before,
+      & img {
+        mask: none !important;
+      }
+
+      &::after {
+        display: none !important;
+      }
+
+      &::before {
+        opacity: 0.55;
+      }
+
+      & img {
+        filter: grayscale(1);
+        opacity: 0.45 !important;
+      }
+    }
+
+    /* its switch, smaller and in the sidebar's ink rather than green: off a
+       faint track, on a solid one with the knob in the card's colour */
     & .zen-library-row-actions moz-toggle {
+      --toggle-width: 34px !important;
+      --toggle-height: 20px !important;
+      --toggle-dot-margin: 2px !important;
+      --toggle-border-width: 0px !important;
       --toggle-background-color: color-mix(in srgb, var(--zia-lib-ink) 14%, transparent) !important;
       --toggle-background-color-hover: color-mix(in srgb, var(--zia-lib-ink) 20%, transparent) !important;
-      --toggle-background-color-pressed: rgb(52, 199, 89) !important;
-      --toggle-background-color-pressed-hover: rgb(48, 186, 83) !important;
+      --toggle-background-color-active: color-mix(in srgb, var(--zia-lib-ink) 24%, transparent) !important;
+      --toggle-dot-background-color: color-mix(in srgb, var(--zia-lib-ink) 75%, transparent) !important;
+      --toggle-dot-background-color-hover: color-mix(in srgb, var(--zia-lib-ink) 85%, transparent) !important;
+      --toggle-background-color-pressed: color-mix(in srgb, var(--zia-lib-ink) 90%, transparent) !important;
+      --toggle-background-color-pressed-hover: var(--zia-lib-ink) !important;
+      --toggle-dot-background-color-on-pressed: var(--zia-lib-paper) !important;
+      --toggle-dot-background-color-on-pressed-hover: var(--zia-lib-paper) !important;
     }
 
     /* media: essential-shaped tiles */
@@ -8625,6 +8659,7 @@ zen-folder .tab-reset-button {
   /* light: a darker field, and the opt-in a light card */
   :root[zia-light]:not(#zia-none) zen-library {
     --zia-lib-field: rgba(0, 0, 0, 0.05);
+    --zia-lib-paper: rgb(255, 255, 255);
 
     & .zen-library-filter-chip[active] {
       color: rgb(255, 255, 255) !important;
