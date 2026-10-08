@@ -87,7 +87,7 @@
     }
     const backing = browser.getAttribute("transparent") === "true" ? "transparent" : "rgb(255, 255, 255)";
     const bitmap = await windowGlobal.drawSnapshot(null, 1, backing);
-    const canvas = document.createElementNS(HTML_NS, "canvas");
+    const canvas = document.createElementNS(XHTML_NS, "canvas");
     canvas.width = bitmap.width;
     canvas.height = bitmap.height;
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -132,7 +132,7 @@
     }
 
     const el = (tag, className) => {
-      const node = document.createElementNS(HTML_NS, tag);
+      const node = document.createElementNS(XHTML_NS, tag);
       if (className) {
         node.className = className;
       }
@@ -164,7 +164,6 @@
     stack.append(overlay);
 
     colorPick = { browser, overlay, shot, typed: null };
-    setFlag("zia-color-picking", true);
 
     // (kept for the site picking began on, should the page have moved on)
     const keep = (rgb) => {
@@ -231,7 +230,6 @@
     const { browser, overlay } = colorPick;
     colorPick = null;
     overlay.remove();
-    setFlag("zia-color-picking", false);
     if (kept) {
       const manual = manualSiteColor(browser);
       colorCache.set(browser, manual);

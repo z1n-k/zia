@@ -79,11 +79,7 @@
     background-color: rgba(0, 0, 0, 0.06) !important;
   }
 
-  /* essentials: tiles a faint white, the open one a white card */
-  & .tabbrowser-tab[zen-essential]:not([visuallyselected]):hover > .tab-stack > .tab-background {
-    background: rgba(255, 255, 255, 0.4) !important;
-  }
-
+  /* essentials: the open one a white card */
   & .tabbrowser-tab[zen-essential][visuallyselected] > .tab-stack > .tab-background {
     --zen-essential-tab-selected-bg: rgba(255, 255, 255, 0.82) !important;
     --zen-essential-tab-selected-bg-hover: rgba(255, 255, 255, 0.9) !important;

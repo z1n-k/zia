@@ -17,12 +17,12 @@
     if (document.getElementById("zia-welcome")) {
       return;
     }
-    const overlay = document.createElementNS(HTML_NS, "div");
+    const overlay = document.createElementNS(XHTML_NS, "div");
     overlay.id = "zia-welcome";
     // In the top layer, as pop-ups are: above the toolbar and address bar,
     // which sit over anything else in the window
     overlay.setAttribute("popover", "manual");
-    const frame = document.createElementNS(HTML_NS, "iframe");
+    const frame = document.createElementNS(XHTML_NS, "iframe");
     frame.setAttribute("src", `${WELCOME_URL}#${mode === "update" ? `update-${WELCOME_VERSION}` : mode}`);
     frame.setAttribute("title", "Welcome to Zia");
     overlay.append(frame);

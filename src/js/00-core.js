@@ -6,6 +6,7 @@
   window.__ziaLoaded = true;
 
   const root = document.documentElement;
+  const XHTML_NS = "http://www.w3.org/1999/xhtml";
 
   // Errors Zia can carry on past (a pref that isn't set, a tab that's gone)
   // are logged once per place at debug level instead of vanishing: visible in

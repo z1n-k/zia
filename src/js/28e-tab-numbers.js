@@ -39,7 +39,7 @@
         continue;
       }
       if (!key) {
-        key = document.createElementNS(HTML_NS, "span");
+        key = document.createElementNS(XHTML_NS, "span");
         key.className = "zia-tab-number";
         key.setAttribute("aria-hidden", "true");
         tab.querySelector(":scope > .tab-stack > .tab-content")?.append(key);
@@ -47,7 +47,7 @@
       // the digits in a box of their own, trimmed to their height, so the
       // key can centre them exactly (zia.css)
       if (key.textContent !== String(number)) {
-        const digits = document.createElementNS(HTML_NS, "span");
+        const digits = document.createElementNS(XHTML_NS, "span");
         digits.textContent = String(number);
         key.replaceChildren(digits);
       }

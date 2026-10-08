@@ -363,21 +363,20 @@
       }
     }
 
-    const HTML = "http://www.w3.org/1999/xhtml";
     const page = document.createXULElement("vbox");
     page.id = "zia-icons-page";
-    const bar = document.createElementNS(HTML, "div");
+    const bar = document.createElementNS(XHTML_NS, "div");
     bar.id = "zia-icons-searchbar";
-    const box = document.createElementNS(HTML, "input");
+    const box = document.createElementNS(XHTML_NS, "input");
     box.id = "zia-icons-search";
     box.setAttribute("type", "text");
     box.setAttribute("placeholder", "Search icons");
     // Outline or solid, remembered
-    const styles = document.createElementNS(HTML, "div");
+    const styles = document.createElementNS(XHTML_NS, "div");
     styles.id = "zia-icons-style";
     const styleButtons = {};
     for (const [value, label] of [["outline", "Outline"], ["filled", "Solid"]]) {
-      const button = document.createElementNS(HTML, "button");
+      const button = document.createElementNS(XHTML_NS, "button");
       button.className = "zia-icons-style-option";
       button.textContent = label;
       button.addEventListener("click", (event) => {
@@ -394,9 +393,9 @@
       styles.appendChild(button);
     }
     bar.append(box, styles);
-    const grid = document.createElementNS(HTML, "div");
+    const grid = document.createElementNS(XHTML_NS, "div");
     grid.id = "zia-icons-grid";
-    const empty = document.createElementNS(HTML, "div");
+    const empty = document.createElementNS(XHTML_NS, "div");
     empty.id = "zia-icons-empty";
     empty.textContent = "No icons found";
     empty.hidden = true;
@@ -433,7 +432,7 @@
     let results = [];
     let shown = 0;
     let lastQuery = null;
-    const more = document.createElementNS(HTML, "div");
+    const more = document.createElementNS(XHTML_NS, "div");
     more.id = "zia-icons-more";
     const moreWatcher = new IntersectionObserver(
       (entries) => {

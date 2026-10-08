@@ -62,7 +62,6 @@
 /* the same card, just a name in it: the spaces' and add-ons' tips
    (zia.uc.js, tip cards) */
 #zia-tip-card {
-  overflow: clip;
   position: fixed;
   z-index: 2147483647;
   box-sizing: border-box;

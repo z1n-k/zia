@@ -140,13 +140,13 @@
         return;
       }
       side = forward ? "forward" : "back";
-      el = document.createElementNS(HTML_NS, "div");
+      el = document.createElementNS(XHTML_NS, "div");
       el.id = "zia-swipe";
       el.setAttribute("side", side);
-      const arrow = document.createElementNS(HTML_NS, "div");
+      const arrow = document.createElementNS(XHTML_NS, "div");
       arrow.className = "zia-swipe-arrow";
       arrow.append(swipeChevron());
-      const list = document.createElementNS(HTML_NS, "div");
+      const list = document.createElementNS(XHTML_NS, "div");
       list.className = "zia-swipe-pages";
       el.append(arrow, list);
       stack.append(el);
@@ -167,14 +167,14 @@
       const list = el.querySelector(".zia-swipe-pages");
       list.replaceChildren(
         ...pages.map((page, i) => {
-          const row = document.createElementNS(HTML_NS, "div");
+          const row = document.createElementNS(XHTML_NS, "div");
           row.className = "zia-swipe-page";
           row.toggleAttribute("selected", i === 0);
-          const icon = document.createElementNS(HTML_NS, "img");
+          const icon = document.createElementNS(XHTML_NS, "img");
           icon.alt = "";
           icon.src = `page-icon:${page.url}`;
           icon.addEventListener("error", () => icon.setAttribute("src", "chrome://global/skin/icons/defaultFavicon.svg"), { once: true });
-          const title = document.createElementNS(HTML_NS, "span");
+          const title = document.createElementNS(XHTML_NS, "span");
           title.textContent = page.title;
           row.append(icon, title);
           row.addEventListener("click", () => {
@@ -189,7 +189,7 @@
       el.setAttribute("open", "");
       pinned = true;
       // behind the card, over the page: a click anywhere round it closes it
-      backdrop = document.createElementNS(HTML_NS, "div");
+      backdrop = document.createElementNS(XHTML_NS, "div");
       backdrop.id = "zia-swipe-backdrop";
       backdrop.addEventListener("mousedown", close);
       el.before(backdrop);

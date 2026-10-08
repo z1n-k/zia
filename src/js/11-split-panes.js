@@ -1,4 +1,3 @@
-  const HTML_NS = "http://www.w3.org/1999/xhtml";
   const ICONS = "chrome://sine/content/zia/icons/";
   const paneColorTimers = new WeakMap();
 
@@ -22,11 +21,11 @@
   }
 
   function paneButton(name, label, onClick, icon = `${ICONS}${name}.svg`) {
-    const button = document.createElementNS(HTML_NS, "button");
+    const button = document.createElementNS(XHTML_NS, "button");
     button.className = `zia-pane-button zia-pane-${name}`;
     button.setAttribute("title", label);
     button.setAttribute("aria-label", label);
-    const img = document.createElementNS(HTML_NS, "img");
+    const img = document.createElementNS(XHTML_NS, "img");
     img.setAttribute("src", icon);
     img.setAttribute("alt", "");
     button.appendChild(img);
@@ -57,7 +56,7 @@
   }
 
   function createPaneBar(container) {
-    const bar = document.createElementNS(HTML_NS, "div");
+    const bar = document.createElementNS(XHTML_NS, "div");
     bar.className = "zia-pane-bar";
     const tabOf = () => gBrowser.getTabForBrowser(paneBrowser(container));
 
@@ -85,11 +84,11 @@
       })
     );
 
-    const address = document.createElementNS(HTML_NS, "div");
+    const address = document.createElementNS(XHTML_NS, "div");
     address.className = "zia-pane-address";
-    const host = document.createElementNS(HTML_NS, "span");
+    const host = document.createElementNS(XHTML_NS, "span");
     host.className = "zia-pane-host";
-    const rest = document.createElementNS(HTML_NS, "span");
+    const rest = document.createElementNS(XHTML_NS, "span");
     rest.className = "zia-pane-rest";
     address.append(host, rest);
     address.addEventListener("click", () => {
@@ -110,7 +109,7 @@
     });
     bar.appendChild(address);
 
-    const extensions = document.createElementNS(HTML_NS, "div");
+    const extensions = document.createElementNS(XHTML_NS, "div");
     extensions.className = "zia-pane-extensions";
     bar.appendChild(extensions);
 
