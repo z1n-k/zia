@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.34] — 2026-10-08
+
+### Fixed
+
+- "Drag tabs here": its dashes are the same on all four sides. Firefox drew
+  the dashed border's right side brighter than the rest; they're now drawn
+  as an outline, at the strength the other sides had.
+
 ## [2.96.33] — 2026-10-08
 
 ### Changed
