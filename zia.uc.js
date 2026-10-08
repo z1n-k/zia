@@ -17440,6 +17440,109 @@
     }
   }
 
+  // The fingers' up-and-down movement while the card is open, to pick a
+  // page from it as in Dia. Firefox keeps a swipe's events to itself and
+  // passes on only how far it has gone across, so the trackpad's own scroll
+  // events are read from macOS: an AppKit event monitor
+  // (+[NSEvent addLocalMonitorForEventsMatchingMask:handler:]), set up with
+  // js-ctypes, its handler a block built by hand. It hands each event's
+  // vertical movement on and passes the event along untouched. Only while
+  // the card is open; null where it can't be set up (the card then stays
+  // until clicked, as before).
+  let scrollWatch;
+  function trackpadScrollWatch() {
+    if (scrollWatch !== undefined) {
+      return scrollWatch;
+    }
+    scrollWatch = null;
+    if (AppConstants.platform !== "macosx") {
+      return scrollWatch;
+    }
+    try {
+      const { ctypes } = ChromeUtils.importESModule("resource://gre/modules/ctypes.sys.mjs");
+      const objc = ctypes.open("/usr/lib/libobjc.A.dylib");
+      const system = ctypes.open("/usr/lib/libSystem.B.dylib");
+      const id = ctypes.voidptr_t;
+      const getClass = objc.declare("objc_getClass", ctypes.default_abi, id, ctypes.char.ptr);
+      const selector = objc.declare("sel_registerName", ctypes.default_abi, id, ctypes.char.ptr);
+      const sendId = objc.declare("objc_msgSend", ctypes.default_abi, id, id, id, id);
+      const sendDouble = objc.declare("objc_msgSend", ctypes.default_abi, ctypes.double, id, id);
+      const sendFlag = objc.declare("objc_msgSend", ctypes.default_abi, ctypes.uint8_t, id, id);
+      const sendMonitor = objc.declare("objc_msgSend", ctypes.default_abi, id, id, id, ctypes.uint64_t, ctypes.voidptr_t);
+      const events = getClass("NSEvent");
+      const globalBlock = system.declare("_NSConcreteGlobalBlock", ctypes.voidptr_t);
+      if (events.isNull()) {
+        return scrollWatch;
+      }
+      const deltaY = selector("scrollingDeltaY");
+      const inverted = selector("isDirectionInvertedFromDevice");
+      const addMonitor = selector("addLocalMonitorForEventsMatchingMask:handler:");
+      const removeMonitor = selector("removeMonitor:");
+
+      let sink = null;
+      const Handler = ctypes.FunctionType(ctypes.default_abi, id, [ctypes.voidptr_t, id]);
+      // (kept for good: macOS calls into it for as long as it's watching)
+      const handler = Handler.ptr((block, event) => {
+        try {
+          if (sink && !event.isNull()) {
+            const dy = sendDouble(event, deltaY);
+            // as the fingers move: down positive, whichever way scrolling goes
+            const down = sendFlag(event, inverted) ? dy : -dy;
+            if (down) {
+              sink(down);
+            }
+          }
+        } catch (err) {
+          noteError("swipe arrow: trackpad", err);
+        }
+        return event;
+      });
+      const Descriptor = new ctypes.StructType("ZiaBlockDescriptor", [
+        { reserved: ctypes.unsigned_long },
+        { size: ctypes.unsigned_long },
+      ]);
+      const Block = new ctypes.StructType("ZiaBlock", [
+        { isa: ctypes.voidptr_t },
+        { flags: ctypes.int32_t },
+        { reserved: ctypes.int32_t },
+        { invoke: Handler.ptr },
+        { descriptor: Descriptor.ptr },
+      ]);
+      const descriptor = new Descriptor(0, Block.size);
+      // BLOCK_IS_GLOBAL: never copied or freed
+      const block = new Block(ctypes.cast(globalBlock.address(), ctypes.voidptr_t), 1 << 28, 0, handler, descriptor.address());
+      // NSEventMaskScrollWheel
+      const SCROLL_MASK = ctypes.UInt64("4194304");
+      let monitor = null;
+      scrollWatch = {
+        start(onMove) {
+          sink = onMove;
+          if (!monitor) {
+            monitor = sendMonitor(events, addMonitor, SCROLL_MASK, ctypes.cast(block.address(), ctypes.voidptr_t));
+            if (monitor.isNull()) {
+              monitor = null;
+            }
+          }
+          return !!monitor;
+        },
+        stop() {
+          sink = null;
+          if (monitor) {
+            const was = monitor;
+            monitor = null;
+            sendId(events, removeMonitor, was);
+          }
+        },
+        // (the pieces macOS holds on to, kept from being collected)
+        keep: [objc, system, handler, descriptor, block],
+      };
+    } catch (err) {
+      noteError("swipe arrow: trackpad watch", err);
+      scrollWatch = null;
+    }
+    return scrollWatch;
+  }
+
   function watchSwipeArrow() {
     const swipe = window.gHistorySwipeAnimation;
     if (!swipe || swipe.ziaWrapped) {
@@ -17468,6 +17571,14 @@
     // waits for the next update or the fingers lifting
     let willSince = 0;
     let tapOwed = false;
+    // The page picked from the open card by moving the fingers up or down
+    // (as in Dia): the next one first, a step every PICK_STEP points of
+    // movement, a tap on each; letting go goes to it. picking is false where
+    // the fingers can't be followed, and the card then stays to click.
+    const PICK_STEP = 26;
+    let picked = 0;
+    let pickTravel = 0;
+    let picking = false;
     const payTap = () => {
       if (tapOwed) {
         tapOwed = false;
@@ -17488,7 +17599,46 @@
       setTimeout(() => node.remove(), SWIPE_LEAVE_MS);
     };
 
+    const stopPicking = () => {
+      picking = false;
+      pickTravel = 0;
+      scrollWatch?.stop();
+    };
+
+    const showPicked = () => {
+      const rows = el?.querySelectorAll(".zia-swipe-page") || [];
+      rows.forEach((row, i) => row.toggleAttribute("selected", i === picked));
+      // the card leans a little with the fingers between steps
+      el?.style.setProperty("--zia-swipe-nudge", `${Math.max(-7, Math.min(7, pickTravel * 0.3))}px`);
+    };
+
+    const onPickMove = (down) => {
+      if (!el || !picking) {
+        return;
+      }
+      const last = el.querySelectorAll(".zia-swipe-page").length - 1;
+      pickTravel += down;
+      let moved = false;
+      while (pickTravel >= PICK_STEP && picked < last) {
+        picked++;
+        pickTravel -= PICK_STEP;
+        moved = true;
+      }
+      while (pickTravel <= -PICK_STEP && picked > 0) {
+        picked--;
+        pickTravel += PICK_STEP;
+        moved = true;
+      }
+      // (no further past the first or last)
+      pickTravel = Math.max(-PICK_STEP / 2, Math.min(PICK_STEP / 2, pickTravel));
+      if (moved) {
+        swipeTapNow();
+      }
+      showPicked();
+    };
+
     const discard = () => {
+      stopPicking();
       clearHold();
       pinned = false;
       el?.remove();
@@ -17499,6 +17649,7 @@
     };
 
     const close = () => {
+      stopPicking();
       clearHold();
       pinned = false;
       fade(el);
@@ -17576,6 +17727,10 @@
       );
       // (its height from the rows', worked out with the tabs' sizes, 22)
       el.style.setProperty("--zia-swipe-n", `${pages.length}`);
+      picked = 0;
+      pickTravel = 0;
+      picking = swiping && !!trackpadScrollWatch()?.start(onPickMove);
+      el.toggleAttribute("picking", picking);
       el.setAttribute("open", "");
       // its corners turn to the hover cards' squircle once it's settled
       const card = el;
@@ -17643,10 +17798,25 @@
       }
     };
 
+    // Letting go with the card open goes to the page picked, the card
+    // scaling out as it goes; where the fingers couldn't be followed, it
+    // stays to click
+    const commit = () => {
+      const depth = picked + 1;
+      const forward = side === "forward";
+      el?.setAttribute("commit", "");
+      close();
+      // (the card on its way out before the page: going back at once kept
+      // the browser busy, and the card hung there)
+      requestAnimationFrame(() => requestAnimationFrame(() => goTo(depth, forward)));
+    };
+
     const leave = () => {
       payTap();
-      // the card stays once the fingers lift
       if (pinned) {
+        if (picking) {
+          commit();
+        }
         return;
       }
       close();

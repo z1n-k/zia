@@ -18,7 +18,7 @@
     border-radius: 40px;
     overflow: hidden;
     pointer-events: none;
-    translate: var(--zia-swipe-in) -50%;
+    translate: var(--zia-swipe-in) calc(-50% + var(--zia-swipe-nudge, 0px));
     /* as Dia's: a little smaller while it slides in, full size once letting
        go would go back ([will]) */
     scale: 0.875;
@@ -98,6 +98,22 @@
 
     &[side="forward"][leaving] {
       --zia-swipe-in: 92px;
+    }
+
+    /* letting go on a page picked from it: it scales out where it is,
+       blurring away, as Dia's does */
+    &[leaving][commit] {
+      --zia-swipe-in: 20px;
+      scale: 1.08;
+      filter: blur(8px);
+      transition:
+        opacity 0.2s ease,
+        scale 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+        filter 0.2s ease;
+    }
+
+    &[side="forward"][leaving][commit] {
+      --zia-swipe-in: -20px;
     }
   }
 
@@ -185,7 +201,13 @@
     }
   }
 
-  #zia-swipe .zia-swipe-pages:hover .zia-swipe-page[selected]:not(:hover) {
+  #zia-swipe:not([picking]) .zia-swipe-pages:hover .zia-swipe-page[selected]:not(:hover) {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  /* picked with the fingers, the pointer resting over it doesn't count */
+  #zia-swipe[picking] .zia-swipe-page:hover:not([selected]) {
     background: transparent;
     color: rgba(255, 255, 255, 0.78);
   }

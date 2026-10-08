@@ -6,6 +6,15 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- macOS: pick a page from the swipe's card as in Dia. Holding the swipe
+  until the card opens, move the two fingers up or down to step through
+  the pages (a tap on each, the card leaning with them), and let go to go
+  to the one picked, the card scaling out as it goes. Letting go without
+  moving goes to the next page back. Elsewhere the card stays to click, as
+  before.
+
 ### Fixed
 
 - Picking a page from the swipe's card, the card leaves at once: it hung
