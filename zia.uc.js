@@ -17498,7 +17498,12 @@
       side = null;
     };
 
+    // (the open card scales out where it is however it's closed, as Dia's
+    // does; the arrow alone slides back off the edge)
     const close = () => {
+      if (el?.hasAttribute("open")) {
+        el.setAttribute("commit", "");
+      }
       clearHold();
       pinned = false;
       fade(el);
@@ -17568,7 +17573,6 @@
           // straight away kept the browser busy, and the card hung there
           // before it left
           row.addEventListener("click", () => {
-            el?.setAttribute("commit", "");
             close();
             requestAnimationFrame(() => requestAnimationFrame(() => goTo(i + 1, forward)));
           });

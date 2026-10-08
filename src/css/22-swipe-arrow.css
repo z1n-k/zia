@@ -100,8 +100,9 @@
       --zia-swipe-in: 92px;
     }
 
-    /* a page picked from it: it scales out where it is, blurring away, as
-       Dia's does (closed any other way, it slides back off the edge) */
+    /* the open card closing (a page picked, a click round it, Escape): it
+       scales out where it is, blurring away, as Dia's does (the arrow
+       alone slides back off the edge) */
     &[leaving][commit] {
       --zia-swipe-in: 20px;
       scale: 1.08;

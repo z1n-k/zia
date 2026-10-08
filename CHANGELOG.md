@@ -8,9 +8,9 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
-- Picking a page from the swipe's card, the card scales out where it is,
-  blurring away, as Dia's does, rather than sliding back off the edge.
-  Closed any other way (a click round it, Escape), it still slides off.
+- The swipe's card closes as Dia's does, scaling out where it is and
+  blurring away, rather than sliding back off the edge: a page picked
+  from it, a click round it, or Escape.
 
 ## [2.96.43] — 2026-10-08
 
