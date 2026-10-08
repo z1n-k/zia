@@ -21,8 +21,8 @@ Every release of Zia, newest first. The format follows
   space has a name.
 - The Library's boosts: one that's off has its tile and icon faded and
   the icon grey, rather than a line struck through them, and the switch
-  beside each is smaller and in the sidebar's ink rather than green (off a
-  faint track, on a solid one).
+  beside each is smaller and on in Dia's blue rather than green, its knob
+  going all the way to the end (it stopped 2px short).
 
 ## [2.96.48] — 2026-10-08
 
