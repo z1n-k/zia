@@ -139,10 +139,6 @@
     --zia-slot-border: 1.5px dashed rgba(0, 0, 0, 0.22);
     --zia-slot-ink: rgba(0, 0, 0, 0.45);
     --zia-slot-glint: rgba(0, 0, 0, 0.85);
-
-    & > .tab-group-container::after {
-      content: url("chrome://sine/content/zia/icons/folder-drop-dark.svg") "\2002 Drag tabs here";
-    }
   }
 
   /* the buttons on tabs and folders (close, unload, reset) in the dark
