@@ -8,7 +8,8 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
-- The folder icon's tab, at the top left behind it, is a third wider.
+- The folder icon's tab, at the top left behind it, is about half as wide
+  again.
 
 ## [2.96.44] — 2026-10-08
 
