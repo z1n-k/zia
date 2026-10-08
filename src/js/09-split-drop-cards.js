@@ -1,5 +1,4 @@
   const TAB_DROP_TYPE = "application/x-moz-tabbrowser-tab";
-  const HTML = "http://www.w3.org/1999/xhtml";
   const MAGNET_SHARE = 0.32;
   const MAGNET_PULL_X = 0.55;
   const MAGNET_PULL_Y = 0.35;
@@ -80,14 +79,14 @@
   }
 
   function makeZone(side) {
-    const zone = document.createElementNS(HTML, "div");
+    const zone = document.createElementNS(XHTML_NS, "div");
     zone.className = "zia-split-zone";
     zone.setAttribute("side", side);
-    const inner = document.createElementNS(HTML, "div");
+    const inner = document.createElementNS(XHTML_NS, "div");
     inner.className = "zia-split-zone-inner";
-    const icon = document.createElementNS(HTML, "div");
+    const icon = document.createElementNS(XHTML_NS, "div");
     icon.className = "zia-split-zone-icon";
-    const label = document.createElementNS(HTML, "div");
+    const label = document.createElementNS(XHTML_NS, "div");
     label.className = "zia-split-zone-label";
     label.textContent = side === "left" ? "Add left split" : "Add right split";
     inner.append(icon, label);
@@ -99,7 +98,7 @@
     if (splitDrop.overlay) {
       return splitDrop.overlay;
     }
-    const overlay = document.createElementNS(HTML, "div");
+    const overlay = document.createElementNS(XHTML_NS, "div");
     overlay.id = "zia-split-drop";
     splitDrop.zones.left = makeZone("left");
     splitDrop.zones.right = makeZone("right");
@@ -131,7 +130,7 @@
     lastBlankAt = Date.now();
     try {
       if (!blankDragImage) {
-        blankDragImage = document.createElementNS(HTML, "canvas");
+        blankDragImage = document.createElementNS(XHTML_NS, "canvas");
         blankDragImage.id = "zia-split-blank-drag-image";
         blankDragImage.width = 32;
         blankDragImage.height = 32;
@@ -157,7 +156,7 @@
   async function makeDragPicture(tab) {
     const width = DRAG_PICTURE_W;
     const height = DRAG_PICTURE_H;
-    const canvas = splitDrop.thumb || document.createElementNS(HTML, "canvas");
+    const canvas = splitDrop.thumb || document.createElementNS(XHTML_NS, "canvas");
     canvas.id = "zia-split-drag-picture";
     const ratio = window.devicePixelRatio || 1;
     canvas.width = Math.round(width * ratio);

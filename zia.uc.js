@@ -6,6 +6,7 @@
   window.__ziaLoaded = true;
 
   const root = document.documentElement;
+  const XHTML_NS = "http://www.w3.org/1999/xhtml";
 
   // Errors Zia can carry on past (a pref that isn't set, a tab that's gone)
   // are logged once per place at debug level instead of vanishing: visible in
@@ -241,7 +242,7 @@
       ? await windowGlobal.drawSnapshot(new DOMRect(pos.x, pos.y, width, TOP_BAND), STRIP_SCALE, backing)
       : await windowGlobal.drawSnapshot(null, FULL_VIEW_SCALE, backing);
 
-    sampleTopColor.canvas ||= document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+    sampleTopColor.canvas ||= document.createElementNS(XHTML_NS, "canvas");
     const canvas = sampleTopColor.canvas;
     canvas.width = bitmap.width;
     canvas.height = pos ? bitmap.height : Math.min(TOP_BAND_ROWS, bitmap.height);
@@ -850,7 +851,7 @@
     }
     const backing = browser.getAttribute("transparent") === "true" ? "transparent" : "rgb(255, 255, 255)";
     const bitmap = await windowGlobal.drawSnapshot(null, 1, backing);
-    const canvas = document.createElementNS(HTML_NS, "canvas");
+    const canvas = document.createElementNS(XHTML_NS, "canvas");
     canvas.width = bitmap.width;
     canvas.height = bitmap.height;
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -895,7 +896,7 @@
     }
 
     const el = (tag, className) => {
-      const node = document.createElementNS(HTML_NS, tag);
+      const node = document.createElementNS(XHTML_NS, tag);
       if (className) {
         node.className = className;
       }
@@ -927,7 +928,6 @@
     stack.append(overlay);
 
     colorPick = { browser, overlay, shot, typed: null };
-    setFlag("zia-color-picking", true);
 
     // (kept for the site picking began on, should the page have moved on)
     const keep = (rgb) => {
@@ -994,7 +994,6 @@
     const { browser, overlay } = colorPick;
     colorPick = null;
     overlay.remove();
-    setFlag("zia-color-picking", false);
     if (kept) {
       const manual = manualSiteColor(browser);
       colorCache.set(browser, manual);
@@ -1170,20 +1169,20 @@
     if (!inputBox) {
       return;
     }
-    titleEl = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+    titleEl = document.createElementNS(XHTML_NS, "div");
     titleEl.id = "zia-url-title";
-    const host = document.createElementNS("http://www.w3.org/1999/xhtml", "span");
+    const host = document.createElementNS(XHTML_NS, "span");
     host.className = "zia-url-title-host";
-    const rest = document.createElementNS("http://www.w3.org/1999/xhtml", "span");
+    const rest = document.createElementNS(XHTML_NS, "span");
     rest.className = "zia-url-title-rest";
     titleEl.append(host, rest);
     inputBox.append(titleEl);
 
-    plainEl = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+    plainEl = document.createElementNS(XHTML_NS, "div");
     plainEl.id = "zia-url-plain";
-    const plainHost = document.createElementNS("http://www.w3.org/1999/xhtml", "span");
+    const plainHost = document.createElementNS(XHTML_NS, "span");
     plainHost.className = "zia-url-title-host";
-    const plainRest = document.createElementNS("http://www.w3.org/1999/xhtml", "span");
+    const plainRest = document.createElementNS(XHTML_NS, "span");
     plainRest.className = "zia-url-title-rest";
     plainEl.append(plainHost, plainRest);
     inputBox.append(plainEl);
@@ -1733,7 +1732,7 @@
     if (!topButtons || !window.gZenWorkspaces) {
       return;
     }
-    workspaceSlot = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+    workspaceSlot = document.createElementNS(XHTML_NS, "div");
     workspaceSlot.id = "zia-workspace-slot";
     const buttonBox = topButtons.querySelector(".titlebar-buttonbox-container");
     if (buttonBox) {
@@ -1758,7 +1757,6 @@
     setTimeout(placeWorkspaceIndicator, 2000);
   }
 
-  const XHTML_NS = "http://www.w3.org/1999/xhtml";
 
   function syncSpaceLabel(indicator) {
     if (!indicator) {
@@ -3458,7 +3456,7 @@
       img.onload = () => {
         try {
           const size = 24;
-          const canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+          const canvas = document.createElementNS(XHTML_NS, "canvas");
           canvas.width = size;
           canvas.height = size;
           const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -3510,7 +3508,7 @@
       img.onload = () => {
         try {
           const size = 32;
-          const canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+          const canvas = document.createElementNS(XHTML_NS, "canvas");
           canvas.width = size;
           canvas.height = size;
           const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -4566,7 +4564,6 @@
     );
   }
   const TAB_DROP_TYPE = "application/x-moz-tabbrowser-tab";
-  const HTML = "http://www.w3.org/1999/xhtml";
   const MAGNET_SHARE = 0.32;
   const MAGNET_PULL_X = 0.55;
   const MAGNET_PULL_Y = 0.35;
@@ -4647,14 +4644,14 @@
   }
 
   function makeZone(side) {
-    const zone = document.createElementNS(HTML, "div");
+    const zone = document.createElementNS(XHTML_NS, "div");
     zone.className = "zia-split-zone";
     zone.setAttribute("side", side);
-    const inner = document.createElementNS(HTML, "div");
+    const inner = document.createElementNS(XHTML_NS, "div");
     inner.className = "zia-split-zone-inner";
-    const icon = document.createElementNS(HTML, "div");
+    const icon = document.createElementNS(XHTML_NS, "div");
     icon.className = "zia-split-zone-icon";
-    const label = document.createElementNS(HTML, "div");
+    const label = document.createElementNS(XHTML_NS, "div");
     label.className = "zia-split-zone-label";
     label.textContent = side === "left" ? "Add left split" : "Add right split";
     inner.append(icon, label);
@@ -4666,7 +4663,7 @@
     if (splitDrop.overlay) {
       return splitDrop.overlay;
     }
-    const overlay = document.createElementNS(HTML, "div");
+    const overlay = document.createElementNS(XHTML_NS, "div");
     overlay.id = "zia-split-drop";
     splitDrop.zones.left = makeZone("left");
     splitDrop.zones.right = makeZone("right");
@@ -4698,7 +4695,7 @@
     lastBlankAt = Date.now();
     try {
       if (!blankDragImage) {
-        blankDragImage = document.createElementNS(HTML, "canvas");
+        blankDragImage = document.createElementNS(XHTML_NS, "canvas");
         blankDragImage.id = "zia-split-blank-drag-image";
         blankDragImage.width = 32;
         blankDragImage.height = 32;
@@ -4724,7 +4721,7 @@
   async function makeDragPicture(tab) {
     const width = DRAG_PICTURE_W;
     const height = DRAG_PICTURE_H;
-    const canvas = splitDrop.thumb || document.createElementNS(HTML, "canvas");
+    const canvas = splitDrop.thumb || document.createElementNS(XHTML_NS, "canvas");
     canvas.id = "zia-split-drag-picture";
     const ratio = window.devicePixelRatio || 1;
     canvas.width = Math.round(width * ratio);
@@ -5139,7 +5136,6 @@
     }
   }
 
-  const HTML_NS = "http://www.w3.org/1999/xhtml";
   const ICONS = "chrome://sine/content/zia/icons/";
   const paneColorTimers = new WeakMap();
 
@@ -5163,11 +5159,11 @@
   }
 
   function paneButton(name, label, onClick, icon = `${ICONS}${name}.svg`) {
-    const button = document.createElementNS(HTML_NS, "button");
+    const button = document.createElementNS(XHTML_NS, "button");
     button.className = `zia-pane-button zia-pane-${name}`;
     button.setAttribute("title", label);
     button.setAttribute("aria-label", label);
-    const img = document.createElementNS(HTML_NS, "img");
+    const img = document.createElementNS(XHTML_NS, "img");
     img.setAttribute("src", icon);
     img.setAttribute("alt", "");
     button.appendChild(img);
@@ -5198,7 +5194,7 @@
   }
 
   function createPaneBar(container) {
-    const bar = document.createElementNS(HTML_NS, "div");
+    const bar = document.createElementNS(XHTML_NS, "div");
     bar.className = "zia-pane-bar";
     const tabOf = () => gBrowser.getTabForBrowser(paneBrowser(container));
 
@@ -5226,11 +5222,11 @@
       })
     );
 
-    const address = document.createElementNS(HTML_NS, "div");
+    const address = document.createElementNS(XHTML_NS, "div");
     address.className = "zia-pane-address";
-    const host = document.createElementNS(HTML_NS, "span");
+    const host = document.createElementNS(XHTML_NS, "span");
     host.className = "zia-pane-host";
-    const rest = document.createElementNS(HTML_NS, "span");
+    const rest = document.createElementNS(XHTML_NS, "span");
     rest.className = "zia-pane-rest";
     address.append(host, rest);
     address.addEventListener("click", () => {
@@ -5251,7 +5247,7 @@
     });
     bar.appendChild(address);
 
-    const extensions = document.createElementNS(HTML_NS, "div");
+    const extensions = document.createElementNS(XHTML_NS, "div");
     extensions.className = "zia-pane-extensions";
     bar.appendChild(extensions);
 
@@ -7598,21 +7594,20 @@
       }
     }
 
-    const HTML = "http://www.w3.org/1999/xhtml";
     const page = document.createXULElement("vbox");
     page.id = "zia-icons-page";
-    const bar = document.createElementNS(HTML, "div");
+    const bar = document.createElementNS(XHTML_NS, "div");
     bar.id = "zia-icons-searchbar";
-    const box = document.createElementNS(HTML, "input");
+    const box = document.createElementNS(XHTML_NS, "input");
     box.id = "zia-icons-search";
     box.setAttribute("type", "text");
     box.setAttribute("placeholder", "Search icons");
     // Outline or solid, remembered
-    const styles = document.createElementNS(HTML, "div");
+    const styles = document.createElementNS(XHTML_NS, "div");
     styles.id = "zia-icons-style";
     const styleButtons = {};
     for (const [value, label] of [["outline", "Outline"], ["filled", "Solid"]]) {
-      const button = document.createElementNS(HTML, "button");
+      const button = document.createElementNS(XHTML_NS, "button");
       button.className = "zia-icons-style-option";
       button.textContent = label;
       button.addEventListener("click", (event) => {
@@ -7629,9 +7624,9 @@
       styles.appendChild(button);
     }
     bar.append(box, styles);
-    const grid = document.createElementNS(HTML, "div");
+    const grid = document.createElementNS(XHTML_NS, "div");
     grid.id = "zia-icons-grid";
-    const empty = document.createElementNS(HTML, "div");
+    const empty = document.createElementNS(XHTML_NS, "div");
     empty.id = "zia-icons-empty";
     empty.textContent = "No icons found";
     empty.hidden = true;
@@ -7668,7 +7663,7 @@
     let results = [];
     let shown = 0;
     let lastQuery = null;
-    const more = document.createElementNS(HTML, "div");
+    const more = document.createElementNS(XHTML_NS, "div");
     more.id = "zia-icons-more";
     const moreWatcher = new IntersectionObserver(
       (entries) => {
@@ -9113,7 +9108,7 @@
   }
 
   function folderIconPart(parent, className) {
-    const el = document.createElementNS(HTML_NS, "div");
+    const el = document.createElementNS(XHTML_NS, "div");
     el.className = className;
     parent.append(el);
     return el;
@@ -9124,7 +9119,7 @@
     if (!box || box.querySelector(":scope > .zia-fi")) {
       return;
     }
-    const icon = document.createElementNS(HTML_NS, "div");
+    const icon = document.createElementNS(XHTML_NS, "div");
     icon.className = "zia-fi";
     // the folder, back to front: its back, the sheets, the glass front
     const fold = folderIconPart(icon, "zia-fi-fold");
@@ -9147,7 +9142,7 @@
   }
 
   function folderIconMark(front) {
-    const mark = document.createElementNS(HTML_NS, "img");
+    const mark = document.createElementNS(XHTML_NS, "img");
     mark.className = "zia-fi-mark";
     mark.alt = "";
     front.append(mark);
@@ -10727,7 +10722,6 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(picture, 0, 0, sw, sh, 0, 0, canvas.width, canvas.height);
     picture.close?.();
-    canvas.setAttribute("zia-drawn", "true");
   }
 
   function fillTabCard(card, tab) {
@@ -10741,7 +10735,6 @@
 
     const thumb = card.querySelector(".zia-tab-card-thumb");
     const token = ++thumbToken;
-    thumb.removeAttribute("zia-drawn");
     thumb.hidden = !wantsTabThumb(shown);
     if (!thumb.hidden) {
       const ratio = Math.max(1, window.devicePixelRatio || 1);
@@ -10977,7 +10970,6 @@
     const style = shown ? getComputedStyle(shown) : null;
     const url = style?.listStyleImage?.match(/^url\("?(.*?)"?\)$/)?.[1];
     const icon = folderCardIcon(url || "chrome://sine/content/zia/icons/ui/plus.svg", "zia-folder-card-icon");
-    icon.setAttribute("zia-plus", "true");
     if (style) {
       const size = (value) => (parseFloat(value) > 0 ? value : "");
       icon.style.width = size(style.width) || "16px";
@@ -15094,7 +15086,7 @@
       if (!toast.classList?.contains("zen-toast") || toast.querySelector(".zia-toast-close")) {
         return;
       }
-      const button = document.createElementNS("http://www.w3.org/1999/xhtml", "button");
+      const button = document.createElementNS(XHTML_NS, "button");
       button.className = "zia-toast-close";
       button.title = "Close";
       button.setAttribute("aria-label", "Close");
@@ -15842,7 +15834,7 @@
         continue;
       }
       if (!key) {
-        key = document.createElementNS(HTML_NS, "span");
+        key = document.createElementNS(XHTML_NS, "span");
         key.className = "zia-tab-number";
         key.setAttribute("aria-hidden", "true");
         tab.querySelector(":scope > .tab-stack > .tab-content")?.append(key);
@@ -15850,7 +15842,7 @@
       // the digits in a box of their own, trimmed to their height, so the
       // key can centre them exactly (zia.css)
       if (key.textContent !== String(number)) {
-        const digits = document.createElementNS(HTML_NS, "span");
+        const digits = document.createElementNS(XHTML_NS, "span");
         digits.textContent = String(number);
         key.replaceChildren(digits);
       }
@@ -16044,12 +16036,12 @@
     if (document.getElementById("zia-welcome")) {
       return;
     }
-    const overlay = document.createElementNS(HTML_NS, "div");
+    const overlay = document.createElementNS(XHTML_NS, "div");
     overlay.id = "zia-welcome";
     // In the top layer, as pop-ups are: above the toolbar and address bar,
     // which sit over anything else in the window
     overlay.setAttribute("popover", "manual");
-    const frame = document.createElementNS(HTML_NS, "iframe");
+    const frame = document.createElementNS(XHTML_NS, "iframe");
     frame.setAttribute("src", `${WELCOME_URL}#${mode === "update" ? `update-${WELCOME_VERSION}` : mode}`);
     frame.setAttribute("title", "Welcome to Zia");
     overlay.append(frame);
@@ -16265,17 +16257,17 @@
       glanceClosing.add(glanceTab);
     }
 
-    const copy = document.createElementNS(HTML_NS, "canvas");
+    const copy = document.createElementNS(XHTML_NS, "canvas");
     copy.className = "zia-glance-thumb";
     copy.width = canvas.width;
     copy.height = canvas.height;
     copy.getContext("2d").drawImage(canvas, 0, 0);
 
-    const card = document.createElementNS(HTML_NS, "div");
+    const card = document.createElementNS(XHTML_NS, "div");
     card.className = "zia-glance-thumb-exit-card";
     card.append(copy);
 
-    const exit = document.createElementNS(HTML_NS, "div");
+    const exit = document.createElementNS(XHTML_NS, "div");
     exit.className = "zia-glance-thumb-exit";
     for (const name of ["--zia-glance-cut-top", "--zia-glance-cut-right", "--zia-glance-cut-bottom"]) {
       const value = glanceTab.style.getPropertyValue(name);
@@ -16338,7 +16330,7 @@
     cutGlanceAtTab(glanceTab);
     let canvas = stack.querySelector(":scope > .zia-glance-thumb");
     if (!canvas) {
-      canvas = document.createElementNS(HTML_NS, "canvas");
+      canvas = document.createElementNS(XHTML_NS, "canvas");
       canvas.className = "zia-glance-thumb";
       const ratio = Math.max(1, window.devicePixelRatio || 1);
       canvas.width = Math.round(GLANCE_THUMB_W * ratio);
@@ -16809,12 +16801,12 @@
       return;
     }
     const win = doc.defaultView;
-    const layer = doc.createElementNS(HTML_NS, "div");
+    const layer = doc.createElementNS(XHTML_NS, "div");
     layer.id = "zia-row-pills";
-    const hover = doc.createElementNS(HTML_NS, "div");
+    const hover = doc.createElementNS(XHTML_NS, "div");
     hover.className = "zia-row-pill";
     hover.setAttribute("hover", "");
-    const chosen = doc.createElementNS(HTML_NS, "div");
+    const chosen = doc.createElementNS(XHTML_NS, "div");
     chosen.className = "zia-row-pill";
     chosen.setAttribute("selected", "");
     layer.append(chosen, hover);
@@ -17292,13 +17284,13 @@
         return;
       }
       side = forward ? "forward" : "back";
-      el = document.createElementNS(HTML_NS, "div");
+      el = document.createElementNS(XHTML_NS, "div");
       el.id = "zia-swipe";
       el.setAttribute("side", side);
-      const arrow = document.createElementNS(HTML_NS, "div");
+      const arrow = document.createElementNS(XHTML_NS, "div");
       arrow.className = "zia-swipe-arrow";
       arrow.append(swipeChevron());
-      const list = document.createElementNS(HTML_NS, "div");
+      const list = document.createElementNS(XHTML_NS, "div");
       list.className = "zia-swipe-pages";
       el.append(arrow, list);
       stack.append(el);
@@ -17319,14 +17311,14 @@
       const list = el.querySelector(".zia-swipe-pages");
       list.replaceChildren(
         ...pages.map((page, i) => {
-          const row = document.createElementNS(HTML_NS, "div");
+          const row = document.createElementNS(XHTML_NS, "div");
           row.className = "zia-swipe-page";
           row.toggleAttribute("selected", i === 0);
-          const icon = document.createElementNS(HTML_NS, "img");
+          const icon = document.createElementNS(XHTML_NS, "img");
           icon.alt = "";
           icon.src = `page-icon:${page.url}`;
           icon.addEventListener("error", () => icon.setAttribute("src", "chrome://global/skin/icons/defaultFavicon.svg"), { once: true });
-          const title = document.createElementNS(HTML_NS, "span");
+          const title = document.createElementNS(XHTML_NS, "span");
           title.textContent = page.title;
           row.append(icon, title);
           row.addEventListener("click", () => {
@@ -17341,7 +17333,7 @@
       el.setAttribute("open", "");
       pinned = true;
       // behind the card, over the page: a click anywhere round it closes it
-      backdrop = document.createElementNS(HTML_NS, "div");
+      backdrop = document.createElementNS(XHTML_NS, "div");
       backdrop.id = "zia-swipe-backdrop";
       backdrop.addEventListener("mousedown", close);
       el.before(backdrop);
@@ -17537,7 +17529,7 @@
     }
     let rail = column.querySelector(":scope > .zia-library-rail");
     if (!rail) {
-      rail = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+      rail = document.createElementNS(XHTML_NS, "div");
       rail.className = "zia-library-rail";
       column.appendChild(rail);
       new ResizeObserver(() => placeRail(column, rail, true)).observe(column);
@@ -17603,7 +17595,6 @@
   // browsing data and cookies dialog, browsing history ticked, to choose
   // what goes.
   function dressLibrary() {
-    const XHTML = "http://www.w3.org/1999/xhtml";
 
     const clearDownloads = () => {
       try {
@@ -17647,7 +17638,7 @@
           if (header.querySelector(".zia-library-clear")) {
             continue;
           }
-          const button = document.createElementNS(XHTML, "button");
+          const button = document.createElementNS(XHTML_NS, "button");
           button.className = "zen-library-filter-button zia-library-clear";
           button.setAttribute("aria-label", label);
           button.title = title;

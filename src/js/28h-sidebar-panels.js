@@ -268,12 +268,12 @@
       return;
     }
     const win = doc.defaultView;
-    const layer = doc.createElementNS(HTML_NS, "div");
+    const layer = doc.createElementNS(XHTML_NS, "div");
     layer.id = "zia-row-pills";
-    const hover = doc.createElementNS(HTML_NS, "div");
+    const hover = doc.createElementNS(XHTML_NS, "div");
     hover.className = "zia-row-pill";
     hover.setAttribute("hover", "");
-    const chosen = doc.createElementNS(HTML_NS, "div");
+    const chosen = doc.createElementNS(XHTML_NS, "div");
     chosen.className = "zia-row-pill";
     chosen.setAttribute("selected", "");
     layer.append(chosen, hover);

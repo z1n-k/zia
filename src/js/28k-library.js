@@ -74,7 +74,7 @@
     }
     let rail = column.querySelector(":scope > .zia-library-rail");
     if (!rail) {
-      rail = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+      rail = document.createElementNS(XHTML_NS, "div");
       rail.className = "zia-library-rail";
       column.appendChild(rail);
       new ResizeObserver(() => placeRail(column, rail, true)).observe(column);
@@ -140,7 +140,6 @@
   // browsing data and cookies dialog, browsing history ticked, to choose
   // what goes.
   function dressLibrary() {
-    const XHTML = "http://www.w3.org/1999/xhtml";
 
     const clearDownloads = () => {
       try {
@@ -184,7 +183,7 @@
           if (header.querySelector(".zia-library-clear")) {
             continue;
           }
-          const button = document.createElementNS(XHTML, "button");
+          const button = document.createElementNS(XHTML_NS, "button");
           button.className = "zen-library-filter-button zia-library-clear";
           button.setAttribute("aria-label", label);
           button.title = title;

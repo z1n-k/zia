@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.32] — 2026-10-08
+
+### Removed
+
+- Dead code found in a full sweep (nothing you'd see): two arrow pictures
+  the "Drag tabs here" slot no longer uses, a colour variable and three
+  marks the script set that nothing read, a style the light spaces'
+  essentials set twice, a doubled line on the name cards, and five copies
+  of the same constant, now one.
+
 ## [2.96.31] — 2026-10-08
 
 ### Changed

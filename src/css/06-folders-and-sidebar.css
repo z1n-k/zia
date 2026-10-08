@@ -661,9 +661,9 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
      for a folder of its own to shut) */
   :is(zen-folder, tab-group:not([split-view-group]))[collapsed] &:not([collapsed]) > .tab-group-container::after {
     transition:
-      height var(--zia-slot-time, 0.18s) var(--zia-slot-ease, cubic-bezier(0.42, 0, 0.58, 1)),
-      margin var(--zia-slot-time, 0.18s) var(--zia-slot-ease, cubic-bezier(0.42, 0, 0.58, 1)),
-      border-width var(--zia-slot-time, 0.18s) var(--zia-slot-ease, cubic-bezier(0.42, 0, 0.58, 1)),
+      height var(--zia-slot-time, 0.18s) cubic-bezier(0.42, 0, 0.58, 1),
+      margin var(--zia-slot-time, 0.18s) cubic-bezier(0.42, 0, 0.58, 1),
+      border-width var(--zia-slot-time, 0.18s) cubic-bezier(0.42, 0, 0.58, 1),
       opacity var(--zia-slot-time, 0.18s) ease-out,
       translate 100ms ease-out;
   }

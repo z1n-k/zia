@@ -25,7 +25,7 @@
   }
 
   function folderIconPart(parent, className) {
-    const el = document.createElementNS(HTML_NS, "div");
+    const el = document.createElementNS(XHTML_NS, "div");
     el.className = className;
     parent.append(el);
     return el;
@@ -36,7 +36,7 @@
     if (!box || box.querySelector(":scope > .zia-fi")) {
       return;
     }
-    const icon = document.createElementNS(HTML_NS, "div");
+    const icon = document.createElementNS(XHTML_NS, "div");
     icon.className = "zia-fi";
     // the folder, back to front: its back, the sheets, the glass front
     const fold = folderIconPart(icon, "zia-fi-fold");
@@ -59,7 +59,7 @@
   }
 
   function folderIconMark(front) {
-    const mark = document.createElementNS(HTML_NS, "img");
+    const mark = document.createElementNS(XHTML_NS, "img");
     mark.className = "zia-fi-mark";
     mark.alt = "";
     front.append(mark);

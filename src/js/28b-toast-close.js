@@ -25,7 +25,7 @@
       if (!toast.classList?.contains("zen-toast") || toast.querySelector(".zia-toast-close")) {
         return;
       }
-      const button = document.createElementNS("http://www.w3.org/1999/xhtml", "button");
+      const button = document.createElementNS(XHTML_NS, "button");
       button.className = "zia-toast-close";
       button.title = "Close";
       button.setAttribute("aria-label", "Close");

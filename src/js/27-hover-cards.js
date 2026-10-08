@@ -133,7 +133,6 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(picture, 0, 0, sw, sh, 0, 0, canvas.width, canvas.height);
     picture.close?.();
-    canvas.setAttribute("zia-drawn", "true");
   }
 
   function fillTabCard(card, tab) {
@@ -147,7 +146,6 @@
 
     const thumb = card.querySelector(".zia-tab-card-thumb");
     const token = ++thumbToken;
-    thumb.removeAttribute("zia-drawn");
     thumb.hidden = !wantsTabThumb(shown);
     if (!thumb.hidden) {
       const ratio = Math.max(1, window.devicePixelRatio || 1);
@@ -383,7 +381,6 @@
     const style = shown ? getComputedStyle(shown) : null;
     const url = style?.listStyleImage?.match(/^url\("?(.*?)"?\)$/)?.[1];
     const icon = folderCardIcon(url || "chrome://sine/content/zia/icons/ui/plus.svg", "zia-folder-card-icon");
-    icon.setAttribute("zia-plus", "true");
     if (style) {
       const size = (value) => (parseFloat(value) > 0 ? value : "");
       icon.style.width = size(style.width) || "16px";

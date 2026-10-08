@@ -38,7 +38,7 @@
       img.onload = () => {
         try {
           const size = 24;
-          const canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+          const canvas = document.createElementNS(XHTML_NS, "canvas");
           canvas.width = size;
           canvas.height = size;
           const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -90,7 +90,7 @@
       img.onload = () => {
         try {
           const size = 32;
-          const canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+          const canvas = document.createElementNS(XHTML_NS, "canvas");
           canvas.width = size;
           canvas.height = size;
           const ctx = canvas.getContext("2d", { willReadFrequently: true });

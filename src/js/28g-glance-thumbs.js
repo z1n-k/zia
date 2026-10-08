@@ -103,17 +103,17 @@
       glanceClosing.add(glanceTab);
     }
 
-    const copy = document.createElementNS(HTML_NS, "canvas");
+    const copy = document.createElementNS(XHTML_NS, "canvas");
     copy.className = "zia-glance-thumb";
     copy.width = canvas.width;
     copy.height = canvas.height;
     copy.getContext("2d").drawImage(canvas, 0, 0);
 
-    const card = document.createElementNS(HTML_NS, "div");
+    const card = document.createElementNS(XHTML_NS, "div");
     card.className = "zia-glance-thumb-exit-card";
     card.append(copy);
 
-    const exit = document.createElementNS(HTML_NS, "div");
+    const exit = document.createElementNS(XHTML_NS, "div");
     exit.className = "zia-glance-thumb-exit";
     for (const name of ["--zia-glance-cut-top", "--zia-glance-cut-right", "--zia-glance-cut-bottom"]) {
       const value = glanceTab.style.getPropertyValue(name);
@@ -176,7 +176,7 @@
     cutGlanceAtTab(glanceTab);
     let canvas = stack.querySelector(":scope > .zia-glance-thumb");
     if (!canvas) {
-      canvas = document.createElementNS(HTML_NS, "canvas");
+      canvas = document.createElementNS(XHTML_NS, "canvas");
       canvas.className = "zia-glance-thumb";
       const ratio = Math.max(1, window.devicePixelRatio || 1);
       canvas.width = Math.round(GLANCE_THUMB_W * ratio);

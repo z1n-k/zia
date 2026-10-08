@@ -191,7 +191,7 @@
       ? await windowGlobal.drawSnapshot(new DOMRect(pos.x, pos.y, width, TOP_BAND), STRIP_SCALE, backing)
       : await windowGlobal.drawSnapshot(null, FULL_VIEW_SCALE, backing);
 
-    sampleTopColor.canvas ||= document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+    sampleTopColor.canvas ||= document.createElementNS(XHTML_NS, "canvas");
     const canvas = sampleTopColor.canvas;
     canvas.width = bitmap.width;
     canvas.height = pos ? bitmap.height : Math.min(TOP_BAND_ROWS, bitmap.height);

@@ -6,20 +6,20 @@
     if (!inputBox) {
       return;
     }
-    titleEl = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+    titleEl = document.createElementNS(XHTML_NS, "div");
     titleEl.id = "zia-url-title";
-    const host = document.createElementNS("http://www.w3.org/1999/xhtml", "span");
+    const host = document.createElementNS(XHTML_NS, "span");
     host.className = "zia-url-title-host";
-    const rest = document.createElementNS("http://www.w3.org/1999/xhtml", "span");
+    const rest = document.createElementNS(XHTML_NS, "span");
     rest.className = "zia-url-title-rest";
     titleEl.append(host, rest);
     inputBox.append(titleEl);
 
-    plainEl = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+    plainEl = document.createElementNS(XHTML_NS, "div");
     plainEl.id = "zia-url-plain";
-    const plainHost = document.createElementNS("http://www.w3.org/1999/xhtml", "span");
+    const plainHost = document.createElementNS(XHTML_NS, "span");
     plainHost.className = "zia-url-title-host";
-    const plainRest = document.createElementNS("http://www.w3.org/1999/xhtml", "span");
+    const plainRest = document.createElementNS(XHTML_NS, "span");
     plainRest.className = "zia-url-title-rest";
     plainEl.append(plainHost, plainRest);
     inputBox.append(plainEl);

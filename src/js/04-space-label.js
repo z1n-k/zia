@@ -13,7 +13,7 @@
     if (!topButtons || !window.gZenWorkspaces) {
       return;
     }
-    workspaceSlot = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+    workspaceSlot = document.createElementNS(XHTML_NS, "div");
     workspaceSlot.id = "zia-workspace-slot";
     const buttonBox = topButtons.querySelector(".titlebar-buttonbox-container");
     if (buttonBox) {
@@ -38,7 +38,6 @@
     setTimeout(placeWorkspaceIndicator, 2000);
   }
 
-  const XHTML_NS = "http://www.w3.org/1999/xhtml";
 
   function syncSpaceLabel(indicator) {
     if (!indicator) {
