@@ -129,16 +129,38 @@
     corner(radius, height - radius, Math.PI / 2);
     side(radius, height - radius, 0.5, false);
     const svg =
-      `<svg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}' viewBox='0 0 ${width} ${height}'>` +
+      `<svg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}' viewBox='0 0 ${width} ${height}' preserveAspectRatio='none'>` +
       `<path d='${parts.join("")}' fill='none' stroke='context-stroke' stroke-width='1'/></svg>`;
     return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
   }
 
   // Each empty folder's slot gets its own (a folder inside another is
   // narrower); the page's keeps the latest, for a tab dragged in from
-  // outside any folder
+  // outside any folder. While the sidebar's being resized the drawing in
+  // place stretches with it, and it's drawn afresh once the width has
+  // held still for a moment, swapped in only once it's ready: drawn at
+  // every step, each new one blanked the dashes while it loaded.
+  const SLOT_DASHES_SETTLE_MS = 200;
   let lastSlotDashes = "";
+  let slotDashesTimer = 0;
   function drawSlotDashes() {
+    clearTimeout(slotDashesTimer);
+    // (a slot not drawn yet, a folder just made or opened, is drawn at once)
+    if ([...document.querySelectorAll("zen-folder[zia-empty]")].some((folder) => !folder.ziaSlotDashes)) {
+      drawSlotDashesNow();
+      return;
+    }
+    slotDashesTimer = setTimeout(drawSlotDashesNow, SLOT_DASHES_SETTLE_MS);
+  }
+
+  function useSlotDashes(target, image) {
+    const url = image.slice(5, -2);
+    const picture = new Image();
+    picture.src = url;
+    picture.decode().catch(() => {}).then(() => target.style.setProperty("--zia-slot-dashes-image", image));
+  }
+
+  function drawSlotDashesNow() {
     const vars = getComputedStyle(root);
     const px = (name, fallback) => parseFloat(vars.getPropertyValue(name)) || fallback;
     const height = px("--zia-slot-h", 35);
@@ -159,10 +181,10 @@
       if (folder.ziaSlotDashes !== key) {
         folder.ziaSlotDashes = key;
         const image = slotDashesImage(width, height, radius, dpr);
-        folder.style.setProperty("--zia-slot-dashes-image", image);
+        useSlotDashes(folder, image);
         if (!folder.parentElement?.closest("zen-folder") && image !== lastSlotDashes) {
           lastSlotDashes = image;
-          root.style.setProperty("--zia-slot-dashes-image", image);
+          useSlotDashes(root, image);
         }
       }
     }
