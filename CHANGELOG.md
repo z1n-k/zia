@@ -4,6 +4,31 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.97.0] — 2026-10-08
+
+### Changed
+
+- The site panel (the site icon at the start of the address bar) is drawn
+  as Zia draws the rest: Zia's card, its share, reader view, screenshot
+  and bookmark buttons and its extensions as Zia's tiles, the headings
+  small and quiet as the Library's, and the settings as rows that light
+  up as tabs do, their icons on a tile rather than a bright disc, with no
+  lines between them, every tile a tab's corner. Light spaces and light
+  mode get a light panel, its icons and Zen's own colours in it dark.
+- Creating a space: the form in the sidebar is drawn as Zia's too, the
+  name and profile in soft wells at a tab's height, Edit Theme and Cancel
+  as Zia's tiles, and Create in white with dark text, quiet until the
+  space has a name.
+- The Library's boosts: one that's off has its tile and icon faded and
+  the icon grey, rather than a line struck through them, and the switch
+  beside each is smaller and on in Dia's blue rather than green, its knob
+  going all the way to the end (it stopped 2px short); each boost's tile
+  sits as far in from the row's left edge as from its top and bottom.
+- The Library's sections, its search and its lists are as far in from its
+  edges as the sidebar's essentials and tabs are from the sidebar's (7px
+  on macOS): the sections sat closer to the edges (5px), the search
+  further in.
+
 ## [2.96.48] — 2026-10-08
 
 ### Fixed

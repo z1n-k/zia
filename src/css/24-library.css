@@ -12,6 +12,7 @@
     --zia-lib-tile: var(--zia-essential-bg);
     --zia-lib-tile-hover: color-mix(in srgb, var(--zia-lib-ink) 8%, var(--zia-essential-bg));
     --zia-lib-field: rgba(0, 0, 0, 0.16);
+    --zia-dia-blue: rgb(10, 132, 255);
     --zen-library-pill-bg: var(--zia-lib-tile) !important;
     --zen-library-pill-hover-bg: var(--zia-lib-tile-hover) !important;
     --zen-library-radius: var(--zia-tab-radius) !important;
@@ -30,9 +31,25 @@
       min-width: 84px !important;
     }
 
+    /* (the sections, the search and the lists all as far in from the
+       Library's edges as the sidebar's essentials and tabs are from its,
+       measured: 7px on macOS. The sections' column runs under the window's
+       1px edge on the left, and the sidebar's essentials sit a pixel in
+       from its padding, so the sections take the padding and those two) */
+    & {
+      --zia-lib-side-start: calc(var(--zen-toolbox-padding) + 2px);
+      --zia-lib-side-end: calc(var(--zen-toolbox-padding) + 1px);
+
+      /* (the window's edge is on the right with the sidebar there) */
+      :root[zen-right-side="true"] & {
+        --zia-lib-side-start: calc(var(--zen-toolbox-padding) + 1px);
+        --zia-lib-side-end: calc(var(--zen-toolbox-padding) + 2px);
+      }
+    }
+
     & #zen-library-sidebar-tabs {
       gap: 8px !important;
-      padding-inline: 4px !important;
+      padding-inline: var(--zia-lib-side-start) var(--zia-lib-side-end) !important;
     }
 
     & .zen-library-tab {
@@ -87,7 +104,7 @@
     & .zia-library-rail {
       position: absolute;
       top: 0;
-      inset-inline: 4px;
+      inset-inline: var(--zia-lib-side-start) var(--zia-lib-side-end);
       z-index: 0;
       border-radius: calc(var(--zia-essential-radius) * var(--zia-squircle-grow));
       corner-shape: var(--zia-squircle) !important;
@@ -132,7 +149,7 @@
     }
 
     & .zen-library-search-top {
-      padding: 20px 10px 6px !important;
+      padding: 20px var(--zen-toolbox-padding) 6px !important;
     }
 
     & .zen-library-search-box {
@@ -206,7 +223,7 @@
     }
 
     & .zen-library-search-results {
-      padding: 0 6px 8px !important;
+      padding: 0 var(--zen-toolbox-padding) 8px !important;
 
       &[scrolled] {
         border-top-color: color-mix(in srgb, var(--zia-lib-ink) 10%, transparent) !important;
@@ -277,16 +294,22 @@
       background-image: linear-gradient(color-mix(in srgb, var(--zia-loading-color) 50%, transparent), color-mix(in srgb, var(--zia-loading-color) 50%, transparent)) !important;
     }
 
-    /* boosts: their icon on an essential-shaped tile */
+    /* boosts: their icon on an essential-shaped tile, as far in from the
+       row's left edge as from its top and bottom (4px all around: Zen's
+       margin beside it pushed it further in, and the row, shorter than the
+       tile and its padding, left it almost touching top and bottom) */
     & .zen-library-boost-row {
-      padding: 5px 10px 5px 5px !important;
+      padding: 4px 10px 4px 4px !important;
+      height: auto !important;
+      min-height: 0 !important;
       border-radius: calc(var(--zia-essential-radius) * var(--zia-squircle-grow)) !important;
       corner-shape: var(--zia-squircle) !important;
     }
 
     & .zen-library-boost-icon {
-      width: 40px !important;
-      height: 40px !important;
+      width: 34px !important;
+      height: 34px !important;
+      margin: 0 !important;
       color-scheme: inherit !important;
 
       &::before {
@@ -298,11 +321,48 @@
       }
     }
 
+    /* a boost that's off: its tile and icon faded and the icon grey, rather
+       than Zen's line struck through them */
+    & .zen-library-boost-row[disabled] .zen-library-boost-icon {
+      &::before,
+      & img {
+        mask: none !important;
+      }
+
+      &::after {
+        display: none !important;
+      }
+
+      &::before {
+        opacity: 0.55;
+      }
+
+      & img {
+        filter: grayscale(1);
+        opacity: 0.45 !important;
+      }
+    }
+
+    /* its switch, smaller, and on in Dia's blue with a white knob rather
+       than green; off a faint track in the sidebar's ink. The knob travels
+       right up to the far end, as far from it as from the top and bottom
+       (Firefox's travel allows for a 1px border, which this has none of,
+       so it stopped 2px short) */
     & .zen-library-row-actions moz-toggle {
+      --toggle-width: 34px !important;
+      --toggle-height: 20px !important;
+      --toggle-dot-margin: 2px !important;
+      --toggle-border-width: 0px !important;
+      --toggle-dot-transform-x: calc(var(--toggle-width) - 2 * var(--toggle-dot-margin) - var(--toggle-dot-width)) !important;
       --toggle-background-color: color-mix(in srgb, var(--zia-lib-ink) 14%, transparent) !important;
       --toggle-background-color-hover: color-mix(in srgb, var(--zia-lib-ink) 20%, transparent) !important;
-      --toggle-background-color-pressed: rgb(52, 199, 89) !important;
-      --toggle-background-color-pressed-hover: rgb(48, 186, 83) !important;
+      --toggle-background-color-active: color-mix(in srgb, var(--zia-lib-ink) 24%, transparent) !important;
+      --toggle-dot-background-color: color-mix(in srgb, var(--zia-lib-ink) 75%, transparent) !important;
+      --toggle-dot-background-color-hover: color-mix(in srgb, var(--zia-lib-ink) 85%, transparent) !important;
+      --toggle-background-color-pressed: var(--zia-dia-blue) !important;
+      --toggle-background-color-pressed-hover: color-mix(in srgb, var(--zia-dia-blue) 88%, white) !important;
+      --toggle-dot-background-color-on-pressed: rgb(255, 255, 255) !important;
+      --toggle-dot-background-color-on-pressed-hover: rgb(255, 255, 255) !important;
     }
 
     /* media: essential-shaped tiles */
