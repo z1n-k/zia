@@ -8462,16 +8462,22 @@ zen-folder .tab-reset-button {
       background-image: linear-gradient(color-mix(in srgb, var(--zia-loading-color) 50%, transparent), color-mix(in srgb, var(--zia-loading-color) 50%, transparent)) !important;
     }
 
-    /* boosts: their icon on an essential-shaped tile */
+    /* boosts: their icon on an essential-shaped tile, as far in from the
+       row's left edge as from its top and bottom (4px all around: Zen's
+       margin beside it pushed it further in, and the row, shorter than the
+       tile and its padding, left it almost touching top and bottom) */
     & .zen-library-boost-row {
-      padding: 5px 10px 5px 5px !important;
+      padding: 4px 10px 4px 4px !important;
+      height: auto !important;
+      min-height: 0 !important;
       border-radius: calc(var(--zia-essential-radius) * var(--zia-squircle-grow)) !important;
       corner-shape: var(--zia-squircle) !important;
     }
 
     & .zen-library-boost-icon {
-      width: 40px !important;
-      height: 40px !important;
+      width: 34px !important;
+      height: 34px !important;
+      margin: 0 !important;
       color-scheme: inherit !important;
 
       &::before {
