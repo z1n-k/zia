@@ -7859,10 +7859,13 @@ zen-folder .tab-reset-button {
       height: 16px;
     }
 
+    /* (room below the line for the tails of g, p and y, which its
+       overflow clipped with the row's line-height of 1) */
     & span {
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+      padding-block: 0.15em;
     }
   }
 
