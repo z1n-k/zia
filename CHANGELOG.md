@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.46] — 2026-10-08
+
+### Fixed
+
+- The swipe's card of pages is as wide as the tab and folder hover cards
+  (230px); it was 6px wider.
+
 ## [2.96.45] — 2026-10-08
 
 ### Changed

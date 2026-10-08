@@ -68,7 +68,7 @@
        hover cards' squircle, drawn to look the same: a squircle from the
        start squared the circle off into a blob as it began to change. */
     &[open] {
-      width: 236px;
+      width: var(--zia-tab-card-width);
       height: calc(var(--zia-swipe-n, 1) * var(--zia-tab-height) + (var(--zia-swipe-n, 1) - 1) * var(--zia-swipe-gap) + 2 * var(--zia-swipe-inset));
       border-radius: var(--zia-tab-card-radius);
       --zia-swipe-in: 20px;
