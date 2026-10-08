@@ -283,6 +283,13 @@
     margin-left: var(--zia-card-gap) !important;
   }
 
+  /* With the sidebar on the right, the page leaves no gap of its own beside
+     it, as it doesn't on the left: the sidebar's own padding is the gap, so
+     the tabs sit as far from the page as from the window's edge */
+  &[zen-right-side="true"]:not([zen-compact-mode="true"]) #zen-appcontent-wrapper {
+    margin-right: 0 !important;
+  }
+
   & :is(#zen-appcontent-wrapper, #zen-appcontent-navbar-wrapper, #tabbrowser-tabpanels .browserSidebarContainer, #tabbrowser-tabpanels .browserStack, #tabbrowser-tabpanels browser) {
     corner-shape: round !important;
   }

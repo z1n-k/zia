@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- With the sidebar on the right, the tabs and essentials are as far from
+  the page as from the window's edge. The page kept its own gap on the
+  sidebar's side too, so the space between them was about twice as wide.
+
 ## [2.96.38] — 2026-10-08
 
 ### Fixed
