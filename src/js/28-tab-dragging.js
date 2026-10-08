@@ -2545,6 +2545,36 @@
       }
     }).observe(document.getElementById("navigator-toolbox") || document.documentElement, { childList: true, subtree: true });
 
+    // Zen's placeholder for a tab dragged over the essentials is a cell, and
+    // Zen sets the grid's columns by its cell count (data-hack-type: eight
+    // essentials and the placeholder went three to a row), yet shifts the
+    // tiles by the columns before it: tiles were pushed past the sidebar's
+    // edge. The grid keeps its columns while that placeholder is in it.
+    new MutationObserver((records) => {
+      for (const { target: grid, oldValue } of records) {
+        const slot = grid.querySelector(":scope > vbox:not(.tabbrowser-tab)");
+        if (!slot) {
+          continue;
+        }
+        if (grid.ziaColumns?.slot !== slot) {
+          grid.ziaColumns = { slot, value: oldValue };
+        }
+        const value = grid.ziaColumns.value;
+        if (grid.getAttribute("data-hack-type") !== value) {
+          if (value === null) {
+            grid.removeAttribute("data-hack-type");
+          } else {
+            grid.setAttribute("data-hack-type", value);
+          }
+        }
+      }
+    }).observe(document.getElementById("navigator-toolbox") || document.documentElement, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["data-hack-type"],
+      attributeOldValue: true,
+    });
+
     window.addEventListener("mousemove", (event) => {
       if (essentialDrag && event.buttons === 0 && Date.now() - (essentialDrag.startedAt || 0) > 300) {
         endEssentialDrag();
@@ -2957,7 +2987,7 @@
         root.appendChild(node);
         node.getBoundingClientRect();
         state.thumb = node;
-        state.copy.style.setProperty("visibility", "hidden", "important");
+        state.copy.setAttribute("zia-over-page", "true");
         tap();
       }
       fillPicture(state.thumb, state.tab);
@@ -2980,7 +3010,7 @@
         node.remove();
         if (state.thumb === node) {
           state.thumb = null;
-          state.copy?.style.removeProperty("visibility");
+          state.copy?.removeAttribute("zia-over-page");
         }
       }, THUMB_MS);
     };

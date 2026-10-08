@@ -4,6 +4,18 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Dragging a tab over the essentials: the tiles slide aside within their
+  own columns. Zen's drop cell made the grid change its columns (eight
+  essentials and the cell went three to a row) while the tiles still slid
+  by the old ones, so some were pushed past the sidebar's edge and cut off.
+- Dragging an essential out over the page (to split it): only its page's
+  picture shows, as for a tab. Its tile stayed behind at the sidebar's
+  edge as well.
+
 ## [2.97.1] — 2026-10-08
 
 ### Fixed

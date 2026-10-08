@@ -347,6 +347,12 @@
   opacity: 1 !important;
 }
 
+/* out over the page, where its page's picture stands in (an inline style
+   can't hide it against the rule above: this sheet's !important wins) */
+.tabbrowser-tab[zia-essential-proxy][zia-over-page] {
+  visibility: hidden !important;
+}
+
 :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) {
   &::before,
   &::after {
