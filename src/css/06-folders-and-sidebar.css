@@ -199,8 +199,7 @@
    its light on hover sits just inside the tab's fine edge rather than over
    it (over it, the edge showed brighter there): a clear border the edge's
    width keeps it in. While its "Separate from pinned tab" line shows under
-   the name, the line sits a little closer under it and the two are
-   centred together in the row (they sat low, reaching for its edges). */
+   the name, the two are centred together in the row (they sat low). */
 .tabbrowser-tab:not([zen-essential]) .tab-reset-pin-button {
   border-radius: var(--zia-tab-radius) 0 0 var(--zia-tab-radius) !important;
   corner-shape: round !important;
@@ -211,14 +210,10 @@
 
 .tabbrowser-tab:not([zen-essential]) .tab-label-container {
   transition: translate 0.1s ease-in-out;
-
-  & .zen-tab-sublabel {
-    transform: translateY(-5.5px);
-  }
 }
 
 .tabbrowser-tab:not([zen-essential]):is([zen-show-sublabel], [zen-pinned-changed="true"]:has(.tab-reset-pin-button:hover)) .tab-label-container {
-  translate: 0 -1.25px;
+  translate: 0 -2px;
 }
 
 .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-background,
