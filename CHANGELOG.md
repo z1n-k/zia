@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.36] — 2026-10-08
+
+### Fixed
+
+- "Drag tabs here": its dashes are even all the way along. Firefox spread
+  its own dashes to fit each side, so along the top and bottom their gaps
+  fell between pixels and ran grey in places; Zia now draws them itself,
+  3px on and 3px off, on the slot and on a tab dragged in.
+
 ## [2.96.35] — 2026-10-08
 
 ### Changed
