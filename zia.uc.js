@@ -11849,8 +11849,11 @@
     // starts from there: eased while the glide moved the row the other way (a folder's
     // indent changing), the two didn't cancel and it bulged sideways. Only a width that
     // differs from the one it was let go at eases, by its right edge.
+    const MORPH_PROPS = ["--zia-morph-bg-start", "--zia-morph-bg-end", "--zia-morph-content-start", "--zia-morph-content-end"];
+    // a dropped tab and, if it's in a split, the split: whichever wears the look
+    const morphNodes = (tab) => [tab, tab?.group?.hasAttribute?.("split-view-group") ? tab.group : null];
     const settleDroppedWidth = (tab, width) => {
-      const node = [tab, tab?.group?.hasAttribute?.("split-view-group") ? tab.group : null].find((n) => n?.hasAttribute?.("zia-morph"));
+      const node = morphNodes(tab).find((n) => n?.hasAttribute?.("zia-morph"));
       if (!node) {
         return;
       }
@@ -11859,7 +11862,7 @@
       const content = split ? null : node.querySelector(".tab-content");
       node.setAttribute("zia-morph-done", "true");
       node.removeAttribute("zia-morph");
-      for (const name of ["--zia-morph-bg-start", "--zia-morph-bg-end", "--zia-morph-content-start", "--zia-morph-content-end"]) {
+      for (const name of MORPH_PROPS) {
         node.style.removeProperty(name);
       }
       const own = box?.getBoundingClientRect();
@@ -11884,13 +11887,13 @@
     };
 
     const easeOutWidth = (tab) => {
-      for (const node of [tab, tab?.group?.hasAttribute?.("split-view-group") ? tab.group : null]) {
+      for (const node of morphNodes(tab)) {
         if (!node?.hasAttribute?.("zia-morph")) {
           continue;
         }
         node.setAttribute("zia-morph-out", "true");
         node.removeAttribute("zia-morph");
-        for (const name of ["--zia-morph-bg-start", "--zia-morph-bg-end", "--zia-morph-content-start", "--zia-morph-content-end"]) {
+        for (const name of MORPH_PROPS) {
           node.style.removeProperty(name);
         }
         clearTimeout(node.ziaMorphOutTimer);
@@ -11898,6 +11901,7 @@
       }
     };
 
+    const newTabOnTop = () => Services.prefs.getBoolPref("zen.view.show-newtab-button-top", false);
     const newTabButton = () =>
       window.gZenWorkspaces?.activeWorkspaceElement?.newTabButton ||
       document.querySelector("#tabs-newtab-button, #vertical-tabs-newtab-button");
@@ -11911,7 +11915,6 @@
         return;
       }
       const now = Date.now();
-
       if (now - lastTap < 140) {
         return;
       }
@@ -11936,19 +11939,15 @@
         drag.sepDelta = sepDelta;
         drag.sepShownY = sepDelta;
         place(sep, sepDelta, false);
-
-        const onTop = Services.prefs.getBoolPref("zen.view.show-newtab-button-top", false);
-        const button = onTop ? newTabButton() : null;
+        const button = newTabOnTop() ? newTabButton() : null;
         if (button) {
           place(button, sepDelta, false);
         }
       }
     };
 
-    // A dragged folder whose height has changed since the list was measured
-    // (it shut after the drag began): the list is measured again, or every
-    // row would be moved by the old height and the drop land in the wrong
-    // place.
+    // A dragged folder whose height changed since the list was measured (it shut after
+    // the drag began): measured again, or rows moved by the old height and it dropped wrong
     const remeasureFolderDrag = (folder) => {
       const strip = document.getElementById("tabbrowser-tabs");
       // measured where they sit, not partway through sliding back
@@ -11995,7 +11994,7 @@
       // New Tab at the foot of the list, when the list closes up (only if the
       // row taken out was above it)
       const shiftNewTab = (by) => {
-        if (Services.prefs.getBoolPref("zen.view.show-newtab-button-top", false)) {
+        if (newTabOnTop()) {
           return;
         }
         const button = newTabButton();
@@ -12073,13 +12072,9 @@
       if (drag.sepTop != null) {
         const startedBelow = drag.origin > drag.sepTop;
         let sepDelta = 0;
-        // Coming up from below, it's over the separator once it's a fifth
-        // of the way into the tab-sized space that opens (not halfway:
-        // the gap below the last folder then comes before the tab goes in,
-        // and it goes in still sitting in the space made for it)
-        // Back down, it's back under just past that same point (a few
-        // pixels' give, so it doesn't flicker): once a whole tab past, the
-        // space it had left sat empty above it for a moment.
+        // Coming up from below, it's over the separator a fifth of the way into the space that
+        // opens (halfway, the gap under the last folder came first and it went in still in the
+        // space made for it); back down, just past that point with a few pixels' give.
         const upTo = drag.sepTop + drag.pitch * 0.8 + (drag.sepDelta ? 4 : 0);
         if (startedBelow && visualMid < upTo) {
           sepDelta = drag.pitch;
@@ -12101,9 +12096,8 @@
       morphWidth(drag.target?.folder || null);
     };
 
-    // Dropping into an open empty folder uses its slot as the tab's room, so
-    // everything after the folder moves up by the slot's height on top of the
-    // usual shift, and the slot itself fades (chrome.css).
+    // Dropping into an open empty folder uses its slot as the tab's room: rows after the
+    // folder move up by the slot's height too, and the slot fades (chrome.css).
     const takeEmptySlot = () => {
       const folder = drag.target?.folder;
       const pitch = slotPitchOf(folder);
@@ -12125,7 +12119,7 @@
         const want = (drag.sepDelta || 0) + (sepAfter ? -pitch : 0);
         if ((drag.sepShownY ?? drag.sepDelta ?? 0) !== want) {
           place(sep, want, false);
-          const button = Services.prefs.getBoolPref("zen.view.show-newtab-button-top", false) ? newTabButton() : null;
+          const button = newTabOnTop() ? newTabButton() : null;
           if (button) {
             place(button, want, false);
           }
@@ -12181,9 +12175,18 @@
       }
     };
 
-    // A split let go in a folder: where it was shown (first, before the row
-    // it was shown above, or last; beside the hidden tab Zen keeps in an
-    // empty one), and a closed folder shuts on it again
+    // The row a drop into a folder goes before, as one of the folder's own
+    // (none at its end, or when it's closed)
+    const nextInFolder = (folder, box, target) => {
+      let next = !target.atEnd && !isCollapsed(folder) && target.next && folder.contains(target.next.node) ? target.next.node : null;
+      while (next && next.parentElement !== box) {
+        next = next.parentElement;
+      }
+      return next;
+    };
+
+    // A split let go in a folder goes where it was shown (beside the hidden tab Zen
+    // keeps in an empty one), and a closed folder shuts on it again
     const splitIntoFolder = (split, folder, target) => {
       folder.removeAttribute("zia-drop-slot");
       const box = folder.querySelector(":scope > .tab-group-container");
@@ -12202,10 +12205,7 @@
         folder.setAttribute("has-active", "true");
         folder.activeTabs = [];
       }
-      let next = !target.atEnd && !isCollapsed(folder) && target.next && folder.contains(target.next.node) ? target.next.node : null;
-      while (next && next.parentElement !== box) {
-        next = next.parentElement;
-      }
+      let next = nextInFolder(folder, box, target);
       if (target.first && items.length) {
         next = items[0];
       }
@@ -12257,6 +12257,7 @@
         for (const t of [...split.tabs]) {
           pinFor(t, !target.below);
         }
+        // (read after pinning, which can give the split a new group)
         const group = tab.group || split;
         const folder = target.folder?.isConnected && !split.contains(target.folder) ? target.folder : null;
         if (folder) {
@@ -12312,19 +12313,15 @@
         }
         return;
       }
-      if (!target.below) {
-        const sep = currentSeparator();
-        if (sep) {
-          placeBefore(tab, sep);
-        }
+      const sep = currentSeparator();
+      if (sep) {
+        placeBefore(tab, sep);
       }
     };
 
-    // Zen drops a folder by what's under the pointer, which with the rows
-    // slid about is often a closed folder it then nests it in. Straight
-    // after, the folder is put where Zia showed it: among the rows, before
-    // the one it was shown above, and never inside another folder.
-    // Zen's own limit on how deep folders go
+    // Zen drops a folder by what's under the pointer, often a closed folder it then nests
+    // it in: straight after, it's put where Zia showed it, never inside another folder.
+    // (canNest: Zen's own limit on how deep folders go)
     const canNest = (folder, into) => {
       try {
         const inside = into.querySelector(":scope > .tab-group-container > .tabbrowser-tab") || into.labelElement || into;
@@ -12350,10 +12347,7 @@
         // Dropped where Zia showed it inside a folder: there, before the row
         // it was shown above (at the end, if none or the folder is closed)
         const box = into.querySelector(":scope > .tab-group-container");
-        let next = !target.atEnd && !isCollapsed(into) && target.next && into.contains(target.next.node) ? target.next.node : null;
-        while (next && next.parentElement !== box) {
-          next = next.parentElement;
-        }
+        const next = nextInFolder(into, box, target);
         if (next && next !== folder) {
           placeBefore(folder, next);
         } else if (box) {
@@ -12410,11 +12404,9 @@
       }
     };
 
-    // A closed folder showing the open tab that's just gone in. Zen shows it
-    // itself (animateSelect), except when every tab in the folder is the
-    // open one: then it opens the folder, which flashed open and shut again.
-    // Just then it's laid out as Zen lays out a closed folder showing its
-    // open tab. Returns false when Zen's own way is fine.
+    // A closed folder showing the open tab just put in. Zen does it (animateSelect) unless
+    // every tab in the folder is the open one: then it opened the folder, flashing open and
+    // shut, so it's laid out here as Zen would. False when Zen's own way is fine.
     const showOpenTabShut = (folder, open) => {
       const zen = window.gZenFolders;
       const others = (folder.tabs || []).filter(
@@ -12481,9 +12473,8 @@
       } catch (err) {
         console.error("[Zia] Could not settle the folder:", err);
       }
-      // Zen slides the folder's list down into place (it starts pushed up
-      // out of sight), so the tab just dropped there blinked out and slid
-      // in from above: it's where it landed already
+      // Zen slides the folder's list down into place, so the tab just dropped blinked out
+      // and slid in from above: it's where it landed already
       jumpToEnd(folder);
     };
 
@@ -13978,8 +13969,7 @@
         // separator and can't have a tab dropped above it: it moves with the
         // separator, as for a tab dragged within the list, rather than making
         // way as New Tab at the foot of the list does.
-        const onTop = Services.prefs.getBoolPref("zen.view.show-newtab-button-top", false);
-        const delta = onTop ? listRoom.sepDelta : listRoom.buttonBottom > y ? listRoom.pitch : 0;
+        const delta = newTabOnTop() ? listRoom.sepDelta : listRoom.buttonBottom > y ? listRoom.pitch : 0;
         if (listRoom.buttonDelta !== delta) {
           listRoom.buttonDelta = delta;
           place(listRoom.button, delta, false);
