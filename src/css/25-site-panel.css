@@ -15,19 +15,25 @@
   --zia-site-tile: color-mix(in srgb, currentColor 7%, transparent);
   --zia-site-tile-hover: color-mix(in srgb, currentColor 12%, transparent);
   --zia-site-tile-on: color-mix(in srgb, currentColor 20%, transparent);
-  --zia-site-tile-radius: calc(var(--zia-glass-button-radius) * var(--zia-squircle-grow));
+  /* (a tab's corner: on tiles this short, the essentials' squircle size
+     came out nearly a pill) */
+  --zia-site-tile-radius: var(--zia-glass-button-radius);
   --zia-site-tile-edge: var(--zia-glass-edge), inset 0 0 0 0.5px color-mix(in srgb, currentColor 6%, transparent);
   /* (its ink the card's, as the hover cards': Zen's followed the system's
      light or dark, which a light space's light card doesn't) */
   --panel-color: rgb(255, 255, 255) !important;
   --arrowpanel-color: rgb(255, 255, 255) !important;
   color: rgb(255, 255, 255) !important;
+  /* (and its colour scheme: Zen's own colours in it are each a light and a
+     dark one, picked by the system's) */
+  color-scheme: dark !important;
   font-size: var(--zia-text-size);
 
   :root[zia-light]:not(#zia-none) & {
     --panel-color: rgb(28, 28, 32) !important;
     --arrowpanel-color: rgb(28, 28, 32) !important;
     color: rgb(28, 28, 32) !important;
+    color-scheme: light !important;
   }
 
   &::part(content) {
@@ -39,11 +45,13 @@
 
 /* the four buttons along the top: share, reader view, screenshot, bookmark */
 #zen-site-data-header toolbarbutton {
+  color: color-mix(in srgb, currentColor 85%, transparent) !important;
+
   &::before {
     background: var(--zia-site-tile) !important;
     border: none !important;
     border-radius: var(--zia-site-tile-radius) !important;
-    corner-shape: var(--zia-squircle) !important;
+    corner-shape: round !important;
     box-shadow: var(--zia-site-tile-edge) !important;
     transition: background-color 0.12s ease, transform 0.12s ease !important;
   }
@@ -71,12 +79,12 @@
 #zen-site-data-addons :is(#overflowed-extensions-list, #unified-extensions-area, .unified-extensions-list, #zen-site-data-new-addon-button-container) > * {
   background: var(--zia-site-tile) !important;
   border-radius: var(--zia-site-tile-radius) !important;
-  corner-shape: var(--zia-squircle) !important;
+  corner-shape: round !important;
   box-shadow: var(--zia-site-tile-edge) !important;
 
   & toolbarbutton {
     border-radius: var(--zia-site-tile-radius) !important;
-    corner-shape: var(--zia-squircle) !important;
+    corner-shape: round !important;
   }
 
   &:hover {
@@ -136,7 +144,7 @@
     background: var(--zia-site-tile) !important;
     opacity: 1 !important;
     border-radius: var(--zia-site-tile-radius) !important;
-    corner-shape: var(--zia-squircle) !important;
+    corner-shape: round !important;
     box-shadow: var(--zia-site-tile-edge);
     transform: none !important;
   }
@@ -155,7 +163,7 @@
   & .zen-interactive-button {
     background: var(--zia-site-tile) !important;
     border-radius: var(--zia-site-tile-radius) !important;
-    corner-shape: var(--zia-squircle) !important;
+    corner-shape: round !important;
     box-shadow: var(--zia-site-tile-edge) !important;
     font-weight: 500 !important;
 

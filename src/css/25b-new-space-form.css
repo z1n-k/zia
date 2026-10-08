@@ -9,7 +9,9 @@ zen-workspace-creation {
   --zia-form-field: rgba(0, 0, 0, 0.16);
   --zia-form-tile: var(--zia-essential-bg);
   --zia-form-tile-hover: color-mix(in srgb, var(--zia-form-ink) 8%, var(--zia-essential-bg));
-  --zia-form-radius: calc(var(--zia-glass-button-radius) * var(--zia-squircle-grow));
+  /* (a tab's corner: on buttons this short, the essentials' squircle size
+     came out nearly a pill) */
+  --zia-form-radius: var(--zia-glass-button-radius);
 
   & .zen-workspace-creation {
     & .zen-workspace-creation-title {
@@ -60,7 +62,7 @@ zen-workspace-creation {
           padding: 5px 10px !important;
           background: var(--zia-form-tile) !important;
           border-radius: var(--zia-form-radius) !important;
-          corner-shape: var(--zia-squircle) !important;
+          corner-shape: round !important;
           box-shadow: var(--zia-glass-edge) !important;
           font-weight: 500 !important;
 
@@ -77,7 +79,7 @@ zen-workspace-creation {
         background: var(--zia-form-tile) !important;
         border: none !important;
         border-radius: var(--zia-form-radius) !important;
-        corner-shape: var(--zia-squircle) !important;
+        corner-shape: round !important;
         box-shadow: var(--zia-glass-edge) !important;
         color: inherit !important;
         font-weight: 500 !important;
@@ -98,7 +100,7 @@ zen-workspace-creation {
           color: rgb(28, 28, 32) !important;
           border: none !important;
           border-radius: var(--zia-form-radius) !important;
-          corner-shape: var(--zia-squircle) !important;
+          corner-shape: round !important;
           box-shadow: none !important;
           font-weight: 600 !important;
           transition: opacity 0.15s ease;

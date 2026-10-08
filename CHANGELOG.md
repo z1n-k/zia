@@ -13,7 +13,8 @@ Every release of Zia, newest first. The format follows
   and bookmark buttons and its extensions as Zia's tiles, the headings
   small and quiet as the Library's, and the settings as rows that light
   up as tabs do, their icons on a tile rather than a bright disc, with no
-  lines between them. Light spaces get a light panel.
+  lines between them, every tile a tab's corner. Light spaces and light
+  mode get a light panel, its icons and Zen's own colours in it dark.
 - Creating a space: the form in the sidebar is drawn as Zia's too, the
   name and profile in soft wells at a tab's height, Edit Theme and Cancel
   as Zia's tiles, and Create in white with dark text, quiet until the
