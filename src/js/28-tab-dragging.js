@@ -1990,7 +1990,6 @@
         shifted: new Set(),
         sepTop,
         sepDelta: 0,
-        tilesBottom: essentialsBottom(),
         clientY: event.clientY || pending?.clientY || 0,
         screenY: event.screenY || pending?.screenY || 0,
       };
@@ -2196,13 +2195,6 @@
         drag.firstTop = drag.rows?.length ? Math.min(...drag.rows.map((row) => row.top)) : null;
         if (!overEssentials && !hasTiles && drag.firstTop != null) {
           overEssentials = point.y < drag.firstTop + 4;
-        }
-        // (no lower than the essentials' bottom as the drag began: Zen's cell
-        // for the tab can open a row below them, which went once the pointer
-        // left it, the list jumping up a row under the pointer, so the tab
-        // came back below the first row and couldn't reach the top)
-        if (hasTiles && point.y > drag.tilesBottom + 6) {
-          overEssentials = false;
         }
         drag.hasTiles = hasTiles;
         debugDrag(event, point, sidebar, essentials);

@@ -16,11 +16,12 @@ Every release of Zia, newest first. The format follows
   picture shows, as for a tab. Its tile stayed behind at the sidebar's
   edge as well.
 - A tab dragged into the essentials and back out (before it became one)
-  can go straight to the top of the list. It came back below the first
-  folder, so you had to go down and back up; and it now settles into its
-  row at once, where it dipped and jolted while the list caught up.
+  settles into its row at once, where it dipped and jolted while the list
+  caught up.
 - A selected split glows as brightly as a selected tab (it had only part
   of the tab's glow).
+- An empty folder's "Drag tabs here" box fades as the folder closes over
+  it, as the tabs in a folder do; it was gone before the folder moved.
 - Dropping a tab: its × (or −) stays on, where it blinked off until the
   pointer moved (Zen 1.23 hides them a new way). Dropping a folder into
   another: the outer folder's box stays lit rather than blinking off.
