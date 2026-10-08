@@ -2932,7 +2932,9 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
    pixels and ran grey along the top and bottom. zia.uc.js draws each
    slot's to its size (two dashes centred on each corner, the sides' spaced
    evenly between, every one on a whole pixel); this is the stand-in until
-   it has. */
+   it has. The slot itself shows its folder's dashes live, from a canvas
+   redrawn to size at every step of a sidebar resize
+   (--zia-slot-dashes-live), so they never stretch. */
 :root {
   --zia-slot-dashes-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' rx='9.5' fill='none' stroke='context-stroke' stroke-width='2' stroke-dasharray='3 3'/%3E%3C/svg%3E");
 }
@@ -2958,7 +2960,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
     margin-block: var(--zia-slot-mt, 2px) var(--zia-slot-mb, 2px);
     margin-inline: var(--zia-slot-ms, 16px) var(--zia-slot-me, 7px);
     overflow: hidden;
-    background: var(--zia-slot-dashes-image) 0 0 / 100% 100% no-repeat;
+    background: var(--zia-slot-dashes-live, var(--zia-slot-dashes-image)) 0 0 / 100% 100% no-repeat;
     -moz-context-properties: stroke;
     stroke: var(--zia-slot-dash);
     border-radius: var(--zia-tab-radius);
@@ -2981,7 +2983,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
   &:not([collapsed]) > .tab-group-container::after {
     background:
       linear-gradient(100deg, var(--zia-slot-ink) 40%, var(--zia-slot-glint) 50%, var(--zia-slot-ink) 60%) 0 0 / 300% 100% no-repeat,
-      var(--zia-slot-dashes-image) 0 0 / 100% 100% no-repeat;
+      var(--zia-slot-dashes-live, var(--zia-slot-dashes-image)) 0 0 / 100% 100% no-repeat;
     background-clip: text, border-box;
     color: transparent;
     animation: zia-slot-shine 1.6s cubic-bezier(0.45, 0, 0.25, 1) 0.15s both;
