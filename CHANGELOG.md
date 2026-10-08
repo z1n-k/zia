@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.37] — 2026-10-08
+
+### Fixed
+
+- "Drag tabs here": its dashes are even all the way round at any sidebar
+  width. 2.96.36's ran round from the top-left and came back to it short
+  or long; each slot's are now drawn to its size, two dashes on each
+  corner and the sides' spread evenly between, every one on a whole
+  pixel. A tab dragged in wears the same.
+
 ## [2.96.36] — 2026-10-08
 
 ### Fixed

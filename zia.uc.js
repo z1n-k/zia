@@ -9009,6 +9009,95 @@
     }
   }
 
+  // The slot's dashes, drawn to its size so they're even all the way round
+  // at any sidebar width: two dashes centred on each corner, and on each
+  // side as many as fit, spread evenly between the corners' (each set on a
+  // whole screen pixel, so none blurs). Firefox's own dashes, spread to fit
+  // each side, fell between pixels and greyed; a fixed pattern drawn round
+  // the box came back to its start uneven.
+  const SLOT_DASH = 3;
+  const SLOT_GAP = 3;
+  function slotDashesImage(width, height, radius, dpr) {
+    const snap = (n) => Math.round(n * dpr) / dpr;
+    const c = radius - 0.5;
+    const arc = (Math.PI / 2) * c;
+    // the corner's two dashes, centred on its arc, a gap between them
+    const cornerPad = (arc - 2 * SLOT_DASH - SLOT_GAP) / 2;
+    const parts = [];
+    const corner = (cx, cy, from) => {
+      for (const start of [cornerPad, cornerPad + SLOT_DASH + SLOT_GAP]) {
+        const a1 = from + (start / arc) * (Math.PI / 2);
+        const a2 = from + ((start + SLOT_DASH) / arc) * (Math.PI / 2);
+        const x1 = cx + c * Math.cos(a1);
+        const y1 = cy + c * Math.sin(a1);
+        const x2 = cx + c * Math.cos(a2);
+        const y2 = cy + c * Math.sin(a2);
+        parts.push(`M${x1.toFixed(2)} ${y1.toFixed(2)}A${c} ${c} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`);
+      }
+    };
+    // a side from its start to its end, along x or y at a fixed other
+    const side = (from, to, fixed, horizontal) => {
+      const length = to - from;
+      // the gap at each end makes up a whole gap with the corner's pad
+      const end = Math.max(0, SLOT_GAP - cornerPad);
+      const n = Math.max(1, Math.round((length - 2 * end + SLOT_GAP) / (SLOT_DASH + SLOT_GAP)));
+      const gap = n > 1 ? (length - 2 * end - n * SLOT_DASH) / (n - 1) : 0;
+      for (let i = 0; i < n; i++) {
+        const a = n > 1 ? snap(from + end + i * (SLOT_DASH + gap)) : snap(from + (length - SLOT_DASH) / 2);
+        const b = a + SLOT_DASH;
+        parts.push(horizontal ? `M${a} ${fixed}H${b}` : `M${fixed} ${a}V${b}`);
+      }
+    };
+    const right = width - 0.5;
+    const bottom = height - 0.5;
+    corner(radius, radius, Math.PI);
+    side(radius, width - radius, 0.5, true);
+    corner(width - radius, radius, -Math.PI / 2);
+    side(radius, height - radius, right, false);
+    corner(width - radius, height - radius, 0);
+    side(radius, width - radius, bottom, true);
+    corner(radius, height - radius, Math.PI / 2);
+    side(radius, height - radius, 0.5, false);
+    const svg =
+      `<svg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}' viewBox='0 0 ${width} ${height}'>` +
+      `<path d='${parts.join("")}' fill='none' stroke='context-stroke' stroke-width='1'/></svg>`;
+    return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+  }
+
+  // Each empty folder's slot gets its own (a folder inside another is
+  // narrower); the page's keeps the latest, for a tab dragged in from
+  // outside any folder
+  let lastSlotDashes = "";
+  function drawSlotDashes() {
+    const vars = getComputedStyle(root);
+    const px = (name, fallback) => parseFloat(vars.getPropertyValue(name)) || fallback;
+    const height = px("--zia-slot-h", 35);
+    const inset = px("--zia-slot-ms", 16) + px("--zia-slot-me", 7);
+    const radius = px("--zia-tab-radius", 9.5);
+    const dpr = window.devicePixelRatio || 1;
+    for (const folder of document.querySelectorAll("zen-folder[zia-empty]")) {
+      const container = folder.querySelector(":scope > .tab-group-container");
+      const style = container && getComputedStyle(container);
+      const box = container?.getBoundingClientRect();
+      const width = box
+        ? Math.round((box.width - (parseFloat(style.paddingLeft) || 0) - (parseFloat(style.paddingRight) || 0) - inset) * dpr) / dpr
+        : 0;
+      if (width < 2 * radius + 2 * SLOT_DASH || height < 2 * radius) {
+        continue;
+      }
+      const key = `${width}x${height}@${dpr}`;
+      if (folder.ziaSlotDashes !== key) {
+        folder.ziaSlotDashes = key;
+        const image = slotDashesImage(width, height, radius, dpr);
+        folder.style.setProperty("--zia-slot-dashes-image", image);
+        if (!folder.parentElement?.closest("zen-folder") && image !== lastSlotDashes) {
+          lastSlotDashes = image;
+          root.style.setProperty("--zia-slot-dashes-image", image);
+        }
+      }
+    }
+  }
+
   // A folder emptied by moving its last tab out collapses; an open empty
   // folder (new, or opened by hand) shows the slot.
   const wasEmpty = new WeakMap();
@@ -9030,6 +9119,7 @@
     }
     if (open) {
       measureFolderSlot();
+      drawSlotDashes();
     }
   }
 

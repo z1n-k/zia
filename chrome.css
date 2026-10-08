@@ -2919,12 +2919,15 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
  * extra element; it shrinks away alongside the folder's collapse (the same
  * spring, zia.uc.js), and --zia-slot-y moves it with its folder's header
  * while rows slide aside for a drag. */
-/* The slot's dashes, drawn: a 1px line round the tab's corner, 3px on and
-   3px off, in the colour given as stroke (--zia-slot-dash). Firefox's own
-   dashed border or outline spread its dashes to fit each side, so their
-   gaps fell between pixels and ran grey along the top and bottom. */
+/* The slot's dashes, drawn: a 1px line round the tab's corner, in the
+   colour given as stroke (--zia-slot-dash). Firefox's own dashed border or
+   outline spread its dashes to fit each side, so their gaps fell between
+   pixels and ran grey along the top and bottom. zia.uc.js draws each
+   slot's to its size (two dashes centred on each corner, the sides' spaced
+   evenly between, every one on a whole pixel); this is the stand-in until
+   it has. */
 :root {
-  --zia-slot-dashes: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' rx='9.5' fill='none' stroke='context-stroke' stroke-width='2' stroke-dasharray='3 3'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+  --zia-slot-dashes-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' rx='9.5' fill='none' stroke='context-stroke' stroke-width='2' stroke-dasharray='3 3'/%3E%3C/svg%3E");
 }
 
 :root[zen-sidebar-expanded="true"] zen-folder[zia-empty] {
@@ -2948,7 +2951,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
     margin-block: var(--zia-slot-mt, 2px) var(--zia-slot-mb, 2px);
     margin-inline: var(--zia-slot-ms, 16px) var(--zia-slot-me, 7px);
     overflow: hidden;
-    background: var(--zia-slot-dashes);
+    background: var(--zia-slot-dashes-image) 0 0 / 100% 100% no-repeat;
     -moz-context-properties: stroke;
     stroke: var(--zia-slot-dash);
     border-radius: var(--zia-tab-radius);
@@ -2971,7 +2974,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
   &:not([collapsed]) > .tab-group-container::after {
     background:
       linear-gradient(100deg, var(--zia-slot-ink) 40%, var(--zia-slot-glint) 50%, var(--zia-slot-ink) 60%) 0 0 / 300% 100% no-repeat,
-      var(--zia-slot-dashes);
+      var(--zia-slot-dashes-image) 0 0 / 100% 100% no-repeat;
     background-clip: text, border-box;
     color: transparent;
     animation: zia-slot-shine 1.6s cubic-bezier(0.45, 0, 0.25, 1) 0.15s both;
@@ -3040,7 +3043,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
 /* A tab dragged into an empty folder, open or collapsed, wears the slot's
  * dashes, so the drop spot stays marked while the tab is over it. */
 :root[zen-sidebar-expanded="true"] .tabbrowser-tab[zia-dragging][zia-into-empty] > .tab-stack > .tab-background {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' rx='9.5' fill='none' stroke='context-stroke' stroke-width='2' stroke-dasharray='3 3'/%3E%3C/svg%3E") !important;
+  background-image: var(--zia-slot-dashes-image) !important;
   background-size: 100% 100% !important;
   background-repeat: no-repeat !important;
   -moz-context-properties: stroke !important;
