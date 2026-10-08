@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.44] — 2026-10-08
+
+### Changed
+
+- The swipe's card closes as Dia's does, scaling out where it is and
+  blurring away, rather than sliding back off the edge: a page picked
+  from it, a click round it, or Escape.
+
 ## [2.96.43] — 2026-10-08
 
 ### Fixed
