@@ -39,6 +39,9 @@
     & {
       --zia-lib-side-start: calc(var(--zen-toolbox-padding) + 2px);
       --zia-lib-side-end: calc(var(--zen-toolbox-padding) + 1px);
+      /* (the search and the lists: measured, a pixel short of the sidebar's
+         6px on each side with its padding alone) */
+      --zia-lib-pad: calc(var(--zen-toolbox-padding) + 1px);
 
       /* (the window's edge is on the right with the sidebar there) */
       :root[zen-right-side="true"] & {
@@ -149,7 +152,7 @@
     }
 
     & .zen-library-search-top {
-      padding: 20px var(--zen-toolbox-padding) 6px !important;
+      padding: 20px var(--zia-lib-pad) 6px !important;
     }
 
     & .zen-library-search-box {
@@ -223,7 +226,7 @@
     }
 
     & .zen-library-search-results {
-      padding: 0 var(--zen-toolbox-padding) 8px !important;
+      padding: 0 var(--zia-lib-pad) 8px !important;
 
       &[scrolled] {
         border-top-color: color-mix(in srgb, var(--zia-lib-ink) 10%, transparent) !important;

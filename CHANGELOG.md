@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- "Clear" beside the separator shows again, faint, a little brighter with
+  the pointer on the sidebar: on Zen 1.23.1 it came only with Zen's own
+  hover, and the separator stopped short with nothing after it.
+- The Library's search and lists are as far in from its edges as the
+  sidebar's tabs (they were a pixel short on each side).
+
 ## [2.97.0] — 2026-10-08
 
 ### Changed
