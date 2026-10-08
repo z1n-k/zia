@@ -28,7 +28,8 @@
     return [r, g, b].map((v) => Math.max(0, Math.min(255, Math.round(avg + (v - avg) * k))));
   }
 
-  function readArtColors(url) {
+  // the image's pixels at size by size, or null
+  function readPixels(url, size) {
     return new Promise((resolve) => {
       if (!url) {
         resolve(null);
@@ -37,37 +38,12 @@
       const img = new Image();
       img.onload = () => {
         try {
-          const size = 24;
           const canvas = document.createElementNS(XHTML_NS, "canvas");
           canvas.width = size;
           canvas.height = size;
           const ctx = canvas.getContext("2d", { willReadFrequently: true });
           ctx.drawImage(img, 0, 0, size, size);
-          const { data } = ctx.getImageData(0, 0, size, size);
-          const halves = [[0, 0, 0, 0], [0, 0, 0, 0]];
-          for (let y = 0; y < size; y++) {
-            for (let x = 0; x < size; x++) {
-              const i = (y * size + x) * 4;
-              if (data[i + 3] < 128) {
-                continue;
-              }
-              const h = halves[x < size / 2 ? 0 : 1];
-              h[0] += data[i];
-              h[1] += data[i + 1];
-              h[2] += data[i + 2];
-              h[3]++;
-            }
-          }
-          const colors = halves.map((h) =>
-            h[3] ? boost([h[0] / h[3], h[1] / h[3], h[2] / h[3]]) : null
-          );
-          if (!colors[0] && !colors[1]) {
-            resolve(null);
-            return;
-          }
-          const a = colors[0] || colors[1];
-          const b = colors[1] || colors[0];
-          resolve([`rgb(${a.join(", ")})`, `rgb(${b.join(", ")})`]);
+          resolve(ctx.getImageData(0, 0, size, size).data);
         } catch (err) {
           resolve(null);
         }
@@ -77,77 +53,92 @@
     });
   }
 
-  // The favicon's own colours, strongest first: up to three hues it has a
-  // fair amount of, so the selected tab's glow can blend them. Grey, white and
-  // black icons give null and the glow stays white.
-  function readFaviconPalette(url) {
-    return new Promise((resolve) => {
-      if (!url) {
-        resolve(null);
-        return;
-      }
-      const img = new Image();
-      img.onload = () => {
-        try {
-          const size = 32;
-          const canvas = document.createElementNS(XHTML_NS, "canvas");
-          canvas.width = size;
-          canvas.height = size;
-          const ctx = canvas.getContext("2d", { willReadFrequently: true });
-          ctx.drawImage(img, 0, 0, size, size);
-          const { data } = ctx.getImageData(0, 0, size, size);
-          const bins = Array.from({ length: 12 }, () => [0, 0, 0, 0]);
-          for (let i = 0; i < data.length; i += 4) {
-            const [r, g, b, a] = [data[i], data[i + 1], data[i + 2], data[i + 3]];
-            if (a < 128) {
-              continue;
-            }
-            const max = Math.max(r, g, b);
-            const min = Math.min(r, g, b);
-            const sat = max ? (max - min) / max : 0;
-            if (sat < 0.3 || max < 60) {
-              continue;
-            }
-            let hue;
-            if (max === r) {
-              hue = ((g - b) / (max - min) + 6) % 6;
-            } else if (max === g) {
-              hue = (b - r) / (max - min) + 2;
-            } else {
-              hue = (r - g) / (max - min) + 4;
-            }
-            const bin = bins[Math.floor(hue * 2) % 12];
-            bin[0] += r * sat;
-            bin[1] += g * sat;
-            bin[2] += b * sat;
-            bin[3] += sat;
-          }
-          const ranked = bins.filter((bin) => bin[3] >= 6).sort((x, y) => y[3] - x[3]);
-          if (!ranked.length) {
-            resolve(null);
-            return;
-          }
-          const top = ranked[0][3];
-          const colors = ranked
-            .filter((bin) => bin[3] >= top * 0.12)
-            .slice(0, 3)
-            .map((bin) => bin.slice(0, 3).map((v) => Math.round(v / bin[3])));
-          // One colour: blend a lighter and a deeper shade of it instead.
-          if (colors.length === 1) {
-            const [r, g, b] = colors[0];
-            colors.push([r, g, b].map((v) => Math.round(v + (255 - v) * 0.35)));
-            colors.push([r, g, b].map((v) => Math.round(v * 0.7)));
-          } else if (colors.length === 2) {
-            colors.push(colors[0].map((v, k) => Math.round((v + colors[1][k]) / 2)));
-          }
-          resolve(colors.map((c) => `rgb(${c.join(", ")})`));
-        } catch (err) {
-          resolve(null);
+  async function readArtColors(url) {
+    const size = 24;
+    const data = await readPixels(url, size);
+    if (!data) {
+      return null;
+    }
+    const halves = [[0, 0, 0, 0], [0, 0, 0, 0]];
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const i = (y * size + x) * 4;
+        if (data[i + 3] < 128) {
+          continue;
         }
-      };
-      img.onerror = () => resolve(null);
-      img.src = url;
-    });
+        const h = halves[x < size / 2 ? 0 : 1];
+        h[0] += data[i];
+        h[1] += data[i + 1];
+        h[2] += data[i + 2];
+        h[3]++;
+      }
+    }
+    const colors = halves.map((h) => (h[3] ? boost([h[0] / h[3], h[1] / h[3], h[2] / h[3]]) : null));
+    if (!colors[0] && !colors[1]) {
+      return null;
+    }
+    const a = colors[0] || colors[1];
+    const b = colors[1] || colors[0];
+    return [`rgb(${a.join(", ")})`, `rgb(${b.join(", ")})`];
+  }
+
+  async function cachedArtColors(url) {
+    if (!mediaColorCache.has(url)) {
+      mediaColorCache.set(url, await readArtColors(url));
+    }
+    return mediaColorCache.get(url);
+  }
+
+  // up to three of the favicon's strongest hues, for the selected tab's glow;
+  // null for grey, white and black icons (the glow stays white)
+  async function readFaviconPalette(url) {
+    const data = await readPixels(url, 32);
+    if (!data) {
+      return null;
+    }
+    const bins = Array.from({ length: 12 }, () => [0, 0, 0, 0]);
+    for (let i = 0; i < data.length; i += 4) {
+      const [r, g, b, a] = [data[i], data[i + 1], data[i + 2], data[i + 3]];
+      if (a < 128) {
+        continue;
+      }
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const sat = max ? (max - min) / max : 0;
+      if (sat < 0.3 || max < 60) {
+        continue;
+      }
+      let hue;
+      if (max === r) {
+        hue = ((g - b) / (max - min) + 6) % 6;
+      } else if (max === g) {
+        hue = (b - r) / (max - min) + 2;
+      } else {
+        hue = (r - g) / (max - min) + 4;
+      }
+      const bin = bins[Math.floor(hue * 2) % 12];
+      bin[0] += r * sat;
+      bin[1] += g * sat;
+      bin[2] += b * sat;
+      bin[3] += sat;
+    }
+    const ranked = bins.filter((bin) => bin[3] >= 6).sort((x, y) => y[3] - x[3]);
+    if (!ranked.length) {
+      return null;
+    }
+    const top = ranked[0][3];
+    const colors = ranked
+      .filter((bin) => bin[3] >= top * 0.12)
+      .slice(0, 3)
+      .map((bin) => bin.slice(0, 3).map((v) => Math.round(v / bin[3])));
+    if (colors.length === 1) {
+      const [r, g, b] = colors[0];
+      colors.push([r, g, b].map((v) => Math.round(v + (255 - v) * 0.35)));
+      colors.push([r, g, b].map((v) => Math.round(v * 0.7)));
+    } else if (colors.length === 2) {
+      colors.push(colors[0].map((v, k) => Math.round((v + colors[1][k]) / 2)));
+    }
+    return colors.map((c) => `rgb(${c.join(", ")})`);
   }
 
   const faviconPaletteCache = new Map();
@@ -167,8 +158,7 @@
     if (!tab || tab.hasAttribute("zen-essential") || !Services.prefs.getBoolPref("zia.tabs.favicon-glow", false)) {
       return;
     }
-    // A split is one pill: its left side glows in the left tab's colours and
-    // its right side in the right tab's.
+    // a split glows left in the left tab's colours, right in the right tab's
     const split = tab.closest("tab-group[split-view-group]");
     if (split) {
       const tabs = [...split.querySelectorAll(".tabbrowser-tab")];
@@ -229,7 +219,6 @@
       return;
     }
     card.__ziaArtUrl = url;
-
     const isArtwork = !!card.querySelector(".zen-media-focus-button[zia-art]");
     if (!isArtwork) {
       if (!card.hasAttribute("zia-glow-ready")) {
@@ -241,11 +230,7 @@
       }
     }
 
-    let colors = mediaColorCache.get(url);
-    if (colors === undefined) {
-      colors = await readArtColors(url);
-      mediaColorCache.set(url, colors);
-    }
+    const colors = await cachedArtColors(url);
     if (card.__ziaArtUrl !== url) {
       return;
     }
@@ -274,7 +259,7 @@
   }
 
   let soundBarToken = 0;
-  // Four bars; they shrink into four dots when muted.
+  // four bars, shrinking to dots when muted
   const BAR_X = [1.6, 5.2, 8.8, 12.4];
   const BAR_W = 2;
   const BAR_REST = [
@@ -284,15 +269,11 @@
     [5.25, 5.5],
   ];
 
-  // The bars stand still when the system asks for less motion (macOS's
-  // Reduce motion, Windows' Animation effects off, GNOME's Reduce
-  // animation), unless the "always move" option is on
+  // still under reduced motion, unless the "always move" option is on
   const SOUND_BARS_ALWAYS_PREF = "zia.sound-bars.always-move";
   const soundBarsAlwaysMove = () => Services.prefs.getBoolPref(SOUND_BARS_ALWAYS_PREF, false);
 
-  // Plain bars are the sidebar's ink: white, or dark in light mode (a light
-  // space, or no space colour in light mode), where white ones went missing
-  // on the white selected tab. They're redrawn as that changes.
+  // dark in light mode: white bars went missing on the white selected tab
   const plainBarInk = () => (root.hasAttribute("zia-light") ? "rgb(28, 28, 32)" : "rgb(255, 255, 255)");
   let barInkWatched = false;
   function watchBarInk() {
@@ -300,14 +281,7 @@
       return;
     }
     barInkWatched = true;
-    new MutationObserver(() => {
-      for (const card of soundBarCards) {
-        if (card.isConnected) {
-          applyCardSoundBars(card);
-        }
-      }
-      repaintSoundTabs();
-    }).observe(root, { attributes: true, attributeFilter: ["zia-light"] });
+    new MutationObserver(redrawSoundBars).observe(root, { attributes: true, attributeFilter: ["zia-light"] });
   }
 
   function soundBarImages(colors) {
@@ -322,33 +296,25 @@
     const a = colors ? lighten(colors[0]) : ink;
     const b = colors ? lighten(colors[1]) : ink;
     const gradient = `<defs><linearGradient id="g" gradientUnits="userSpaceOnUse" x1="1.6" y1="0" x2="14.4" y2="0"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs>`;
-    const moving = [[0.55], [0.68], [0.5], [0.74]];
-    const wave =
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">${gradient}` +
+    const image = (style, bars) =>
+      `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">${gradient}${style}<g fill="url(#g)">${bars}</g></svg>`)}`;
+    const resting = BAR_X.map((x, i) => `<rect x="${x}" y="${BAR_REST[i][0]}" width="${BAR_W}" height="${BAR_REST[i][1]}" rx="1"/>`).join("");
+    const wave = image(
       `<style>rect{transform-box:fill-box;transform-origin:center;animation:grow .26s cubic-bezier(.2,.9,.3,1) both,z .6s .26s ease-in-out infinite alternate}` +
-      moving.map(([d], i) => `.b${i}{animation-duration:.26s,${d}s;animation-delay:0s,${(0.26 + i * 0.05).toFixed(2)}s}`).join("") +
-      `@keyframes grow{from{height:2px;y:7px}to{height:11px;y:2.5px}}` +
-      `@keyframes z{from{transform:scaleY(.22)}to{transform:scaleY(1)}}` +
-      (always ? "" : `@media (prefers-reduced-motion:reduce){rect{animation:none;transform:scaleY(.6)}}`) +
-      `</style>` +
-      `<g fill="url(#g)">` +
-      BAR_X.map((x, i) => `<rect class="b${i}" x="${x}" y="2.5" width="${BAR_W}" height="11" rx="1"/>`).join("") +
-      `</g></svg>`;
-    const dots =
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">${gradient}` +
+        [0.55, 0.68, 0.5, 0.74].map((d, i) => `.b${i}{animation-duration:.26s,${d}s;animation-delay:0s,${(0.26 + i * 0.05).toFixed(2)}s}`).join("") +
+        `@keyframes grow{from{height:2px;y:7px}to{height:11px;y:2.5px}}` +
+        `@keyframes z{from{transform:scaleY(.22)}to{transform:scaleY(1)}}` +
+        (always ? "" : `@media (prefers-reduced-motion:reduce){rect{animation:none;transform:scaleY(.6)}}`) +
+        `</style>`,
+      BAR_X.map((x, i) => `<rect class="b${i}" x="${x}" y="2.5" width="${BAR_W}" height="11" rx="1"/>`).join("")
+    );
+    const dots = image(
       `<style>rect{animation:shrink .28s cubic-bezier(.4,0,.2,1) forwards}@keyframes shrink{to{height:${BAR_W}px;y:${8 - BAR_W / 2}px}}` +
-      (always ? "" : `@media (prefers-reduced-motion:reduce){rect{animation-duration:1ms}}`) +
-      `</style>` +
-      `<g fill="url(#g)">` +
-      BAR_X.map((x, i) => `<rect x="${x}" y="${BAR_REST[i][0]}" width="${BAR_W}" height="${BAR_REST[i][1]}" rx="1"/>`).join("") +
-      `</g></svg>`;
-    const still =
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">${gradient}` +
-      `<g fill="url(#g)">` +
-      BAR_X.map((x, i) => `<rect x="${x}" y="${BAR_REST[i][0]}" width="${BAR_W}" height="${BAR_REST[i][1]}" rx="1"/>`).join("") +
-      `</g></svg>`;
-    const encoded = (svg) => `data:image/svg+xml,${encodeURIComponent(svg)}`;
-    images = { waveData: encoded(wave), dotsData: encoded(dots), stillData: encoded(still) };
+        (always ? "" : `@media (prefers-reduced-motion:reduce){rect{animation-duration:1ms}}`) +
+        `</style>`,
+      resting
+    );
+    images = { waveData: wave, dotsData: dots, stillData: image("", resting) };
     soundBarCache.set(key, images);
     return images;
   }
@@ -395,16 +361,14 @@
     repaintSoundTabs();
   }
 
-  // A tab's bars are drawn before its player has read the artwork's colours
-  // (or before Zia knows which player is the tab's), so recolour them as soon
-  // as either arrives. Tabs whose colours haven't changed are left alone.
+  // a tab's bars are drawn before its player's colours are known: recolour them as
+  // they arrive (tabs whose colours haven't changed are left alone)
   function repaintSoundTabs() {
     for (const tab of gBrowser.tabs) {
       paintTabSoundBars(tab);
     }
   }
 
-  // The colours of the artwork playing in this tab, from its player card.
   function tabMediaColors(tab) {
     const toolbar = document.getElementById("zen-media-controls-toolbar");
     for (const element of toolbar?.querySelectorAll(".zen-media-card") || []) {
@@ -431,8 +395,6 @@
     return palette ? [palette[0], palette[1] || palette[0]] : null;
   }
 
-  // Tab bars are white. With the tint option on, tabs (not essentials) take
-  // the artwork's colours instead.
   function applyTabSoundBars(tab) {
     const essential = tab.hasAttribute("zen-essential");
     const tinted = !essential && Services.prefs.getBoolPref("zia.tabs.favicon-glow", false);
@@ -447,7 +409,6 @@
     tab.style.setProperty("--zia-sound-muted", fresh.dots);
   }
 
-  // Zen's speaker button makes way for the bars, in the same spot.
   function ensureTabSound(tab) {
     if (tab.querySelector(".zia-tab-sound")) {
       return;
@@ -478,26 +439,25 @@
     }
   }
 
+  // every playing tab and player redrawn
+  function redrawSoundBars() {
+    repaintSoundTabs();
+    for (const card of soundBarCards) {
+      if (!card.isConnected) {
+        soundBarCards.delete(card);
+        continue;
+      }
+      try {
+        applyCardSoundBars(card);
+      } catch (err) {
+        noteError("music and sound bars: redraw", err);
+      }
+    }
+  }
+
   function watchTabSoundBars() {
-    // the "always move" option changed: every playing tab and player redrawn
-    const redrawAll = () => {
-      for (const tab of gBrowser.tabs) {
-        paintTabSoundBars(tab);
-      }
-      for (const card of soundBarCards) {
-        if (!card.isConnected) {
-          soundBarCards.delete(card);
-          continue;
-        }
-        try {
-          applyCardSoundBars(card);
-        } catch (err) {
-          noteError("music and sound bars: redraw", err);
-        }
-      }
-    };
-    Services.prefs.addObserver(SOUND_BARS_ALWAYS_PREF, redrawAll);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(SOUND_BARS_ALWAYS_PREF, redrawAll));
+    Services.prefs.addObserver(SOUND_BARS_ALWAYS_PREF, redrawSoundBars);
+    window.addEventListener("unload", () => Services.prefs.removeObserver(SOUND_BARS_ALWAYS_PREF, redrawSoundBars));
     gBrowser.tabContainer.addEventListener("TabAttrModified", (event) => {
       const changed = event.detail?.changed || [];
       if (changed.includes("soundplaying") || changed.includes("muted")) {
@@ -516,9 +476,7 @@
         }
       }
     });
-    for (const tab of gBrowser.tabs) {
-      paintTabSoundBars(tab);
-    }
+    repaintSoundTabs();
   }
 
   const SVG_NS = "http://www.w3.org/2000/svg";
@@ -545,9 +503,8 @@
     const gradient = make("linearGradient", { id, x1: "0", y1: "0", x2: "1", y2: "1" }, make("defs", {}, svg));
     make("stop", { offset: "0", style: "stop-color: var(--zia-media-glow-a)" }, gradient);
     make("stop", { offset: "1", style: "stop-color: var(--zia-media-glow-b)" }, gradient);
-    // (Zia's squircle round the artwork's own, starting at the top in the
-    // middle and running clockwise, as progress reads; round where this
-    // Firefox can't draw a squircle, as the artwork is then)
+    // starts top middle and runs clockwise, as progress reads; round where this
+    // Firefox can't draw a squircle (as the artwork is then)
     const squircle = typeof CSS === "undefined" || CSS.supports("corner-shape", "round");
     const shape = { d: squircle ? "M23.00 1.00 L30.50 1.00 L35.98 1.09 L38.33 1.38 L40.08 1.85 L41.47 2.53 L42.59 3.41 L43.47 4.53 L44.15 5.92 L44.62 7.67 L44.91 10.02 L45.00 15.50 L45.00 30.50 L44.91 35.98 L44.62 38.33 L44.15 40.08 L43.47 41.47 L42.59 42.59 L41.47 43.47 L40.08 44.15 L38.33 44.62 L35.98 44.91 L30.50 45.00 L15.50 45.00 L10.02 44.91 L7.67 44.62 L5.92 44.15 L4.53 43.47 L3.41 42.59 L2.53 41.47 L1.85 40.08 L1.38 38.33 L1.09 35.98 L1.00 30.50 L1.00 15.50 L1.09 10.02 L1.38 7.67 L1.85 5.92 L2.53 4.53 L3.41 3.41 L4.53 2.53 L5.92 1.85 L7.67 1.38 L10.02 1.09 L15.50 1.00 L23.00 1.00 Z" : "M23 1 L35 1 A10 10 0 0 1 45 11 L45 35 A10 10 0 0 1 35 45 L11 45 A10 10 0 0 1 1 35 L1 11 A10 10 0 0 1 11 1 Z", fill: "none", "stroke-width": "2", pathLength: "100" };
     make("path", { ...shape, class: "zia-ring-track" }, svg);
@@ -569,7 +526,6 @@
     if (!m) {
       return "rgb(44, 44, 46)";
     }
-
     const [r, g, b] = m.map(Number).map((v) => Math.round(v * 0.32 + 26));
     return `rgb(${r}, ${g}, ${b})`;
   }
@@ -581,7 +537,6 @@
       return;
     }
     const tab = card.browser && gBrowser.getTabForBrowser(card.browser);
-
     let icon =
       tab?.getAttribute("image") ||
       (tab && gBrowser.getIcon?.(tab)) ||
@@ -608,12 +563,7 @@
     button.style.setProperty("--zia-media-favicon", `url("${icon.replace(/"/g, "%22")}")`);
     let tint = faviconTints.get(icon);
     if (!tint) {
-      let colors = mediaColorCache.get(icon);
-      if (colors === undefined) {
-        colors = await readArtColors(icon);
-        mediaColorCache.set(icon, colors);
-      }
-      tint = tintFromColors(colors);
+      tint = tintFromColors(await cachedArtColors(icon));
       faviconTints.set(icon, tint);
     }
     if (button.getAttribute("zia-favicon") === icon) {
@@ -650,8 +600,7 @@
         button.__ziaFlip = turnBack;
         turnAway.cancel();
       })
-      .catch(() => {
-      });
+      .catch(() => {});
   }
 
   function setRing(card, fraction) {
@@ -660,7 +609,6 @@
       return;
     }
     const pct = Math.max(0, Math.min(1, fraction || 0)) * 100;
-
     fill.style.strokeDasharray = pct > 0.2 ? `${pct.toFixed(2)} 100` : "0 100";
     fill.style.strokeOpacity = pct > 0.2 ? "1" : "0";
   }
@@ -686,7 +634,6 @@
       return;
     }
     el.__ziaTimeLeft = true;
-
     new MutationObserver(() => showTimeLeft(card)).observe(el, {
       childList: true,
       characterData: true,
@@ -712,13 +659,11 @@
           .split(/\s+/)
           .map((size) => size.split("x").reduce((w, h) => (parseInt(w) || 0) * (parseInt(h) || 0)))
       );
-    return [...artwork].sort((x, y) => area(y) - area(x))[0]?.src || "";
+    return artwork.sort((x, y) => area(y) - area(x))[0]?.src || "";
   }
 
-  // Zen puts the card away while its video is in picture-in-picture (so
-  // pressing the card's own picture-in-picture button took the card with
-  // it). With this option on (the default), the card stays: picture-in-
-  // picture opens as usual and the card goes on showing and controlling it.
+  // Zen hides a card while its video is in picture-in-picture, so the card's own
+  // picture-in-picture button took the card away; this option keeps it
   const KEEP_WITH_PIP_PREF = "zia.media.keep-with-pip";
 
   function keepWithPip() {
@@ -768,9 +713,16 @@
     return true;
   }
 
-  // Kick gives its streams no artwork: the card shows the channel's own
-  // picture instead, asked of Kick by the page (actors/ZiaChild.sys.mjs),
-  // once per channel.
+  function ziaActor(browser) {
+    try {
+      return browser?.browsingContext?.currentWindowGlobal?.getActor("Zia") || null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  // Kick streams have no artwork: the channel's picture instead, asked of Kick
+  // once per channel (actors/ZiaChild.sys.mjs)
   const kickAvatars = new Map();
 
   function kickSlug(browser) {
@@ -795,12 +747,7 @@
       return kickAvatars.get(slug) || "";
     }
     kickAvatars.set(slug, null);
-    let actor = null;
-    try {
-      actor = card.browser.browsingContext?.currentWindowGlobal?.getActor("Zia");
-    } catch (err) {
-      actor = null;
-    }
+    const actor = ziaActor(card.browser);
     if (!actor) {
       kickAvatars.delete(slug);
       return "";
@@ -821,9 +768,8 @@
     return "";
   }
 
-  // A YouTube video shows its channel's picture rather than the video's
-  // own thumbnail (a setting, off by default), read from the page once per
-  // video. The page may still be putting it up: asked again a few times.
+  // optional: a YouTube video shows its channel's picture, asked again a few
+  // times while the page is still putting it up
   const YOUTUBE_AVATAR_PREF = "zia.media.youtube-channel-art";
   const youTubeAvatars = new Map();
 
@@ -861,12 +807,7 @@
     if (tries > 6) {
       return "";
     }
-    let actor = null;
-    try {
-      actor = card.browser.browsingContext?.currentWindowGlobal?.getActor("Zia");
-    } catch (err) {
-      actor = null;
-    }
+    const actor = ziaActor(card.browser);
     if (!actor) {
       return "";
     }
@@ -892,11 +833,8 @@
     return "";
   }
 
-  // A YouTube live stream gives the card a position and a length (the part
-  // of the stream it keeps to go back through), so Zen shows it as a video,
-  // with a progress line that jumps about. Asked of YouTube's own player (it
-  // marks a live stream) every so often, the card shows LIVE instead, as it
-  // does for Twitch. Kick, below, is told by its address.
+  // A YouTube live stream reports a position and length, so Zen showed a jumping
+  // progress line: YouTube's player is asked, and the card shows LIVE instead.
   const youTubeLiveChecked = new WeakMap();
 
   function markLiveStream(card) {
@@ -911,9 +849,8 @@
     } catch (err) {
       host = "";
     }
-    // A Kick channel's own page is its live stream. Kick's player gives the
-    // card a few seconds' position at a time, so it showed a progress line
-    // looping round every three seconds instead of LIVE.
+    // a Kick channel's page is live; its player reports a few seconds at a time,
+    // which looped the progress line every three seconds
     if (/^(www\.)?kick\.com$/.test(host)) {
       let path = "";
       try {
@@ -934,13 +871,7 @@
       return;
     }
     youTubeLiveChecked.set(element, { spec, at: Date.now() });
-    let actor = null;
-    try {
-      actor = browser.browsingContext?.currentWindowGlobal?.getActor("Zia");
-    } catch (err) {
-      actor = null;
-    }
-    actor
+    ziaActor(browser)
       ?.sendQuery("Zia:YouTubeLive", {})
       .then((live) => {
         if (card.browser?.currentURI?.spec === spec) {
@@ -977,9 +908,8 @@
     }
 
     const original = proto.updateIcon;
-    // Zen sets a card up once, as its tab starts to play, and drops it if
-    // anything in that fails, so nothing of Zia's here is let throw: a slip
-    // over a Kick stream's picture had left Kick with no card at all.
+    // Zen drops a card if setting it up throws, so nothing here may throw: a slip
+    // over a Kick stream's picture had left Kick with no card at all
     const patched = function () {
       original.call(this);
       try {
@@ -1068,17 +998,12 @@
     refresh();
   }
 
-
-  // Zen asks a tab for its media's position as it makes the card, and drops
-  // the card if that fails. A stream that never says where it is (Kick's
-  // live player) fails it, so since Zen 1.23 Kick got no card at all. The
-  // question is answered for every controller in this window: an active
-  // one with no position gives an empty one (no length: the card shows no
-  // progress line, as for any live stream). A tab already playing is
-  // offered to Zen again.
+  // Zen drops a card if asking its media's position fails, and Kick's live player
+  // never answers, so since Zen 1.23 Kick had no card. An active controller with
+  // no position now answers an endless one (no progress line, as for any live
+  // stream), and tabs already playing are offered to Zen again.
   function cardForPositionlessMedia() {
-    // (on the controller's own type: the one this window knows by name
-    // isn't the one tabs' controllers are made from)
+    // on the controller's own type: the one this window knows by name isn't it
     const answerPosition = (controller) => {
       const proto = controller && Object.getPrototypeOf(controller);
       const own = proto?.getPositionState;
@@ -1092,8 +1017,7 @@
           if (!this.isActive) {
             throw err;
           }
-          // (an endless length: Zen hides the progress line and the card
-          // reads LIVE)
+          // an endless length: Zen hides the progress line and the card reads LIVE
           return { duration: Infinity, playbackRate: 1, position: 0 };
         }
       };
@@ -1129,10 +1053,8 @@
     }
   }
 
-  // A music player card could be dragged out of the sidebar like a toolbar
-  // button, which took it away from Zen's media player and left the player
-  // broken until Zen restarted. Nothing on the card is meant to be dragged
-  // (the scrubber and buttons don't use drags), so no drag starts there.
+  // A card dragged out of the sidebar like a toolbar button broke Zen's player
+  // until restart, and nothing on it uses drags, so no drag starts there.
   function keepMediaCardsInPlace() {
     window.addEventListener(
       "dragstart",
