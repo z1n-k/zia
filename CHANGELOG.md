@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.35] — 2026-10-08
+
+### Changed
+
+- "Drag tabs here": thinner dashes (1px, from 1.5px), on the slot and on a
+  tab dragged in, which wears the same ones.
+
 ## [2.96.34] — 2026-10-08
 
 ### Fixed
