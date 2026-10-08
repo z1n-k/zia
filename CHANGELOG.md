@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.48] — 2026-10-08
+
+### Fixed
+
+- A pinned tab moved off its page: the light over its icon, pointed at to
+  take it back, has the tab's corner (it was rounder) and sits just inside
+  the tab's fine edge, which showed brighter under it; the name and the
+  "Separate from pinned tab" line under it are centred in the row (they
+  sat low).
+
 ## [2.96.47] — 2026-10-08
 
 ### Fixed

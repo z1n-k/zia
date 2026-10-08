@@ -2540,6 +2540,28 @@ zen-split-fake-tab {
   corner-shape: round !important;
 }
 
+/* A pinned tab moved off its page: the button over its icon that takes it
+   back has the tab's own corner (Zen gave it its own, rounder one), and
+   its light on hover sits just inside the tab's fine edge rather than over
+   it (over it, the edge showed brighter there): a clear border the edge's
+   width keeps it in. While its "Separate from pinned tab" line shows under
+   the name, the two are centred together in the row (they sat low). */
+.tabbrowser-tab:not([zen-essential]) .tab-reset-pin-button {
+  border-radius: var(--zia-tab-radius) 0 0 var(--zia-tab-radius) !important;
+  corner-shape: round !important;
+  border: var(--zia-shine-width) solid transparent !important;
+  border-right-width: 0 !important;
+  background-clip: padding-box !important;
+}
+
+.tabbrowser-tab:not([zen-essential]) .tab-label-container {
+  transition: translate 0.1s ease-in-out;
+}
+
+.tabbrowser-tab:not([zen-essential]):is([zen-show-sublabel], [zen-pinned-changed="true"]:has(.tab-reset-pin-button:hover)) .tab-label-container {
+  translate: 0 -2px;
+}
+
 .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-background,
 .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-background::before,
 .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-background::after {
