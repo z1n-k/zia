@@ -292,6 +292,12 @@
   },
   {
     "type": "checkbox",
+    "label": "Zen's own icons (off: Zia's, in the toolbar, menus and site panel)",
+    "property": "zia.icons.zen-look",
+    "defaultValue": false
+  },
+  {
+    "type": "checkbox",
     "label": "Compact mode: the sidebar is see-through, the page blurred behind",
     "property": "zia.compact.sidebar-blur",
     "defaultValue": true

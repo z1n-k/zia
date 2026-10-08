@@ -6,6 +6,17 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Zia's icons for Zen's own, everywhere one shows while browsing: the
+  toolbar and Customize Toolbar, the site panel and its settings
+  (tracking protection, cookies, the camera and the rest), menus and the
+  sidebar. They're Tabler's, the set Zia's picker and buttons use, each
+  picked to match the shape of the Zen icon it stands in for. Zen's
+  settings pages, the PDF viewer, the boost editor, the theme picker and
+  the Library's moving icons keep Zen's. "Zen's own icons" (Settings →
+  Sine Mods → Zia → Look, off by default) brings Zen's back everywhere.
+
 ### Changed
 
 - The site panel (the site icon at the start of the address bar) is drawn
