@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.96.33] — 2026-10-08
+
+### Changed
+
+- "Drag tabs here": its dashed outline is fainter (about a third less),
+  in a coloured folder and on a light space too, as is the outline a tab
+  wears while it's dragged in.
+
 ## [2.96.32] — 2026-10-08
 
 ### Removed

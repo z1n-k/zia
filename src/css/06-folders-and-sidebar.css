@@ -581,13 +581,13 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
  * spring, zia.uc.js), and --zia-slot-y moves it with its folder's header
  * while rows slide aside for a drag. */
 :root[zen-sidebar-expanded="true"] zen-folder[zia-empty] {
-  --zia-slot-border: 1.5px dashed rgba(255, 255, 255, 0.28);
+  --zia-slot-border: 1.5px dashed rgba(255, 255, 255, 0.18);
   --zia-slot-ink: rgba(255, 255, 255, 0.5);
   --zia-slot-glint: rgba(255, 255, 255, 0.88);
 
   /* lightened, so it still stands out against the folder's own tint */
   &[zia-folder-color]:not([zia-folder-color="white"]) {
-    --zia-slot-border: 1.5px dashed color-mix(in srgb, color-mix(in srgb, var(--zia-folder-swatch), white 45%) 70%, transparent);
+    --zia-slot-border: 1.5px dashed color-mix(in srgb, color-mix(in srgb, var(--zia-folder-swatch), white 45%) 48%, transparent);
   }
 
   & > .tab-group-container::after {
