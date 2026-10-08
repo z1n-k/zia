@@ -17381,6 +17381,58 @@
     }
   }
 
+  // The card's tap, asked of macOS to play now. Zen's own tap leaves the
+  // timing to macOS, which with the fingers held still (no trackpad events
+  // coming) never plays it; a native app like Dia asks for it at once.
+  // Called straight into AppKit (NSHapticFeedbackManager) with js-ctypes;
+  // null where that can't be done, and Zen's tap is used instead.
+  let tapNow;
+  function nativeTapNow() {
+    if (tapNow !== undefined) {
+      return tapNow;
+    }
+    tapNow = null;
+    if (AppConstants.platform !== "macosx") {
+      return tapNow;
+    }
+    try {
+      const { ctypes } = ChromeUtils.importESModule("resource://gre/modules/ctypes.sys.mjs");
+      const objc = ctypes.open("/usr/lib/libobjc.A.dylib");
+      const id = ctypes.voidptr_t;
+      const getClass = objc.declare("objc_getClass", ctypes.default_abi, id, ctypes.char.ptr);
+      const selector = objc.declare("sel_registerName", ctypes.default_abi, id, ctypes.char.ptr);
+      const send = objc.declare("objc_msgSend", ctypes.default_abi, id, id, id);
+      const sendFeedback = objc.declare("objc_msgSend", ctypes.default_abi, ctypes.void_t, id, id, ctypes.long, ctypes.unsigned_long);
+      const manager = getClass("NSHapticFeedbackManager");
+      if (manager.isNull()) {
+        return tapNow;
+      }
+      const performer = send(manager, selector("defaultPerformer"));
+      const perform = selector("performFeedbackPattern:performanceTime:");
+      // NSHapticFeedbackPatternAlignment (1), as Zen's; NSHapticFeedbackPerformanceTimeNow (1)
+      tapNow = () => sendFeedback(performer, perform, 1, 1);
+    } catch (err) {
+      noteError("swipe arrow: native tap", err);
+    }
+    return tapNow;
+  }
+
+  function swipeTapNow() {
+    try {
+      if (!Services.prefs.getBoolPref(HAPTIC_PREF, true)) {
+        return;
+      }
+      const tap = nativeTapNow();
+      if (tap) {
+        tap();
+      } else {
+        zenHaptic?.();
+      }
+    } catch (err) {
+      noteError("swipe arrow: tap now", err);
+    }
+  }
+
   function watchSwipeArrow() {
     const swipe = window.gHistorySwipeAnimation;
     if (!swipe || swipe.ziaWrapped) {
@@ -17522,9 +17574,14 @@
       backdrop.addEventListener("mousedown", close);
       el.before(backdrop);
       // the arrow turning into the card
-      tapOwed = true;
+      // (held still, no trackpad event comes to carry Zen's tap: asked of
+      // macOS to play at once; failing that, it waits for the next update)
       if (fromEvent) {
-        payTap();
+        swipeTap();
+      } else if (nativeTapNow()) {
+        swipeTapNow();
+      } else {
+        tapOwed = true;
       }
     };
 
