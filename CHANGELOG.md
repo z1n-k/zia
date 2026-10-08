@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- macOS: holding a swipe still until its arrow turns into the card of
+  pages, the tap plays as the card opens, as in Dia. It waited for the
+  fingers to move again: Zen's tap leaves its timing to macOS, which
+  doesn't play it while nothing on the trackpad moves, so Zia now asks
+  macOS for this one to play at once.
+
 ## [2.96.40] — 2026-10-08
 
 ### Fixed

@@ -55,7 +55,7 @@
 
   // The card's tap, asked of macOS to play now. Zen's own tap leaves the
   // timing to macOS, which with the fingers held still (no trackpad events
-  // coming) never plays it; a native app like Dia asks for it at once.
+  // coming) never plays it, even from a timer; Dia asks for it at once.
   // Called straight into AppKit (NSHapticFeedbackManager) with js-ctypes;
   // null where that can't be done, and Zen's tap is used instead.
   let tapNow;
@@ -126,11 +126,11 @@
     let holdTimer = null;
     let side = null;
     let pinned = false;
-    // macOS only plays a tap while a trackpad event is being handled, so
-    // the card's tap goes with the swipe's own updates: the card opens on
-    // one once the hold is long enough, or, held quite still (no updates
-    // coming), on a timer, its tap then waiting for the next update or
-    // the fingers lifting
+    // Zen's tap only plays while a trackpad event is being handled, so the
+    // card opens on the swipe's own updates once the hold is long enough,
+    // or, held quite still (no updates coming), on a timer, its tap then
+    // asked of macOS at once (swipeTapNow); where that can't be done, it
+    // waits for the next update or the fingers lifting
     let willSince = 0;
     let tapOwed = false;
     const payTap = () => {
