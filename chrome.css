@@ -2920,13 +2920,13 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
  * spring, zia.uc.js), and --zia-slot-y moves it with its folder's header
  * while rows slide aside for a drag. */
 :root[zen-sidebar-expanded="true"] zen-folder[zia-empty] {
-  --zia-slot-border: 1.5px dashed rgba(255, 255, 255, 0.13);
+  --zia-slot-border: 1px dashed rgba(255, 255, 255, 0.13);
   --zia-slot-ink: rgba(255, 255, 255, 0.5);
   --zia-slot-glint: rgba(255, 255, 255, 0.88);
 
   /* lightened, so it still stands out against the folder's own tint */
   &[zia-folder-color]:not([zia-folder-color="white"]) {
-    --zia-slot-border: 1.5px dashed color-mix(in srgb, color-mix(in srgb, var(--zia-folder-swatch), white 45%) 35%, transparent);
+    --zia-slot-border: 1px dashed color-mix(in srgb, color-mix(in srgb, var(--zia-folder-swatch), white 45%) 35%, transparent);
   }
 
   & > .tab-group-container::after {
@@ -2943,7 +2943,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
     /* (the dashes an outline, not a border: Firefox drew a dashed border's
        right side brighter than its other three) */
     outline: var(--zia-slot-border);
-    outline-offset: -1.5px;
+    outline-offset: -1px;
     border-radius: var(--zia-tab-radius);
     color: var(--zia-slot-ink);
     font-size: 12.5px;
@@ -3036,7 +3036,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
 :root[zen-sidebar-expanded="true"] .tabbrowser-tab[zia-dragging][zia-into-empty] > .tab-stack > .tab-background,
 :root[zen-sidebar-expanded="true"] tab-group[split-view-group][zia-dragging][zia-into-empty] > .tab-group-container {
   outline: var(--zia-slot-border) !important;
-  outline-offset: -1.5px !important;
+  outline-offset: -1px !important;
 }
 
 /* A coloured folder keeps its usual colour while a tab is dragged into it
@@ -7973,7 +7973,7 @@ zen-folder .tab-reset-button {
 
   /* an empty folder's "Drag tabs here" slot */
   &[zen-sidebar-expanded="true"] zen-folder[zia-empty] {
-    --zia-slot-border: 1.5px dashed rgba(0, 0, 0, 0.10);
+    --zia-slot-border: 1px dashed rgba(0, 0, 0, 0.10);
     --zia-slot-ink: rgba(0, 0, 0, 0.45);
     --zia-slot-glint: rgba(0, 0, 0, 0.85);
   }
