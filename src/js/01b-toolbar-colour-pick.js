@@ -1,10 +1,7 @@
 
-  // A site's toolbar colour, set by hand: right-click the address bar or the
-  // toolbar, "Toolbar Color for This Site…", and click any bit of the page
-  // (a dark sidebar, say). The toolbar shows each colour under the cursor as
-  // it moves, and the click keeps it. A hex box takes a colour typed in
-  // instead. A site with a colour of its own is never read again (so it
-  // can't flicker); the text on it still takes light or dark ink to suit.
+  // A site's toolbar colour set by hand (right-click the address bar or toolbar):
+  // click the page or type a hex. A site with its own colour is never read again,
+  // so it can't flicker.
   const MANUAL_COLORS_PREF = "zia.toolbar.manual-colors";
   let manualColors = null;
   let colorPick = null;
@@ -61,21 +58,14 @@
     return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16));
   }
 
-  // The toolbar in a colour for now, while picking (nothing kept)
-  function previewToolbarColor(rgb) {
-    colorRequestId++;
-    applyColor(rgb);
-  }
-
-  // Back to what the site shows: its own colour if it has one, or a fresh
-  // reading of the page
+  // back to the site's own colour if it has one, or a fresh reading
   function restoreToolbarColor(browser) {
     const manual = manualSiteColor(browser);
     if (manual) {
-      previewToolbarColor(manual);
+      showColor(manual);
       colorCache.set(browser, manual);
     } else {
-      previewToolbarColor(colorCache.get(browser) ?? null);
+      showColor(colorCache.get(browser) ?? null);
       updateColor();
     }
   }
@@ -185,7 +175,7 @@
       swatch.style.backgroundColor = cssColor(rgb);
       loupeHex.textContent = hexOf(rgb);
       colorPick.typed = null;
-      previewToolbarColor(rgb);
+      showColor(rgb);
     });
     overlay.addEventListener("mouseleave", () => {
       loupe.hidden = true;
@@ -203,7 +193,7 @@
       input.toggleAttribute("invalid", !!input.value.trim() && !rgb);
       if (rgb) {
         colorPick.typed = rgb;
-        previewToolbarColor(rgb);
+        showColor(rgb);
       }
     });
     input.addEventListener("keydown", (event) => {
@@ -221,8 +211,6 @@
     cancel.addEventListener("click", () => endColorPick(false));
   }
 
-  // Ends picking: kept, the toolbar stays in the colour now set for the
-  // site; otherwise it goes back to what it was
   function endColorPick(kept) {
     if (!colorPick) {
       return;
@@ -234,7 +222,7 @@
       const manual = manualSiteColor(browser);
       colorCache.set(browser, manual);
       if (browser === gBrowser.selectedBrowser) {
-        previewToolbarColor(manual);
+        showColor(manual);
       }
     } else if (browser === gBrowser.selectedBrowser) {
       restoreToolbarColor(browser);

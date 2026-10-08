@@ -347,7 +347,7 @@
         } else if (stateFlags & STATE_STOP) {
           if (isErrorPage(browser)) {
             cancelLoader();
-            showErrorColor();
+            showColor(ERROR_PAGE_COLOR);
           } else {
             finishLoader();
             scheduleColor(50);
@@ -383,7 +383,7 @@
         }
         if (flags & LOCATION_CHANGE_ERROR_PAGE) {
           cancelLoader();
-          showErrorColor();
+          showColor(ERROR_PAGE_COLOR);
         } else if (flags & LOCATION_CHANGE_SAME_DOCUMENT) {
           scheduleColor(150);
         } else {

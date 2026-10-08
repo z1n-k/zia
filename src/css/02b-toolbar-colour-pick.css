@@ -1,7 +1,4 @@
-/* Picking a site's toolbar colour by hand (zia.uc.js): the page under a
-   crosshair, a loupe by the cursor with the colour under it, and a small
-   card at the top with what to do, a hex box, Reset and Cancel (each
-   under the id, so their squircles beat the round corners, 00) */
+/* picking a site's toolbar colour (01b); under the id so the squircles beat 00's round corners */
 #zia-color-pick {
   position: absolute;
   inset: 0;
@@ -76,18 +73,21 @@
   color: rgba(255, 255, 255, 0.8);
 }
 
-#zia-color-pick .zia-color-pick-input {
+#zia-color-pick :is(.zia-color-pick-input, .zia-color-pick-reset, .zia-color-pick-cancel) {
   flex: none;
-  width: 76px;
   height: 26px;
-  box-sizing: border-box;
   margin: 0;
-  padding: 0 8px;
   border: none;
   border-radius: calc(7px * var(--zia-squircle-grow));
   corner-shape: var(--zia-squircle) !important;
   background-color: rgba(255, 255, 255, 0.08);
   color: rgb(255, 255, 255);
+}
+
+#zia-color-pick .zia-color-pick-input {
+  width: 76px;
+  box-sizing: border-box;
+  padding: 0 8px;
   font: 500 11.5px ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   outline: none;
 
@@ -101,15 +101,7 @@
 }
 
 #zia-color-pick :is(.zia-color-pick-reset, .zia-color-pick-cancel) {
-  flex: none;
-  height: 26px;
-  margin: 0;
   padding: 0 10px;
-  border: none;
-  border-radius: calc(7px * var(--zia-squircle-grow));
-  corner-shape: var(--zia-squircle) !important;
-  background-color: rgba(255, 255, 255, 0.08);
-  color: rgb(255, 255, 255);
   font: inherit;
   cursor: default;
 
