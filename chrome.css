@@ -4260,31 +4260,6 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   }
 }
 
-/* Zen's "Clear" beside the separator always shows, faint, a little
-   brighter with the pointer on the sidebar and bright on its own. Zen
-   1.23.1 shows it only once its own pointer-near flag is up, drawing the
-   rest of the separator's line in its place meanwhile, which Zia faded out
-   with it, so the line stopped short with nothing after it. */
-.pinned-tabs-container-separator toolbarbutton.zen-workspace-close-unpinned-tabs-button {
-  pointer-events: auto !important;
-  background-image: none !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-
-  & :is(.toolbarbutton-icon, .toolbarbutton-text) {
-    opacity: 0.35 !important;
-    transition: opacity 0.15s ease !important;
-  }
-
-  #navigator-toolbox:hover & :is(.toolbarbutton-icon, .toolbarbutton-text) {
-    opacity: 0.6 !important;
-  }
-
-  &:hover :is(.toolbarbutton-icon, .toolbarbutton-text) {
-    opacity: 1 !important;
-  }
-}
-
 .pinned-tabs-container-separator toolbarseparator {
   background: rgba(255, 255, 255, 0.13) !important;
 }

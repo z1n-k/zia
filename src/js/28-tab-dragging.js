@@ -409,32 +409,36 @@
     };
 
     const paintedFolders = new Set();
-    const paintFolders = () => {
-      const target = drag.target;
+    // Folders' boxes stretched round the room made for what's dragged: a tab, or
+    // (listRoom) an essential brought down into the list, whose folders didn't open
+    const paintFolders = (
+      { rows, target, pitch, height, skip, outer, moving } =
+        { rows: drag.rows, target: drag.target, pitch: drag.pitch, height: drag.height, skip: notARow, outer: drag.folder, moving: drag.moving }
+    ) => {
       const folders = new Set();
-      for (const row of drag.rows) {
+      for (const row of rows) {
         for (let f = rowFolder(row); f; f = f.parentElement?.closest?.(FOLDER_SELECTOR)) {
           folders.add(f);
         }
       }
       for (const f of folders) {
-        if (drag.folder && (f === drag.folder || drag.folder.contains(f))) {
+        if (outer && (f === outer || outer.contains(f))) {
           continue;
         }
         const into = !!target?.folder && (target.folder === f || f.contains(target.folder));
         let top = 0;
         let grow = 0;
-        if (isCollapsed(f) && !f.contains(drag.moving)) {
-          grow = into ? drag.pitch : 0;
+        if (isCollapsed(f) && !f.contains(moving)) {
+          grow = into ? pitch : 0;
           if (into && topRoom?.folder === f && topRoom.key === "up") {
-            top = -drag.pitch;
+            top = -pitch;
             grow = 0;
           }
         } else {
           let origBottom = -Infinity;
           let shownBottom = -Infinity;
           let showsTab = false;
-          for (const row of drag.rows) {
+          for (const row of rows) {
             if (row.node === f || !f.contains(row.node)) {
               continue;
             }
@@ -443,14 +447,14 @@
             if (row.node === headerOf(f)) {
               top = row.delta || 0;
             }
-            if (!notARow(row)) {
+            if (!skip(row)) {
               const intoThisSlot = slot && into && target.folder === row.node.parentElement;
               shownBottom = Math.max(shownBottom, row.top + (row.delta || 0) + row.height + (intoThisSlot ? 0 : slot));
               showsTab ||= row.node !== headerOf(f);
             }
           }
           if (into && target.slotTop != null) {
-            shownBottom = Math.max(shownBottom, target.slotTop + drag.height);
+            shownBottom = Math.max(shownBottom, target.slotTop + height);
             showsTab = true;
           }
           if (Number.isFinite(origBottom) && Number.isFinite(shownBottom)) {
@@ -504,7 +508,7 @@
     };
     const sampleTab = (inside) =>
       [...(inside?.tabs || gBrowser.visibleTabs)].find(
-        (tab) => tab !== drag.tab && !tab.hasAttribute("zen-essential") && !tab.hasAttribute("zen-empty-tab") && showing(tab) &&
+        (tab) => tab !== drag?.tab && !tab.hasAttribute("zen-essential") && !tab.hasAttribute("zen-empty-tab") && showing(tab) &&
           (inside ? true : !tab.group || tab.group.hasAttribute("split-view-group") ? !inside : true)
       );
     const widthFor = (folder) => {
@@ -515,7 +519,7 @@
         }
         let inset = FOLDER_TAB_INSET;
         const other = [...gBrowser.visibleTabs].find(
-          (tab) => tab !== drag.tab && tab.group && isFolderEl(tab.group) && !tab.group.group && showing(tab)
+          (tab) => tab !== drag?.tab && tab.group && isFolderEl(tab.group) && !tab.group.group && showing(tab)
         );
         if (other) {
           const box = showing(other);
@@ -526,7 +530,7 @@
         return { left: fb.left + inset.start, right: fb.right - inset.end };
       }
       const plain = [...gBrowser.visibleTabs].find(
-        (tab) => tab !== drag.tab && !tab.group && !tab.hasAttribute("zen-essential") && !tab.hasAttribute("zen-empty-tab") && showing(tab)
+        (tab) => tab !== drag?.tab && !tab.group && !tab.hasAttribute("zen-essential") && !tab.hasAttribute("zen-empty-tab") && showing(tab)
       );
       if (plain) {
         return showing(plain);
@@ -2633,10 +2637,15 @@
 
       unclipAround(listRoom.button || listRoom.rows[listRoom.rows.length - 1]?.node);
     };
-    const shapeListRoom = (y) => {
+    // Where it counts as being, for where it goes: as a dragged tab's, a row past
+    // once it's 8px into where that row is shown, pushed down to make room. By the
+    // rows' own middles it went into a folder, and out, three quarters of a row early.
+    const listAt = (y) => y - (listRoom.pitch / 2 + 8);
+    const shapeListRoom = (pointerY) => {
       if (!listRoom.rows) {
         openListRoom();
       }
+      const y = listAt(pointerY);
       let first = null;
       let prev = null;
       for (const row of listRoom.rows) {
@@ -2676,6 +2685,15 @@
         listRoom.first = first;
       }
       markListRoomFolder(listRoomFolder(prev, first, y));
+      paintFolders({
+        rows: listRoom.rows,
+        target: { folder: listRoom.folder, slotTop: prev ? prev.top + prev.height : null },
+        pitch: listRoom.pitch,
+        height: listRoom.pitch,
+        skip: () => false,
+        outer: null,
+        moving: null,
+      });
     };
     const closeListRoom = () => {
       if (!listRoom.rows) {
@@ -2697,6 +2715,7 @@
       }
       reclip();
       markListRoomFolder(null);
+      clearFolderPaint();
       listRoom.rows = null;
       listRoom.first = undefined;
     };
@@ -2705,7 +2724,7 @@
       const first = listRoom.first || null;
       const sep = listRoom.sep;
       const sepTop = listRoom.sepTop;
-      const below = sepTop != null && y > sepTop;
+      const below = sepTop != null && listAt(y) > sepTop;
       const folder = listRoom.folder?.isConnected ? listRoom.folder : null;
       markListRoomFolder(null);
       listRoom.rows = null;
@@ -2884,6 +2903,7 @@
       const copy = state.copy;
       if (asTab !== state.asTab) {
         state.asTab = asTab;
+        state.rowFor = undefined;
         easeSize(copy, ESSENTIAL_MS);
         // (the others close up behind it out over the list, and open again if it comes back;
         // the only one keeps its cell: given up, the essentials emptied, the list jumped up under
@@ -2906,19 +2926,29 @@
         sizeCopy(copy, size.width, size.height);
         state.offset = asTab ? { x: 0, y: 0 } : state.offset;
       }
+      // (as a row, the width a tab takes where it would go: over a folder, its
+      // tabs' narrower width, as a dragged tab does; it stayed full width)
+      let row = null;
       if (asTab) {
         shapeListRoom(point.y);
+        row = widthFor(listRoom.folder);
+        if (row && state.rowFor !== (listRoom.folder || "plain")) {
+          state.rowFor = listRoom.folder || "plain";
+          sizeCopy(copy, row.right - row.left, plainTabSize().height);
+        }
       } else {
         closeListRoom();
       }
-      const x = asTab
-        ? (document.getElementById("navigator-toolbox")?.getBoundingClientRect().left || 0) + 8 + plainTabSize().width / 2
-        : point.x - state.offset.x;
-      const shift = copy.ziaHostShift || { x: 0, y: 0 };
-      copy.style.setProperty("left", `${Math.round(x - shift.x)}px`, "important");
+      const x = !asTab
+        ? point.x - state.offset.x
+        : row
+          ? (row.left + row.right) / 2
+          : (document.getElementById("navigator-toolbox")?.getBoundingClientRect().left || 0) + 8 + plainTabSize().width / 2;
       // (as a row, never over the essentials: turned into a row just below
       // them, it's centred on the pointer, and its top half showed over them)
       const y = asTab ? Math.max(point.y, essentialsBottom() + plainTabSize().height / 2 + 2) : point.y - state.offset.y;
+      const shift = copy.ziaHostShift || { x: 0, y: 0 };
+      copy.style.setProperty("left", `${Math.round(x - shift.x)}px`, "important");
       copy.style.setProperty("top", `${Math.round(y - shift.y)}px`, "important");
     };
 

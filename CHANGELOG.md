@@ -6,6 +6,12 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- "Clear" and its arrow beside the separator show with the pointer on the
+  sidebar, as in Zen, the line running the full width otherwise (they
+  showed all the time, faint).
+
 ### Fixed
 
 - Dragging a tab over the essentials: the tiles slide aside within their
@@ -22,6 +28,9 @@ Every release of Zia, newest first. The format follows
   of the tab's glow).
 - The first essential pressed after starting Zen no longer shows a black
   cross on it.
+- An essential dragged down into the list goes into folders as a tab does:
+  the folder opens round it, it takes the folder's width, and it goes in and
+  out at the same points. The folder didn't open, and it went in early.
 - Dragging a space's only essential down into the list: the list stays
   still, where it jumped up and the tab flashed over the first one.
 - An empty folder's "Drag tabs here" box fades as the folder closes over
