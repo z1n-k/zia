@@ -4327,27 +4327,19 @@ zen-workspace arrowscrollbox::part(scrollbox) {
   font-weight: var(--zia-folder-weight) !important;
 }
 
-:root[zen-sidebar-expanded="true"] .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-background {
+:root[zen-sidebar-expanded="true"] .tabbrowser-tab:not([zen-essential]) > .tab-stack > :is(.tab-background, .tab-content) {
   margin-inline-end: var(--zia-tab-right-fix, 0px) !important;
 }
 
-:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-background {
+:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) .tabbrowser-tab:not([zen-essential]) > .tab-stack > :is(.tab-background, .tab-content) {
   margin-inline-end: calc(var(--zia-folder-right-fix, 0px) + var(--zia-folder-inner-gap, 5px)) !important;
 }
 
-:root[zen-sidebar-expanded="true"] .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-content {
-  margin-inline-end: var(--zia-tab-right-fix, 0px) !important;
-}
-
-:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-content {
-  margin-inline-end: calc(var(--zia-folder-right-fix, 0px) + var(--zia-folder-inner-gap, 5px)) !important;
-}
-
-:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) :is(zen-folder, tab-group:not([split-view-group])) .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-content {
+:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) :is(zen-folder, tab-group:not([split-view-group])) .tabbrowser-tab:not([zen-essential]) > .tab-stack > :is(.tab-background, .tab-content) {
   margin-inline-end: calc(var(--zia-folder-right-fix, 0px) + 2 * var(--zia-folder-inner-gap, 5px)) !important;
 }
 
-:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) :is(zen-folder, tab-group:not([split-view-group])) :is(zen-folder, tab-group:not([split-view-group])) .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-content {
+:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) :is(zen-folder, tab-group:not([split-view-group])) :is(zen-folder, tab-group:not([split-view-group])) .tabbrowser-tab:not([zen-essential]) > .tab-stack > :is(.tab-background, .tab-content) {
   margin-inline-end: calc(var(--zia-folder-right-fix, 0px) + 3 * var(--zia-folder-inner-gap, 5px)) !important;
 }
 
@@ -4357,14 +4349,6 @@ zen-workspace arrowscrollbox::part(scrollbox) {
 
 :root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) :is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container {
   padding-inline-end: calc(var(--zia-folder-right-fix, 0px) + 2 * var(--zia-folder-inner-gap, 5px)) !important;
-}
-
-:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) :is(zen-folder, tab-group:not([split-view-group])) .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-background {
-  margin-inline-end: calc(var(--zia-folder-right-fix, 0px) + 2 * var(--zia-folder-inner-gap, 5px)) !important;
-}
-
-:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) :is(zen-folder, tab-group:not([split-view-group])) :is(zen-folder, tab-group:not([split-view-group])) .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-background {
-  margin-inline-end: calc(var(--zia-folder-right-fix, 0px) + 3 * var(--zia-folder-inner-gap, 5px)) !important;
 }
 
 /* As in Dia, a tab that isn't the one you're on is a little dimmer, hovered
@@ -4377,7 +4361,6 @@ zen-workspace arrowscrollbox::part(scrollbox) {
 .tabbrowser-tab:not([zen-essential])[visuallyselected] .tab-label-container {
   color: rgb(255, 255, 255) !important;
 }
-
 
 /* Renaming a tab or folder: the name in the box stays the size it is in the
    list */
@@ -5316,7 +5299,6 @@ findbar {
   }
 
   & :is(.findbar-find-previous, .findbar-find-next) {
-    order: 3;
     width: 28px;
     height: 28px;
     margin: 0 !important;
@@ -5324,12 +5306,11 @@ findbar {
     border: none !important;
     border-radius: 7px !important;
     background: transparent !important;
-    color: inherit !important;
-    fill: currentColor !important;
+  }
 
-    &:hover:not([disabled]) {
-      background: rgba(255, 255, 255, 0.1) !important;
-    }
+  & :is(.findbar-find-previous, .findbar-find-next):hover:not([disabled]),
+  & .findbar-closebutton:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
   }
 
   /* (the close button the same grey as the arrows, which Firefox's icons
@@ -5375,10 +5356,6 @@ findbar {
       bottom: 6px;
       width: 1px;
       background: rgba(255, 255, 255, 0.15);
-    }
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.1) !important;
     }
   }
 }
@@ -6836,6 +6813,7 @@ zen-folder .tab-reset-button {
 
 :is(#back-button, #forward-button, #reload-button, #stop-button) > .toolbarbutton-icon {
   fill: transparent !important;
+  transition: background-color 0.2s ease !important;
 }
 
 :is(#back-button, #forward-button, #reload-button, #stop-button)::before,
@@ -6869,10 +6847,6 @@ zen-folder .tab-reset-button {
 
 :is(#back-button, #forward-button, #stop-button)::before {
   opacity: var(--zia-nav-rest);
-}
-
-:is(#back-button, #forward-button, #reload-button, #stop-button) > .toolbarbutton-icon {
-  transition: background-color 0.2s ease !important;
 }
 
 /* Reload and stop are two buttons, one swapped for the other as a page
@@ -7378,7 +7352,6 @@ zen-folder .tab-reset-button {
 .tabbrowser-tab:not([zen-glance-tab]) > .tab-stack > .zia-glance-thumb {
   display: none !important;
 }
-
 /* Firefox's own sidebar panels (Bookmarks, History, Synced Tabs: Cmd+B,
    Cmd+Shift+H, or View > Sidebar), in Zia's look. Beside the page (Zia
    moves it there, zia-panels-beside on the root) it's a second sidebar,
@@ -7525,16 +7498,13 @@ zen-folder .tab-reset-button {
      on the tab sidebar's side */
   & #sidebar-box {
     z-index: 1;
+    /* its sides are the tab sidebar's, mirrored: as far from the window's
+       edge, and from the page, as the tabs are (measured by zia.uc.js) */
+    box-sizing: border-box !important;
   }
 
   & #zen-appcontent-wrapper {
     z-index: 3;
-  }
-
-  /* its sides are the tab sidebar's, mirrored: as far from the window's
-     edge, and from the page, as the tabs are (measured by zia.uc.js) */
-  & #sidebar-box {
-    box-sizing: border-box !important;
   }
 
   & #sidebar-box[sidebar-positionend] {

@@ -1,4 +1,3 @@
-
 /* Firefox's own sidebar panels (Bookmarks, History, Synced Tabs: Cmd+B,
    Cmd+Shift+H, or View > Sidebar), in Zia's look. Beside the page (Zia
    moves it there, zia-panels-beside on the root) it's a second sidebar,
@@ -145,16 +144,13 @@
      on the tab sidebar's side */
   & #sidebar-box {
     z-index: 1;
+    /* its sides are the tab sidebar's, mirrored: as far from the window's
+       edge, and from the page, as the tabs are (measured by zia.uc.js) */
+    box-sizing: border-box !important;
   }
 
   & #zen-appcontent-wrapper {
     z-index: 3;
-  }
-
-  /* its sides are the tab sidebar's, mirrored: as far from the window's
-     edge, and from the page, as the tabs are (measured by zia.uc.js) */
-  & #sidebar-box {
-    box-sizing: border-box !important;
   }
 
   & #sidebar-box[sidebar-positionend] {

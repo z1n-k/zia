@@ -19,6 +19,7 @@
 
 :is(#back-button, #forward-button, #reload-button, #stop-button) > .toolbarbutton-icon {
   fill: transparent !important;
+  transition: background-color 0.2s ease !important;
 }
 
 :is(#back-button, #forward-button, #reload-button, #stop-button)::before,
@@ -52,10 +53,6 @@
 
 :is(#back-button, #forward-button, #stop-button)::before {
   opacity: var(--zia-nav-rest);
-}
-
-:is(#back-button, #forward-button, #reload-button, #stop-button) > .toolbarbutton-icon {
-  transition: background-color 0.2s ease !important;
 }
 
 /* Reload and stop are two buttons, one swapped for the other as a page
