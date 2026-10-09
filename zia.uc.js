@@ -32,15 +32,27 @@
     });
   }
 
+  // an attribute or style property set to a value, or (null) removed
+  function setAttr(el, name, value) {
+    if (value == null) {
+      el.removeAttribute(name);
+    } else {
+      el.setAttribute(name, value);
+    }
+  }
+  function setStyle(el, name, value) {
+    if (value == null) {
+      el.style.removeProperty(name);
+    } else {
+      el.style.setProperty(name, value);
+    }
+  }
+
   function setFlag(name, on) {
     if (on === root.hasAttribute(name)) {
       return;
     }
-    if (on) {
-      root.setAttribute(name, "true");
-    } else {
-      root.removeAttribute(name);
-    }
+    setAttr(root, name, on ? "true" : null);
   }
 
   // Address bar position (an option): at the bottom of the page instead of the
@@ -1680,11 +1692,9 @@
     watchPrefs("zen.workspaces.active", onSpaceSwitch);
     gBrowser.tabContainer.addEventListener("TabSelect", onSpaceSwitch);
     placeWorkspaceIndicator();
-
     setTimeout(placeWorkspaceIndicator, 500);
     setTimeout(placeWorkspaceIndicator, 2000);
   }
-
 
   function syncSpaceLabel(indicator) {
     if (!indicator) {
@@ -1699,7 +1709,6 @@
     if (!workspace) {
       return;
     }
-
     let label = indicator.querySelector("#zia-space-label");
     if (!label) {
       label = document.createElementNS(XHTML_NS, "div");
@@ -1708,7 +1717,6 @@
     }
 
     const rawIcon = typeof workspace.icon === "string" ? workspace.icon : "";
-
     const visibleIcon = rawIcon.replace(/[\s\u200b-\u200f\u2060\ufe00-\ufe0f\p{Cf}]/gu, "");
     const hasIcon = visibleIcon !== "";
     const icon = hasIcon ? rawIcon.trim() : "";
@@ -1724,10 +1732,9 @@
     text.textContent = (workspace.name || "").replace(blank, "");
 
     const mark = label.querySelector(".zia-space-svg");
-    label.removeAttribute("zia-icon");
-    label.removeAttribute("zia-has-icon");
-    label.removeAttribute("zia-has-svg");
-
+    for (const name of ["zia-icon", "zia-has-icon", "zia-has-svg"]) {
+      label.removeAttribute(name);
+    }
     if (!hasIcon) {
       mark?.remove();
       return;
@@ -1770,14 +1777,10 @@
           return;
         }
         const colored = svgText
-          .replace(/context-fill-opacity/g, "1")
-          .replace(/context-stroke-opacity/g, "1")
-          .replace(/context-fill/g, "currentColor")
-          .replace(/context-stroke/g, "currentColor")
-          .replace(/\bfill="(?:#000(?:000)?|black)"/gi, 'fill="currentColor"')
-          .replace(/\bstroke="(?:#000(?:000)?|black)"/gi, 'stroke="currentColor"')
-          .replace(/fill\s*:\s*(?:#000(?:000)?|black)/gi, "fill:currentColor")
-          .replace(/stroke\s*:\s*(?:#000(?:000)?|black)/gi, "stroke:currentColor");
+          .replace(/context-(?:fill|stroke)-opacity/g, "1")
+          .replace(/context-(?:fill|stroke)/g, "currentColor")
+          .replace(/\b(fill|stroke)="(?:#000(?:000)?|black)"/gi, '$1="currentColor"')
+          .replace(/(fill|stroke)\s*:\s*(?:#000(?:000)?|black)/gi, "$1:currentColor");
         const parsed = new DOMParser().parseFromString(colored, "image/svg+xml");
         const node = parsed.documentElement;
         if (!node || node.localName !== "svg") {
@@ -1823,11 +1826,7 @@
 
   function mirrorSpaceAttributes(space) {
     for (const name of MIRRORED_SPACE_ATTRS) {
-      if (space?.hasAttribute(name)) {
-        workspaceSlot.setAttribute(name, space.getAttribute(name));
-      } else {
-        workspaceSlot.removeAttribute(name);
-      }
+      setAttr(workspaceSlot, name, space?.hasAttribute(name) ? space.getAttribute(name) : null);
     }
   }
 
@@ -1917,13 +1916,12 @@
     }
   }
 
+  const aboutNewTab = () => window.AboutNewTab || ChromeUtils.importESModule("resource:///modules/AboutNewTab.sys.mjs").AboutNewTab;
+
   // the new tab page as it is now: Zia's, an extension's, or Zen's own
   function currentNewTabUrl() {
     try {
-      const AboutNewTabModule =
-        window.AboutNewTab ||
-        ChromeUtils.importESModule("resource:///modules/AboutNewTab.sys.mjs").AboutNewTab;
-      return AboutNewTabModule.newTabURL || "about:newtab";
+      return aboutNewTab().newTabURL || "about:newtab";
     } catch (err) {
       return "about:newtab";
     }
@@ -1935,10 +1933,7 @@
 
   async function applyNewTabPage() {
     try {
-      const AboutNewTabModule =
-        window.AboutNewTab ||
-        ChromeUtils.importESModule("resource:///modules/AboutNewTab.sys.mjs").AboutNewTab;
-
+      const AboutNewTabModule = aboutNewTab();
       if (!newTabSearchEnabled()) {
         searchHomeUrl = null;
         // only Zia's own page is undone (turned off while running); one an
@@ -2071,15 +2066,11 @@
     }
     requestAnimationFrame(() => {
       try {
-        const urlbar = gURLBar;
-        if (!urlbar?.focused) {
+        if (!gURLBar?.focused || gBrowser.selectedTab !== tab) {
           return;
         }
-        if (gBrowser.selectedTab !== tab) {
-          return;
-        }
-        urlbar.view?.close();
-        urlbar.blur();
+        gURLBar.view?.close();
+        gURLBar.blur();
         gBrowser.selectedBrowser?.focus();
       } catch (err) {
         noteError("new tabs: closeNewTabUrlbar", err);
@@ -3026,7 +3017,6 @@
   function isSliding(el) {
     for (let node = el; node && node.id !== "navigator-toolbox"; node = node.parentElement) {
       const style = getComputedStyle(node);
-
       const transform = style.transform || "none";
       const moved =
         transform !== "none" &&
@@ -3075,22 +3065,20 @@
       }
     }
     if (essentialsRight === null) {
-      root.style.removeProperty("--zia-tab-right-fix");
-      root.style.removeProperty("--zia-folder-right-fix");
-      root.style.removeProperty("--zia-folder-left-fix");
+      for (const name of ["--zia-tab-right-fix", "--zia-folder-right-fix", "--zia-folder-left-fix"]) {
+        root.style.removeProperty(name);
+      }
       alignFolderBottoms(gZenWorkspaces?.activeWorkspaceElement || sidebar);
       return;
     }
 
     const space = gZenWorkspaces?.activeWorkspaceElement || sidebar;
-
     if ((isSliding(space) || isSliding(essentialTile)) && edgeRetries < EDGE_MAX_RETRIES) {
       retryEdgeAlignSoon();
       return;
     }
     const currentFix = (name) => parseFloat(root.style.getPropertyValue(name)) || 0;
     let suspicious = false;
-
     const tab = [...space.querySelectorAll(".tabbrowser-tab:not([zen-essential])")].find(
       (t) => !t.closest(FOLDER_SELECTOR) && visibleRect(t.querySelector(".tab-background"))
     );
@@ -3103,7 +3091,6 @@
     }
     if (tab) {
       const rect = visibleRect(tab.querySelector(".tab-background"));
-
       const fix = rect.right + currentFix("--zia-tab-right-fix") - essentialsRight;
       if (Math.abs(fix) <= EDGE_MAX_FIX) {
         root.style.setProperty("--zia-tab-right-fix", halfPx(fix));
@@ -5747,11 +5734,7 @@
     if (urlbar.style.getPropertyValue("--zia-typed-icon") === value) {
       return;
     }
-    if (value) {
-      urlbar.style.setProperty("--zia-typed-icon", value);
-    } else {
-      urlbar.style.removeProperty("--zia-typed-icon");
-    }
+    setStyle(urlbar, "--zia-typed-icon", value || null);
   }
 
   // The site's icon in the address bar while typing its address, or the
@@ -8455,11 +8438,7 @@
       return;
     }
     const color = folderColorOf(value);
-    if (color) {
-      folder.setAttribute("zia-folder-color", color);
-    } else {
-      folder.removeAttribute("zia-folder-color");
-    }
+    setAttr(folder, "zia-folder-color", color || null);
   }
 
   function setFolderColor(folder, color) {
@@ -8521,7 +8500,6 @@
       item.setAttribute("zia-color", name);
       item.addEventListener("command", () => {
         const folder = submenu.ziaFolder;
-
         const same = folder?.getAttribute("zia-folder-color") === name;
         const clear = name === FOLDER_DEFAULT_COLOR || same;
         setFolderColor(folder, clear ? null : name);
@@ -8534,7 +8512,6 @@
 
   function addFolderColorPicker() {
     let submenu = null;
-
     document.addEventListener(
       "popupshowing",
       (event) => {
@@ -8554,7 +8531,6 @@
 
         if (!submenu) {
           submenu = buildFolderColorMenu();
-
           const rename = document.getElementById("context_zenFolderRename");
           if (rename?.parentElement === menu) {
             menu.insertBefore(submenu, rename);
@@ -8565,7 +8541,6 @@
 
         submenu.hidden = false;
         submenu.ziaFolder = folder;
-
         const current = folder.getAttribute("zia-folder-color") || FOLDER_DEFAULT_COLOR;
         for (const item of submenu.querySelector("menupopup").children) {
           item.toggleAttribute("checked", item.getAttribute("zia-color") === current);
@@ -8577,7 +8552,6 @@
 
   function watchFolderColors() {
     restoreFolderColors();
-
     setTimeout(restoreFolderColors, 1500);
     gBrowser.tabContainer.addEventListener("TabGroupCreate", (event) => {
       const saved = readFolderColors()[event.target?.id];
@@ -8600,11 +8574,7 @@
     if (group.style.getPropertyValue("--zia-group-swatch") === swatch) {
       return;
     }
-    if (swatch) {
-      group.style.setProperty("--zia-group-swatch", swatch);
-    } else {
-      group.style.removeProperty("--zia-group-swatch");
-    }
+    setStyle(group, "--zia-group-swatch", swatch || null);
   }
 
   function watchGroupColors() {
@@ -8635,7 +8605,6 @@
     button.setAttribute("role", "button");
     button.setAttribute("keyNav", "false");
     button.setAttribute("tooltiptext", "Delete Folder");
-
     button.addEventListener("mousedown", (event) => event.stopPropagation());
     button.addEventListener("click", (event) => {
       if (event.button !== 0) {
@@ -8643,14 +8612,12 @@
       }
       event.stopPropagation();
       event.preventDefault();
-
       const removal =
         typeof folder.delete === "function"
           ? folder.delete()
           : gBrowser.removeTabGroup(folder, { isUserTriggered: true });
       Promise.resolve(removal).catch((err) => console.error("[Zia] Couldn't delete the folder:", err));
     });
-
     header.appendChild(button);
   }
 
@@ -9134,11 +9101,7 @@
         const shown = !!folder?.isZenFolder && folderHasOwnIcon(folder);
         item.hidden = !shown;
         item.ziaFolder = shown ? folder : null;
-        if (shown && folder.hasAttribute("zia-icon-on-folder")) {
-          item.setAttribute("checked", "true");
-        } else {
-          item.removeAttribute("checked");
-        }
+        setAttr(item, "checked", shown && folder.hasAttribute("zia-icon-on-folder") ? "true" : null);
       },
       true
     );
@@ -9689,11 +9652,7 @@
     const data = splitDataOf(essential);
     const side = essential.getAttribute("zia-split-focus") || essential.ziaLastSide || "a";
     const icon = data?.[side]?.icon;
-    if (icon) {
-      essential.style.setProperty("--zia-split-glow", cssUrl(icon));
-    } else {
-      essential.style.removeProperty("--zia-split-glow");
-    }
+    setStyle(essential, "--zia-split-glow", icon ? cssUrl(icon) : null);
   }
 
   // Selected look while its split is showing
@@ -10287,7 +10246,6 @@
       name: "essential",
       icon: "card-pin",
       label: "Add to Essentials",
-
       // a split goes in whole, as a split essential: Zen can't make one of
       // its tabs an essential (it left the other stranded, without a title)
       run: (tab) => (inSplit(tab) ? addSplitToEssentials(tab) : gZenPinnedTabManager?.addToEssentials(tab)),
@@ -10310,7 +10268,6 @@
       name: "split",
       icon: "card-split",
       label: "Add to Split",
-
       run: (tab) => {
         const other = tab === gBrowser.selectedTab ? lastUsedOtherTab(tab) : gBrowser.selectedTab;
         if (other) {
@@ -10391,11 +10348,7 @@
   // button's <image>, whose picture comes from CSS on [zia-copied].
   function showCopiedIcon(button, icon) {
     const set = (copied) => () => {
-      if (copied) {
-        button.setAttribute("zia-copied", "true");
-      } else {
-        button.removeAttribute("zia-copied");
-      }
+      button.toggleAttribute("zia-copied", copied);
       if (icon?.localName === "img") {
         icon.setAttribute("src", copied ? COPIED_ICON : COPY_ICON);
       }
@@ -10457,7 +10410,6 @@
       const uri = gBrowser.selectedBrowser?.currentURI;
       button.hidden = !uri || !/^https?$/.test(uri.scheme);
     };
-
     // As faint as the site settings icon beside it (a fixed see-through
     // level); its colour follows the toolbar in CSS.
     const siteIcon = siteData.querySelector("image");
@@ -10763,11 +10715,7 @@
   function fillFolderCard(card, folder) {
     card.ziaFolder = folder;
     const color = folder.getAttribute("zia-folder-color");
-    if (color) {
-      card.setAttribute("zia-folder-color", color);
-    } else {
-      card.removeAttribute("zia-folder-color");
-    }
+    setAttr(card, "zia-folder-color", color || null);
     const rows = [];
     for (const tab of tabsInFolder(folder)) {
       const row = document.createElementNS(XHTML_NS, "div");
@@ -15517,17 +15465,10 @@
       remove.addEventListener("command", run((at) => target.set(at, null)));
     }
   }
-
-  // Tab numbers: hold Cmd (Ctrl on Windows and Linux) and a small key shows
-  // at the end of each tab, and in the corner of each essential. Every tab
-  // you can see has one, essentials first, and Zia takes over Cmd/Ctrl+
-  // digit so each is reachable: Firefox's own shortcuts stop at 8 (9 is the
-  // last tab). Typing a number lights its key up (in Zia blue or the
-  // space's colour) and the tab is only chosen when the key is let go, so
-  // nothing loads by accident; past nine, type the digits in turn (1 then 2
-  // for the twelfth). Another key, or letting go with nothing typed,
-  // changes nothing. The keys show the moment it goes down and stay until
-  // it's let go or the window is left. Optionally they show all the time.
+  // Tab numbers: hold Cmd (Ctrl elsewhere) and a key shows on every visible tab and
+  // essential, Zia taking over Cmd/Ctrl+digit so all are reachable (Firefox's stop at
+  // 8). The typed number lights up and is chosen only on letting go, so nothing loads
+  // by accident; past nine, type the digits in turn. Optionally shown all the time.
   const TAB_NUMBERS_ALWAYS_PREF = "zia.tab-numbers.always";
   const TAB_NUMBERS_COLOR_PREF = "zia.tab-numbers.color";
 
@@ -15619,14 +15560,7 @@
         gBrowser.selectedTab = tab;
       }
     };
-    const startsANumber = (prefix) => {
-      for (let n = 1; n <= tabs.length; n++) {
-        if (String(n).startsWith(prefix)) {
-          return true;
-        }
-      }
-      return false;
-    };
+    const startsANumber = (prefix) => tabs.some((_, i) => String(i + 1).startsWith(prefix));
 
     const onDigit = (digit) => {
       if (!root.hasAttribute("zia-tab-numbers")) {
@@ -15731,11 +15665,7 @@
     // Zia blue or the space's colour for the number being typed
     const showColor = () => {
       const space = Services.prefs.getStringPref(TAB_NUMBERS_COLOR_PREF, "zia") === "space";
-      if (space) {
-        root.setAttribute("zia-tab-number-color", "space");
-      } else {
-        root.removeAttribute("zia-tab-number-color");
-      }
+      setAttr(root, "zia-tab-number-color", space ? "space" : null);
     };
     showColor();
     watchPrefs(TAB_NUMBERS_COLOR_PREF, showColor);
@@ -16396,11 +16326,7 @@
       }
     }
     // beside the page, the panel's own sides give the room
-    if (document.documentElement.hasAttribute("zia-panels-beside")) {
-      doc.documentElement.style.setProperty("--zia-panel-inset", "0px");
-    } else {
-      doc.documentElement.style.removeProperty("--zia-panel-inset");
-    }
+    setStyle(doc.documentElement, "--zia-panel-inset", document.documentElement.hasAttribute("zia-panels-beside") ? "0px" : null);
     // the highlights' shape: the space name's own pill
     const label = document.getElementById("zia-space-label");
     if (label) {
@@ -17309,17 +17235,11 @@
   }
 
   // ---------- Clear in the Library's Downloads and History
-  // Zen's Library lists every download but has no way to empty the list,
-  // only to remove them one by one. A Clear button beside the filter does
-  // what Firefox's own Clear Downloads does: the finished, failed and
-  // cancelled ones leave the list and history (the files stay on disk,
-  // and one still downloading stays). The section is drawn by Zen when
-  // first shown and again after it's been put away, so the button is put
-  // back whenever it's missing. History's Clear opens Firefox's own Clear
-  // browsing data and cookies dialog, browsing history ticked, to choose
-  // what goes.
+  // Zen's Library can only remove downloads one by one: Clear does what Firefox's
+  // Clear Downloads does (finished ones leave the list and history, the files stay).
+  // Zen redraws the section, so it's put back whenever missing. History's Clear
+  // opens Firefox's Clear browsing data dialog.
   function dressLibrary() {
-
     const clearDownloads = () => {
       try {
         window.DownloadsCommon.getData(window, true).removeFinished();

@@ -64,11 +64,7 @@
     if (urlbar.style.getPropertyValue("--zia-typed-icon") === value) {
       return;
     }
-    if (value) {
-      urlbar.style.setProperty("--zia-typed-icon", value);
-    } else {
-      urlbar.style.removeProperty("--zia-typed-icon");
-    }
+    setStyle(urlbar, "--zia-typed-icon", value || null);
   }
 
   // The site's icon in the address bar while typing its address, or the

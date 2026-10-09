@@ -145,11 +145,7 @@
       }
     }
     // beside the page, the panel's own sides give the room
-    if (document.documentElement.hasAttribute("zia-panels-beside")) {
-      doc.documentElement.style.setProperty("--zia-panel-inset", "0px");
-    } else {
-      doc.documentElement.style.removeProperty("--zia-panel-inset");
-    }
+    setStyle(doc.documentElement, "--zia-panel-inset", document.documentElement.hasAttribute("zia-panels-beside") ? "0px" : null);
     // the highlights' shape: the space name's own pill
     const label = document.getElementById("zia-space-label");
     if (label) {

@@ -283,11 +283,7 @@
   function fillFolderCard(card, folder) {
     card.ziaFolder = folder;
     const color = folder.getAttribute("zia-folder-color");
-    if (color) {
-      card.setAttribute("zia-folder-color", color);
-    } else {
-      card.removeAttribute("zia-folder-color");
-    }
+    setAttr(card, "zia-folder-color", color || null);
     const rows = [];
     for (const tab of tabsInFolder(folder)) {
       const row = document.createElementNS(XHTML_NS, "div");

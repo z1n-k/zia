@@ -34,13 +34,12 @@
     }
   }
 
+  const aboutNewTab = () => window.AboutNewTab || ChromeUtils.importESModule("resource:///modules/AboutNewTab.sys.mjs").AboutNewTab;
+
   // the new tab page as it is now: Zia's, an extension's, or Zen's own
   function currentNewTabUrl() {
     try {
-      const AboutNewTabModule =
-        window.AboutNewTab ||
-        ChromeUtils.importESModule("resource:///modules/AboutNewTab.sys.mjs").AboutNewTab;
-      return AboutNewTabModule.newTabURL || "about:newtab";
+      return aboutNewTab().newTabURL || "about:newtab";
     } catch (err) {
       return "about:newtab";
     }
@@ -52,10 +51,7 @@
 
   async function applyNewTabPage() {
     try {
-      const AboutNewTabModule =
-        window.AboutNewTab ||
-        ChromeUtils.importESModule("resource:///modules/AboutNewTab.sys.mjs").AboutNewTab;
-
+      const AboutNewTabModule = aboutNewTab();
       if (!newTabSearchEnabled()) {
         searchHomeUrl = null;
         // only Zia's own page is undone (turned off while running); one an
@@ -188,15 +184,11 @@
     }
     requestAnimationFrame(() => {
       try {
-        const urlbar = gURLBar;
-        if (!urlbar?.focused) {
+        if (!gURLBar?.focused || gBrowser.selectedTab !== tab) {
           return;
         }
-        if (gBrowser.selectedTab !== tab) {
-          return;
-        }
-        urlbar.view?.close();
-        urlbar.blur();
+        gURLBar.view?.close();
+        gURLBar.blur();
         gBrowser.selectedBrowser?.focus();
       } catch (err) {
         noteError("new tabs: closeNewTabUrlbar", err);

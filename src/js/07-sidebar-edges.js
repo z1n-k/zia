@@ -13,7 +13,6 @@
   function isSliding(el) {
     for (let node = el; node && node.id !== "navigator-toolbox"; node = node.parentElement) {
       const style = getComputedStyle(node);
-
       const transform = style.transform || "none";
       const moved =
         transform !== "none" &&
@@ -62,22 +61,20 @@
       }
     }
     if (essentialsRight === null) {
-      root.style.removeProperty("--zia-tab-right-fix");
-      root.style.removeProperty("--zia-folder-right-fix");
-      root.style.removeProperty("--zia-folder-left-fix");
+      for (const name of ["--zia-tab-right-fix", "--zia-folder-right-fix", "--zia-folder-left-fix"]) {
+        root.style.removeProperty(name);
+      }
       alignFolderBottoms(gZenWorkspaces?.activeWorkspaceElement || sidebar);
       return;
     }
 
     const space = gZenWorkspaces?.activeWorkspaceElement || sidebar;
-
     if ((isSliding(space) || isSliding(essentialTile)) && edgeRetries < EDGE_MAX_RETRIES) {
       retryEdgeAlignSoon();
       return;
     }
     const currentFix = (name) => parseFloat(root.style.getPropertyValue(name)) || 0;
     let suspicious = false;
-
     const tab = [...space.querySelectorAll(".tabbrowser-tab:not([zen-essential])")].find(
       (t) => !t.closest(FOLDER_SELECTOR) && visibleRect(t.querySelector(".tab-background"))
     );
@@ -90,7 +87,6 @@
     }
     if (tab) {
       const rect = visibleRect(tab.querySelector(".tab-background"));
-
       const fix = rect.right + currentFix("--zia-tab-right-fix") - essentialsRight;
       if (Math.abs(fix) <= EDGE_MAX_FIX) {
         root.style.setProperty("--zia-tab-right-fix", halfPx(fix));

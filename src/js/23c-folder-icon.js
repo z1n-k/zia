@@ -141,11 +141,7 @@
         const shown = !!folder?.isZenFolder && folderHasOwnIcon(folder);
         item.hidden = !shown;
         item.ziaFolder = shown ? folder : null;
-        if (shown && folder.hasAttribute("zia-icon-on-folder")) {
-          item.setAttribute("checked", "true");
-        } else {
-          item.removeAttribute("checked");
-        }
+        setAttr(item, "checked", shown && folder.hasAttribute("zia-icon-on-folder") ? "true" : null);
       },
       true
     );

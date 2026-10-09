@@ -31,11 +31,9 @@
     watchPrefs("zen.workspaces.active", onSpaceSwitch);
     gBrowser.tabContainer.addEventListener("TabSelect", onSpaceSwitch);
     placeWorkspaceIndicator();
-
     setTimeout(placeWorkspaceIndicator, 500);
     setTimeout(placeWorkspaceIndicator, 2000);
   }
-
 
   function syncSpaceLabel(indicator) {
     if (!indicator) {
@@ -50,7 +48,6 @@
     if (!workspace) {
       return;
     }
-
     let label = indicator.querySelector("#zia-space-label");
     if (!label) {
       label = document.createElementNS(XHTML_NS, "div");
@@ -59,7 +56,6 @@
     }
 
     const rawIcon = typeof workspace.icon === "string" ? workspace.icon : "";
-
     const visibleIcon = rawIcon.replace(/[\s\u200b-\u200f\u2060\ufe00-\ufe0f\p{Cf}]/gu, "");
     const hasIcon = visibleIcon !== "";
     const icon = hasIcon ? rawIcon.trim() : "";
@@ -75,10 +71,9 @@
     text.textContent = (workspace.name || "").replace(blank, "");
 
     const mark = label.querySelector(".zia-space-svg");
-    label.removeAttribute("zia-icon");
-    label.removeAttribute("zia-has-icon");
-    label.removeAttribute("zia-has-svg");
-
+    for (const name of ["zia-icon", "zia-has-icon", "zia-has-svg"]) {
+      label.removeAttribute(name);
+    }
     if (!hasIcon) {
       mark?.remove();
       return;
@@ -121,14 +116,10 @@
           return;
         }
         const colored = svgText
-          .replace(/context-fill-opacity/g, "1")
-          .replace(/context-stroke-opacity/g, "1")
-          .replace(/context-fill/g, "currentColor")
-          .replace(/context-stroke/g, "currentColor")
-          .replace(/\bfill="(?:#000(?:000)?|black)"/gi, 'fill="currentColor"')
-          .replace(/\bstroke="(?:#000(?:000)?|black)"/gi, 'stroke="currentColor"')
-          .replace(/fill\s*:\s*(?:#000(?:000)?|black)/gi, "fill:currentColor")
-          .replace(/stroke\s*:\s*(?:#000(?:000)?|black)/gi, "stroke:currentColor");
+          .replace(/context-(?:fill|stroke)-opacity/g, "1")
+          .replace(/context-(?:fill|stroke)/g, "currentColor")
+          .replace(/\b(fill|stroke)="(?:#000(?:000)?|black)"/gi, '$1="currentColor"')
+          .replace(/(fill|stroke)\s*:\s*(?:#000(?:000)?|black)/gi, "$1:currentColor");
         const parsed = new DOMParser().parseFromString(colored, "image/svg+xml");
         const node = parsed.documentElement;
         if (!node || node.localName !== "svg") {
@@ -174,11 +165,7 @@
 
   function mirrorSpaceAttributes(space) {
     for (const name of MIRRORED_SPACE_ATTRS) {
-      if (space?.hasAttribute(name)) {
-        workspaceSlot.setAttribute(name, space.getAttribute(name));
-      } else {
-        workspaceSlot.removeAttribute(name);
-      }
+      setAttr(workspaceSlot, name, space?.hasAttribute(name) ? space.getAttribute(name) : null);
     }
   }
 

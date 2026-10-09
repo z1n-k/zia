@@ -201,11 +201,7 @@
     const data = splitDataOf(essential);
     const side = essential.getAttribute("zia-split-focus") || essential.ziaLastSide || "a";
     const icon = data?.[side]?.icon;
-    if (icon) {
-      essential.style.setProperty("--zia-split-glow", cssUrl(icon));
-    } else {
-      essential.style.removeProperty("--zia-split-glow");
-    }
+    setStyle(essential, "--zia-split-glow", icon ? cssUrl(icon) : null);
   }
 
   // Selected look while its split is showing

@@ -44,11 +44,7 @@
       return;
     }
     const color = folderColorOf(value);
-    if (color) {
-      folder.setAttribute("zia-folder-color", color);
-    } else {
-      folder.removeAttribute("zia-folder-color");
-    }
+    setAttr(folder, "zia-folder-color", color || null);
   }
 
   function setFolderColor(folder, color) {
@@ -110,7 +106,6 @@
       item.setAttribute("zia-color", name);
       item.addEventListener("command", () => {
         const folder = submenu.ziaFolder;
-
         const same = folder?.getAttribute("zia-folder-color") === name;
         const clear = name === FOLDER_DEFAULT_COLOR || same;
         setFolderColor(folder, clear ? null : name);
@@ -123,7 +118,6 @@
 
   function addFolderColorPicker() {
     let submenu = null;
-
     document.addEventListener(
       "popupshowing",
       (event) => {
@@ -143,7 +137,6 @@
 
         if (!submenu) {
           submenu = buildFolderColorMenu();
-
           const rename = document.getElementById("context_zenFolderRename");
           if (rename?.parentElement === menu) {
             menu.insertBefore(submenu, rename);
@@ -154,7 +147,6 @@
 
         submenu.hidden = false;
         submenu.ziaFolder = folder;
-
         const current = folder.getAttribute("zia-folder-color") || FOLDER_DEFAULT_COLOR;
         for (const item of submenu.querySelector("menupopup").children) {
           item.toggleAttribute("checked", item.getAttribute("zia-color") === current);
@@ -166,7 +158,6 @@
 
   function watchFolderColors() {
     restoreFolderColors();
-
     setTimeout(restoreFolderColors, 1500);
     gBrowser.tabContainer.addEventListener("TabGroupCreate", (event) => {
       const saved = readFolderColors()[event.target?.id];
@@ -189,11 +180,7 @@
     if (group.style.getPropertyValue("--zia-group-swatch") === swatch) {
       return;
     }
-    if (swatch) {
-      group.style.setProperty("--zia-group-swatch", swatch);
-    } else {
-      group.style.removeProperty("--zia-group-swatch");
-    }
+    setStyle(group, "--zia-group-swatch", swatch || null);
   }
 
   function watchGroupColors() {
@@ -224,7 +211,6 @@
     button.setAttribute("role", "button");
     button.setAttribute("keyNav", "false");
     button.setAttribute("tooltiptext", "Delete Folder");
-
     button.addEventListener("mousedown", (event) => event.stopPropagation());
     button.addEventListener("click", (event) => {
       if (event.button !== 0) {
@@ -232,14 +218,12 @@
       }
       event.stopPropagation();
       event.preventDefault();
-
       const removal =
         typeof folder.delete === "function"
           ? folder.delete()
           : gBrowser.removeTabGroup(folder, { isUserTriggered: true });
       Promise.resolve(removal).catch((err) => console.error("[Zia] Couldn't delete the folder:", err));
     });
-
     header.appendChild(button);
   }
 
