@@ -3,14 +3,7 @@
     if (!navBar) {
       return;
     }
-
-    function inCompactMode() {
-      return root.getAttribute("zen-compact-mode") === "true";
-    }
-
-    function windowButtons() {
-      return window.gZenVerticalTabsManager?.actualWindowButtons || null;
-    }
+    const inCompactMode = () => root.getAttribute("zen-compact-mode") === "true";
 
     function moveTopRow() {
       if (!inCompactMode()) {
@@ -29,14 +22,13 @@
       if (window.gZenVerticalTabsManager?.isWindowsStyledButtons) {
         return;
       }
-      const buttons = windowButtons();
+      const buttons = window.gZenVerticalTabsManager?.actualWindowButtons;
       if (buttons && buttons.parentElement !== topButtons) {
         topButtons.prepend(buttons);
       }
     }
 
-    const watcher = new MutationObserver(() => moveTopRow());
-    watcher.observe(navBar, { childList: true });
+    new MutationObserver(moveTopRow).observe(navBar, { childList: true });
 
     const toolbox = document.getElementById("navigator-toolbox");
     const SIDEBAR_SHOWN_ATTRS = ["zen-has-hover", "zen-user-show", "zen-has-empty-tab", "flash-popup", "has-popup-menu", "movingtab", "zen-compact-mode-active"];
@@ -103,22 +95,19 @@
     }
 
     if (toolbox) {
-      const panelWatcher = new MutationObserver(syncPanelOpen);
-      panelWatcher.observe(toolbox, { attributes: true, attributeFilter: SIDEBAR_SHOWN_ATTRS });
+      new MutationObserver(syncPanelOpen).observe(toolbox, { attributes: true, attributeFilter: SIDEBAR_SHOWN_ATTRS });
     }
-
     window.addEventListener("resize", followCover);
-    document.getElementById("urlbar")?.addEventListener("focus", followCover, true);
-    document.getElementById("urlbar")?.addEventListener("blur", followCover, true);
-    if (document.getElementById("urlbar")) {
-      new MutationObserver(followCover).observe(document.getElementById("urlbar"), { attributes: true, attributeFilter: ["breakout-extend"] });
+    const urlbar = document.getElementById("urlbar");
+    if (urlbar) {
+      urlbar.addEventListener("focus", followCover, true);
+      urlbar.addEventListener("blur", followCover, true);
+      new MutationObserver(followCover).observe(urlbar, { attributes: true, attributeFilter: ["breakout-extend"] });
     }
-
-    const modeWatcher = new MutationObserver(() => {
+    new MutationObserver(() => {
       moveTopRow();
       syncPanelOpen();
-    });
-    modeWatcher.observe(root, { attributes: true, attributeFilter: ["zen-compact-mode"] });
+    }).observe(root, { attributes: true, attributeFilter: ["zen-compact-mode"] });
 
     moveTopRow();
     syncPanelOpen();

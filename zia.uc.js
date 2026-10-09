@@ -4785,11 +4785,10 @@
     );
   }
 
+  const pointIn = (box, event) => event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
+
   function isOverPage(event) {
-    const box = gBrowser.tabbox.getBoundingClientRect();
-    const inPage =
-      event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
-    return inPage && !isOverCollapsedSidebar(event);
+    return pointIn(gBrowser.tabbox.getBoundingClientRect(), event) && !isOverCollapsedSidebar(event);
   }
 
   function isOverCollapsedSidebar(event) {
@@ -4801,11 +4800,7 @@
       return false;
     }
     const box = toolbox.getBoundingClientRect();
-
-    if (box.right <= 0) {
-      return false;
-    }
-    return event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
+    return box.right > 0 && pointIn(box, event);
   }
 
   function shortenFindCount(findbar) {
@@ -7580,14 +7575,7 @@
     if (!navBar) {
       return;
     }
-
-    function inCompactMode() {
-      return root.getAttribute("zen-compact-mode") === "true";
-    }
-
-    function windowButtons() {
-      return window.gZenVerticalTabsManager?.actualWindowButtons || null;
-    }
+    const inCompactMode = () => root.getAttribute("zen-compact-mode") === "true";
 
     function moveTopRow() {
       if (!inCompactMode()) {
@@ -7606,14 +7594,13 @@
       if (window.gZenVerticalTabsManager?.isWindowsStyledButtons) {
         return;
       }
-      const buttons = windowButtons();
+      const buttons = window.gZenVerticalTabsManager?.actualWindowButtons;
       if (buttons && buttons.parentElement !== topButtons) {
         topButtons.prepend(buttons);
       }
     }
 
-    const watcher = new MutationObserver(() => moveTopRow());
-    watcher.observe(navBar, { childList: true });
+    new MutationObserver(moveTopRow).observe(navBar, { childList: true });
 
     const toolbox = document.getElementById("navigator-toolbox");
     const SIDEBAR_SHOWN_ATTRS = ["zen-has-hover", "zen-user-show", "zen-has-empty-tab", "flash-popup", "has-popup-menu", "movingtab", "zen-compact-mode-active"];
@@ -7680,22 +7667,19 @@
     }
 
     if (toolbox) {
-      const panelWatcher = new MutationObserver(syncPanelOpen);
-      panelWatcher.observe(toolbox, { attributes: true, attributeFilter: SIDEBAR_SHOWN_ATTRS });
+      new MutationObserver(syncPanelOpen).observe(toolbox, { attributes: true, attributeFilter: SIDEBAR_SHOWN_ATTRS });
     }
-
     window.addEventListener("resize", followCover);
-    document.getElementById("urlbar")?.addEventListener("focus", followCover, true);
-    document.getElementById("urlbar")?.addEventListener("blur", followCover, true);
-    if (document.getElementById("urlbar")) {
-      new MutationObserver(followCover).observe(document.getElementById("urlbar"), { attributes: true, attributeFilter: ["breakout-extend"] });
+    const urlbar = document.getElementById("urlbar");
+    if (urlbar) {
+      urlbar.addEventListener("focus", followCover, true);
+      urlbar.addEventListener("blur", followCover, true);
+      new MutationObserver(followCover).observe(urlbar, { attributes: true, attributeFilter: ["breakout-extend"] });
     }
-
-    const modeWatcher = new MutationObserver(() => {
+    new MutationObserver(() => {
       moveTopRow();
       syncPanelOpen();
-    });
-    modeWatcher.observe(root, { attributes: true, attributeFilter: ["zen-compact-mode"] });
+    }).observe(root, { attributes: true, attributeFilter: ["zen-compact-mode"] });
 
     moveTopRow();
     syncPanelOpen();
@@ -10151,9 +10135,7 @@
       root.style.removeProperty("--zia-media-solid");
       return;
     }
-
     root.style.setProperty("--zia-media-rest", cssColor(colorOver(tint, paint)));
-
     root.style.setProperty("--zia-media-solid", cssColor(colorOver(tint, colorOver(paint, base))));
   }
 
@@ -15759,14 +15741,9 @@
     watchPrefs(TAB_NUMBERS_COLOR_PREF, showColor);
     renumber();
   }
-
-  // The welcome tour (welcome/index.html): shown once on a first install,
-  // and once after a release that has something to show, over a blurred
-  // window. WELCOME_VERSION is the release that last asked for it: bump it
-  // with that release ("release + welcome card"), and anyone who hasn't
-  // seen that one gets the tour of what's new. Other releases leave it be.
-  // Once closed it stays closed; it can be switched off after updates, or
-  // asked for again, from Zia's settings.
+  // The welcome tour (welcome/index.html): once on a first install, and once after
+  // a release that bumps WELCOME_VERSION ("release + welcome card"), over a dimmed
+  // window. Closed, it stays closed; settings can switch it off or show it again.
   const WELCOME_VERSION = "2.95.9";
   const WELCOME_SEEN_PREF = "zia.welcome.seen";
   const WELCOME_UPDATES_PREF = "zia.welcome.show";
@@ -17577,7 +17554,6 @@
       // (the window losing focus mid-press; not a field inside it)
       ["blur", (event) => event.target === window && letGo()],
     ];
-
     for (const [type, handler] of PRESS_EVENTS) {
       window.addEventListener(type, handler, true);
     }

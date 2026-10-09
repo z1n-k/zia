@@ -1,8 +1,7 @@
+  const pointIn = (box, event) => event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
+
   function isOverPage(event) {
-    const box = gBrowser.tabbox.getBoundingClientRect();
-    const inPage =
-      event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
-    return inPage && !isOverCollapsedSidebar(event);
+    return pointIn(gBrowser.tabbox.getBoundingClientRect(), event) && !isOverCollapsedSidebar(event);
   }
 
   function isOverCollapsedSidebar(event) {
@@ -14,11 +13,7 @@
       return false;
     }
     const box = toolbox.getBoundingClientRect();
-
-    if (box.right <= 0) {
-      return false;
-    }
-    return event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
+    return box.right > 0 && pointIn(box, event);
   }
 
   function shortenFindCount(findbar) {

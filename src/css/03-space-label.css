@@ -1,8 +1,6 @@
 #zia-workspace-slot {
   display: flex;
-
   flex: 1;
-
   min-width: min(max-content, 100%);
   align-items: center;
   -moz-window-dragging: drag;
@@ -11,7 +9,6 @@
     max-width: 100% !important;
     min-height: var(--zia-space-pill-height) !important;
     max-height: var(--zia-space-pill-height) !important;
-
     padding: 0 !important;
     gap: 0 !important;
     background-color: transparent !important;
@@ -27,9 +24,7 @@
     }
 
     flex: 0 0 auto !important;
-
     width: max-content !important;
-
     min-width: max-content !important;
 
     /* Only the name's pill (and the space's icon under it) is clickable:
@@ -90,7 +85,6 @@
 :root[zen-sidebar-expanded] #zia-workspace-slot[collapsedpinnedtabs] .zen-current-workspace-indicator-chevron {
   transform: rotate(0deg);
 }
-
 
 /* Optional: the space's name hidden, its icon kept. The top row is as wide
    as the name, so a long one widened the sidebar and it changed size from

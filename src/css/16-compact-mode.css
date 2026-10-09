@@ -2,22 +2,6 @@
   box-shadow: var(--zia-glass-edge) !important;
 }
 
-/* Windows: Zen sizes the flyout sidebar's corners for its squarer Windows
-   curve (2.3 times the length), and Zia draws every corner as a circle, so
-   the sidebar came out far rounder than the page card and the window's own
-   corners. It takes the page card's corner instead, as Zen's curve is
-   divided back out of that (the card's usual corner, kept with the page
-   edge to edge, which squared it off). */
-@media (-moz-platform: windows) {
-  :root[zen-compact-mode="true"]:not(#zia-none) .zen-toolbar-background {
-    &,
-    &::before,
-    &::after {
-      border-radius: max(0px, calc(var(--zia-card-radius-base) - var(--zen-compact-mode-no-padding-radius-fix, 0px) / var(--zen-squircle-value, 1))) !important;
-    }
-  }
-}
-
 :root[zen-compact-mode="true"] #zen-appcontent-wrapper {
   position: relative !important;
   z-index: 0 !important;
@@ -25,15 +9,6 @@
 
 :root[zen-compact-mode="true"] #navigator-toolbox:not([animate="true"]) {
   z-index: 100 !important;
-}
-
-/* Windows, compact mode: no window-button box in the sidebar's top row.
-   The real minimise, maximise and close stay top right (zia.uc.js leaves
-   them there), and a box left in the row pushed the space's name out. */
-@media (-moz-platform: windows) {
-  :root[zen-compact-mode="true"] #zen-sidebar-top-buttons .titlebar-buttonbox-container {
-    display: none !important;
-  }
 }
 
 :root[zen-compact-mode="true"] #titlebar > #zen-sidebar-top-buttons {
@@ -93,7 +68,6 @@
   display: none !important;
 }
 
-
 /* Compact mode's flyout sidebar (and top toolbar) is a touch see-through,
    with the page blurred behind it; on by default, off in Zia's settings.
    Zen paints it as an opaque base with two cross-fading colour layers (the
@@ -121,10 +95,25 @@
   }
 }
 
-/* Windows: minimise, maximise and close as Windows (and Dia) draw them, a
-   block behind each on hover and red behind close, the close button's block
-   following the window's corner (thanks to Zylaah) */
 @media (-moz-platform: windows) {
+  /* the flyout sidebar takes the page card's corner: Zen sizes it for its
+     squarer Windows curve, and drawn as a circle it came out far rounder */
+  :root[zen-compact-mode="true"]:not(#zia-none) .zen-toolbar-background {
+    &,
+    &::before,
+    &::after {
+      border-radius: max(0px, calc(var(--zia-card-radius-base) - var(--zen-compact-mode-no-padding-radius-fix, 0px) / var(--zen-squircle-value, 1))) !important;
+    }
+  }
+
+  /* no window-button box in compact's top row: the real ones stay top right
+     (zia.uc.js), and a box left in the row pushed the space's name out */
+  :root[zen-compact-mode="true"] #zen-sidebar-top-buttons .titlebar-buttonbox-container {
+    display: none !important;
+  }
+
+  /* minimise, maximise and close as Windows (and Dia) draw them: a block on
+     hover, red behind close, following the window's corner (thanks to Zylaah) */
   .titlebar-button,
   .titlebar-button:hover,
   .titlebar-button:hover:active {

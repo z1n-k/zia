@@ -1321,9 +1321,7 @@
 }
 #zia-workspace-slot {
   display: flex;
-
   flex: 1;
-
   min-width: min(max-content, 100%);
   align-items: center;
   -moz-window-dragging: drag;
@@ -1332,7 +1330,6 @@
     max-width: 100% !important;
     min-height: var(--zia-space-pill-height) !important;
     max-height: var(--zia-space-pill-height) !important;
-
     padding: 0 !important;
     gap: 0 !important;
     background-color: transparent !important;
@@ -1348,9 +1345,7 @@
     }
 
     flex: 0 0 auto !important;
-
     width: max-content !important;
-
     min-width: max-content !important;
 
     /* Only the name's pill (and the space's icon under it) is clickable:
@@ -1411,7 +1406,6 @@
 :root[zen-sidebar-expanded] #zia-workspace-slot[collapsedpinnedtabs] .zen-current-workspace-indicator-chevron {
   transform: rotate(0deg);
 }
-
 
 /* Optional: the space's name hidden, its icon kept. The top row is as wide
    as the name, so a long one widened the sidebar and it changed size from
@@ -6315,7 +6309,6 @@ findbar {
 }
 }
 
-
 /* Remove icon, shown while an icon is chosen: Zia's trash (Tabler, as the
    picker's icons are) rather than Zen's */
 #PanelUI-zen-emojis-picker-none,
@@ -6326,22 +6319,6 @@ findbar {
   box-shadow: var(--zia-glass-edge) !important;
 }
 
-/* Windows: Zen sizes the flyout sidebar's corners for its squarer Windows
-   curve (2.3 times the length), and Zia draws every corner as a circle, so
-   the sidebar came out far rounder than the page card and the window's own
-   corners. It takes the page card's corner instead, as Zen's curve is
-   divided back out of that (the card's usual corner, kept with the page
-   edge to edge, which squared it off). */
-@media (-moz-platform: windows) {
-  :root[zen-compact-mode="true"]:not(#zia-none) .zen-toolbar-background {
-    &,
-    &::before,
-    &::after {
-      border-radius: max(0px, calc(var(--zia-card-radius-base) - var(--zen-compact-mode-no-padding-radius-fix, 0px) / var(--zen-squircle-value, 1))) !important;
-    }
-  }
-}
-
 :root[zen-compact-mode="true"] #zen-appcontent-wrapper {
   position: relative !important;
   z-index: 0 !important;
@@ -6349,15 +6326,6 @@ findbar {
 
 :root[zen-compact-mode="true"] #navigator-toolbox:not([animate="true"]) {
   z-index: 100 !important;
-}
-
-/* Windows, compact mode: no window-button box in the sidebar's top row.
-   The real minimise, maximise and close stay top right (zia.uc.js leaves
-   them there), and a box left in the row pushed the space's name out. */
-@media (-moz-platform: windows) {
-  :root[zen-compact-mode="true"] #zen-sidebar-top-buttons .titlebar-buttonbox-container {
-    display: none !important;
-  }
 }
 
 :root[zen-compact-mode="true"] #titlebar > #zen-sidebar-top-buttons {
@@ -6417,7 +6385,6 @@ findbar {
   display: none !important;
 }
 
-
 /* Compact mode's flyout sidebar (and top toolbar) is a touch see-through,
    with the page blurred behind it; on by default, off in Zia's settings.
    Zen paints it as an opaque base with two cross-fading colour layers (the
@@ -6445,10 +6412,25 @@ findbar {
   }
 }
 
-/* Windows: minimise, maximise and close as Windows (and Dia) draw them, a
-   block behind each on hover and red behind close, the close button's block
-   following the window's corner (thanks to Zylaah) */
 @media (-moz-platform: windows) {
+  /* the flyout sidebar takes the page card's corner: Zen sizes it for its
+     squarer Windows curve, and drawn as a circle it came out far rounder */
+  :root[zen-compact-mode="true"]:not(#zia-none) .zen-toolbar-background {
+    &,
+    &::before,
+    &::after {
+      border-radius: max(0px, calc(var(--zia-card-radius-base) - var(--zen-compact-mode-no-padding-radius-fix, 0px) / var(--zen-squircle-value, 1))) !important;
+    }
+  }
+
+  /* no window-button box in compact's top row: the real ones stay top right
+     (zia.uc.js), and a box left in the row pushed the space's name out */
+  :root[zen-compact-mode="true"] #zen-sidebar-top-buttons .titlebar-buttonbox-container {
+    display: none !important;
+  }
+
+  /* minimise, maximise and close as Windows (and Dia) draw them: a block on
+     hover, red behind close, following the window's corner (thanks to Zylaah) */
   .titlebar-button,
   .titlebar-button:hover,
   .titlebar-button:hover:active {
@@ -9371,15 +9353,10 @@ zen-workspace-creation {
   --zia-glass-press-wash: rgba(255, 255, 255, 0.12);
 }
 
-/* The press light (Clear's icon is its background picture, so it goes
-   without) */
+/* The press light (not on Clear, whose icon is its background picture; on a
+   Library section not yet chosen, its hover tile) */
 :root:not(#zia-none) .tabbrowser-tab[zen-essential][zia-glass-press] > .tab-stack > .tab-background,
-:root:not(#zia-none) zen-library [zia-glass-press]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip, .zia-library-rail):not(.zia-library-clear) {
-  background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent)) !important;
-}
-
-/* (a Library section not yet chosen: its hover tile, the light fading on
-   over the sliding tile as it arrives) */
+:root:not(#zia-none) zen-library [zia-glass-press]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip, .zia-library-rail):not(.zia-library-clear),
 :root:not(#zia-none) zen-library .zen-library-tab[zia-glass-press]::before {
   background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent)) !important;
 }
@@ -9477,14 +9454,10 @@ zen-workspace-creation {
 
   /* a glance's card on its essential, and the ghost it flies from */
   .tabbrowser-tab[zen-essential] > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]:not(#zia-none) > .tab-stack > .tab-background,
-  .tabbrowser-tab[zen-essential] > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]:not(#zia-none) > .tab-stack > .tab-background::before {
+  .tabbrowser-tab[zen-essential] > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]:not(#zia-none) > .tab-stack > .tab-background::before,
+  :root:not(#zia-none) .zia-glance-ghost {
     background: rgba(255, 255, 255, 0.2) !important;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2) !important;
-  }
-
-  :root:not(#zia-none) .zia-glance-ghost {
-    background: rgba(255, 255, 255, 0.2);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
   }
 
   /* the music player: a fine shine round it, following its squircle
