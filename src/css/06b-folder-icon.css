@@ -123,9 +123,11 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   will-change: transform;
 }
 
+/* (alone, its insets in whole pixels: at 0.16em its edges fell between
+   pixels, and drawn on its own layer it snapped left of the middle) */
 .zia-fi-s1 {
-  left: 0.16em;
-  right: 0.16em;
+  left: round(nearest, 0.16em, 1px);
+  right: round(nearest, 0.16em, 1px);
   background: linear-gradient(#fff, #e9e9ee);
 }
 

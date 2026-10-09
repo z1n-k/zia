@@ -239,13 +239,13 @@
     0 var(--zia-active-glow-reach) var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color) !important;
 }
 
-/* (essentials too, and without Zen's 0.01deg turn that puts a pressed tab
-   on the GPU: the first press after a start, a squircle tile with the
-   glass edge showed a black cross as it was drawn there in pieces) */
-.tabbrowser-tab {
+.tabbrowser-tab:not([zen-essential]) {
   --zen-active-tab-scale: 1 !important;
 }
 
+/* An essential keeps Zen's press, without its 0.01deg turn that puts it on the
+   GPU: the first press after a start, the squircle tile with the glass edge
+   showed a black cross as it was drawn there in pieces */
 .tabbrowser-tab[zen-essential]:active {
   rotate: none !important;
 }

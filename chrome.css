@@ -44,7 +44,7 @@
   --zia-shine-row-ink: rgba(255, 255, 255, 0.12);
 
   --zia-tab-shine-layers:
-    linear-gradient(to bottom right, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.18) 25%, rgba(255, 255, 255, 0.13) 50%, rgba(255, 255, 255, 0.18) 75%, rgba(255, 255, 255, 0.26));
+    linear-gradient(to bottom right, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.15) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.15) 75%, rgba(255, 255, 255, 0.26));
   --zia-essential-min-width: 54px;
   --zia-essential-height: 41px;
   --zia-essential-inner-tighten: 1;
@@ -939,16 +939,30 @@
     list-style-image: url("chrome://sine/content/zia/icons/ui/check.svg") !important;
   }
 
+  /* (Dia's tile, measured: 23 by 22 with a 3.5px corner, 26px from one icon
+     to the next. At 26 square it nearly filled the bar's height, with three
+     times as much room to its right; Zen's 8px corner made it near round) */
   #urlbar :is(#zia-copy-link-button, #zen-site-data-icon-button) {
-    width: 26px !important;
-    min-width: 26px !important;
-    height: 26px !important;
-    min-height: 26px !important;
+    width: 23px !important;
+    min-width: 23px !important;
+    height: 22px !important;
+    min-height: 22px !important;
+    border-radius: 3.5px !important;
     padding: 0 !important;
     box-sizing: border-box !important;
     justify-content: center !important;
     align-items: center !important;
     align-self: center !important;
+  }
+
+  #urlbar #zen-site-data-icon-button {
+    margin-inline-start: 3px !important;
+  }
+
+  /* (Dia's tile is 12% over the bar, measured; Zen's was over twice that. The
+     icon's own ink, so it's dark on a light bar) */
+  #urlbar :is(#zia-copy-link-button, #zen-site-data-icon-button):is(:hover, [open]) {
+    background-color: color-mix(in srgb, currentColor 12%, transparent) !important;
   }
 
   #urlbar #zia-copy-link-button image {
@@ -1659,13 +1673,13 @@
     0 var(--zia-active-glow-reach) var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color) !important;
 }
 
-/* (essentials too, and without Zen's 0.01deg turn that puts a pressed tab
-   on the GPU: the first press after a start, a squircle tile with the
-   glass edge showed a black cross as it was drawn there in pieces) */
-.tabbrowser-tab {
+.tabbrowser-tab:not([zen-essential]) {
   --zen-active-tab-scale: 1 !important;
 }
 
+/* An essential keeps Zen's press, without its 0.01deg turn that puts it on the
+   GPU: the first press after a start, the squircle tile with the glass edge
+   showed a black cross as it was drawn there in pieces */
 .tabbrowser-tab[zen-essential]:active {
   rotate: none !important;
 }
@@ -3388,9 +3402,11 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   will-change: transform;
 }
 
+/* (alone, its insets in whole pixels: at 0.16em its edges fell between
+   pixels, and drawn on its own layer it snapped left of the middle) */
 .zia-fi-s1 {
-  left: 0.16em;
-  right: 0.16em;
+  left: round(nearest, 0.16em, 1px);
+  right: round(nearest, 0.16em, 1px);
   background: linear-gradient(#fff, #e9e9ee);
 }
 

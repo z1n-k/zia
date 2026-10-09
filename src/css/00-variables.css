@@ -44,7 +44,7 @@
   --zia-shine-row-ink: rgba(255, 255, 255, 0.12);
 
   --zia-tab-shine-layers:
-    linear-gradient(to bottom right, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.18) 25%, rgba(255, 255, 255, 0.13) 50%, rgba(255, 255, 255, 0.18) 75%, rgba(255, 255, 255, 0.26));
+    linear-gradient(to bottom right, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.15) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.15) 75%, rgba(255, 255, 255, 0.26));
   --zia-essential-min-width: 54px;
   --zia-essential-height: 41px;
   --zia-essential-inner-tighten: 1;
