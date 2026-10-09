@@ -207,7 +207,7 @@
     }
     window.addEventListener("ZenWorkspacesUIUpdate", renumber);
     window.addEventListener("ZenWorkspaceChanged", renumber);
-    Services.prefs.addObserver(TAB_NUMBERS_ALWAYS_PREF, renumber);
+    watchPrefs(TAB_NUMBERS_ALWAYS_PREF, renumber);
 
     // Zia blue or the space's colour for the number being typed
     const showColor = () => {
@@ -219,6 +219,6 @@
       }
     };
     showColor();
-    Services.prefs.addObserver(TAB_NUMBERS_COLOR_PREF, showColor);
+    watchPrefs(TAB_NUMBERS_COLOR_PREF, showColor);
     renumber();
   }

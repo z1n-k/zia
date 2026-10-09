@@ -20,6 +20,18 @@
     console.debug(`[Zia] ${where}:`, err);
   }
 
+  // a setting (or several) watched for as long as the window is open
+  function watchPrefs(names, fn) {
+    for (const name of [names].flat()) {
+      Services.prefs.addObserver(name, fn);
+    }
+    window.addEventListener("unload", () => {
+      for (const name of [names].flat()) {
+        Services.prefs.removeObserver(name, fn);
+      }
+    });
+  }
+
   function setFlag(name, on) {
     if (on === root.hasAttribute(name)) {
       return;

@@ -96,8 +96,7 @@
     // hides Firefox's own arrow (22-swipe-arrow.css)
     const mark = () => setFlag("zia-swipe-arrow", on());
     mark();
-    Services.prefs.addObserver(SWIPE_PREF, mark);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(SWIPE_PREF, mark));
+    watchPrefs(SWIPE_PREF, mark);
 
     // Firefox calls its animation's methods on every swipe, arrow shown or not
     let swiping = false;

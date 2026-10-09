@@ -20,6 +20,18 @@
     console.debug(`[Zia] ${where}:`, err);
   }
 
+  // a setting (or several) watched for as long as the window is open
+  function watchPrefs(names, fn) {
+    for (const name of [names].flat()) {
+      Services.prefs.addObserver(name, fn);
+    }
+    window.addEventListener("unload", () => {
+      for (const name of [names].flat()) {
+        Services.prefs.removeObserver(name, fn);
+      }
+    });
+  }
+
   function setFlag(name, on) {
     if (on === root.hasAttribute(name)) {
       return;
@@ -1012,7 +1024,6 @@
     const next = loader.shown + (Math.abs(diff) < 0.001 ? diff : diff * (loader.finishing ? 0.3 : 0.12));
     loader.shown = Math.max(loader.shown, next);
     drawProgress();
-
     if (loader.finishing && loader.shown >= 0.999) {
       loader.finishing = false;
       loader.hideTimer = setTimeout(() => setFlag("zia-loading", false), 150);
@@ -1041,7 +1052,6 @@
     stopLoaderTimers();
     loader.active = true;
     loader.finishing = false;
-
     if (fresh || !stillShowing) {
       loader.shown = from;
       loader.target = Math.max(from, 0.25);
@@ -1049,9 +1059,7 @@
     } else {
       loader.target = Math.max(loader.target, loader.shown, from);
     }
-
     setFlag("zia-loading", true);
-
     loader.estimateTimer = setInterval(() => {
       if (loader.target < 0.9) {
         loader.target += (0.9 - loader.target) * 0.06;
@@ -1123,8 +1131,7 @@
 
   function watchTitleOnly() {
     const apply = () => updateTitle();
-    Services.prefs.addObserver(TITLE_ONLY_PREF, apply);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(TITLE_ONLY_PREF, apply));
+    watchPrefs(TITLE_ONLY_PREF, apply);
   }
 
   function updateTitle() {
@@ -1669,10 +1676,8 @@
     }
 
     const onSpaceSwitch = () => setTimeout(placeWorkspaceIndicator, 0);
-    Services.prefs.addObserver(SPACE_NAME_IN_LIST_PREF, onSpaceSwitch);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(SPACE_NAME_IN_LIST_PREF, onSpaceSwitch));
-    Services.prefs.addObserver("zen.workspaces.active", onSpaceSwitch);
-    window.addEventListener("unload", () => Services.prefs.removeObserver("zen.workspaces.active", onSpaceSwitch));
+    watchPrefs(SPACE_NAME_IN_LIST_PREF, onSpaceSwitch);
+    watchPrefs("zen.workspaces.active", onSpaceSwitch);
     gBrowser.tabContainer.addEventListener("TabSelect", onSpaceSwitch);
     placeWorkspaceIndicator();
 
@@ -2086,11 +2091,8 @@
     applyNewTabPage();
     gBrowser.tabContainer.addEventListener("TabOpen", (event) => closeNewTabUrlbar(event.target));
     Services.obs.addObserver(applyNewTabPage, "browser-search-engine-modified");
-    Services.prefs.addObserver("zia.newtab.search-engine", applyNewTabPage);
-    window.addEventListener("unload", () => {
-      Services.obs.removeObserver(applyNewTabPage, "browser-search-engine-modified");
-      Services.prefs.removeObserver("zia.newtab.search-engine", applyNewTabPage);
-    });
+    watchPrefs("zia.newtab.search-engine", applyNewTabPage);
+    window.addEventListener("unload", () => Services.obs.removeObserver(applyNewTabPage, "browser-search-engine-modified"));
   }
 
   // Closing one of a split's two tabs: Zen unsplits first, so the closing one shrank
@@ -3218,9 +3220,8 @@
     for (const type of ["TabGroupExpand", "TabGroupCollapse", "TabGrouped", "TabUngrouped"]) {
       window.addEventListener(type, onSpaceSwitch);
     }
-    Services.prefs.addObserver("zen.workspaces.active", onSpaceSwitch);
+    watchPrefs("zen.workspaces.active", onSpaceSwitch);
     window.addEventListener("ZenWorkspacesUIUpdate", onSpaceSwitch);
-    window.addEventListener("unload", () => Services.prefs.removeObserver("zen.workspaces.active", onSpaceSwitch));
     scheduleEdgeAlign();
     setTimeout(scheduleEdgeAlign, 600);
     setTimeout(scheduleEdgeAlign, 2000);
@@ -3463,8 +3464,7 @@
       glowSelectedTab();
       repaintSoundTabs();
     };
-    Services.prefs.addObserver("zia.tabs.favicon-glow", onPref);
-    window.addEventListener("unload", () => Services.prefs.removeObserver("zia.tabs.favicon-glow", onPref));
+    watchPrefs("zia.tabs.favicon-glow", onPref);
     glowSelectedTab();
   }
 
@@ -3713,8 +3713,7 @@
   }
 
   function watchTabSoundBars() {
-    Services.prefs.addObserver(SOUND_BARS_ALWAYS_PREF, redrawSoundBars);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(SOUND_BARS_ALWAYS_PREF, redrawSoundBars));
+    watchPrefs(SOUND_BARS_ALWAYS_PREF, redrawSoundBars);
     gBrowser.tabContainer.addEventListener("TabAttrModified", (event) => {
       const changed = event.detail?.changed || [];
       if (changed.includes("soundplaying") || changed.includes("muted")) {
@@ -3965,8 +3964,7 @@
         }
       }
     };
-    Services.prefs.addObserver(KEEP_WITH_PIP_PREF, refreshCards);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(KEEP_WITH_PIP_PREF, refreshCards));
+    watchPrefs(KEEP_WITH_PIP_PREF, refreshCards);
     return true;
   }
 
@@ -5406,8 +5404,7 @@
     };
     new MutationObserver(schedule).observe(root, { attributes: true, attributeFilter: ["zen-default-theme", "style"] });
     window.addEventListener("ZenWorkspacesUIUpdate", schedule);
-    Services.prefs.addObserver("zen.workspaces.active", schedule);
-    window.addEventListener("unload", () => Services.prefs.removeObserver("zen.workspaces.active", schedule));
+    watchPrefs("zen.workspaces.active", schedule);
     schedule();
   }
 
@@ -6048,7 +6045,6 @@
     } catch (err) {
       noteError("zen defaults: set", err);
     }
-
     for (const feature of FEATURES) {
       set(`zia.features.${feature}`, true);
     }
@@ -6071,12 +6067,8 @@
     } catch (err) {
       noteError("zen defaults: dim asleep", err);
     }
-    // Zen 1.23 turned its "acrylic" look on for everyone: the sidebar drawn
-    // part see-through (and the compact sidebar and address pop-up
-    // differently again), under Zia's own. Switched off once, for anyone
-    // who hadn't chosen it themselves; Zen reads it as a window opens, so
-    // it takes from the next start. (It can be turned back on in
-    // about:config, zen.theme.acrylic-elements.)
+    // Zen 1.23 turned its see-through "acrylic" sidebar on for everyone, under Zia's own:
+    // off once for anyone who hadn't chosen it (from the next start; zen.theme.acrylic-elements).
     try {
       if (!Services.prefs.getBoolPref("zia.acrylic-reset", false)) {
         if (!Services.prefs.prefHasUserValue("zen.theme.acrylic-elements")) {
@@ -6503,8 +6495,7 @@
         recolorMultiview(tab);
       }
     };
-    Services.prefs.addObserver(MULTIVIEW_COLOR_PREF, onColorPref);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(MULTIVIEW_COLOR_PREF, onColorPref));
+    watchPrefs(MULTIVIEW_COLOR_PREF, onColorPref);
   }
 
   const URLBAR_POSITION_PREF = "zia.urlbar.position";
@@ -6524,8 +6515,7 @@
       });
     };
     apply();
-    Services.prefs.addObserver(URLBAR_POSITION_PREF, apply);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(URLBAR_POSITION_PREF, apply));
+    watchPrefs(URLBAR_POSITION_PREF, apply);
   }
 
   // Options in Sine's settings that are on by default (the rest are set
@@ -6564,14 +6554,7 @@
       updateColor();
     };
     apply();
-    for (const name of WATCHED_OPTIONS) {
-      Services.prefs.addObserver(name, onChange);
-    }
-    window.addEventListener("unload", () => {
-      for (const name of WATCHED_OPTIONS) {
-        Services.prefs.removeObserver(name, onChange);
-      }
-    });
+    watchPrefs(WATCHED_OPTIONS, onChange);
   }
 
   const FEATURES = ["media-player", "find-bar", "icon-picker", "undo-close", "folder-icon-suggest", "tab-hover-cards", "tab-numbers"];
@@ -6589,8 +6572,6 @@
       safely(name, fn);
     }
   }
-
-
   function addDownloadProgress() {
     const button = document.getElementById("downloads-button");
     const commons = window.DownloadsCommon;
@@ -9348,13 +9329,9 @@
     setTimeout(countAllFolderSheets, 1500);
   }
   // ---------- Folders brought back after being deleted
-  // Firefox keeps a deleted folder as a plain tab group, and Reopen Closed
-  // Tab (Cmd/Ctrl+Shift+T, or Zia's Cmd/Ctrl+Z) brings it back as one. It
-  // looked like the folder (Zia draws plain groups the same) but wasn't
-  // Zen's: it wouldn't collapse, Zia's folder animations passed it by, and
-  // having no icon it was named afresh by the local model. A group coming
-  // back with the id of a folder deleted this session is made into a folder
-  // again, with its name, icon, colour and tabs, and isn't named.
+  // Firefox keeps a deleted folder as a plain tab group and reopens it as one: it
+  // wouldn't collapse, Zia's animations passed it by, and it was named afresh. One
+  // back with a deleted folder's id is made a folder again, with its name, icon, colour.
   const DELETED_FOLDER_KEEP_MS = 30 * 60 * 1000;
   const deletedFolders = new Map();
 
@@ -9510,14 +9487,7 @@
     new ResizeObserver(schedule).observe(essentials);
     new MutationObserver(schedule).observe(root, { attributes: true, attributeFilter: ["zen-sidebar-expanded"] });
     window.addEventListener("ZenWorkspacesUIUpdate", schedule);
-    Services.prefs.addObserver(FILL_ROW_PREF, schedule);
-    Services.prefs.addObserver(ZIA_WIDTH_PREF, schedule);
-    Services.prefs.addObserver(TWO_PER_ROW_PREF, schedule);
-    window.addEventListener("unload", () => {
-      Services.prefs.removeObserver(FILL_ROW_PREF, schedule);
-      Services.prefs.removeObserver(ZIA_WIDTH_PREF, schedule);
-      Services.prefs.removeObserver(TWO_PER_ROW_PREF, schedule);
-    });
+    watchPrefs([FILL_ROW_PREF, ZIA_WIDTH_PREF, TWO_PER_ROW_PREF], schedule);
     schedule();
   }
 
@@ -9528,7 +9498,6 @@
       }
     };
     addAll();
-
     setTimeout(addAll, 1500);
     gBrowser.tabContainer.addEventListener("TabGroupCreate", (event) => addFolderCloseButton(event.target));
   }
@@ -10131,8 +10100,7 @@
     };
     window.SessionStore?.promiseAllWindowsRestored?.then(restore, restore);
     container.addEventListener("TabAddedToEssentials", (event) => drawSplitTile(event.target));
-    Services.prefs.addObserver(SPLIT_PREF, restore);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(SPLIT_PREF, restore));
+    watchPrefs(SPLIT_PREF, restore);
   }
 
   function resolveColor(text) {
@@ -10264,13 +10232,9 @@
   }
 
   // ---------- Room for the essentials above every space's tabs
-  // Zen keeps a space's tabs clear of the essentials with a top padding the
-  // essentials' height. It sets that on a space as you go to it, but a space
-  // made this session starts at 0 and wasn't always given it, so its tabs
-  // sat under the essentials and slid in under them as you switched to it
-  // (seen on Windows). With the essentials shared by every space, each space
-  // is given just that room; one being made (Zen's form, with no
-  // essentials over it) and one Zen is animating are left to Zen.
+  // Zen pads a space's tabs clear of the essentials as you go to it, but a space made
+  // this session started at 0 and its tabs slid in under them (Windows). With shared
+  // essentials each space gets that room; one being made or animated is left to Zen.
   function keepRoomForEssentials() {
     const separate = () => {
       try {
@@ -14841,7 +14805,6 @@
     );
   }
 
-
   // Zen's toasts (the little notes up in the corner, like "Copied") go away
   // on a timer that stops while the mouse is over them. Zia gives each one
   // a small ✕ to close it straight away, with the same fade Zen uses.
@@ -14889,11 +14852,8 @@
       }
     }).observe(container, { childList: true });
   }
-  // A page glanced at from an essential shows as a small card fanned out from
-  // behind the essential's icon (zia-essential-glance in chrome.css). It
-  // springs out from the icon in CSS; closing, Zen takes the glance's tab away
-  // at once, so a stand-in card is drawn in its place and sucked back into the
-  // icon.
+  // A page glanced at from an essential: a small card springs out from behind its
+  // icon (CSS) and, as Zen takes the tab away at once, a stand-in is sucked back in.
   function suckInEssentialGlances() {
     const SUCK_MS = 220;
     const OUT_MS = 400;
@@ -15784,7 +15744,7 @@
     }
     window.addEventListener("ZenWorkspacesUIUpdate", renumber);
     window.addEventListener("ZenWorkspaceChanged", renumber);
-    Services.prefs.addObserver(TAB_NUMBERS_ALWAYS_PREF, renumber);
+    watchPrefs(TAB_NUMBERS_ALWAYS_PREF, renumber);
 
     // Zia blue or the space's colour for the number being typed
     const showColor = () => {
@@ -15796,7 +15756,7 @@
       }
     };
     showColor();
-    Services.prefs.addObserver(TAB_NUMBERS_COLOR_PREF, showColor);
+    watchPrefs(TAB_NUMBERS_COLOR_PREF, showColor);
     renumber();
   }
 
@@ -15929,8 +15889,7 @@
           showWelcome(mode);
         }
       };
-      Services.prefs.addObserver(pref, again);
-      window.addEventListener("unload", () => Services.prefs.removeObserver(pref, again));
+      watchPrefs(pref, again);
       again();
     }
   }
@@ -16178,7 +16137,7 @@
     // on unless switched off: the styles look for this mark, not the setting
     const markOff = () => setFlag("zia-glance-thumb-off", !on());
     markOff();
-    Services.prefs.addObserver(GLANCE_THUMB_PREF, markOff);
+    watchPrefs(GLANCE_THUMB_PREF, markOff);
     gBrowser.tabContainer.addEventListener(
       "GlanceClose",
       (event) => {
@@ -16691,8 +16650,7 @@
       style();
     };
     markPlain();
-    Services.prefs.addObserver(SIDEBAR_PANELS_PREF, markPlain);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(SIDEBAR_PANELS_PREF, markPlain));
+    watchPrefs(SIDEBAR_PANELS_PREF, markPlain);
     // each panel's page loads into the same #sidebar browser
     document.getElementById("sidebar")?.addEventListener("load", style, true);
     safely("placeSidebarPanel", placeSidebarPanel);
@@ -16756,7 +16714,7 @@
       }
     };
     place();
-    Services.prefs.addObserver(SIDEBAR_BESIDE_PREF, place);
+    watchPrefs(SIDEBAR_BESIDE_PREF, place);
 
     // no wider than Zen lets the tab sidebar be (dragging its edge stops
     // there too), and following that setting if it's changed
@@ -16796,13 +16754,7 @@
     cap();
     new MutationObserver(cap).observe(box, { attributes: true, attributeFilter: ["width", "style"] });
     new MutationObserver(cap).observe(gNavToolbox, { attributes: true, attributeFilter: ["style"] });
-    Services.prefs.addObserver(MAX_PREF, cap);
-    Services.prefs.addObserver(SIDEBAR_BESIDE_PREF, cap);
-    window.addEventListener("unload", () => {
-      Services.prefs.removeObserver(MAX_PREF, cap);
-      Services.prefs.removeObserver(SIDEBAR_BESIDE_PREF, cap);
-    });
-    window.addEventListener("unload", () => Services.prefs.removeObserver(SIDEBAR_BESIDE_PREF, place));
+    watchPrefs([MAX_PREF, SIDEBAR_BESIDE_PREF], cap);
     // moving it to the other side
     new MutationObserver(place).observe(box, { attributes: true, attributeFilter: ["sidebar-positionend"] });
 
@@ -16911,11 +16863,8 @@
       controller.ziaSlides = true;
     }
   }
-  // A page that's gone full screen (a YouTube video, say) is shown square
-  // and edge to edge. Zen and Zia only count the window as full screen when
-  // it takes over the screen; when a video goes full screen inside the
-  // window instead, the page kept its rounded card, and the video's corners
-  // were rounded off with grey behind them.
+  // A page gone full screen inside the window (a YouTube video) is shown square,
+  // edge to edge: it kept the page's rounded card, grey behind the video's corners.
   function watchPageFullscreen() {
     const update = () => setFlag("zia-page-fullscreen", !!document.fullscreenElement);
     const soon = () => requestAnimationFrame(update);
@@ -17022,8 +16971,7 @@
     // hides Firefox's own arrow (22-swipe-arrow.css)
     const mark = () => setFlag("zia-swipe-arrow", on());
     mark();
-    Services.prefs.addObserver(SWIPE_PREF, mark);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(SWIPE_PREF, mark));
+    watchPrefs(SWIPE_PREF, mark);
 
     // Firefox calls its animation's methods on every swipe, arrow shown or not
     let swiping = false;
@@ -17477,16 +17425,12 @@
     // (and before the downloads fan out above the Library button)
     document.getElementById("zen-library-button")?.addEventListener("mouseenter", () => safely("library: rows", matchLibraryRowsToTabs));
     safely("library: rows", matchLibraryRowsToTabs);
-    Services.prefs.addObserver(LIBRARY_ZEN_LOOK_PREF, () => watched && addButtons(watched));
+    watchPrefs(LIBRARY_ZEN_LOOK_PREF, () => watched && addButtons(watched));
   }
 
-  // ---------- Rename finished downloads with AI (Tidy Downloads)
-  // Tidy Downloads, by Bxthesda and Zylaah, is in tidy-downloads/ (used with
-  // their permission). Zia loads it itself, only with "Rename finished
-  // downloads with AI" on: listed as the mod's own scripts instead, they only
-  // ran once Sine had installed or updated Zia, not after its files were
-  // swapped by hand.
-  // (the renaming, then the model lists for its settings)
+  // ---------- Rename finished downloads with AI (Tidy Downloads, by Bxthesda and
+  // Zylaah, in tidy-downloads/ with their permission). Loaded here, only with the
+  // option on: as the mod's own scripts, they ran only after Sine installed Zia.
   const TIDY_DOWNLOADS_SCRIPTS = ["tidy-downloads", "tidy-downloads-models"];
 
   function loadTidyDownloads() {
@@ -17639,12 +17583,8 @@
     }
   }
   // ---------- Zia's settings: rows shown only with the setting they belong to
-  // Sine shows or hides a mod's setting by its "conditions"
-  // (preferences.json), but its first check runs before the row is on the
-  // page, finds nothing, and every row showed until the setting it hangs on
-  // was changed. Zia applies them as Zia's rows arrive in Settings, the same
-  // way Sine does afterwards (its own observers keep them right from then
-  // on).
+  // Sine's first check of a row's conditions (preferences.json) runs before the row
+  // is on the page, so every row showed; Zia applies them as its rows arrive.
   function fixSettingsConditions() {
     let rows = null;
     const loadRows = async () => {

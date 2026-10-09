@@ -376,8 +376,7 @@
       style();
     };
     markPlain();
-    Services.prefs.addObserver(SIDEBAR_PANELS_PREF, markPlain);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(SIDEBAR_PANELS_PREF, markPlain));
+    watchPrefs(SIDEBAR_PANELS_PREF, markPlain);
     // each panel's page loads into the same #sidebar browser
     document.getElementById("sidebar")?.addEventListener("load", style, true);
     safely("placeSidebarPanel", placeSidebarPanel);
@@ -441,7 +440,7 @@
       }
     };
     place();
-    Services.prefs.addObserver(SIDEBAR_BESIDE_PREF, place);
+    watchPrefs(SIDEBAR_BESIDE_PREF, place);
 
     // no wider than Zen lets the tab sidebar be (dragging its edge stops
     // there too), and following that setting if it's changed
@@ -481,13 +480,7 @@
     cap();
     new MutationObserver(cap).observe(box, { attributes: true, attributeFilter: ["width", "style"] });
     new MutationObserver(cap).observe(gNavToolbox, { attributes: true, attributeFilter: ["style"] });
-    Services.prefs.addObserver(MAX_PREF, cap);
-    Services.prefs.addObserver(SIDEBAR_BESIDE_PREF, cap);
-    window.addEventListener("unload", () => {
-      Services.prefs.removeObserver(MAX_PREF, cap);
-      Services.prefs.removeObserver(SIDEBAR_BESIDE_PREF, cap);
-    });
-    window.addEventListener("unload", () => Services.prefs.removeObserver(SIDEBAR_BESIDE_PREF, place));
+    watchPrefs([MAX_PREF, SIDEBAR_BESIDE_PREF], cap);
     // moving it to the other side
     new MutationObserver(place).observe(box, { attributes: true, attributeFilter: ["sidebar-positionend"] });
 

@@ -207,9 +207,8 @@
     for (const type of ["TabGroupExpand", "TabGroupCollapse", "TabGrouped", "TabUngrouped"]) {
       window.addEventListener(type, onSpaceSwitch);
     }
-    Services.prefs.addObserver("zen.workspaces.active", onSpaceSwitch);
+    watchPrefs("zen.workspaces.active", onSpaceSwitch);
     window.addEventListener("ZenWorkspacesUIUpdate", onSpaceSwitch);
-    window.addEventListener("unload", () => Services.prefs.removeObserver("zen.workspaces.active", onSpaceSwitch));
     scheduleEdgeAlign();
     setTimeout(scheduleEdgeAlign, 600);
     setTimeout(scheduleEdgeAlign, 2000);

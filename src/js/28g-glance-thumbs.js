@@ -242,7 +242,7 @@
     // on unless switched off: the styles look for this mark, not the setting
     const markOff = () => setFlag("zia-glance-thumb-off", !on());
     markOff();
-    Services.prefs.addObserver(GLANCE_THUMB_PREF, markOff);
+    watchPrefs(GLANCE_THUMB_PREF, markOff);
     gBrowser.tabContainer.addEventListener(
       "GlanceClose",
       (event) => {

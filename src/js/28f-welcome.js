@@ -128,8 +128,7 @@
           showWelcome(mode);
         }
       };
-      Services.prefs.addObserver(pref, again);
-      window.addEventListener("unload", () => Services.prefs.removeObserver(pref, again));
+      watchPrefs(pref, again);
       again();
     }
   }

@@ -223,6 +223,6 @@
     // (and before the downloads fan out above the Library button)
     document.getElementById("zen-library-button")?.addEventListener("mouseenter", () => safely("library: rows", matchLibraryRowsToTabs));
     safely("library: rows", matchLibraryRowsToTabs);
-    Services.prefs.addObserver(LIBRARY_ZEN_LOOK_PREF, () => watched && addButtons(watched));
+    watchPrefs(LIBRARY_ZEN_LOOK_PREF, () => watched && addButtons(watched));
   }
 

@@ -21,7 +21,6 @@
     } catch (err) {
       noteError("zen defaults: set", err);
     }
-
     for (const feature of FEATURES) {
       set(`zia.features.${feature}`, true);
     }
@@ -44,12 +43,8 @@
     } catch (err) {
       noteError("zen defaults: dim asleep", err);
     }
-    // Zen 1.23 turned its "acrylic" look on for everyone: the sidebar drawn
-    // part see-through (and the compact sidebar and address pop-up
-    // differently again), under Zia's own. Switched off once, for anyone
-    // who hadn't chosen it themselves; Zen reads it as a window opens, so
-    // it takes from the next start. (It can be turned back on in
-    // about:config, zen.theme.acrylic-elements.)
+    // Zen 1.23 turned its see-through "acrylic" sidebar on for everyone, under Zia's own:
+    // off once for anyone who hadn't chosen it (from the next start; zen.theme.acrylic-elements).
     try {
       if (!Services.prefs.getBoolPref("zia.acrylic-reset", false)) {
         if (!Services.prefs.prefHasUserValue("zen.theme.acrylic-elements")) {

@@ -596,7 +596,6 @@
     };
     window.SessionStore?.promiseAllWindowsRestored?.then(restore, restore);
     container.addEventListener("TabAddedToEssentials", (event) => drawSplitTile(event.target));
-    Services.prefs.addObserver(SPLIT_PREF, restore);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(SPLIT_PREF, restore));
+    watchPrefs(SPLIT_PREF, restore);
   }
 

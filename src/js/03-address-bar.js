@@ -37,8 +37,7 @@
 
   function watchTitleOnly() {
     const apply = () => updateTitle();
-    Services.prefs.addObserver(TITLE_ONLY_PREF, apply);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(TITLE_ONLY_PREF, apply));
+    watchPrefs(TITLE_ONLY_PREF, apply);
   }
 
   function updateTitle() {

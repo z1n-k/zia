@@ -1,10 +1,6 @@
-  // ---------- Rename finished downloads with AI (Tidy Downloads)
-  // Tidy Downloads, by Bxthesda and Zylaah, is in tidy-downloads/ (used with
-  // their permission). Zia loads it itself, only with "Rename finished
-  // downloads with AI" on: listed as the mod's own scripts instead, they only
-  // ran once Sine had installed or updated Zia, not after its files were
-  // swapped by hand.
-  // (the renaming, then the model lists for its settings)
+  // ---------- Rename finished downloads with AI (Tidy Downloads, by Bxthesda and
+  // Zylaah, in tidy-downloads/ with their permission). Loaded here, only with the
+  // option on: as the mod's own scripts, they ran only after Sine installed Zia.
   const TIDY_DOWNLOADS_SCRIPTS = ["tidy-downloads", "tidy-downloads-models"];
 
   function loadTidyDownloads() {

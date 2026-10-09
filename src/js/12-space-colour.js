@@ -49,8 +49,7 @@
     };
     new MutationObserver(schedule).observe(root, { attributes: true, attributeFilter: ["zen-default-theme", "style"] });
     window.addEventListener("ZenWorkspacesUIUpdate", schedule);
-    Services.prefs.addObserver("zen.workspaces.active", schedule);
-    window.addEventListener("unload", () => Services.prefs.removeObserver("zen.workspaces.active", schedule));
+    watchPrefs("zen.workspaces.active", schedule);
     schedule();
   }
 

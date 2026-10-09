@@ -350,7 +350,6 @@
         recolorMultiview(tab);
       }
     };
-    Services.prefs.addObserver(MULTIVIEW_COLOR_PREF, onColorPref);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(MULTIVIEW_COLOR_PREF, onColorPref));
+    watchPrefs(MULTIVIEW_COLOR_PREF, onColorPref);
   }
 

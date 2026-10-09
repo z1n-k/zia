@@ -208,10 +208,7 @@
     applyNewTabPage();
     gBrowser.tabContainer.addEventListener("TabOpen", (event) => closeNewTabUrlbar(event.target));
     Services.obs.addObserver(applyNewTabPage, "browser-search-engine-modified");
-    Services.prefs.addObserver("zia.newtab.search-engine", applyNewTabPage);
-    window.addEventListener("unload", () => {
-      Services.obs.removeObserver(applyNewTabPage, "browser-search-engine-modified");
-      Services.prefs.removeObserver("zia.newtab.search-engine", applyNewTabPage);
-    });
+    watchPrefs("zia.newtab.search-engine", applyNewTabPage);
+    window.addEventListener("unload", () => Services.obs.removeObserver(applyNewTabPage, "browser-search-engine-modified"));
   }
 

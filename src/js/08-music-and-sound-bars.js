@@ -206,8 +206,7 @@
       glowSelectedTab();
       repaintSoundTabs();
     };
-    Services.prefs.addObserver("zia.tabs.favicon-glow", onPref);
-    window.addEventListener("unload", () => Services.prefs.removeObserver("zia.tabs.favicon-glow", onPref));
+    watchPrefs("zia.tabs.favicon-glow", onPref);
     glowSelectedTab();
   }
 
@@ -456,8 +455,7 @@
   }
 
   function watchTabSoundBars() {
-    Services.prefs.addObserver(SOUND_BARS_ALWAYS_PREF, redrawSoundBars);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(SOUND_BARS_ALWAYS_PREF, redrawSoundBars));
+    watchPrefs(SOUND_BARS_ALWAYS_PREF, redrawSoundBars);
     gBrowser.tabContainer.addEventListener("TabAttrModified", (event) => {
       const changed = event.detail?.changed || [];
       if (changed.includes("soundplaying") || changed.includes("muted")) {
@@ -708,8 +706,7 @@
         }
       }
     };
-    Services.prefs.addObserver(KEEP_WITH_PIP_PREF, refreshCards);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(KEEP_WITH_PIP_PREF, refreshCards));
+    watchPrefs(KEEP_WITH_PIP_PREF, refreshCards);
     return true;
   }
 

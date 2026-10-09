@@ -1,8 +1,5 @@
-  // A page that's gone full screen (a YouTube video, say) is shown square
-  // and edge to edge. Zen and Zia only count the window as full screen when
-  // it takes over the screen; when a video goes full screen inside the
-  // window instead, the page kept its rounded card, and the video's corners
-  // were rounded off with grey behind them.
+  // A page gone full screen inside the window (a YouTube video) is shown square,
+  // edge to edge: it kept the page's rounded card, grey behind the video's corners.
   function watchPageFullscreen() {
     const update = () => setFlag("zia-page-fullscreen", !!document.fullscreenElement);
     const soon = () => requestAnimationFrame(update);

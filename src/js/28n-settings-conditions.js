@@ -1,10 +1,6 @@
   // ---------- Zia's settings: rows shown only with the setting they belong to
-  // Sine shows or hides a mod's setting by its "conditions"
-  // (preferences.json), but its first check runs before the row is on the
-  // page, finds nothing, and every row showed until the setting it hangs on
-  // was changed. Zia applies them as Zia's rows arrive in Settings, the same
-  // way Sine does afterwards (its own observers keep them right from then
-  // on).
+  // Sine's first check of a row's conditions (preferences.json) runs before the row
+  // is on the page, so every row showed; Zia applies them as its rows arrive.
   function fixSettingsConditions() {
     let rows = null;
     const loadRows = async () => {

@@ -27,10 +27,8 @@
     }
 
     const onSpaceSwitch = () => setTimeout(placeWorkspaceIndicator, 0);
-    Services.prefs.addObserver(SPACE_NAME_IN_LIST_PREF, onSpaceSwitch);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(SPACE_NAME_IN_LIST_PREF, onSpaceSwitch));
-    Services.prefs.addObserver("zen.workspaces.active", onSpaceSwitch);
-    window.addEventListener("unload", () => Services.prefs.removeObserver("zen.workspaces.active", onSpaceSwitch));
+    watchPrefs(SPACE_NAME_IN_LIST_PREF, onSpaceSwitch);
+    watchPrefs("zen.workspaces.active", onSpaceSwitch);
     gBrowser.tabContainer.addEventListener("TabSelect", onSpaceSwitch);
     placeWorkspaceIndicator();
 

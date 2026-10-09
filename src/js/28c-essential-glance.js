@@ -1,8 +1,5 @@
-  // A page glanced at from an essential shows as a small card fanned out from
-  // behind the essential's icon (zia-essential-glance in chrome.css). It
-  // springs out from the icon in CSS; closing, Zen takes the glance's tab away
-  // at once, so a stand-in card is drawn in its place and sucked back into the
-  // icon.
+  // A page glanced at from an essential: a small card springs out from behind its
+  // icon (CSS) and, as Zen takes the tab away at once, a stand-in is sucked back in.
   function suckInEssentialGlances() {
     const SUCK_MS = 220;
     const OUT_MS = 400;
