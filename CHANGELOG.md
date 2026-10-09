@@ -22,6 +22,9 @@ Every release of Zia, newest first. The format follows
 
 - A folder with one tab: the sheet in its icon is in the middle (it sat
   half a pixel left).
+- An essential dragged down into the list taps (haptics) going into or
+  out of a folder's opening, as a tab does: it only tapped as the rows
+  moved.
 - Pressing an essential presses it in again, as in Zen.
 - Dragging a tab over the essentials: the tiles slide aside within their
   own columns. Zen's drop cell made the grid change its columns (eight

@@ -1,4 +1,3 @@
-
   // Extension icons: right-click an extension's button (in the toolbar or
   // the extensions panel) to give it an icon of your own, an SVG from your
   // computer or one of Zia's icons. An SVG takes the toolbar's colour, as
@@ -50,11 +49,7 @@
   // only lets an SVG take the toolbar's colour from there, not from a file
   const EXT_ICON_HOST = "zia-extension-icons";
   function pointAtExtIcons() {
-    const handler = Services.io.getProtocolHandler("resource").QueryInterface(Ci.nsIResProtocolHandler);
-    const dir = Services.io.newURI(`${PathUtils.toFileURI(extIconsDir())}/`);
-    if (!handler.hasSubstitution(EXT_ICON_HOST) || handler.getSubstitution(EXT_ICON_HOST).spec !== dir.spec) {
-      handler.setSubstitution(EXT_ICON_HOST, dir);
-    }
+    pointResource(EXT_ICON_HOST, `${PathUtils.toFileURI(extIconsDir())}/`);
   }
 
   function extIconUrl(entry) {
@@ -296,11 +291,7 @@
     return PathUtils.join(PathUtils.profileDir, "zia-icons", "own");
   }
   function pointAtOwnIcons() {
-    const handler = Services.io.getProtocolHandler("resource").QueryInterface(Ci.nsIResProtocolHandler);
-    const dir = Services.io.newURI(`${PathUtils.toFileURI(ownIconsDir())}/`);
-    if (!handler.hasSubstitution(OWN_ICON_HOST) || handler.getSubstitution(OWN_ICON_HOST).spec !== dir.spec) {
-      handler.setSubstitution(OWN_ICON_HOST, dir);
-    }
+    pointResource(OWN_ICON_HOST, `${PathUtils.toFileURI(ownIconsDir())}/`);
   }
   try {
     pointAtOwnIcons();
@@ -390,6 +381,12 @@
     }
   }
 
+  function menuItem(label) {
+    const item = document.createXULElement("menuitem");
+    item.setAttribute("label", label);
+    return item;
+  }
+
   function addExtIconMenus() {
     for (const menuId of ["toolbar-context-menu", "unified-extensions-context-menu"]) {
       const menu = document.getElementById(menuId);
@@ -402,21 +399,16 @@
       item.className = "zia-ext-icon-menu";
       item.setAttribute("label", "Change icon");
       const popup = document.createXULElement("menupopup");
-      const note = document.createXULElement("menuitem");
-      note.setAttribute("label", "This extension changes its own icon");
+      const note = menuItem("This extension changes its own icon");
       note.setAttribute("disabled", "true");
       note.className = "zia-ext-icon-note";
       const noteSeparator = document.createXULElement("menuseparator");
-      const upload = document.createXULElement("menuitem");
-      upload.setAttribute("label", "Choose an SVG…");
-      const choose = document.createXULElement("menuitem");
-      choose.setAttribute("label", "Pick from Zia's icons…");
+      const upload = menuItem("Choose an SVG…");
+      const choose = menuItem("Pick from Zia's icons…");
       const keepSeparator = document.createXULElement("menuseparator");
-      const keep = document.createXULElement("menuitem");
+      const keep = menuItem("Keep the SVG's own colours");
       keep.setAttribute("type", "checkbox");
-      keep.setAttribute("label", "Keep the SVG's own colours");
-      const reset = document.createXULElement("menuitem");
-      reset.setAttribute("label", "Reset to the original icon");
+      const reset = menuItem("Reset to the original icon");
       popup.append(note, noteSeparator, upload, choose, keepSeparator, keep, reset);
       item.append(popup);
       menu.append(separator, item);
@@ -539,16 +531,12 @@
       item.className = "zia-own-icon-menu";
       item.setAttribute("label", "Change icon");
       const popup = document.createXULElement("menupopup");
-      const upload = document.createXULElement("menuitem");
-      upload.setAttribute("label", "Choose an SVG…");
-      const choose = document.createXULElement("menuitem");
-      choose.setAttribute("label", "Pick from Zia's icons…");
+      const upload = menuItem("Choose an SVG…");
+      const choose = menuItem("Pick from Zia's icons…");
       const keepSeparator = document.createXULElement("menuseparator");
-      const keep = document.createXULElement("menuitem");
+      const keep = menuItem("Keep the SVG's own colours");
       keep.setAttribute("type", "checkbox");
-      keep.setAttribute("label", "Keep the SVG's own colours");
-      const remove = document.createXULElement("menuitem");
-      remove.setAttribute("label", "Remove icon");
+      const remove = menuItem("Remove icon");
       popup.append(upload, choose, keepSeparator, keep, remove);
       item.append(popup);
       zens.before(item);

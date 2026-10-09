@@ -56,11 +56,8 @@
   --zia-tab-gap: 2px;
   --zia-tab-radius: 9.5px;
   --zia-close-size: 22px;
-
   --zia-close-radius: 6px;
-
   --zia-close-hover-bg: rgba(255, 255, 255, 0.1);
-
   --zia-folder-mark-opacity: 0.55;
   --zia-folder-hover-bg: rgba(255, 255, 255, 0.1);
 
@@ -146,7 +143,6 @@
   --zia-shine-width: 0.5px;
   --zia-essential-max-width: 120px;
   --zia-card-gap: 6px;
-
   --zia-card-top-gap: 6px;
   --zia-toolbar-height: 40px;
   --zia-urlbar-height: 31px;
@@ -156,6 +152,9 @@
   --zia-card-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.16), 0 1px 4px rgba(0, 0, 0, 0.18);
   --zia-hover-card-shadow: none;
   --zia-color-fade: 0.15s;
+  /* the toolbar's ink, with a faint touch of the site's hue (zia.uc.js
+     sets the hue and strength; without them it's the plain grey) */
+  --zia-light-ink: hsl(var(--zia-ink-h, 240) var(--zia-ink-s, 3.5%) 40%);
 }
 
 /* A Zen whose Firefox can't draw a squircle (corner-shape) draws every
@@ -229,12 +228,6 @@
   }
 }
 
-/* the toolbar's ink, with a faint touch of the site's hue (zia.uc.js
-   sets the hue and strength; without them it's the plain grey) */
-:root {
-  --zia-light-ink: hsl(var(--zia-ink-h, 240) var(--zia-ink-s, 3.5%) 40%);
-}
-
 :root[zia-site-dark="true"] {
   --zia-urlbar-hover-bg: rgba(255, 255, 255, 0.09);
 }
@@ -243,7 +236,6 @@
   --zia-separator: rgba(0, 0, 0, 0.12);
   --zia-urlbar-hover-bg: rgba(0, 0, 0, 0.06);
 }
-
 
 /* The sidebar's text size, an option: a touch or two smaller, for a
    narrow sidebar, or a touch larger (read straight off the option, so it

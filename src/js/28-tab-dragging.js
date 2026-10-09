@@ -2678,13 +2678,13 @@
           place(listRoom.button, delta, false);
         }
       }
-      if (first !== listRoom.first) {
-        if (listRoom.first !== undefined) {
-          tap();
-        }
-        listRoom.first = first;
+      // a tap as the rows make way, or going into or out of a folder, as a tab's drag taps
+      const folder = listRoomFolder(prev, first, y) || null;
+      if (listRoom.first !== undefined && (first !== listRoom.first || folder !== listRoom.folder)) {
+        tap();
       }
-      markListRoomFolder(listRoomFolder(prev, first, y));
+      listRoom.first = first;
+      markListRoomFolder(folder);
       paintFolders({
         rows: listRoom.rows,
         target: { folder: listRoom.folder, slotTop: prev ? prev.top + prev.height : null },

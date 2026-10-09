@@ -1112,23 +1112,25 @@
     if (!inputBox) {
       return;
     }
-    titleEl = document.createElementNS(XHTML_NS, "div");
-    titleEl.id = "zia-url-title";
-    const host = document.createElementNS(XHTML_NS, "span");
-    host.className = "zia-url-title-host";
-    const rest = document.createElementNS(XHTML_NS, "span");
-    rest.className = "zia-url-title-rest";
-    titleEl.append(host, rest);
-    inputBox.append(titleEl);
+    // each a host part and the rest
+    const titleBox = (id) => {
+      const box = document.createElementNS(XHTML_NS, "div");
+      box.id = id;
+      for (const part of ["host", "rest"]) {
+        const span = document.createElementNS(XHTML_NS, "span");
+        span.className = `zia-url-title-${part}`;
+        box.append(span);
+      }
+      inputBox.append(box);
+      return box;
+    };
+    titleEl = titleBox("zia-url-title");
+    plainEl = titleBox("zia-url-plain");
+  }
 
-    plainEl = document.createElementNS(XHTML_NS, "div");
-    plainEl.id = "zia-url-plain";
-    const plainHost = document.createElementNS(XHTML_NS, "span");
-    plainHost.className = "zia-url-title-host";
-    const plainRest = document.createElementNS(XHTML_NS, "span");
-    plainRest.className = "zia-url-title-rest";
-    plainEl.append(plainHost, plainRest);
-    inputBox.append(plainEl);
+  function showTitle(el, host, rest) {
+    el.firstChild.textContent = host;
+    el.lastChild.textContent = rest;
   }
 
   const TITLE_ONLY_PREF = "zia.urlbar.title-only";
@@ -1142,8 +1144,7 @@
   }
 
   function watchTitleOnly() {
-    const apply = () => updateTitle();
-    watchPrefs(TITLE_ONLY_PREF, apply);
+    watchPrefs(TITLE_ONLY_PREF, () => updateTitle());
   }
 
   function updateTitle() {
@@ -1153,65 +1154,45 @@
     const urlbar = gURLBar.textbox || document.getElementById("urlbar");
     const browser = gBrowser.selectedBrowser;
     const uri = browser?.currentURI;
-
     let host = "";
     try {
       if (uri && /^https?$/.test(uri.scheme)) {
         host = uri.displayHost.replace(/^www\./, "");
       }
     } catch (err) {
-      host = "";
+      // (an address with no host)
     }
-
     const title = (browser?.contentTitle || "").trim();
     const valid = urlbar.getAttribute("pageproxystate") === "valid";
 
     // Multiview reads as a browser feature ("Multiview · 3"), not a website.
     if (valid && isMultiviewURI(uri)) {
-      titleEl.firstChild.textContent = title || "Multiview";
-      titleEl.lastChild.textContent = "";
-      if (plainEl) {
-        plainEl.firstChild.textContent = title || "Multiview";
-        plainEl.lastChild.textContent = "";
-      }
+      showTitle(titleEl, title || "Multiview", "");
+      showTitle(plainEl, title || "Multiview", "");
       urlbar.setAttribute("zia-has-title", "true");
       return;
     }
-
     if (!host || !valid || isErrorPage(browser)) {
       urlbar.removeAttribute("zia-has-title");
       return;
     }
-
     let isHomePage = false;
+    let path = "";
     try {
-      const path = uri.filePath || "/";
-      isHomePage = (path === "/" || path === "") && !uri.query && !uri.ref;
+      isHomePage = (uri.filePath || "/") === "/" && !uri.query && !uri.ref;
+      path = uri.pathQueryRef || "";
     } catch (err) {
-      isHomePage = false;
+      // (an address without a path)
     }
     const hasTitle = /[\p{L}\p{N}]/u.test(title);
     // Title only (an option): the title alone, in the domain's place and
     // colour, even on a site's home page; a page with none shows its domain
     if (titleOnly() && hasTitle) {
-      titleEl.firstChild.textContent = title;
-      titleEl.lastChild.textContent = "";
+      showTitle(titleEl, title, "");
     } else {
-      titleEl.firstChild.textContent = host;
-      titleEl.lastChild.textContent = !isHomePage && hasTitle && title !== host ? ` / ${title}` : "";
+      showTitle(titleEl, host, !isHomePage && hasTitle && title !== host ? ` / ${title}` : "");
     }
-
-    if (plainEl) {
-      let path = "";
-      try {
-        path = uri.pathQueryRef || "";
-      } catch (err) {
-        path = "";
-      }
-      plainEl.firstChild.textContent = host;
-      plainEl.lastChild.textContent = path === "/" ? "" : path;
-    }
-
+    showTitle(plainEl, host, path === "/" ? "" : path);
     urlbar.setAttribute("zia-has-title", "true");
   }
 
@@ -1265,7 +1246,6 @@
           this,
           typing ? (typeof next === "string" && !keepSlash ? next.replace(BARE_SLASH, "$1") : next) : plainAddress(next)
         );
-
         if (holdWholeSelection && gURLBar.focused) {
           this.select();
         }
@@ -1317,7 +1297,6 @@
       (event) => {
         const opening = !urlbar.hasAttribute("breakout-extend") && !gURLBar.focused;
         closedLength = opening ? input.value.length : -1;
-
         holdWholeSelection = opening && event.button === 0;
       },
       true
@@ -1499,7 +1478,6 @@
 
   function alignOpenedUrlbar() {
     const urlbar = gURLBar.textbox || document.getElementById("urlbar");
-
     if (urlbar?.getAttribute("zen-floating-urlbar") === "true" && !urlbarAtBottom()) {
       root.style.setProperty("--zia-urlbar-open-offset", "0px");
       root.style.setProperty("--zia-urlbar-open-offset-x", "0px");
@@ -1551,7 +1529,6 @@
     setTimeout(alignOpenedUrlbar, 60);
     setTimeout(alignOpenedUrlbar, 200);
   }
-
 
   // Restarts a CSS animation keyed on an attribute, then clears it.
   function replayAttribute(el, name, ms, value = "true") {
@@ -1623,19 +1600,21 @@
     const ease = cubicBezier(0.3, 1.35, 0.5, 1);
     let cut = 0;
     let frame = 0;
-    const go = (target) => {
+    const setCut = (value) => {
+      cut = value;
+      button.style.setProperty("--zia-reload-cut", `${cut}deg`);
+    };
+    const go = (target, instant = false) => {
       cancelAnimationFrame(frame);
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        cut = target;
-        button.style.setProperty("--zia-reload-cut", `${cut}deg`);
+      if (instant || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        setCut(target);
         return;
       }
       const from = cut;
       const start = performance.now();
       const step = (now) => {
         const t = Math.min(1, (now - start) / RELOAD_HOVER_MS);
-        cut = from + (target - from) * ease(t);
-        button.style.setProperty("--zia-reload-cut", `${cut}deg`);
+        setCut(from + (target - from) * ease(t));
         if (t < 1) {
           frame = requestAnimationFrame(step);
         }
@@ -1649,15 +1628,7 @@
       }
     });
     button.addEventListener("mouseleave", () => go(0));
-    button.ziaReloadCut = (target, instant = false) => {
-      if (instant) {
-        cancelAnimationFrame(frame);
-        cut = target;
-        button.style.setProperty("--zia-reload-cut", `${cut}deg`);
-        return;
-      }
-      go(target);
-    };
+    button.ziaReloadCut = go;
   }
   let workspaceSlot = null;
   let movedIndicator = null;
@@ -4377,11 +4348,9 @@
     if (tab.splitView || tab.group?.hasAttribute?.("split-view-group") || tab.ziaSplit?.id || tab.hasAttribute("zia-split-tile")) {
       return false;
     }
-
     if (tab === current && current.splitView) {
       return false;
     }
-
     if (tab !== current && tab.splitView && current.splitView && tab.group && tab.group === current.group) {
       return false;
     }
@@ -4422,7 +4391,7 @@
         hideSplitDrop();
       }
     });
-    document.documentElement.appendChild(overlay);
+    root.appendChild(overlay);
     splitDrop.overlay = overlay;
     return overlay;
   }
@@ -4431,7 +4400,6 @@
   const DRAG_PICTURE_H = 125;
   let blankDragImage = null;
   const lastCursor = { x: 0, y: 0 };
-
   let lastBlankAt = 0;
 
   function hideSystemDragImage(dt, force = true) {
@@ -4446,7 +4414,7 @@
         blankDragImage.width = 32;
         blankDragImage.height = 32;
         blankDragImage.getContext("2d").clearRect(0, 0, 32, 32);
-        document.documentElement.appendChild(blankDragImage);
+        root.appendChild(blankDragImage);
       }
       dt.updateDragImage(blankDragImage, 16, 16);
       splitDrop.dragImageSet = true;
@@ -4475,7 +4443,7 @@
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
     if (!canvas.isConnected) {
-      document.documentElement.appendChild(canvas);
+      root.appendChild(canvas);
     }
     splitDrop.thumb = canvas;
     const ctx = canvas.getContext("2d");
@@ -4497,7 +4465,6 @@
       const cover = Math.max(width / pageW, height / pageH);
       const cropW = width / cover;
       const cropH = height / cover;
-
       const scroll = scrollPositions.get(browser) || { x: 0, y: 0 };
       const bitmap = await browser.drawSnapshot(
         scroll.x + (pageW - cropW) / 2,
@@ -4568,7 +4535,6 @@
       if (splitDrop.tab !== tab || !overlay.hasAttribute("open")) {
         return;
       }
-      splitDrop.dataTransfer = dt;
       hideSystemDragImage(dt);
       canvas.setAttribute("following", "true");
       movePicture(lastCursor.x, lastCursor.y);
@@ -4596,7 +4562,6 @@
     }
     splitDrop.tab = null;
     splitDrop.target = null;
-    splitDrop.dataTransfer = null;
     splitDrop.dragImageSet = false;
   }
 
@@ -4615,7 +4580,6 @@
         zone.style.setProperty("--zia-zone-ty", "0px");
         continue;
       }
-
       const box = overlay.getBoundingClientRect();
       const w = Math.min(ZONE_ACTIVE_W, box.width * 0.45);
       const h = Math.min(ZONE_ACTIVE_H, box.height * 0.86);
@@ -4681,7 +4645,6 @@
     if (!tab || !side) {
       return;
     }
-
     setTimeout(() => {
       try {
         splitTabToSide(tab, side, target);
@@ -4915,40 +4878,21 @@
     return button;
   }
 
-  // The pane's own sidebar button. Zen's button sits in the main toolbar,
-  // which a split hides, and calling doCommand on a hidden toolbarbutton
-  // does nothing, so this goes to Zen's command (or its manager) instead.
-  function toggleCompactMode() {
-    const command = document.getElementById("cmd_zenCompactModeToggle");
-    if (command) {
-      command.doCommand();
-      return;
-    }
-    const manager = window.gZenCompactModeManager;
-    if (typeof manager?.toggle === "function") {
-      manager.toggle();
-    } else if (manager && "preference" in manager) {
-      manager.preference = !manager.preference;
-    } else {
-      document.getElementById("zen-toggle-compact-mode")?.click();
-    }
-  }
-
   function createPaneBar(container) {
     const bar = document.createElementNS(XHTML_NS, "div");
     bar.className = "zia-pane-bar";
     const tabOf = () => gBrowser.getTabForBrowser(paneBrowser(container));
-
-    bar.addEventListener("mousedown", () => {
+    const selectPane = () => {
       const tab = tabOf();
       if (tab && gBrowser.selectedTab !== tab) {
         gBrowser.selectedTab = tab;
       }
-    });
+    };
 
-    bar.appendChild(
-      paneButton("sidebar", "Toggle sidebar", toggleCompactMode)
-    );
+    bar.addEventListener("mousedown", selectPane);
+    // (Zen's own sidebar button sits in the toolbar a split hides, and a
+    // hidden button's doCommand does nothing: this goes to Zen's command)
+    bar.appendChild(paneButton("sidebar", "Toggle sidebar", () => document.getElementById("cmd_zenCompactModeToggle")?.doCommand()));
     bar.appendChild(paneButton("back", "Back", () => paneBrowser(container)?.goBack()));
     bar.appendChild(paneButton("forward", "Forward", () => paneBrowser(container)?.goForward()));
     bar.appendChild(
@@ -4971,19 +4915,10 @@
     rest.className = "zia-pane-rest";
     address.append(host, rest);
     address.addEventListener("click", () => {
-      const tab = tabOf();
-      if (tab && gBrowser.selectedTab !== tab) {
-        gBrowser.selectedTab = tab;
-      }
-
+      selectPane();
       requestAnimationFrame(() => {
         placeOpenedAddressBar();
-        const command = document.getElementById("Browser:OpenLocation");
-        if (command) {
-          command.doCommand();
-        } else {
-          gURLBar.select();
-        }
+        document.getElementById("Browser:OpenLocation").doCommand();
       });
     });
     bar.appendChild(address);
@@ -5009,12 +4944,8 @@
     );
     bar.appendChild(
       paneButton("site-settings", "Site settings and extensions", () => {
-        const tab = tabOf();
-        if (tab && gBrowser.selectedTab !== tab) {
-          gBrowser.selectedTab = tab;
-        }
+        selectPane();
         placeOpenedAddressBar();
-
         requestAnimationFrame(() => document.getElementById("zen-site-data-icon-button")?.click());
       })
     );
@@ -5104,27 +5035,17 @@
     const tab = gBrowser.getTabForBrowser(browser);
 
     let host = "";
-    try {
-      const uri = browser.currentURI;
-      if (isMultiviewURI(uri)) {
-        host = "";
-      } else if (uri && /^https?$/.test(uri.scheme)) {
-        host = uri.displayHost.replace(/^www\./, "");
-      } else if (uri && uri.spec !== "about:blank") {
-        host = uri.spec;
-      }
-    } catch (err) {
-      host = "";
-    }
-    const title = (browser.contentTitle || tab?.label || "").trim();
-
     let isHomePage = false;
     try {
       const uri = browser.currentURI;
+      if (!isMultiviewURI(uri)) {
+        host = /^https?$/.test(uri.scheme) ? uri.displayHost.replace(/^www\./, "") : uri.spec !== "about:blank" ? uri.spec : "";
+      }
       isHomePage = (uri.filePath === "/" || uri.filePath === "") && !uri.query && !uri.ref;
     } catch (err) {
-      isHomePage = false;
+      // (no address yet, or one without a host or path)
     }
+    const title = (browser.contentTitle || tab?.label || "").trim();
     bar.querySelector(".zia-pane-host").textContent = host || title || "New Tab";
     bar.querySelector(".zia-pane-rest").textContent =
       host && title && title !== host && !isHomePage ? ` / ${title}` : "";
@@ -5283,7 +5204,7 @@
     });
     window.addEventListener("resize", schedulePanes);
 
-    const { STATE_STOP, STATE_IS_WINDOW } = Ci.nsIWebProgressListener;
+    const { STATE_START, STATE_STOP, STATE_IS_WINDOW } = Ci.nsIWebProgressListener;
     gBrowser.addTabsProgressListener({
       onProgressChange(browser, webProgress, request, curSelf, maxSelf, curTotal, maxTotal) {
         const container = paneOfBrowser(browser);
@@ -5304,7 +5225,7 @@
           return;
         }
         updatePaneBar(container);
-        if (stateFlags & Ci.nsIWebProgressListener.STATE_START && stateFlags & STATE_IS_WINDOW) {
+        if (stateFlags & STATE_START && stateFlags & STATE_IS_WINDOW) {
           startPaneLoad(container);
         }
         if (stateFlags & STATE_STOP && stateFlags & STATE_IS_WINDOW) {
@@ -5413,15 +5334,13 @@
         return;
       }
       const tab = event.detail?.tab || event.target;
-
-      const hideNow = tab?.querySelector?.(".tab-stack") || tab;
-      if (hideNow?.style) {
-        hideNow.style.opacity = "0";
+      const tile = tab?.querySelector?.(".tab-stack") || tab;
+      if (tile?.style) {
+        tile.style.opacity = "0";
       }
 
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
-          const tile = tab?.querySelector?.(".tab-stack") || tab;
           if (!tile?.animate) {
             tile?.style?.removeProperty?.("opacity");
             return;
@@ -5444,7 +5363,7 @@
   }
 
   const UNDO_WINDOW_MS = 10000;
-  const undoState = { closedAt: 0, actions: 0, sameMoment: false, closed: [] };
+  const undoState = { closedAt: 0, closed: [] };
 
   // The page a tab shows, read from its saved state so it works for tabs that
   // haven't loaded yet.
@@ -5464,26 +5383,16 @@
   // Where a closing tab lived, so undo can put it back in its folder or split.
   function closedTabRecord(tab) {
     const record = { url: savedUrlOf(tab), folder: null, split: null };
-    const group = tab.group;
-    if (group?.hasAttribute("split-view-group")) {
+    let folder = tab.group;
+    if (folder?.hasAttribute("split-view-group")) {
       const data = window.gZenViewSplitter?._data?.find((entry) => entry.tabs?.includes(tab));
-      record.split = { key: group.id || "split", gridType: data?.gridType };
-      const folder = group.group;
-      if (folder?.isZenFolder) {
-        record.folder = folderRecord(folder);
-      }
-    } else if (group?.isZenFolder) {
-      record.folder = folderRecord(group);
+      record.split = { key: folder.id || "split", gridType: data?.gridType };
+      folder = folder.group;
+    }
+    if (folder?.isZenFolder) {
+      record.folder = { id: folder.id, label: folder.label, workspaceId: folder.getAttribute("zen-workspace-id") || undefined };
     }
     return record;
-  }
-
-  function folderRecord(folder) {
-    return {
-      id: folder.id,
-      label: folder.label,
-      workspaceId: folder.getAttribute("zen-workspace-id") || undefined,
-    };
   }
 
   // Firefox's own "reopen closed tab" brings back everything one close action
@@ -5492,31 +5401,10 @@
     // folders coming back keep their names (zia.uc.js, folder names)
     window.ziaReopeningUntil = Date.now() + 3000;
     try {
-      if (typeof window.undoCloseTab === "function") {
-        window.undoCloseTab();
-        return true;
-      }
+      window.undoCloseTab();
     } catch (err) {
       noteError("essentials and undo: reopenLastClose", err);
     }
-    try {
-      if (window.SessionStore?.undoCloseTab) {
-        window.SessionStore.undoCloseTab(window, 0);
-        return true;
-      }
-    } catch (err) {
-      noteError("essentials and undo: reopenLastClose (2)", err);
-    }
-    try {
-      const command = document.getElementById("History:UndoCloseTab");
-      if (command) {
-        command.doCommand();
-        return true;
-      }
-    } catch (err) {
-      noteError("essentials and undo: reopenLastClose (3)", err);
-    }
-    return false;
   }
 
   // Tabs that came back loose from a split or a deleted folder go back into one.
@@ -5586,9 +5474,8 @@
   // were sometimes taken for one close, sometimes for several, as Zen
   // closes them a moment apart, and only some came back.)
   function undoClosedTabs() {
-    const wanted = Math.max(1, undoState.closed.length);
     const closed = undoState.closed;
-    undoState.actions = 0;
+    const wanted = Math.max(1, closed.length);
     undoState.closed = [];
     undoState.closedAt = 0;
 
@@ -5596,9 +5483,7 @@
     const onOpen = (event) => opened.push(event.target);
     gBrowser.tabContainer.addEventListener("TabOpen", onOpen);
     try {
-      if (!reopenLastClose()) {
-        console.warn("[Zia] Undo close: this build didn't reopen the tab.");
-      }
+      reopenLastClose();
       for (let i = 0; opened.length < wanted && i < wanted; i++) {
         const before = opened.length;
         try {
@@ -5628,17 +5513,9 @@
       }
       const now = Date.now();
       if (now - undoState.closedAt > 1000) {
-        undoState.actions = 0;
         undoState.closed = [];
       }
       undoState.closedAt = now;
-      // Tabs closed in the same moment are one action, which Firefox reopens
-      // together.
-      if (!undoState.sameMoment) {
-        undoState.sameMoment = true;
-        undoState.actions++;
-        setTimeout(() => (undoState.sameMoment = false), 0);
-      }
       try {
         undoState.closed.push(closedTabRecord(tab));
       } catch (err) {
@@ -5808,7 +5685,6 @@
       if (!text || text === name) {
         continue;
       }
-
       if (!text.includes(name) && !action.hasAttribute("data-l10n-id")) {
         continue;
       }
@@ -5873,9 +5749,7 @@
     }
     const textLeft = inputRect.left + (parseFloat(getComputedStyle(input).paddingInlineStart) || 0);
     const iconError = iconRect.left - barIconRect.left;
-    const textError = titleRect.left - textLeft;
-
-    const gapError = textError - iconError;
+    const gapError = titleRect.left - textLeft - iconError;
 
     let moved = false;
     if (Math.abs(iconError) > 0.3) {
@@ -5919,7 +5793,7 @@
     if (!view || !background || !last) {
       return;
     }
-
+    popBottomTrim ??= parseFloat(getComputedStyle(urlbar).getPropertyValue("--zia-pop-bottom-trim")) || 0;
     const scroller = [view, ...view.querySelectorAll("*")].find((el) => el.scrollHeight > el.clientHeight + 1);
     if (scroller) {
       root.setAttribute("zia-pop-scrolls", "true");
@@ -5930,7 +5804,7 @@
       // row that fits whole, at rest, with the same gap as at the sides; the
       // space added at the list's end (the trim again) gives the last row the
       // same gap once it's scrolled to.
-      const trim = popBottomTrim ?? (parseFloat(getComputedStyle(urlbar).getPropertyValue("--zia-pop-bottom-trim")) || 0);
+      const trim = popBottomTrim;
       const untrimmed = popUpBottom(background) + trim;
       let end = null;
       for (const row of rows) {
@@ -5948,16 +5822,10 @@
         if (passesLeft > 0) {
           requestAnimationFrame(() => fitPopoverBottom(passesLeft - 1));
         }
-      } else {
-        popBottomTrim = trim;
       }
       return;
     }
     root.removeAttribute("zia-pop-scrolls");
-
-    if (popBottomTrim === null) {
-      popBottomTrim = parseFloat(getComputedStyle(urlbar).getPropertyValue("--zia-pop-bottom-trim")) || 0;
-    }
     const error = popUpBottom(background) - last.getBoundingClientRect().bottom - POP_BOTTOM_WANT;
     if (Math.abs(error) > 0.3 && passesLeft > 0) {
       popBottomTrim += error * POP_STEP;
@@ -5986,7 +5854,6 @@
         fillRowIcons(results);
         alignTypedTextWithRows(results);
         fitPopoverBottom();
-
         requestAnimationFrame(() => {
           alignTypedTextWithRows(results);
           fitPopoverBottom();
@@ -6330,28 +6197,19 @@
       .slice(0, 120);
   }
 
+  const MULTIVIEW_SITES = { yt: "YouTube", twv: "Twitch video", twc: "Twitch clip", vm: "Vimeo", dm: "Dailymotion" };
+
   function multiviewSite([kind, id]) {
-    switch (kind) {
-      case "yt":
-        return "YouTube";
-      case "tw":
-        return `twitch.tv/${id}`;
-      case "twv":
-        return "Twitch video";
-      case "twc":
-        return "Twitch clip";
-      case "kick":
-        return `kick.com/${id}`;
-      case "vm":
-        return "Vimeo";
-      case "dm":
-        return "Dailymotion";
-      default:
-        try {
-          return new URL(id).hostname.replace(/^www\./, "");
-        } catch (err) {
-          return "Video";
-        }
+    if (kind === "tw" || kind === "kick") {
+      return `${kind === "tw" ? "twitch.tv" : "kick.com"}/${id}`;
+    }
+    if (MULTIVIEW_SITES[kind]) {
+      return MULTIVIEW_SITES[kind];
+    }
+    try {
+      return new URL(id).hostname.replace(/^www\./, "");
+    } catch (err) {
+      return "Video";
     }
   }
 
@@ -6468,12 +6326,7 @@
     // Keep the grid icon's colour current: when the Multiview tab is shown
     // (the space may have changed colour) and when the setting changes.
     gBrowser.tabContainer.addEventListener("TabSelect", (event) => recolorMultiview(event.target));
-    const onColorPref = () => {
-      for (const tab of gBrowser.tabs) {
-        recolorMultiview(tab);
-      }
-    };
-    watchPrefs(MULTIVIEW_COLOR_PREF, onColorPref);
+    watchPrefs(MULTIVIEW_COLOR_PREF, () => gBrowser.tabs.forEach(recolorMultiview));
   }
 
   const URLBAR_POSITION_PREF = "zia.urlbar.position";
@@ -6577,7 +6430,6 @@
     track.setAttribute("class", "zia-download-ring-track");
     arc.setAttribute("class", "zia-download-ring-arc");
     arc.setAttribute("stroke-linecap", "round");
-
     arc.setAttribute("transform", "rotate(-90 50 50)");
     const circumference = 2 * Math.PI * RADIUS;
     arc.setAttribute("stroke-dasharray", `${circumference}`);
@@ -6596,7 +6448,6 @@
         if (download.succeeded || download.canceled || download.error) {
           continue;
         }
-
         if (download.hasProgress && download.totalBytes > 0) {
           done += download.currentBytes || 0;
           total += download.totalBytes;
@@ -6612,25 +6463,20 @@
       draw(Math.min(1, done / total));
     }
 
-    const data = commons.getData(window);
     const seen = new Set();
-    const view = {
-      onDownloadAdded(download) {
-        seen.add(download);
-        update(seen);
-      },
-      onDownloadChanged(download) {
-        seen.add(download);
-        update(seen);
-      },
+    const keep = (download) => {
+      seen.add(download);
+      update(seen);
+    };
+    commons.getData(window).addView({
+      onDownloadAdded: keep,
+      onDownloadChanged: keep,
       onDownloadRemoved(download) {
         seen.delete(download);
         update(seen);
       },
-    };
-    data.addView(view);
+    });
   }
-
 
   // With the downloads button hidden until there's a download (Firefox's
   // "auto-hide"), the first download's arc flew to the corner and dropped
@@ -6973,12 +6819,17 @@
     return PathUtils.join(PathUtils.profileDir, "zia-icons", `tabler-${holder.ZiaTablerPack}.zip`);
   }
 
-  function pointAtIconPack(pack) {
+  // a resource:// host pointed at a folder or zip, unless it already is
+  function pointResource(host, spec) {
     const handler = Services.io.getProtocolHandler("resource").QueryInterface(Ci.nsIResProtocolHandler);
-    const jar = Services.io.newURI(`jar:${PathUtils.toFileURI(pack)}!/`);
-    if (!handler.hasSubstitution(ICON_HOST) || handler.getSubstitution(ICON_HOST).spec !== jar.spec) {
-      handler.setSubstitution(ICON_HOST, jar);
+    const uri = Services.io.newURI(spec);
+    if (!handler.hasSubstitution(host) || handler.getSubstitution(host).spec !== uri.spec) {
+      handler.setSubstitution(host, uri);
     }
+  }
+
+  function pointAtIconPack(pack) {
+    pointResource(ICON_HOST, `jar:${PathUtils.toFileURI(pack)}!/`);
   }
 
   // Folder and space icons are drawn as Zen restores them, before the rest
@@ -7441,11 +7292,8 @@
       render();
       box.focus({ preventScroll: true });
       page.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
-      tab.classList.add("selected");
       for (const other of tabs.children) {
-        if (other !== tab) {
-          other.classList.remove("selected");
-        }
+        other.classList.toggle("selected", other === tab);
       }
     }
 
@@ -7477,14 +7325,12 @@
           box.style[prop] = value;
         }
       }
-
       const rect = zenBox.getBoundingClientRect();
       if (rect.height > 0) {
         box.style.boxSizing = "border-box";
         box.style.height = `${rect.height}px`;
         box.style.minHeight = `${rect.height}px`;
       }
-
       const header = document.getElementById("PanelUI-zen-emojis-picker-header");
       if (header) {
         const row = getComputedStyle(header);
@@ -7540,7 +7386,6 @@
       const ziaPick = new Promise((resolve) => {
         resolvePick = resolve;
       });
-
       return Promise.race([
         zenPick.catch((err) => {
           if (picked) {
@@ -7754,7 +7599,6 @@
     if (!names.length) {
       return null;
     }
-
     let best = null;
     let bestScore = 0;
     for (const name of names) {
@@ -7763,29 +7607,21 @@
       for (const [word, weight] of weights) {
         if (name === word) {
           score += weight * 4;
-          continue;
-        }
-
-        if (parts.includes(word)) {
+        } else if (parts.includes(word)) {
           score += weight * 2;
-          continue;
-        }
-
-        if (ICON_SYNONYMS[word] === name) {
+        } else if (ICON_SYNONYMS[word] === name) {
           score += weight * 3;
         }
       }
       if (!score) {
         continue;
       }
-
       score -= (parts.length - 1) * 0.1;
       if (score > bestScore) {
         bestScore = score;
         best = name;
       }
     }
-
     return bestScore >= 2 ? iconURL(best) : null;
   }
 
@@ -7819,7 +7655,6 @@
     if (tabs.length < 2) {
       return null;
     }
-
     const hosts = folderTabHosts(folder);
     if (hosts.length === tabs.length && new Set(hosts).size === 1) {
       const parts = hosts[0].split(".");
@@ -7972,11 +7807,8 @@
         return null;
       }
       dims = vectors[0].length;
-      for (const vector of vectors) {
-        all.push(vector);
-      }
+      all.push(...vectors);
     }
-
     const data = new Int8Array(all.length * dims);
     all.forEach((vector, row) => {
       vector.forEach((value, col) => {
@@ -8055,7 +7887,6 @@
       return null;
     }
     const { name, score } = nearestIcon(embedded[0], vectors);
-
     return score >= 0.28 ? iconURL(name) : null;
   }
 
@@ -8106,9 +7937,7 @@
     if (!name) {
       return null;
     }
-    const words = name.split(/\s+/).slice(0, 3);
-    name = words.join(" ");
-
+    name = name.split(/\s+/).slice(0, 3).join(" ");
     const echoed = tabs.some((tab) => String(tab.label || "").toLowerCase().startsWith(name.toLowerCase()));
     if (name.length < 3 || name.length > 28 || echoed) {
       return null;
@@ -8128,8 +7957,7 @@
     const titles = tabs.map((tab) => `- ${String(tab.label || "").slice(0, 80)}`).join("\n");
     const prompt = `Give a short two word label for this group of browser tabs:\n${titles}\nLabel:`;
     const result = await engine.run({ args: [prompt], options: { max_new_tokens: 8 } });
-    const name = tidyName(readGeneratedText(result), tabs);
-    return name;
+    return tidyName(readGeneratedText(result), tabs);
   }
 
   function findNameEditor(folder) {
@@ -8146,7 +7974,6 @@
 
   function renameFolder(folder, name) {
     const label = folder.labelElement;
-
     const editor = findNameEditor(folder);
     if (editor) {
       if ("value" in editor) {
@@ -8163,14 +7990,12 @@
       }
       editor.blur?.();
     }
-
     if (typeof label?.onRenameFinished === "function") {
       label.onRenameFinished(name);
     } else {
       folder.name = name;
       folder.dispatchEvent(new CustomEvent("ZenFolderRenamed", { bubbles: true }));
     }
-
     for (const method of ["finishRename", "stopRename", "stopEditing", "blur"]) {
       try {
         label?.[method]?.();
@@ -8193,27 +8018,22 @@
       const containerRect = container.getBoundingClientRect();
       const iconEl = folder.querySelector(".tab-group-folder-icon");
       const iconRect = iconEl?.getBoundingClientRect();
-
       const label = folder.labelElement;
       const fontSize = parseFloat(getComputedStyle(label || container).fontSize) || 13;
       const size = Math.max(9, Math.round(fontSize * 0.85));
-
       const iconCentre = iconRect?.width
         ? iconRect.left - containerRect.left + iconRect.width / 2
         : 16;
       const iconLeft = Math.round(iconCentre - size / 2);
-
       const labelRect = label?.getBoundingClientRect();
       const textLeft = Math.round(
         labelRect?.width
           ? labelRect.left - containerRect.left
           : (iconRect?.right || 0) - containerRect.left + 8
       );
-
       const overlay = doc.createElement("div");
       overlay.className = "zia-skeleton-overlay";
       overlay.style.cssText = `position:absolute;inset:0;pointer-events:none;z-index:5;`;
-
       const block = (left, width, height, radius) => {
         const el = doc.createElement("div");
         el.className = "zia-skeleton-block";
@@ -8222,10 +8042,8 @@
           `width:${width}px;height:${height}px;border-radius:${radius}px;`;
         return el;
       };
-
       overlay.appendChild(block(iconLeft, size, size, Math.round(size / 3.5)));
       overlay.appendChild(block(textLeft, 88, size, Math.round(size / 3.5)));
-
       if (getComputedStyle(container).position === "static") {
         container.style.position = "relative";
       }
@@ -8313,10 +8131,7 @@
   }
 
   function applySuggestedFolderIcon(folder) {
-    if (!featureOn("folder-icon-suggest")) {
-      return;
-    }
-    if (!isFolder(folder) || folderIconURL(folder)) {
+    if (!featureOn("folder-icon-suggest") || !isFolder(folder) || folderIconURL(folder)) {
       return;
     }
     // A folder made empty (New Folder) has nothing to go by but its own
@@ -8325,7 +8140,6 @@
     if (!(folder.tabs || []).some((tab) => !tab.hasAttribute("zen-empty-tab"))) {
       return;
     }
-
     folder.setAttribute("zia-suggesting", "true");
     showFolderSkeleton(folder);
     setTimeout(async () => {
@@ -8645,6 +8459,7 @@
   // first tab will sit, and a tab dragged in replaces it without anything
   // moving. Measured from a tab inside an open folder when there is one.
   const FOLDER_SLOT_INSET = { start: 14, end: 5 };
+  const rootPx = (name, fallback) => parseFloat(getComputedStyle(root).getPropertyValue(name)) || fallback;
   let slotSize = "";
   function measureFolderSlot() {
     // (not a glance: its tab sits inside the one it came from, drawn as a
@@ -8691,15 +8506,12 @@
         end = inner.right - (boxRight - gap);
       }
     }
-    const next = [top, bottom, start, end, b.height].map((n) => `${Math.round(n * 2) / 2}px`).join(" ");
-    if (next === slotSize) {
+    const values = [top, bottom, start, end, b.height].map((n) => `${Math.round(n * 2) / 2}px`);
+    if (values.join(" ") === slotSize) {
       return;
     }
-    slotSize = next;
-    const [mt, mb, ms, me, h] = next.split(" ");
-    for (const [name, value] of [["--zia-slot-mt", mt], ["--zia-slot-mb", mb], ["--zia-slot-ms", ms], ["--zia-slot-me", me], ["--zia-slot-h", h]]) {
-      root.style.setProperty(name, value);
-    }
+    slotSize = values.join(" ");
+    ["mt", "mb", "ms", "me", "h"].forEach((name, i) => root.style.setProperty(`--zia-slot-${name}`, values[i]));
   }
 
   // The slot's dashes, drawn to its size so they're even all the way round
@@ -8773,13 +8585,13 @@
     let canvas = folder.ziaSlotCanvas;
     if (!canvas) {
       if (!slotCanvasHolder) {
-        slotCanvasHolder = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+        slotCanvasHolder = document.createElementNS(XHTML_NS, "div");
         slotCanvasHolder.id = "zia-slot-canvases";
         slotCanvasHolder.setAttribute("aria-hidden", "true");
         slotCanvasHolder.style.cssText = "position: fixed; top: 0; left: -10000px; pointer-events: none;";
         (document.body || document.documentElement).appendChild(slotCanvasHolder);
       }
-      canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+      canvas = document.createElementNS(XHTML_NS, "canvas");
       canvas.id = `zia-slot-dashes-${++slotCanvasCount}`;
       canvas.style.display = "block";
       slotCanvasHolder.appendChild(canvas);
@@ -8848,11 +8660,9 @@
 
   function drawSlotDashesNow(canvasOnly = false) {
     dropGoneSlotCanvases();
-    const vars = getComputedStyle(root);
-    const px = (name, fallback) => parseFloat(vars.getPropertyValue(name)) || fallback;
-    const height = px("--zia-slot-h", 35);
-    const inset = px("--zia-slot-ms", 16) + px("--zia-slot-me", 7);
-    const radius = px("--zia-tab-radius", 9.5);
+    const height = rootPx("--zia-slot-h", 35);
+    const inset = rootPx("--zia-slot-ms", 16) + rootPx("--zia-slot-me", 7);
+    const radius = rootPx("--zia-tab-radius", 9.5);
     const dpr = window.devicePixelRatio || 1;
     for (const folder of document.querySelectorAll("zen-folder[zia-empty]")) {
       const container = folder.querySelector(":scope > .tab-group-container");
@@ -8940,9 +8750,7 @@
         if (!start) {
           return;
         }
-        const vars = getComputedStyle(document.documentElement);
-        const px = (name, fallback) => parseFloat(vars.getPropertyValue(name)) || fallback;
-        const room = px("--zia-slot-h", 35) + px("--zia-slot-mt", 2) + px("--zia-slot-mb", 2);
+        const room = rootPx("--zia-slot-h", 35) + rootPx("--zia-slot-mt", 2) + rootPx("--zia-slot-mb", 2);
         if ((parseFloat(getComputedStyle(start).marginTop) || 0) > -room) {
           start.style.marginTop = `${-(room + 4)}px`;
         }
@@ -9108,17 +8916,16 @@
   }
 
   function syncFolderMark(folder) {
-    const href = folderIconBox(folder)?.querySelector("svg .icon image")?.getAttribute("href") || "";
-    const icon = folderIconBox(folder)?.querySelector(":scope > .zia-fi");
+    const box = folderIconBox(folder);
+    const href = box?.querySelector("svg .icon image")?.getAttribute("href") || null;
+    const icon = box?.querySelector(":scope > .zia-fi");
     if (!icon) {
       return;
     }
     folder.toggleAttribute("zia-fi-marked", !!href);
     for (const mark of icon.querySelectorAll(".zia-fi-mark")) {
-      if (href && mark.getAttribute("src") !== href) {
-        mark.setAttribute("src", href);
-      } else if (!href) {
-        mark.removeAttribute("src");
+      if (mark.getAttribute("src") !== href) {
+        setAttr(mark, "src", href);
       }
     }
   }
@@ -13766,13 +13573,13 @@
           place(listRoom.button, delta, false);
         }
       }
-      if (first !== listRoom.first) {
-        if (listRoom.first !== undefined) {
-          tap();
-        }
-        listRoom.first = first;
+      // a tap as the rows make way, or going into or out of a folder, as a tab's drag taps
+      const folder = listRoomFolder(prev, first, y) || null;
+      if (listRoom.first !== undefined && (first !== listRoom.first || folder !== listRoom.folder)) {
+        tap();
       }
-      markListRoomFolder(listRoomFolder(prev, first, y));
+      listRoom.first = first;
+      markListRoomFolder(folder);
       paintFolders({
         rows: listRoom.rows,
         target: { folder: listRoom.folder, slotTop: prev ? prev.top + prev.height : null },
@@ -14857,7 +14664,6 @@
     });
   }
 
-
   // Extension icons: right-click an extension's button (in the toolbar or
   // the extensions panel) to give it an icon of your own, an SVG from your
   // computer or one of Zia's icons. An SVG takes the toolbar's colour, as
@@ -14909,11 +14715,7 @@
   // only lets an SVG take the toolbar's colour from there, not from a file
   const EXT_ICON_HOST = "zia-extension-icons";
   function pointAtExtIcons() {
-    const handler = Services.io.getProtocolHandler("resource").QueryInterface(Ci.nsIResProtocolHandler);
-    const dir = Services.io.newURI(`${PathUtils.toFileURI(extIconsDir())}/`);
-    if (!handler.hasSubstitution(EXT_ICON_HOST) || handler.getSubstitution(EXT_ICON_HOST).spec !== dir.spec) {
-      handler.setSubstitution(EXT_ICON_HOST, dir);
-    }
+    pointResource(EXT_ICON_HOST, `${PathUtils.toFileURI(extIconsDir())}/`);
   }
 
   function extIconUrl(entry) {
@@ -15155,11 +14957,7 @@
     return PathUtils.join(PathUtils.profileDir, "zia-icons", "own");
   }
   function pointAtOwnIcons() {
-    const handler = Services.io.getProtocolHandler("resource").QueryInterface(Ci.nsIResProtocolHandler);
-    const dir = Services.io.newURI(`${PathUtils.toFileURI(ownIconsDir())}/`);
-    if (!handler.hasSubstitution(OWN_ICON_HOST) || handler.getSubstitution(OWN_ICON_HOST).spec !== dir.spec) {
-      handler.setSubstitution(OWN_ICON_HOST, dir);
-    }
+    pointResource(OWN_ICON_HOST, `${PathUtils.toFileURI(ownIconsDir())}/`);
   }
   try {
     pointAtOwnIcons();
@@ -15249,6 +15047,12 @@
     }
   }
 
+  function menuItem(label) {
+    const item = document.createXULElement("menuitem");
+    item.setAttribute("label", label);
+    return item;
+  }
+
   function addExtIconMenus() {
     for (const menuId of ["toolbar-context-menu", "unified-extensions-context-menu"]) {
       const menu = document.getElementById(menuId);
@@ -15261,21 +15065,16 @@
       item.className = "zia-ext-icon-menu";
       item.setAttribute("label", "Change icon");
       const popup = document.createXULElement("menupopup");
-      const note = document.createXULElement("menuitem");
-      note.setAttribute("label", "This extension changes its own icon");
+      const note = menuItem("This extension changes its own icon");
       note.setAttribute("disabled", "true");
       note.className = "zia-ext-icon-note";
       const noteSeparator = document.createXULElement("menuseparator");
-      const upload = document.createXULElement("menuitem");
-      upload.setAttribute("label", "Choose an SVG…");
-      const choose = document.createXULElement("menuitem");
-      choose.setAttribute("label", "Pick from Zia's icons…");
+      const upload = menuItem("Choose an SVG…");
+      const choose = menuItem("Pick from Zia's icons…");
       const keepSeparator = document.createXULElement("menuseparator");
-      const keep = document.createXULElement("menuitem");
+      const keep = menuItem("Keep the SVG's own colours");
       keep.setAttribute("type", "checkbox");
-      keep.setAttribute("label", "Keep the SVG's own colours");
-      const reset = document.createXULElement("menuitem");
-      reset.setAttribute("label", "Reset to the original icon");
+      const reset = menuItem("Reset to the original icon");
       popup.append(note, noteSeparator, upload, choose, keepSeparator, keep, reset);
       item.append(popup);
       menu.append(separator, item);
@@ -15398,16 +15197,12 @@
       item.className = "zia-own-icon-menu";
       item.setAttribute("label", "Change icon");
       const popup = document.createXULElement("menupopup");
-      const upload = document.createXULElement("menuitem");
-      upload.setAttribute("label", "Choose an SVG…");
-      const choose = document.createXULElement("menuitem");
-      choose.setAttribute("label", "Pick from Zia's icons…");
+      const upload = menuItem("Choose an SVG…");
+      const choose = menuItem("Pick from Zia's icons…");
       const keepSeparator = document.createXULElement("menuseparator");
-      const keep = document.createXULElement("menuitem");
+      const keep = menuItem("Keep the SVG's own colours");
       keep.setAttribute("type", "checkbox");
-      keep.setAttribute("label", "Keep the SVG's own colours");
-      const remove = document.createXULElement("menuitem");
-      remove.setAttribute("label", "Remove icon");
+      const remove = menuItem("Remove icon");
       popup.append(upload, choose, keepSeparator, keep, remove);
       item.append(popup);
       zens.before(item);
@@ -15800,7 +15595,6 @@
       again();
     }
   }
-
   // A page peeked at with Glance shows on its tab as a small picture of the
   // page, tipped at an angle, as in Dia, in place of Zen's icon tile.
   // Hovering the tab brings its close button over the picture, and that
@@ -15815,6 +15609,7 @@
   // the sink in chrome.css; the hover tip eases home first
   const GLANCE_THUMB_SINK_MS = 300;
   const GLANCE_THUMB_UNTIP_MS = 450;
+  const GLANCE_CUTS = ["--zia-glance-cut-top", "--zia-glance-cut-right", "--zia-glance-cut-bottom"];
   const glanceHost = new WeakMap();
   // A close is marked as soon as the picture starts sinking, so the glance
   // mark coming off afterwards does not play the sink a second time.
@@ -15856,9 +15651,9 @@
   // in the stack and covers the site's icon.
   function clearGlanceThumb(glanceTab) {
     glanceTab.removeAttribute("zia-glance-thumb");
-    glanceTab.style.removeProperty("--zia-glance-cut-top");
-    glanceTab.style.removeProperty("--zia-glance-cut-right");
-    glanceTab.style.removeProperty("--zia-glance-cut-bottom");
+    for (const name of GLANCE_CUTS) {
+      glanceTab.style.removeProperty(name);
+    }
     glanceTab.querySelector(":scope > .tab-stack > .zia-glance-thumb")?.remove();
   }
 
@@ -15917,7 +15712,7 @@
 
     const exit = document.createElementNS(XHTML_NS, "div");
     exit.className = "zia-glance-thumb-exit";
-    for (const name of ["--zia-glance-cut-top", "--zia-glance-cut-right", "--zia-glance-cut-bottom"]) {
+    for (const name of GLANCE_CUTS) {
       const value = glanceTab.style.getPropertyValue(name);
       if (value) {
         exit.style.setProperty(name, value);
@@ -16179,7 +15974,6 @@
       );
     }
   }
-
   // Firefox's own sidebar panels (Bookmarks, History, Synced Tabs) are
   // pages of their own inside the panel, which Zia's chrome.css doesn't
   // reach: zia-sidebar.css is loaded into each as it opens. The panel's
@@ -16232,8 +16026,8 @@
       "--zia-row-text": labelColor(tabs.find((t) => !t.selected && !t.hasAttribute("visuallyselected"))) || "rgba(255, 255, 255, 0.8)",
       "--zia-row-text-selected": labelColor(gBrowser.selectedTab?.hasAttribute("zen-essential") ? null : gBrowser.selectedTab) || "rgb(255, 255, 255)",
       "--zia-row-inset": `${Math.max(0, Math.min(16, inset))}px`,
-      "--zia-row-hover-bg": getComputedStyle(document.documentElement).getPropertyValue("--zia-tab-hover-bg").trim() || "rgba(255, 255, 255, 0.115)",
-      "--zia-row-selected-bg": getComputedStyle(document.documentElement).getPropertyValue("--zia-active-tab-bg").trim() || "rgba(0, 0, 0, 0.1)",
+      "--zia-row-hover-bg": getComputedStyle(root).getPropertyValue("--zia-tab-hover-bg").trim() || "rgba(255, 255, 255, 0.115)",
+      "--zia-row-selected-bg": getComputedStyle(root).getPropertyValue("--zia-active-tab-bg").trim() || "rgba(0, 0, 0, 0.1)",
       "--zia-row-indent": `${folderIndent(tab)}px`,
       "--zia-row-icon-gap": `${within(icon ? label.getBoundingClientRect().left - icon.getBoundingClientRect().right : NaN, 2, 16, 8)}px`,
     };
@@ -16273,26 +16067,26 @@
     if (!background || !card) {
       return;
     }
-    const right = document.documentElement.getAttribute("zen-right-side") === "true";
+    const right = root.getAttribute("zen-right-side") === "true";
     // On the tab sidebar's own side, the panel sits between the tabs and
     // the card, parted from the tabs by a line: the gap from the tabs to
     // that line is the panel's gap after it, and before the card
     const panel = document.getElementById("sidebar-box");
     const panelOnRight = panel?.hasAttribute("sidebar-positionend");
-    if (panel && !panel.hidden && document.documentElement.hasAttribute("zia-panels-beside") && panelOnRight === right) {
+    if (panel && !panel.hidden && root.hasAttribute("zia-panels-beside") && panelOnRight === right) {
       const edge = panel.getBoundingClientRect();
       const gap = right ? background.left - edge.right : edge.left - background.right;
       if (gap >= 0 && gap < 40) {
-        document.documentElement.style.setProperty("--zia-panel-pad-window", `${gap}px`);
-        document.documentElement.style.setProperty("--zia-panel-pad-card", `${Math.max(0, gap - splitter)}px`);
+        root.style.setProperty("--zia-panel-pad-window", `${gap}px`);
+        root.style.setProperty("--zia-panel-pad-card", `${Math.max(0, gap - splitter)}px`);
       }
       return;
     }
     const windowSide = right ? window.innerWidth - background.right : background.left;
     const cardSide = right ? background.left - card.right : card.left - background.right;
     if (windowSide >= 0 && windowSide < 40 && cardSide >= 0 && cardSide < 40) {
-      document.documentElement.style.setProperty("--zia-panel-pad-window", `${windowSide}px`);
-      document.documentElement.style.setProperty("--zia-panel-pad-card", `${Math.max(0, cardSide - splitter)}px`);
+      root.style.setProperty("--zia-panel-pad-window", `${windowSide}px`);
+      root.style.setProperty("--zia-panel-pad-card", `${Math.max(0, cardSide - splitter)}px`);
     }
   }
 
@@ -16305,15 +16099,14 @@
     }
     const style = getComputedStyle(icon);
     let strength = (parseFloat(style.fillOpacity) || 1) * (parseFloat(style.opacity) || 1);
-    for (let el = icon.parentElement; el && el.id !== "zia-workspace-slot" && el !== document.documentElement; el = el.parentElement) {
+    for (let el = icon.parentElement; el && el.id !== "zia-workspace-slot" && el !== root; el = el.parentElement) {
       strength *= parseFloat(getComputedStyle(el).opacity) || 1;
       if (el.id === "downloads-button") {
         break;
       }
     }
-    const root = document.documentElement.style;
-    root.setProperty("--zia-panel-close-fill", style.fill && style.fill !== "none" ? style.fill : "rgb(255, 255, 255)");
-    root.setProperty("--zia-panel-close-opacity", String(Math.round(strength * 1000) / 1000));
+    root.style.setProperty("--zia-panel-close-fill", style.fill && style.fill !== "none" ? style.fill : "rgb(255, 255, 255)");
+    root.style.setProperty("--zia-panel-close-opacity", String(Math.round(strength * 1000) / 1000));
   }
 
   function matchTabs(doc) {
@@ -16326,7 +16119,7 @@
       }
     }
     // beside the page, the panel's own sides give the room
-    setStyle(doc.documentElement, "--zia-panel-inset", document.documentElement.hasAttribute("zia-panels-beside") ? "0px" : null);
+    setStyle(doc.documentElement, "--zia-panel-inset", root.hasAttribute("zia-panels-beside") ? "0px" : null);
     // the highlights' shape: the space name's own pill
     const label = document.getElementById("zia-space-label");
     if (label) {
@@ -16371,7 +16164,7 @@
       return;
     }
     const padding = parseFloat(getComputedStyle(header).paddingBottom) || 0;
-    document.documentElement.style.setProperty("--zia-panel-title-pad", `${Math.max(0, padding + wanted - now)}px`);
+    root.style.setProperty("--zia-panel-title-pad", `${Math.max(0, padding + wanted - now)}px`);
   }
 
   // The panel's title sits level with the space's name across the window
@@ -16389,7 +16182,7 @@
     const padding = parseFloat(getComputedStyle(header).paddingTop) || 0;
     const next = padding + off;
     if (next >= 0 && next < 40) {
-      document.documentElement.style.setProperty("--zia-panel-title-top", `${next}px`);
+      root.style.setProperty("--zia-panel-title-top", `${next}px`);
     }
   }
 
@@ -16415,15 +16208,15 @@
     const win = doc.defaultView;
     for (const field of doc.querySelectorAll("moz-input-search")) {
       const apply = () => {
-        const root = field.shadowRoot;
-        if (!root || root.ziaStyled) {
+        const shadow = field.shadowRoot;
+        if (!shadow || shadow.ziaStyled) {
           return;
         }
         try {
           const sheet = new win.CSSStyleSheet();
           sheet.replaceSync(SEARCH_FIELD_RULES);
-          root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
-          root.ziaStyled = true;
+          shadow.adoptedStyleSheets = [...shadow.adoptedStyleSheets, sheet];
+          shadow.ziaStyled = true;
         } catch (err) {
           noteError("sidebar panels: search field", err);
         }
@@ -16680,12 +16473,12 @@
     // colour is held a moment after, as the site catches up
     let zenSliding = false;
     new MutationObserver(() => {
-      const now = document.documentElement.hasAttribute("zen-compact-animating");
+      const now = root.hasAttribute("zen-compact-animating");
       if (now !== zenSliding) {
         zenSliding = now;
         sliding(now);
       }
-    }).observe(document.documentElement, { attributes: true, attributeFilter: ["zen-compact-animating"] });
+    }).observe(root, { attributes: true, attributeFilter: ["zen-compact-animating"] });
     const slide = (opening) => {
       const run = slideBox(opening);
       sliding(true);
@@ -16702,7 +16495,7 @@
       // is the tabs, so it's tucked under the page instead (the margin on
       // the page's side), never sliding over the tabs
       const onRight = box.hasAttribute("sidebar-positionend");
-      const besideTabs = onRight === (document.documentElement.getAttribute("zen-right-side") === "true");
+      const besideTabs = onRight === (root.getAttribute("zen-right-side") === "true");
       const side = onRight !== besideTabs ? "marginRight" : "marginLeft";
       const hidden = `-${box.getBoundingClientRect().width}px`;
       const motion = window.gZenUIManager?.motion;
@@ -17548,7 +17341,6 @@
     window.addEventListener("unload", () => Services.obs.removeObserver(onDocument, "document-element-inserted"), { once: true });
   }
 
-
   // What a tab's buttons say they do. On a tab holding a glance the close
   // shuts the glance (28g-glance-thumbs.js) and the minus lets the glance
   // go, and on a pinned tab the minus only lets the tab go: nothing
@@ -17558,7 +17350,6 @@
   function watchButtonTooltips() {
     const TIP_MARK = "zia-tip";
     const originals = new WeakMap();
-    let retipping = false;
 
     const retipButton = (button, text) => {
       if (!button) {
@@ -17588,12 +17379,7 @@
       if (id && document.l10n) {
         document.l10n.setAttributes(button, id, args);
       } else {
-        const original = originals.get(button);
-        if (original === null || original === undefined) {
-          button.removeAttribute("tooltiptext");
-        } else {
-          button.setAttribute("tooltiptext", original);
-        }
+        setAttr(button, "tooltiptext", originals.get(button));
       }
       originals.delete(button);
     };
@@ -17614,24 +17400,16 @@
     };
 
     const retipAll = () => {
-      retipping = true;
-      try {
-        for (const tab of gBrowser.tabs) {
-          retip(tab);
-        }
-      } finally {
-        retipping = false;
+      for (const tab of gBrowser.tabs) {
+        retip(tab);
       }
     };
 
     // Fluent rewrites a button's tip when its args change (a multiselect
     // growing, say), so the rewording is put back whenever the tip or the
-    // marks it's set off change.
-    new MutationObserver(() => {
-      if (!retipping) {
-        retipAll();
-      }
-    }).observe(gBrowser.tabContainer, {
+    // marks it's set off change. (A tip is only set when it differs, so
+    // this settles.)
+    new MutationObserver(retipAll).observe(gBrowser.tabContainer, {
       subtree: true,
       attributes: true,
       attributeFilter: ["zen-glance-tab", "pinned", "tooltiptext", "data-l10n-args"],
@@ -18029,14 +17807,13 @@
         el.removeAttribute("zia-no-glow");
       }
       const tab = gBrowser.selectedTab;
-      if (!tab || tab.hasAttribute("zen-essential")) {
+      if (tab.hasAttribute("zen-essential")) {
         return;
       }
       // (a split glows as a whole: at the top, it's the split that goes
       // without, whichever of its tabs is open)
       const split = tab.group?.hasAttribute?.("split-view-group") ? tab.group : null;
       const glowing = split || tab;
-
       const sections = [
         window.gZenWorkspaces?.pinnedTabsContainer,
         window.gZenWorkspaces?.activeWorkspaceStrip,
@@ -18063,7 +17840,6 @@
         return;
       }
       let above = false;
-      let below = false;
       for (const row of document.querySelectorAll(
         "#tabbrowser-tabs .tabbrowser-tab:not([zen-essential], [zen-empty-tab], [hidden]), #tabbrowser-tabs .tab-group-label-container"
       )) {
@@ -18071,7 +17847,6 @@
           continue;
         }
         const box = row.getBoundingClientRect();
-
         if (!box.height || !box.width || box.right <= mine.left || box.left >= mine.right) {
           continue;
         }
@@ -18079,7 +17854,6 @@
           continue;
         }
         above ||= box.bottom <= mine.top + 1;
-        below ||= box.top >= mine.bottom - 1;
       }
       if (!above) {
         glowing.setAttribute("zia-no-glow", "true");
@@ -18090,7 +17864,6 @@
       if (!pending) {
         pending = requestAnimationFrame(update);
       }
-
       setTimeout(update, 250);
     };
     for (const type of [
@@ -18209,7 +17982,6 @@
         if (stateFlags & STATE_START) {
           scrollPositions.delete(browser);
           startLoader();
-
           colorRequestId++;
         } else if (stateFlags & STATE_STOP) {
           if (isErrorPage(browser)) {

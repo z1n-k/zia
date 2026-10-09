@@ -18,7 +18,6 @@
     height: var(--zia-urlbar-height) !important;
     min-height: var(--zia-urlbar-height) !important;
     max-height: var(--zia-urlbar-height) !important;
-
     --urlbar-height: var(--zia-urlbar-height) !important;
 
     & :is(.urlbar-input, #zia-url-title, #zia-url-plain) {
@@ -95,7 +94,6 @@
       corner-shape: var(--zia-squircle) !important;
       box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
       backdrop-filter: none !important;
-
       transform-origin: 50% 0 !important;
       animation: zia-urlbar-open 0.18s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
     }
@@ -230,9 +228,6 @@
     & .urlbarView-body-inner {
       padding-inline: 0 !important;
       margin-inline: 0 !important;
-    }
-
-    & .urlbarView-body-inner {
       padding-block: var(--zia-pop-list-pad) !important;
     }
 
@@ -286,7 +281,6 @@
     transition: opacity 0.3s ease;
     --zia-load-width: calc(var(--zia-load-progress, 0) * 100%);
     --zia-load-p: var(--zia-load-progress, 0);
-
     --zia-load-tint: color-mix(in srgb, var(--zia-loading-color) 30%, transparent),
       color-mix(in srgb, var(--zia-loading-color) 14%, transparent) 50%,
       transparent 100%;
@@ -295,18 +289,14 @@
       color-mix(in srgb, var(--zia-loading-color) 5%, transparent) 70%,
       transparent 100%;
     background:
-
       radial-gradient(farthest-side at 100% 100%, var(--zia-load-glow))
         calc(var(--zia-load-p) * 100% + (var(--zia-load-p) - 1) * 180px) 100% / 180px 100% no-repeat,
-
       radial-gradient(farthest-side at 0% 100%, var(--zia-load-glow))
         calc(var(--zia-load-p) * 100% + var(--zia-load-p) * 28px) 100% / 28px 100% no-repeat,
-
       radial-gradient(100% 100% at 100% 100%, var(--zia-load-tint))
         calc(var(--zia-load-p) * 100% + (var(--zia-load-p) - 1) * 240px) 100% / 240px 100% no-repeat,
       radial-gradient(100% 100% at 0% 100%, var(--zia-load-tint))
         calc(var(--zia-load-p) * 100% + var(--zia-load-p) * 36px) 100% / 36px 100% no-repeat,
-
       linear-gradient(
         to right,
         color-mix(in srgb, var(--zia-loading-color) 70%, transparent),
@@ -501,6 +491,7 @@
 #stop-button {
   list-style-image: url("chrome://sine/content/zia/icons/stop.svg") !important;
 }
+
 #nav-bar :is(
   .unified-extensions-item,
   .webextension-browser-action,
@@ -512,22 +503,18 @@
   .webextension-browser-action,
   toolbarbutton[id$="-browser-action"],
   toolbarbutton[id$="-BAP"]
+)::before,
+#nav-bar :is(
+  .unified-extensions-item,
+  .webextension-browser-action,
+  toolbarbutton[id$="-browser-action"],
+  toolbarbutton[id$="-BAP"]
 ) :is(
   .toolbarbutton-icon,
   .toolbarbutton-badge-stack,
   .toolbarbutton-badge,
   .unified-extensions-item-action-button
 ) {
-  transition: none !important;
-  animation: none !important;
-}
-
-#nav-bar :is(
-  .unified-extensions-item,
-  .webextension-browser-action,
-  toolbarbutton[id$="-browser-action"],
-  toolbarbutton[id$="-BAP"]
-)::before {
   transition: none !important;
   animation: none !important;
 }
@@ -656,7 +643,6 @@
       fill: currentColor !important;
     }
   }
-
 
   /* The "paste the copied link" suggestion: just the link, without the
      search engine's name in a chip at the far right */

@@ -84,7 +84,6 @@
     if (!names.length) {
       return null;
     }
-
     let best = null;
     let bestScore = 0;
     for (const name of names) {
@@ -93,29 +92,21 @@
       for (const [word, weight] of weights) {
         if (name === word) {
           score += weight * 4;
-          continue;
-        }
-
-        if (parts.includes(word)) {
+        } else if (parts.includes(word)) {
           score += weight * 2;
-          continue;
-        }
-
-        if (ICON_SYNONYMS[word] === name) {
+        } else if (ICON_SYNONYMS[word] === name) {
           score += weight * 3;
         }
       }
       if (!score) {
         continue;
       }
-
       score -= (parts.length - 1) * 0.1;
       if (score > bestScore) {
         bestScore = score;
         best = name;
       }
     }
-
     return bestScore >= 2 ? iconURL(best) : null;
   }
 
@@ -149,7 +140,6 @@
     if (tabs.length < 2) {
       return null;
     }
-
     const hosts = folderTabHosts(folder);
     if (hosts.length === tabs.length && new Set(hosts).size === 1) {
       const parts = hosts[0].split(".");
@@ -302,11 +292,8 @@
         return null;
       }
       dims = vectors[0].length;
-      for (const vector of vectors) {
-        all.push(vector);
-      }
+      all.push(...vectors);
     }
-
     const data = new Int8Array(all.length * dims);
     all.forEach((vector, row) => {
       vector.forEach((value, col) => {
@@ -385,7 +372,6 @@
       return null;
     }
     const { name, score } = nearestIcon(embedded[0], vectors);
-
     return score >= 0.28 ? iconURL(name) : null;
   }
 
@@ -436,9 +422,7 @@
     if (!name) {
       return null;
     }
-    const words = name.split(/\s+/).slice(0, 3);
-    name = words.join(" ");
-
+    name = name.split(/\s+/).slice(0, 3).join(" ");
     const echoed = tabs.some((tab) => String(tab.label || "").toLowerCase().startsWith(name.toLowerCase()));
     if (name.length < 3 || name.length > 28 || echoed) {
       return null;
@@ -458,8 +442,7 @@
     const titles = tabs.map((tab) => `- ${String(tab.label || "").slice(0, 80)}`).join("\n");
     const prompt = `Give a short two word label for this group of browser tabs:\n${titles}\nLabel:`;
     const result = await engine.run({ args: [prompt], options: { max_new_tokens: 8 } });
-    const name = tidyName(readGeneratedText(result), tabs);
-    return name;
+    return tidyName(readGeneratedText(result), tabs);
   }
 
   function findNameEditor(folder) {
@@ -476,7 +459,6 @@
 
   function renameFolder(folder, name) {
     const label = folder.labelElement;
-
     const editor = findNameEditor(folder);
     if (editor) {
       if ("value" in editor) {
@@ -493,14 +475,12 @@
       }
       editor.blur?.();
     }
-
     if (typeof label?.onRenameFinished === "function") {
       label.onRenameFinished(name);
     } else {
       folder.name = name;
       folder.dispatchEvent(new CustomEvent("ZenFolderRenamed", { bubbles: true }));
     }
-
     for (const method of ["finishRename", "stopRename", "stopEditing", "blur"]) {
       try {
         label?.[method]?.();
@@ -523,27 +503,22 @@
       const containerRect = container.getBoundingClientRect();
       const iconEl = folder.querySelector(".tab-group-folder-icon");
       const iconRect = iconEl?.getBoundingClientRect();
-
       const label = folder.labelElement;
       const fontSize = parseFloat(getComputedStyle(label || container).fontSize) || 13;
       const size = Math.max(9, Math.round(fontSize * 0.85));
-
       const iconCentre = iconRect?.width
         ? iconRect.left - containerRect.left + iconRect.width / 2
         : 16;
       const iconLeft = Math.round(iconCentre - size / 2);
-
       const labelRect = label?.getBoundingClientRect();
       const textLeft = Math.round(
         labelRect?.width
           ? labelRect.left - containerRect.left
           : (iconRect?.right || 0) - containerRect.left + 8
       );
-
       const overlay = doc.createElement("div");
       overlay.className = "zia-skeleton-overlay";
       overlay.style.cssText = `position:absolute;inset:0;pointer-events:none;z-index:5;`;
-
       const block = (left, width, height, radius) => {
         const el = doc.createElement("div");
         el.className = "zia-skeleton-block";
@@ -552,10 +527,8 @@
           `width:${width}px;height:${height}px;border-radius:${radius}px;`;
         return el;
       };
-
       overlay.appendChild(block(iconLeft, size, size, Math.round(size / 3.5)));
       overlay.appendChild(block(textLeft, 88, size, Math.round(size / 3.5)));
-
       if (getComputedStyle(container).position === "static") {
         container.style.position = "relative";
       }
@@ -643,10 +616,7 @@
   }
 
   function applySuggestedFolderIcon(folder) {
-    if (!featureOn("folder-icon-suggest")) {
-      return;
-    }
-    if (!isFolder(folder) || folderIconURL(folder)) {
+    if (!featureOn("folder-icon-suggest") || !isFolder(folder) || folderIconURL(folder)) {
       return;
     }
     // A folder made empty (New Folder) has nothing to go by but its own
@@ -655,7 +625,6 @@
     if (!(folder.tabs || []).some((tab) => !tab.hasAttribute("zen-empty-tab"))) {
       return;
     }
-
     folder.setAttribute("zia-suggesting", "true");
     showFolderSkeleton(folder);
     setTimeout(async () => {

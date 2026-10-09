@@ -25,7 +25,6 @@
     track.setAttribute("class", "zia-download-ring-track");
     arc.setAttribute("class", "zia-download-ring-arc");
     arc.setAttribute("stroke-linecap", "round");
-
     arc.setAttribute("transform", "rotate(-90 50 50)");
     const circumference = 2 * Math.PI * RADIUS;
     arc.setAttribute("stroke-dasharray", `${circumference}`);
@@ -44,7 +43,6 @@
         if (download.succeeded || download.canceled || download.error) {
           continue;
         }
-
         if (download.hasProgress && download.totalBytes > 0) {
           done += download.currentBytes || 0;
           total += download.totalBytes;
@@ -60,25 +58,20 @@
       draw(Math.min(1, done / total));
     }
 
-    const data = commons.getData(window);
     const seen = new Set();
-    const view = {
-      onDownloadAdded(download) {
-        seen.add(download);
-        update(seen);
-      },
-      onDownloadChanged(download) {
-        seen.add(download);
-        update(seen);
-      },
+    const keep = (download) => {
+      seen.add(download);
+      update(seen);
+    };
+    commons.getData(window).addView({
+      onDownloadAdded: keep,
+      onDownloadChanged: keep,
       onDownloadRemoved(download) {
         seen.delete(download);
         update(seen);
       },
-    };
-    data.addView(view);
+    });
   }
-
 
   // With the downloads button hidden until there's a download (Firefox's
   // "auto-hide"), the first download's arc flew to the corner and dropped

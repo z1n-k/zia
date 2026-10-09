@@ -207,28 +207,20 @@
       .slice(0, 120);
   }
 
+  // (a Map: the kind comes from the page's address, and "constructor" isn't a site)
+  const MULTIVIEW_SITES = new Map([["yt", "YouTube"], ["twv", "Twitch video"], ["twc", "Twitch clip"], ["vm", "Vimeo"], ["dm", "Dailymotion"]]);
+
   function multiviewSite([kind, id]) {
-    switch (kind) {
-      case "yt":
-        return "YouTube";
-      case "tw":
-        return `twitch.tv/${id}`;
-      case "twv":
-        return "Twitch video";
-      case "twc":
-        return "Twitch clip";
-      case "kick":
-        return `kick.com/${id}`;
-      case "vm":
-        return "Vimeo";
-      case "dm":
-        return "Dailymotion";
-      default:
-        try {
-          return new URL(id).hostname.replace(/^www\./, "");
-        } catch (err) {
-          return "Video";
-        }
+    if (kind === "tw" || kind === "kick") {
+      return `${kind === "tw" ? "twitch.tv" : "kick.com"}/${id}`;
+    }
+    if (MULTIVIEW_SITES.has(kind)) {
+      return MULTIVIEW_SITES.get(kind);
+    }
+    try {
+      return new URL(id).hostname.replace(/^www\./, "");
+    } catch (err) {
+      return "Video";
     }
   }
 
@@ -345,11 +337,6 @@
     // Keep the grid icon's colour current: when the Multiview tab is shown
     // (the space may have changed colour) and when the setting changes.
     gBrowser.tabContainer.addEventListener("TabSelect", (event) => recolorMultiview(event.target));
-    const onColorPref = () => {
-      for (const tab of gBrowser.tabs) {
-        recolorMultiview(tab);
-      }
-    };
-    watchPrefs(MULTIVIEW_COLOR_PREF, onColorPref);
+    watchPrefs(MULTIVIEW_COLOR_PREF, () => gBrowser.tabs.forEach(recolorMultiview));
   }
 

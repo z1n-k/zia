@@ -2,7 +2,6 @@
   margin: 0 !important;
   translate: none !important;
   scale: none !important;
-
   animation: none !important;
   transition: none !important;
 }
@@ -19,6 +18,7 @@
 .tabbrowser-tab[drag-image] > .tab-stack > .tab-background::after {
   display: none !important;
 }
+
 #zen-drag-indicator {
   display: none !important;
 }
@@ -56,16 +56,11 @@
 /* A collapsed folder showing its open tab clips its other tabs away (the
    ones above are pushed up out of it). The open tab's glow reaches further
    than that clip allowed, so the clip gives it the glow's full reach all
-   round, and the hidden tabs are see-through so none peeks into it. */
-zen-folder[collapsed][has-active] > .tab-group-container {
-  --zia-glow-room: calc(-1 * (var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)));
-  overflow: visible !important;
-  clip-path: inset(var(--zia-glow-room));
-}
-
-/* ...and the same while Zen opens or shuts a folder holding the open tab:
-   it clips the folder's contents then, and the tab's glow was cut off for
-   a moment (a folder Zia's own opening holds is clipped by its height) */
+   round, and the hidden tabs are see-through so none peeks into it. The
+   same while Zen opens or shuts a folder holding the open tab: it clips
+   the folder's contents then, and the tab's glow was cut off for a moment
+   (a folder Zia's own opening holds is clipped by its height). */
+zen-folder[collapsed][has-active] > .tab-group-container,
 zen-folder:has(> .tab-group-container > :is(.tabbrowser-tab, tab-group[split-view-group]):is([selected], [visuallyselected], :has(.tabbrowser-tab[selected]))) > .tab-group-container:not([zia-folder-holding]) {
   --zia-glow-room: calc(-1 * (var(--zia-active-glow-blur) + var(--zia-active-glow-spread) + var(--zia-active-glow-reach)));
   overflow: visible !important;
@@ -202,13 +197,7 @@ tab-group[split-view-group][zia-no-glow] > .tab-group-container {
   opacity: 1 !important;
 }
 
-.pinned-tabs-container-separator[zia-shift] {
-  position: relative !important;
-  transform: translateY(var(--zia-drag-y)) !important;
-  transition: transform 100ms ease-out !important;
-  z-index: 1 !important;
-}
-
+.pinned-tabs-container-separator[zia-shift],
 #tabbrowser-tabs :is(.tabbrowser-tab, .tab-group-label-container, zen-folder)[zia-shift] {
   position: relative !important;
   transform: translateY(var(--zia-drag-y)) !important;
@@ -232,7 +221,6 @@ tab-group[split-view-group][zia-no-glow] > .tab-group-container {
   transform: translateY(var(--zia-drag-y)) !important;
   transition: none !important;
   z-index: 40 !important;
-
   pointer-events: none !important;
 }
 
@@ -299,7 +287,6 @@ tab-group[split-view-group][zia-no-glow] > .tab-group-container {
   from { scale: 0.5; filter: blur(8px); opacity: 0.4; }
   to { scale: 1; filter: blur(0); opacity: 1; }
 }
-
 
 /* A tab just dropped keeps its hover wash until the pointer leaves it
    (zia-hover-held, zia.uc.js) */

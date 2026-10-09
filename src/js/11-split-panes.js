@@ -36,40 +36,21 @@
     return button;
   }
 
-  // The pane's own sidebar button. Zen's button sits in the main toolbar,
-  // which a split hides, and calling doCommand on a hidden toolbarbutton
-  // does nothing, so this goes to Zen's command (or its manager) instead.
-  function toggleCompactMode() {
-    const command = document.getElementById("cmd_zenCompactModeToggle");
-    if (command) {
-      command.doCommand();
-      return;
-    }
-    const manager = window.gZenCompactModeManager;
-    if (typeof manager?.toggle === "function") {
-      manager.toggle();
-    } else if (manager && "preference" in manager) {
-      manager.preference = !manager.preference;
-    } else {
-      document.getElementById("zen-toggle-compact-mode")?.click();
-    }
-  }
-
   function createPaneBar(container) {
     const bar = document.createElementNS(XHTML_NS, "div");
     bar.className = "zia-pane-bar";
     const tabOf = () => gBrowser.getTabForBrowser(paneBrowser(container));
-
-    bar.addEventListener("mousedown", () => {
+    const selectPane = () => {
       const tab = tabOf();
       if (tab && gBrowser.selectedTab !== tab) {
         gBrowser.selectedTab = tab;
       }
-    });
+    };
 
-    bar.appendChild(
-      paneButton("sidebar", "Toggle sidebar", toggleCompactMode)
-    );
+    bar.addEventListener("mousedown", selectPane);
+    // (Zen's own sidebar button sits in the toolbar a split hides, and a
+    // hidden button's doCommand does nothing: this goes to Zen's command)
+    bar.appendChild(paneButton("sidebar", "Toggle sidebar", () => document.getElementById("cmd_zenCompactModeToggle")?.doCommand()));
     bar.appendChild(paneButton("back", "Back", () => paneBrowser(container)?.goBack()));
     bar.appendChild(paneButton("forward", "Forward", () => paneBrowser(container)?.goForward()));
     bar.appendChild(
@@ -92,19 +73,10 @@
     rest.className = "zia-pane-rest";
     address.append(host, rest);
     address.addEventListener("click", () => {
-      const tab = tabOf();
-      if (tab && gBrowser.selectedTab !== tab) {
-        gBrowser.selectedTab = tab;
-      }
-
+      selectPane();
       requestAnimationFrame(() => {
         placeOpenedAddressBar();
-        const command = document.getElementById("Browser:OpenLocation");
-        if (command) {
-          command.doCommand();
-        } else {
-          gURLBar.select();
-        }
+        document.getElementById("Browser:OpenLocation").doCommand();
       });
     });
     bar.appendChild(address);
@@ -130,12 +102,8 @@
     );
     bar.appendChild(
       paneButton("site-settings", "Site settings and extensions", () => {
-        const tab = tabOf();
-        if (tab && gBrowser.selectedTab !== tab) {
-          gBrowser.selectedTab = tab;
-        }
+        selectPane();
         placeOpenedAddressBar();
-
         requestAnimationFrame(() => document.getElementById("zen-site-data-icon-button")?.click());
       })
     );
@@ -225,27 +193,17 @@
     const tab = gBrowser.getTabForBrowser(browser);
 
     let host = "";
-    try {
-      const uri = browser.currentURI;
-      if (isMultiviewURI(uri)) {
-        host = "";
-      } else if (uri && /^https?$/.test(uri.scheme)) {
-        host = uri.displayHost.replace(/^www\./, "");
-      } else if (uri && uri.spec !== "about:blank") {
-        host = uri.spec;
-      }
-    } catch (err) {
-      host = "";
-    }
-    const title = (browser.contentTitle || tab?.label || "").trim();
-
     let isHomePage = false;
     try {
       const uri = browser.currentURI;
+      if (!isMultiviewURI(uri)) {
+        host = /^https?$/.test(uri.scheme) ? uri.displayHost.replace(/^www\./, "") : uri.spec !== "about:blank" ? uri.spec : "";
+      }
       isHomePage = (uri.filePath === "/" || uri.filePath === "") && !uri.query && !uri.ref;
     } catch (err) {
-      isHomePage = false;
+      // (no address yet, or one without a host or path)
     }
+    const title = (browser.contentTitle || tab?.label || "").trim();
     bar.querySelector(".zia-pane-host").textContent = host || title || "New Tab";
     bar.querySelector(".zia-pane-rest").textContent =
       host && title && title !== host && !isHomePage ? ` / ${title}` : "";
@@ -404,7 +362,7 @@
     });
     window.addEventListener("resize", schedulePanes);
 
-    const { STATE_STOP, STATE_IS_WINDOW } = Ci.nsIWebProgressListener;
+    const { STATE_START, STATE_STOP, STATE_IS_WINDOW } = Ci.nsIWebProgressListener;
     gBrowser.addTabsProgressListener({
       onProgressChange(browser, webProgress, request, curSelf, maxSelf, curTotal, maxTotal) {
         const container = paneOfBrowser(browser);
@@ -425,7 +383,7 @@
           return;
         }
         updatePaneBar(container);
-        if (stateFlags & Ci.nsIWebProgressListener.STATE_START && stateFlags & STATE_IS_WINDOW) {
+        if (stateFlags & STATE_START && stateFlags & STATE_IS_WINDOW) {
           startPaneLoad(container);
         }
         if (stateFlags & STATE_STOP && stateFlags & STATE_IS_WINDOW) {

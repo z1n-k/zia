@@ -22,6 +22,7 @@
   // first tab will sit, and a tab dragged in replaces it without anything
   // moving. Measured from a tab inside an open folder when there is one.
   const FOLDER_SLOT_INSET = { start: 14, end: 5 };
+  const rootPx = (name, fallback) => parseFloat(getComputedStyle(root).getPropertyValue(name)) || fallback;
   let slotSize = "";
   function measureFolderSlot() {
     // (not a glance: its tab sits inside the one it came from, drawn as a
@@ -68,15 +69,12 @@
         end = inner.right - (boxRight - gap);
       }
     }
-    const next = [top, bottom, start, end, b.height].map((n) => `${Math.round(n * 2) / 2}px`).join(" ");
-    if (next === slotSize) {
+    const values = [top, bottom, start, end, b.height].map((n) => `${Math.round(n * 2) / 2}px`);
+    if (values.join(" ") === slotSize) {
       return;
     }
-    slotSize = next;
-    const [mt, mb, ms, me, h] = next.split(" ");
-    for (const [name, value] of [["--zia-slot-mt", mt], ["--zia-slot-mb", mb], ["--zia-slot-ms", ms], ["--zia-slot-me", me], ["--zia-slot-h", h]]) {
-      root.style.setProperty(name, value);
-    }
+    slotSize = values.join(" ");
+    ["mt", "mb", "ms", "me", "h"].forEach((name, i) => root.style.setProperty(`--zia-slot-${name}`, values[i]));
   }
 
   // The slot's dashes, drawn to its size so they're even all the way round
@@ -150,13 +148,13 @@
     let canvas = folder.ziaSlotCanvas;
     if (!canvas) {
       if (!slotCanvasHolder) {
-        slotCanvasHolder = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+        slotCanvasHolder = document.createElementNS(XHTML_NS, "div");
         slotCanvasHolder.id = "zia-slot-canvases";
         slotCanvasHolder.setAttribute("aria-hidden", "true");
         slotCanvasHolder.style.cssText = "position: fixed; top: 0; left: -10000px; pointer-events: none;";
         (document.body || document.documentElement).appendChild(slotCanvasHolder);
       }
-      canvas = document.createElementNS("http://www.w3.org/1999/xhtml", "canvas");
+      canvas = document.createElementNS(XHTML_NS, "canvas");
       canvas.id = `zia-slot-dashes-${++slotCanvasCount}`;
       canvas.style.display = "block";
       slotCanvasHolder.appendChild(canvas);
@@ -225,11 +223,9 @@
 
   function drawSlotDashesNow(canvasOnly = false) {
     dropGoneSlotCanvases();
-    const vars = getComputedStyle(root);
-    const px = (name, fallback) => parseFloat(vars.getPropertyValue(name)) || fallback;
-    const height = px("--zia-slot-h", 35);
-    const inset = px("--zia-slot-ms", 16) + px("--zia-slot-me", 7);
-    const radius = px("--zia-tab-radius", 9.5);
+    const height = rootPx("--zia-slot-h", 35);
+    const inset = rootPx("--zia-slot-ms", 16) + rootPx("--zia-slot-me", 7);
+    const radius = rootPx("--zia-tab-radius", 9.5);
     const dpr = window.devicePixelRatio || 1;
     for (const folder of document.querySelectorAll("zen-folder[zia-empty]")) {
       const container = folder.querySelector(":scope > .tab-group-container");
@@ -317,9 +313,7 @@
         if (!start) {
           return;
         }
-        const vars = getComputedStyle(document.documentElement);
-        const px = (name, fallback) => parseFloat(vars.getPropertyValue(name)) || fallback;
-        const room = px("--zia-slot-h", 35) + px("--zia-slot-mt", 2) + px("--zia-slot-mb", 2);
+        const room = rootPx("--zia-slot-h", 35) + rootPx("--zia-slot-mt", 2) + rootPx("--zia-slot-mb", 2);
         if ((parseFloat(getComputedStyle(start).marginTop) || 0) > -room) {
           start.style.marginTop = `${-(room + 4)}px`;
         }

@@ -21,15 +21,13 @@
         return;
       }
       const tab = event.detail?.tab || event.target;
-
-      const hideNow = tab?.querySelector?.(".tab-stack") || tab;
-      if (hideNow?.style) {
-        hideNow.style.opacity = "0";
+      const tile = tab?.querySelector?.(".tab-stack") || tab;
+      if (tile?.style) {
+        tile.style.opacity = "0";
       }
 
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
-          const tile = tab?.querySelector?.(".tab-stack") || tab;
           if (!tile?.animate) {
             tile?.style?.removeProperty?.("opacity");
             return;
@@ -52,7 +50,7 @@
   }
 
   const UNDO_WINDOW_MS = 10000;
-  const undoState = { closedAt: 0, actions: 0, sameMoment: false, closed: [] };
+  const undoState = { closedAt: 0, closed: [] };
 
   // The page a tab shows, read from its saved state so it works for tabs that
   // haven't loaded yet.
@@ -72,26 +70,16 @@
   // Where a closing tab lived, so undo can put it back in its folder or split.
   function closedTabRecord(tab) {
     const record = { url: savedUrlOf(tab), folder: null, split: null };
-    const group = tab.group;
-    if (group?.hasAttribute("split-view-group")) {
+    let folder = tab.group;
+    if (folder?.hasAttribute("split-view-group")) {
       const data = window.gZenViewSplitter?._data?.find((entry) => entry.tabs?.includes(tab));
-      record.split = { key: group.id || "split", gridType: data?.gridType };
-      const folder = group.group;
-      if (folder?.isZenFolder) {
-        record.folder = folderRecord(folder);
-      }
-    } else if (group?.isZenFolder) {
-      record.folder = folderRecord(group);
+      record.split = { key: folder.id || "split", gridType: data?.gridType };
+      folder = folder.group;
+    }
+    if (folder?.isZenFolder) {
+      record.folder = { id: folder.id, label: folder.label, workspaceId: folder.getAttribute("zen-workspace-id") || undefined };
     }
     return record;
-  }
-
-  function folderRecord(folder) {
-    return {
-      id: folder.id,
-      label: folder.label,
-      workspaceId: folder.getAttribute("zen-workspace-id") || undefined,
-    };
   }
 
   // Firefox's own "reopen closed tab" brings back everything one close action
@@ -100,31 +88,10 @@
     // folders coming back keep their names (zia.uc.js, folder names)
     window.ziaReopeningUntil = Date.now() + 3000;
     try {
-      if (typeof window.undoCloseTab === "function") {
-        window.undoCloseTab();
-        return true;
-      }
+      window.undoCloseTab();
     } catch (err) {
       noteError("essentials and undo: reopenLastClose", err);
     }
-    try {
-      if (window.SessionStore?.undoCloseTab) {
-        window.SessionStore.undoCloseTab(window, 0);
-        return true;
-      }
-    } catch (err) {
-      noteError("essentials and undo: reopenLastClose (2)", err);
-    }
-    try {
-      const command = document.getElementById("History:UndoCloseTab");
-      if (command) {
-        command.doCommand();
-        return true;
-      }
-    } catch (err) {
-      noteError("essentials and undo: reopenLastClose (3)", err);
-    }
-    return false;
   }
 
   // Tabs that came back loose from a split or a deleted folder go back into one.
@@ -194,9 +161,8 @@
   // were sometimes taken for one close, sometimes for several, as Zen
   // closes them a moment apart, and only some came back.)
   function undoClosedTabs() {
-    const wanted = Math.max(1, undoState.closed.length);
     const closed = undoState.closed;
-    undoState.actions = 0;
+    const wanted = Math.max(1, closed.length);
     undoState.closed = [];
     undoState.closedAt = 0;
 
@@ -204,9 +170,7 @@
     const onOpen = (event) => opened.push(event.target);
     gBrowser.tabContainer.addEventListener("TabOpen", onOpen);
     try {
-      if (!reopenLastClose()) {
-        console.warn("[Zia] Undo close: this build didn't reopen the tab.");
-      }
+      reopenLastClose();
       for (let i = 0; opened.length < wanted && i < wanted; i++) {
         const before = opened.length;
         try {
@@ -236,17 +200,9 @@
       }
       const now = Date.now();
       if (now - undoState.closedAt > 1000) {
-        undoState.actions = 0;
         undoState.closed = [];
       }
       undoState.closedAt = now;
-      // Tabs closed in the same moment are one action, which Firefox reopens
-      // together.
-      if (!undoState.sameMoment) {
-        undoState.sameMoment = true;
-        undoState.actions++;
-        setTimeout(() => (undoState.sameMoment = false), 0);
-      }
       try {
         undoState.closed.push(closedTabRecord(tab));
       } catch (err) {

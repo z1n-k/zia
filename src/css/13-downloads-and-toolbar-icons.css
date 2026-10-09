@@ -18,8 +18,12 @@
   corner-shape: var(--zia-squircle) !important;
   background-color: transparent !important;
   background-image: none !important;
-
   position: relative;
+  /* a square everywhere: as wide as it's tall (the space name's height) */
+  width: var(--zia-space-pill-height) !important;
+  min-width: var(--zia-space-pill-height) !important;
+  max-width: var(--zia-space-pill-height) !important;
+  padding-inline: 0 !important;
 
   /* level with the toolbar's own icons beside it */
   translate: 0 1px;
@@ -66,9 +70,6 @@
    square into an uneven tall shape; it's held to an even square there. */
 @media (-moz-platform: windows) {
   #downloads-button {
-    width: var(--zia-space-pill-height) !important;
-    min-width: var(--zia-space-pill-height) !important;
-    max-width: var(--zia-space-pill-height) !important;
     padding: 0 !important;
 
     & > :is(.toolbarbutton-badge-stack, #downloads-indicator-anchor, .toolbarbutton-icon) {
@@ -76,14 +77,6 @@
       margin: auto !important;
     }
   }
-}
-
-/* A square everywhere: as wide as it's tall (the space name's height) */
-#downloads-button {
-  width: var(--zia-space-pill-height) !important;
-  min-width: var(--zia-space-pill-height) !important;
-  max-width: var(--zia-space-pill-height) !important;
-  padding-inline: 0 !important;
 }
 
 /* The icon in the vertical middle of its hover square: drawn a pixel high
@@ -97,7 +90,6 @@
   height: 17px !important;
   max-height: 17px !important;
   visibility: visible !important;
-
   translate: 0 -1px;
 }
 
@@ -181,6 +173,12 @@
   opacity: 0.7 !important;
 }
 
+/* With Zia's address bar: its icons at Zia's sizes, and a keyword
+   search's pill (type a keyword, or pick an engine, and the bar says
+   which: Google, Bookmarks, Tabs) in Zia's look, a squircle chip tinted from the bar's own ink, so it reads
+   on the dark pop-up, a light one or one in the site's colour, the
+   engine's name at the tabs' text size and Zia's x to leave it (#347).
+   It was hidden altogether. With Zen's address bar it's Zen's. */
 @media -moz-pref("zia.urlbar.zia-look") {
   #urlbar :is(#page-action-buttons, .urlbar-page-action) image,
   #urlbar .urlbar-icon {
@@ -192,15 +190,7 @@
     width: 17px !important;
     height: 16px !important;
   }
-}
 
-/* A keyword search's pill (type a keyword, or pick an engine, and the
-   bar says which: Google, Bookmarks, Tabs) in Zia's look, with Zia's
-   address bar: a squircle chip tinted from the bar's own ink, so it reads
-   on the dark pop-up, a light one or one in the site's colour, the
-   engine's name at the tabs' text size and Zia's x to leave it (#347).
-   It was hidden altogether. With Zen's address bar it's Zen's. */
-@media -moz-pref("zia.urlbar.zia-look") {
   #urlbar #urlbar-search-mode-indicator {
     align-self: center !important;
     align-items: center !important;
@@ -308,7 +298,6 @@
     color: rgba(28, 28, 32, 0.9) !important;
   }
 }
-
 
 /* A download flying to the Library button as a row, as in Dia (zia.uc.js):
    the window dimmed, a faint glow trailing the row and a soft bloom where

@@ -65,7 +65,6 @@
     --zia-zone-w: 350px !important;
     --zia-zone-h: 580px !important;
     z-index: 1;
-
     background: rgb(23, 44, 52);
   }
 }
@@ -118,7 +117,6 @@
 .zia-split-zone-label {
   color: transparent;
   background-clip: text;
-
   --zia-shine-base: rgba(255, 255, 255, 0.55);
 
   .zia-split-zone[active] & {

@@ -1,4 +1,3 @@
-
   // What a tab's buttons say they do. On a tab holding a glance the close
   // shuts the glance (28g-glance-thumbs.js) and the minus lets the glance
   // go, and on a pinned tab the minus only lets the tab go: nothing
@@ -8,7 +7,6 @@
   function watchButtonTooltips() {
     const TIP_MARK = "zia-tip";
     const originals = new WeakMap();
-    let retipping = false;
 
     const retipButton = (button, text) => {
       if (!button) {
@@ -38,12 +36,7 @@
       if (id && document.l10n) {
         document.l10n.setAttributes(button, id, args);
       } else {
-        const original = originals.get(button);
-        if (original === null || original === undefined) {
-          button.removeAttribute("tooltiptext");
-        } else {
-          button.setAttribute("tooltiptext", original);
-        }
+        setAttr(button, "tooltiptext", originals.get(button));
       }
       originals.delete(button);
     };
@@ -64,24 +57,16 @@
     };
 
     const retipAll = () => {
-      retipping = true;
-      try {
-        for (const tab of gBrowser.tabs) {
-          retip(tab);
-        }
-      } finally {
-        retipping = false;
+      for (const tab of gBrowser.tabs) {
+        retip(tab);
       }
     };
 
     // Fluent rewrites a button's tip when its args change (a multiselect
     // growing, say), so the rewording is put back whenever the tip or the
-    // marks it's set off change.
-    new MutationObserver(() => {
-      if (!retipping) {
-        retipAll();
-      }
-    }).observe(gBrowser.tabContainer, {
+    // marks it's set off change. (A tip is only set when it differs, so
+    // this settles.)
+    new MutationObserver(retipAll).observe(gBrowser.tabContainer, {
       subtree: true,
       attributes: true,
       attributeFilter: ["zen-glance-tab", "pinned", "tooltiptext", "data-l10n-args"],

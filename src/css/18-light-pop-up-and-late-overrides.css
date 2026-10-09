@@ -48,55 +48,6 @@
   }
 }
 
-/* Light mode in Zen (a light space, or no space colour in light mode) gives
-   the pop-up the same light look, whatever the websites' own appearance
-   setting: it stayed dark there, under a light sidebar. */
-:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar[breakout-extend]:not([zia-classic]) {
-  color-scheme: light !important;
-  color: rgb(28, 28, 30) !important;
-  --zia-urlbar-open-bg: rgb(248, 249, 250) !important;
-  --toolbar-field-color: rgb(28, 28, 30) !important;
-  --toolbar-field-focus-color: rgb(28, 28, 30) !important;
-  --urlbarView-highlight-background: rgba(28, 28, 30, 0.09) !important;
-  --urlbarView-highlight-color: rgb(28, 28, 30) !important;
-
-  & > .urlbar-background {
-    background: rgb(248, 249, 250) !important;
-    outline: none !important;
-    box-shadow: var(--zia-glass-edge-light), 0 16px 48px rgba(0, 0, 0, 0.2) !important;
-  }
-
-  & .urlbar-input,
-  & .urlbarView,
-  & .urlbarView-title,
-  & .urlbarView-title strong {
-    color: rgb(28, 28, 30) !important;
-  }
-
-  & .urlbar-input::placeholder {
-    color: rgb(100, 103, 108) !important;
-    opacity: 1 !important;
-  }
-
-  & :is(.urlbarView-url, .urlbarView-action, .urlbarView-title-separator, .urlbarView-tags) {
-    color: rgb(90, 94, 100) !important;
-  }
-
-  & .urlbar-icon,
-  & .urlbarView-shortcutContent {
-    color: rgb(28, 28, 30) !important;
-    fill: currentColor !important;
-  }
-
-  & .urlbarView-row:hover {
-    background-color: rgba(28, 28, 30, 0.05) !important;
-  }
-
-  & .urlbarView-row[selected] {
-    background-color: rgba(28, 28, 30, 0.09) !important;
-  }
-}
-
 /* The pop-up's icons in its light look: the search glass by the typing and
    the rows' globes and glasses stayed white */
 :is(:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar, #urlbar#urlbar[zia-pop-site="light"])[breakout-extend]:not([zia-classic]) :is(#identity-icon, .urlbarView-favicon, .urlbarView-type-icon) {
@@ -206,6 +157,11 @@
   }
 }
 
+/* Light mode in Zen (a light space, or no space colour in light mode) gives
+   the pop-up the same light look, whatever the websites' own appearance
+   setting: it stayed dark there, under a light sidebar. The same look for
+   the pop-up in a light toolbar's colour. */
+:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar[breakout-extend]:not([zia-classic]),
 :root:not(#zia-none) #urlbar#urlbar[breakout-extend][zia-pop-site="light"]:not([zia-classic]) {
   color-scheme: light !important;
   color: rgb(28, 28, 30) !important;
@@ -248,10 +204,18 @@
   & .urlbarView-row[selected] {
     background-color: rgba(28, 28, 30, 0.09) !important;
   }
+}
 
-  & .urlbarView-row[selected] .urlbarView-shortcutContent {
-    fill: rgb(28, 28, 30) !important;
+:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar[breakout-extend]:not([zia-classic]) {
+  --zia-urlbar-open-bg: rgb(248, 249, 250) !important;
+
+  & > .urlbar-background {
+    background: rgb(248, 249, 250) !important;
   }
+}
+
+:root:not(#zia-none) #urlbar#urlbar[breakout-extend][zia-pop-site="light"]:not([zia-classic]) .urlbarView-row[selected] .urlbarView-shortcutContent {
+  fill: rgb(28, 28, 30) !important;
 }
 
 /* Optionally the pop-up is a touch see-through, with the page blurred
