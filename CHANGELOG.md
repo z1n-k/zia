@@ -8,12 +8,21 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
+- The selected tab's fine edge fades further between its corners, as
+  Dia's does: it read as a whole border.
+- The site settings and copy-link buttons in the address bar are Dia's
+  size and shape, a softly rounded square rather than near round, set as
+  far apart as Dia's and their tile fainter (it nearly filled the bar's
+  height and was twice as bright).
 - "Clear" and its arrow beside the separator show with the pointer on the
   sidebar, as in Zen, the line running the full width otherwise (they
   showed all the time, faint).
 
 ### Fixed
 
+- A folder with one tab: the sheet in its icon is in the middle (it sat
+  half a pixel left).
+- Pressing an essential presses it in again, as in Zen.
 - Dragging a tab over the essentials: the tiles slide aside within their
   own columns. Zen's drop cell made the grid change its columns (eight
   essentials and the cell went three to a row) while the tiles still slid
