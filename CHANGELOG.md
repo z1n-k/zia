@@ -11,6 +11,9 @@ Every release of Zia, newest first. The format follows
 - An essential dragged down into the list has the same place after the
   last folder, above the line, as a tab does: it went into the folder
   sooner and passed the line almost at once, so that place was a sliver.
+- No stray line over a closed folder's arrow (seen on Windows at 125%
+  scaling): the arrow is drawn as a line of its own rather than cut out of
+  a square, whose edge showed once the arrow was turned.
 
 ## [2.98.0] — 2026-10-10
 
