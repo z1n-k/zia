@@ -546,6 +546,32 @@
     outline: none !important;
   }
 
+  /* In the sidebar (Zen's single toolbar) the bar is a field of its own, as in Dia: no
+     toolbar around it to say where it is, so it keeps a faint fill, brighter on hover */
+  :root[zen-single-toolbar="true"] #urlbar:not([breakout-extend]) > .urlbar-background {
+    background: color-mix(in srgb, currentColor 7%, transparent) !important;
+  }
+
+  :root[zen-single-toolbar="true"] #urlbar:is(:hover, [focused]):not([breakout-extend]) > .urlbar-background {
+    background: color-mix(in srgb, currentColor 11%, transparent) !important;
+  }
+
+  /* ...as tall as a tab */
+  :root[zen-single-toolbar="true"]:not([zia-split="true"]) #urlbar:not([breakout-extend], [zen-floating-urlbar="true"]) {
+    height: var(--zia-tab-height) !important;
+    min-height: var(--zia-tab-height) !important;
+    max-height: var(--zia-tab-height) !important;
+    --urlbar-height: var(--zia-tab-height) !important;
+    /* (Zen's 1px all round, and the fill's own inset, left it 2px shorter than a tab) */
+    padding: 0 !important;
+
+    & > .urlbar-background {
+      inset: 0 !important;
+      margin: 0 !important;
+      border-width: 0 !important;
+    }
+  }
+
   /* Windows, with no tab open: the address bar's hover showed as a flat,
      solid grey block; it's the same light see-through wash as elsewhere. */
   @media (-moz-platform: windows) {
@@ -901,6 +927,14 @@
     pointer-events: none !important;
   }
 
+  /* (in the sidebar, Zen's single toolbar, Zen shows and fades each of them itself with
+     the sidebar hovered, as it does the extensions beside them: hidden here as well,
+     only the extensions showed till the bar itself was hovered, then faded in slower) */
+  :root[zen-single-toolbar="true"] #urlbar:not([breakout-extend]) :is(#identity-box, #page-action-buttons) {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
   /* Takes the address bar's colour as it changes with the site, like the
      icons beside it. */
   #zia-copy-link-button {
@@ -996,7 +1030,10 @@
   list-style-image: url("chrome://sine/content/zia/icons/stop.svg") !important;
 }
 
-#nav-bar :is(
+/* (the buttons themselves not in the sidebar's address bar, Zen's single toolbar, where
+   Zen fades them in and out with the site and copy buttons: still, they showed and went
+   at once, before those) */
+:root:not([zen-single-toolbar="true"]) #nav-bar :is(
   .unified-extensions-item,
   .webextension-browser-action,
   toolbarbutton[id$="-browser-action"],
@@ -5786,6 +5823,38 @@ findbar {
   }
 }
 
+/* The extensions that don't fit in the sidebar's address bar (Zen's single toolbar), on
+   a row of their own under it: the toolbar's icon buttons, as at the top of the page,
+   not Zen's filled tiles (which read as more essentials) */
+:root[zen-single-toolbar="true"] #zen-overflow-extensions-list:not(:empty) {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 6px 0 0 !important;
+
+  & .unified-extensions-item {
+    flex: none !important;
+  }
+
+  & .unified-extensions-item-action-button {
+    width: 28px !important;
+    height: 28px !important;
+    background-color: transparent !important;
+    border-radius: calc(7px * var(--zia-squircle-grow)) !important;
+    corner-shape: var(--zia-squircle-soft) !important;
+    box-shadow: none !important;
+
+    &:hover {
+      background-color: color-mix(in srgb, currentColor 10%, transparent) !important;
+    }
+  }
+
+  & :is(.toolbarbutton-icon, .toolbarbutton-badge-stack) {
+    width: 16px !important;
+    height: 16px !important;
+  }
+}
+
 #zen-sidebar-foot-buttons toolbarbutton:not(#downloads-button) > .toolbarbutton-icon {
   opacity: 0.4;
   transition: none !important;
@@ -6947,6 +7016,25 @@ zen-folder .tab-reset-button {
 #zen-sidebar-foot-buttons toolbarbutton:not(#downloads-button):is(:active, [open], [checked]) > .toolbarbutton-icon,
 #alltabs-button:is(:active, [open]) .toolbarbutton-icon {
   opacity: 1 !important;
+}
+
+/* In a menu (Zen's single toolbar keeps reload in its "..." menu), a plain icon in the
+   icon's place: drawn by ::before at the button's middle, it sat right of the name, with
+   the hover square where the icon should be */
+:root:not(#zia-none) :is(panel, menupopup) {
+  & :is(#back-button, #forward-button, #reload-button, #stop-button, #stop-reload-button)::before,
+  & :is(#back-button, #forward-button, #reload-button, #stop-button, #stop-reload-button)::after {
+    display: none !important;
+  }
+
+  & :is(#back-button, #forward-button, #reload-button, #stop-button) > .toolbarbutton-icon {
+    fill: currentColor !important;
+    background-color: transparent !important;
+  }
+
+  & #reload-button {
+    list-style-image: url("chrome://sine/content/zia/icons/reload.svg") !important;
+  }
 }
 
 /* Firefox's own reload/stop animation would play over Zia's. */

@@ -42,6 +42,14 @@ Every release of Zia, newest first. The format follows
   hidden. The address bar opens as wide as it is closed (it opened at its
   width from beside the sidebar). Moving the pointer up to the window's edge no
   longer hides it for a moment, and it fades out as it fades in.
+- Zen's "Only Sidebar" layout (single toolbar): the address bar in the
+  sidebar is a field of its own, a faint fill as tall as a tab; its pop-up
+  opens inside the window (it was cut off on the left); its copy link and
+  site settings buttons show and fade with the extensions beside it (only
+  the extensions showed, and faster); extensions that don't fit sit on a
+  row of plain icon buttons rather than tiles; and Reload in the "..."
+  menu has its icon in its place (it sat right of the name, beside an
+  empty square).
 - Pressing an essential presses it in again, as in Zen.
 - Dragging a tab over the essentials: the tiles slide aside within their
   own columns. Zen's drop cell made the grid change its columns (eight

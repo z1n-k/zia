@@ -375,13 +375,18 @@
     // Opened as wide as the closed bar: Zen measures that as the layout changes, but not
     // as compact mode takes the sidebar away, so it opened at its width beside the sidebar
     const container = document.getElementById("urlbar-container");
-    if (urlbar?.hasAttribute("breakout-extend") && urlbar.getAttribute("zen-floating-urlbar") !== "true" && container) {
+    const single = root.getAttribute("zen-single-toolbar") === "true";
+    if (urlbar?.hasAttribute("breakout-extend") && urlbar.getAttribute("zen-floating-urlbar") !== "true" && !single && container) {
       const width = `${container.getBoundingClientRect().width}px`;
       if (width !== "0px" && urlbar.style.getPropertyValue("--urlbar-width") !== width) {
         urlbar.style.setProperty("--urlbar-width", width);
       }
     }
-    if (urlbar?.getAttribute("zen-floating-urlbar") === "true" && !urlbarAtBottom()) {
+    // (and in the sidebar, with Zen's single toolbar, it opens where Zen puts it: moved to
+    // keep the text where it was, it went past the window's left edge)
+    if ((urlbar?.getAttribute("zen-floating-urlbar") === "true" && !urlbarAtBottom()) || single) {
+      openOffset = 0;
+      openOffsetX = 0;
       root.style.setProperty("--zia-urlbar-open-offset", "0px");
       root.style.setProperty("--zia-urlbar-open-offset-x", "0px");
       return;

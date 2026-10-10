@@ -149,6 +149,38 @@
   }
 }
 
+/* The extensions that don't fit in the sidebar's address bar (Zen's single toolbar), on
+   a row of their own under it: the toolbar's icon buttons, as at the top of the page,
+   not Zen's filled tiles (which read as more essentials) */
+:root[zen-single-toolbar="true"] #zen-overflow-extensions-list:not(:empty) {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 6px 0 0 !important;
+
+  & .unified-extensions-item {
+    flex: none !important;
+  }
+
+  & .unified-extensions-item-action-button {
+    width: 28px !important;
+    height: 28px !important;
+    background-color: transparent !important;
+    border-radius: calc(7px * var(--zia-squircle-grow)) !important;
+    corner-shape: var(--zia-squircle-soft) !important;
+    box-shadow: none !important;
+
+    &:hover {
+      background-color: color-mix(in srgb, currentColor 10%, transparent) !important;
+    }
+  }
+
+  & :is(.toolbarbutton-icon, .toolbarbutton-badge-stack) {
+    width: 16px !important;
+    height: 16px !important;
+  }
+}
+
 #zen-sidebar-foot-buttons toolbarbutton:not(#downloads-button) > .toolbarbutton-icon {
   opacity: 0.4;
   transition: none !important;
