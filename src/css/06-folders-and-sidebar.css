@@ -114,9 +114,13 @@
         height: 14px;
         margin-inline-start: 4px;
         vertical-align: -2px;
-        background-color: currentColor;
         opacity: var(--zia-folder-mark-opacity);
-        mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+        /* (drawn in the text's colour as a stroke, not a filled square cut to shape by a
+           mask: turned to point right, at a scale that makes it a part pixel wide, as on
+           Windows at 125%, the square's edge showed as a line over a closed folder's arrow) */
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='context-stroke' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+        -moz-context-properties: stroke;
+        stroke: currentColor;
         transform-origin: center;
         transition: rotate 0.22s cubic-bezier(0.2, 0.9, 0.3, 1);
       }

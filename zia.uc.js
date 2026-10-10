@@ -13520,7 +13520,7 @@
         return null;
       }
       if (isFolderEl(prev.node) && isCollapsed(prev.node)) {
-        return y < prev.top + prev.height ? prev.node : null;
+        return listMid(y) < prev.top + prev.height + listRoom.pitch * 0.4 ? prev.node : null;
       }
       const label = prev.node.classList?.contains("tab-group-label-container");
       const folder = label ? prev.node.parentElement : prev.node.parentElement?.closest?.(FOLDER_SELECTOR);
@@ -13573,6 +13573,13 @@
     // once it's 8px into where that row is shown, pushed down to make room. By the
     // rows' own middles it went into a folder, and out, three quarters of a row early.
     const listAt = (y) => y - (listRoom.pitch / 2 + 8);
+    // The cuts a tab coming up past the separator uses, by the dragged row's middle (listAt
+    // plus half a tab and 8px): above the separator until four fifths of a tab past its top,
+    // and into the closed folder before it only four tenths of a tab into that folder's slot.
+    // Cut at the separator's top and the folder's bottom, the place after the last folder
+    // (the line right under it) was a sliver: it went into the folder sooner, and skipped it.
+    const listMid = (y) => y + listRoom.pitch / 2 + 8;
+    const aboveListSep = (y) => listRoom.sepTop != null && listMid(y) < listRoom.sepTop + listRoom.pitch * 0.8;
     const shapeListRoom = (pointerY) => {
       if (!listRoom.rows) {
         openListRoom();
@@ -13595,7 +13602,7 @@
         }
       }
       if (listRoom.sep) {
-        const delta = listRoom.sepTop != null && listRoom.sepTop > y ? listRoom.pitch : 0;
+        const delta = aboveListSep(y) ? listRoom.pitch : 0;
         if (listRoom.sepDelta !== delta) {
           listRoom.sepDelta = delta;
           place(listRoom.sep, delta, false);
@@ -13656,7 +13663,7 @@
       const first = listRoom.first || null;
       const sep = listRoom.sep;
       const sepTop = listRoom.sepTop;
-      const below = sepTop != null && listAt(y) > sepTop;
+      const below = sepTop != null && !aboveListSep(listAt(y));
       const folder = listRoom.folder?.isConnected ? listRoom.folder : null;
       markListRoomFolder(null);
       listRoom.rows = null;
