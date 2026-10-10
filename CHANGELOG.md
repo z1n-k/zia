@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- An essential dragged down into the list has the same place after the
+  last folder, above the line, as a tab does: it went into the folder
+  sooner and passed the line almost at once, so that place was a sliver.
+
 ## [2.98.0] — 2026-10-10
 
 ### Changed
