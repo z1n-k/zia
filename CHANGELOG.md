@@ -34,6 +34,13 @@ Every release of Zia, newest first. The format follows
   (its box ran 2px further left), as the dragged one showed.
 - No flash as a folder lands in or out of another folder: for a frame the
   folder it left wrapped it again, or the one it went into shut round it.
+- Glance's buttons show in light spaces and light mode (white on the light
+  card, they were invisible).
+- Compact mode with Zen's "hide the toolbar": the toolbar comes in over
+  the top of the page instead of pushing it down (the page bounced and the
+  hover flickered), and the page keeps its round top corners while it's
+  hidden. The address bar opens as wide as it is closed (it opened at its
+  width from beside the sidebar).
 - Pressing an essential presses it in again, as in Zen.
 - Dragging a tab over the essentials: the tiles slide aside within their
   own columns. Zen's drop cell made the grid change its columns (eight

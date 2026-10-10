@@ -60,6 +60,41 @@
   }
 }
 
+/* Zen's hidden toolbar (compact mode, "hide the toolbar"): it shows over the top of
+   the page as the pointer goes up, rather than growing into the layout and pushing
+   the page down (the page bounced, and moving under the pointer, the hover flickered).
+   Hidden, it's a clear strip where the pointer finds it, and the page, with nothing
+   above it, has all four corners round (its top ones were square). */
+@media -moz-pref("zen.view.compact.hide-toolbar") {
+  :root[zen-compact-mode="true"]:not([zen-single-toolbar="true"], [inDOMFullscreen="true"], [zia-urlbar-position="bottom"]):not(#zia-none) {
+    & #zen-appcontent-navbar-wrapper {
+      position: absolute !important;
+      top: 0;
+      inset-inline: 0;
+      z-index: 2;
+    }
+
+    & #zen-appcontent-navbar-wrapper:not([zen-has-hover], [has-popup-menu], [zen-compact-mode-active]) {
+      background-color: transparent !important;
+      border-bottom-color: transparent !important;
+    }
+
+    /* (Zen pulls the page up as the toolbar shows, to undo its push down: with nothing
+       pushed, that lifted the page under it) */
+    & #tabbrowser-tabpanels[has-toolbar-hovered] .browserContainer {
+      margin-top: 0 !important;
+    }
+
+    & #tabbrowser-tabbox #tabbrowser-tabpanels .browserSidebarContainer {
+      border-radius: var(--zia-card-radius) !important;
+    }
+
+    & #tabbrowser-tabpanels :is(.browserSidebarContainer, .browserStack, browser) {
+      clip-path: inset(0 round var(--zia-card-radius));
+    }
+  }
+}
+
 #zen-dragover-background {
   display: none !important;
 }

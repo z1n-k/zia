@@ -72,6 +72,25 @@
   }
 }
 
+/* light mode: the card's light (as the hover cards are), so its buttons take their dark
+   ink and hover; white, they went unseen */
+:root[zia-light]:not(#zia-none) .zen-glance-sidebar-container {
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.1), 0 8px 24px rgba(0, 0, 0, 0.14);
+
+  & toolbarbutton {
+    color: rgb(28, 28, 32) !important;
+
+    /* (not the close asking to be sure, which stays red) */
+    &:hover:not([waitconfirmation]) {
+      background: rgba(0, 0, 0, 0.06) !important;
+    }
+  }
+
+  & > .zen-glance-sidebar-close[waitconfirmation] {
+    color: rgb(255, 255, 255) !important;
+  }
+}
+
 /* A glance on a normal tab: a small picture of the page, tipped at an
  angle like a card set down on the tab and cut off by the tab's bottom
  edge, as in Dia (zia.uc.js, glance thumbnails), in place of Zen's icon
