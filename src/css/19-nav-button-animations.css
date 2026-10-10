@@ -19,6 +19,7 @@
 
 :is(#back-button, #forward-button, #reload-button, #stop-button) > .toolbarbutton-icon {
   fill: transparent !important;
+  transition: background-color 0.2s ease !important;
 }
 
 :is(#back-button, #forward-button, #reload-button, #stop-button)::before,
@@ -52,10 +53,6 @@
 
 :is(#back-button, #forward-button, #stop-button)::before {
   opacity: var(--zia-nav-rest);
-}
-
-:is(#back-button, #forward-button, #reload-button, #stop-button) > .toolbarbutton-icon {
-  transition: background-color 0.2s ease !important;
 }
 
 /* Reload and stop are two buttons, one swapped for the other as a page
@@ -227,6 +224,25 @@
 #zen-sidebar-foot-buttons toolbarbutton:not(#downloads-button):is(:active, [open], [checked]) > .toolbarbutton-icon,
 #alltabs-button:is(:active, [open]) .toolbarbutton-icon {
   opacity: 1 !important;
+}
+
+/* In a menu (Zen's single toolbar keeps reload in its "..." menu), a plain icon in the
+   icon's place: drawn by ::before at the button's middle, it sat right of the name, with
+   the hover square where the icon should be */
+:root:not(#zia-none) :is(panel, menupopup) {
+  & :is(#back-button, #forward-button, #reload-button, #stop-button, #stop-reload-button)::before,
+  & :is(#back-button, #forward-button, #reload-button, #stop-button, #stop-reload-button)::after {
+    display: none !important;
+  }
+
+  & :is(#back-button, #forward-button, #reload-button, #stop-button) > .toolbarbutton-icon {
+    fill: currentColor !important;
+    background-color: transparent !important;
+  }
+
+  & #reload-button {
+    list-style-image: url("chrome://sine/content/zia/icons/reload.svg") !important;
+  }
 }
 
 /* Firefox's own reload/stop animation would play over Zia's. */

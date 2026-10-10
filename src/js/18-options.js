@@ -15,8 +15,7 @@
       });
     };
     apply();
-    Services.prefs.addObserver(URLBAR_POSITION_PREF, apply);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(URLBAR_POSITION_PREF, apply));
+    watchPrefs(URLBAR_POSITION_PREF, apply);
   }
 
   // Options in Sine's settings that are on by default (the rest are set
@@ -55,14 +54,7 @@
       updateColor();
     };
     apply();
-    for (const name of WATCHED_OPTIONS) {
-      Services.prefs.addObserver(name, onChange);
-    }
-    window.addEventListener("unload", () => {
-      for (const name of WATCHED_OPTIONS) {
-        Services.prefs.removeObserver(name, onChange);
-      }
-    });
+    watchPrefs(WATCHED_OPTIONS, onChange);
   }
 
   const FEATURES = ["media-player", "find-bar", "icon-picker", "undo-close", "folder-icon-suggest", "tab-hover-cards", "tab-numbers"];
@@ -80,5 +72,3 @@
       safely(name, fn);
     }
   }
-
-

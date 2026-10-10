@@ -1,4 +1,3 @@
-
   // A page peeked at with Glance shows on its tab as a small picture of the
   // page, tipped at an angle, as in Dia, in place of Zen's icon tile.
   // Hovering the tab brings its close button over the picture, and that
@@ -13,6 +12,7 @@
   // the sink in chrome.css; the hover tip eases home first
   const GLANCE_THUMB_SINK_MS = 300;
   const GLANCE_THUMB_UNTIP_MS = 450;
+  const GLANCE_CUTS = ["--zia-glance-cut-top", "--zia-glance-cut-right", "--zia-glance-cut-bottom"];
   const glanceHost = new WeakMap();
   // A close is marked as soon as the picture starts sinking, so the glance
   // mark coming off afterwards does not play the sink a second time.
@@ -54,9 +54,9 @@
   // in the stack and covers the site's icon.
   function clearGlanceThumb(glanceTab) {
     glanceTab.removeAttribute("zia-glance-thumb");
-    glanceTab.style.removeProperty("--zia-glance-cut-top");
-    glanceTab.style.removeProperty("--zia-glance-cut-right");
-    glanceTab.style.removeProperty("--zia-glance-cut-bottom");
+    for (const name of GLANCE_CUTS) {
+      glanceTab.style.removeProperty(name);
+    }
     glanceTab.querySelector(":scope > .tab-stack > .zia-glance-thumb")?.remove();
   }
 
@@ -115,7 +115,7 @@
 
     const exit = document.createElementNS(XHTML_NS, "div");
     exit.className = "zia-glance-thumb-exit";
-    for (const name of ["--zia-glance-cut-top", "--zia-glance-cut-right", "--zia-glance-cut-bottom"]) {
+    for (const name of GLANCE_CUTS) {
       const value = glanceTab.style.getPropertyValue(name);
       if (value) {
         exit.style.setProperty(name, value);
@@ -242,7 +242,7 @@
     // on unless switched off: the styles look for this mark, not the setting
     const markOff = () => setFlag("zia-glance-thumb-off", !on());
     markOff();
-    Services.prefs.addObserver(GLANCE_THUMB_PREF, markOff);
+    watchPrefs(GLANCE_THUMB_PREF, markOff);
     gBrowser.tabContainer.addEventListener(
       "GlanceClose",
       (event) => {

@@ -72,7 +72,6 @@
       });
       row.appendChild(button);
     }
-    // a picture of the page, with Firefox's hover previews on (below)
     const thumb = document.createElementNS(XHTML_NS, "canvas");
     thumb.className = "zia-tab-card-thumb";
     thumb.hidden = true;
@@ -81,11 +80,7 @@
     return card;
   }
 
-  // With Firefox's tab hover previews on (browser.tabs.hoverPreview), the
-  // card shows a picture of the page above its name, as Firefox's own
-  // preview does, for a loaded page other than the one you're on (Zia's
-  // card stands in for Firefox's, which it hides, and showed only the
-  // name). Drawn as Firefox draws its own, or as Zia draws a glance's.
+  // the page's picture when Firefox's hover previews are on (Zia's card replaces Firefox's)
   const TAB_THUMB_RATIO = 0.55;
   let thumbToken = 0;
 
@@ -127,7 +122,6 @@
       return;
     }
     const ctx = canvas.getContext("2d");
-    // (the top of the page, filling the frame)
     const sw = picture.width;
     const sh = Math.min(picture.height, sw * TAB_THUMB_RATIO);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -164,6 +158,15 @@
     }
   }
 
+  // keeps the card in the window; returns the top it got
+  function moveCard(card, x, y) {
+    x = Math.max(TAB_CARD_GAP, Math.min(x, window.innerWidth - card.offsetWidth - TAB_CARD_GAP));
+    y = Math.max(TAB_CARD_GAP, Math.min(y, window.innerHeight - card.offsetHeight - TAB_CARD_GAP));
+    card.style.left = `${Math.round(x)}px`;
+    card.style.top = `${Math.round(y)}px`;
+    return y;
+  }
+
   function placeTabCard(card, tab) {
     const tile = tab.querySelector(":scope > .tab-stack > .tab-background");
     const tileBox = tile?.getBoundingClientRect();
@@ -177,15 +180,14 @@
     let origin;
     if (tab.hasAttribute("zen-essential")) {
       card.setAttribute("zia-anchor", "essential");
+      y = tabBox.bottom - ESSENTIAL_CARD_OVERLAP_Y;
       if (onRight) {
         card.setAttribute("zia-side", "right");
         x = tabBox.left - width + ESSENTIAL_CARD_OVERLAP_X;
-        y = tabBox.bottom - ESSENTIAL_CARD_OVERLAP_Y;
         origin = "top right";
       } else {
         card.removeAttribute("zia-side");
         x = tabBox.right - ESSENTIAL_CARD_OVERLAP_X;
-        y = tabBox.bottom - ESSENTIAL_CARD_OVERLAP_Y;
         origin = "top left";
       }
     } else {
@@ -195,10 +197,7 @@
       y = tabBox.top + tabBox.height / 2 - height / 2;
       origin = onRight ? "right center" : "left center";
     }
-    x = Math.max(TAB_CARD_GAP, Math.min(x, window.innerWidth - width - TAB_CARD_GAP));
-    y = Math.max(TAB_CARD_GAP, Math.min(y, window.innerHeight - height - TAB_CARD_GAP));
-    card.style.left = `${Math.round(x)}px`;
-    card.style.top = `${Math.round(y)}px`;
+    moveCard(card, x, y);
     card.style.transformOrigin = origin;
   }
 
@@ -271,7 +270,6 @@
     icon.className = className;
     icon.setAttribute("src", src);
     icon.setAttribute("alt", "");
-
     icon.addEventListener("error", () => icon.setAttribute("src", DEFAULT_TAB_ICON), { once: true });
     return icon;
   }
@@ -284,13 +282,8 @@
 
   function fillFolderCard(card, folder) {
     card.ziaFolder = folder;
-    // (its colour, for the card to take when that's on: chrome.css)
     const color = folder.getAttribute("zia-folder-color");
-    if (color) {
-      card.setAttribute("zia-folder-color", color);
-    } else {
-      card.removeAttribute("zia-folder-color");
-    }
+    setAttr(card, "zia-folder-color", color || null);
     const rows = [];
     for (const tab of tabsInFolder(folder)) {
       const row = document.createElementNS(XHTML_NS, "div");
@@ -357,8 +350,7 @@
     list.scrollTop = scrolled;
   }
 
-  // How far a tab's icon sits in from the tab's edge in the sidebar: the
-  // folder card keeps its tabs that far in from its own edges, all round.
+  // a tab's icon inset in the sidebar, which the folder card keeps on all sides
   function tabEdgeInset() {
     try {
       const tab = gBrowser.visibleTabs.find((t) => !t.pinned && !t.hasAttribute("zen-essential") && t.getBoundingClientRect().width);
@@ -398,28 +390,18 @@
     const box = label.getBoundingClientRect();
     const sidebar = document.getElementById("navigator-toolbox")?.getBoundingClientRect() || box;
     const onRight = root.getAttribute("zen-right-side") === "true";
-    const width = card.offsetWidth;
-    const height = card.offsetHeight;
-    let x = onRight ? sidebar.left - width - TAB_CARD_GAP : sidebar.right + TAB_CARD_GAP;
-    // its first row level with the folder, centre to centre (so a card of
-    // one tab sits centred on it, as a tab's card does)
+    const x = onRight ? sidebar.left - card.offsetWidth - TAB_CARD_GAP : sidebar.right + TAB_CARD_GAP;
+    // first row level with the folder, so a one-tab card centres on it like a tab's
     const first = card.querySelector(".zia-folder-card-row");
-    const middle = first ? first.offsetTop + first.offsetHeight / 2 : height / 2;
-    let y = box.top + box.height / 2 - middle;
-    x = Math.max(TAB_CARD_GAP, Math.min(x, window.innerWidth - width - TAB_CARD_GAP));
-    y = Math.max(TAB_CARD_GAP, Math.min(y, window.innerHeight - height - TAB_CARD_GAP));
-    card.style.left = `${Math.round(x)}px`;
-    card.style.top = `${Math.round(y)}px`;
+    const middle = first ? first.offsetTop + first.offsetHeight / 2 : card.offsetHeight / 2;
+    const y = moveCard(card, x, box.top + box.height / 2 - middle);
     card.style.transformOrigin = `${onRight ? "right" : "left"} ${Math.round(box.top + box.height / 2 - y)}px`;
   }
 
   function hoveredFolderLabel(target) {
     const label = target?.closest?.(".tab-group-label-container");
     const folder = label?.parentElement;
-    if (!folder?.isZenFolder || !folder.collapsed || folder.hasAttribute("split-view-group")) {
-      return null;
-    }
-    return label;
+    return folder?.isZenFolder && folder.collapsed && !folder.hasAttribute("split-view-group") ? label : null;
   }
 
   function quietZenFolderPopup() {
@@ -429,10 +411,7 @@
     }
     const original = folders.openTabsPopup;
     const wrapped = function (...args) {
-      if (featureOn("tab-hover-cards")) {
-        return undefined;
-      }
-      return original.apply(this, args);
+      return featureOn("tab-hover-cards") ? undefined : original.apply(this, args);
     };
     wrapped.ziaWrapped = true;
     folders.openTabsPopup = wrapped;
@@ -455,10 +434,8 @@
     const cardUp = () => [card, folderCard].some((each) => each && !each.hidden && !each.hasAttribute("zia-closing"));
     const cardHovered = () => [card, folderCard].some((each) => each && !each.hidden && each.matches(":hover"));
 
-    // In compact mode the sidebar hides once the pointer leaves it, and the
-    // cards sit outside it, so while the pointer is on a card Zia holds the
-    // sidebar open the way Zen does while one of its own menus is open.
-    // Leaving the card, the sidebar gets Zen's usual moment before it hides.
+    // Compact mode hides the sidebar once the pointer leaves it, and the cards sit
+    // outside it: hold it open, as Zen does for its own menus, while on a card.
     let holding = false;
     const holdSidebar = (on) => {
       if (on === holding) {
@@ -520,7 +497,6 @@
         other.removeAttribute("zia-closing");
       }
       shown.removeAttribute("zia-closing");
-      shown.hidden = false;
       if (wasUp) {
         shown.setAttribute("zia-snap", "true");
         shown.setAttribute("zia-open", "true");
@@ -547,6 +523,17 @@
     };
     const onCard = (node) => !!node && (card?.contains(node) || folderCard?.contains(node));
 
+    const watchCard = (node) => {
+      node.addEventListener("mouseenter", () => {
+        clearTimeout(hideTimer);
+        holdSidebar(true);
+      });
+      node.addEventListener("mouseleave", () => {
+        holdSidebar(false);
+        hideSoon();
+      });
+    };
+
     const showFolder = (label) => {
       if (!folderCard) {
         folderCard = buildFolderCard((row) => {
@@ -564,14 +551,7 @@
             console.error("[Zia] Folder card action failed:", err);
           }
         });
-        folderCard.addEventListener("mouseenter", () => {
-          clearTimeout(hideTimer);
-          holdSidebar(true);
-        });
-        folderCard.addEventListener("mouseleave", () => {
-          holdSidebar(false);
-          hideSoon();
-        });
+        watchCard(folderCard);
         folderCard.addEventListener("zia-card-acting", () => {
           keepCardUntil = Date.now() + 1200;
           clearTimeout(hideTimer);
@@ -594,7 +574,6 @@
       if (!card) {
         card = buildTabCard((action) => {
           const tab = current;
-
           if (!action.keepsCard) {
             hide(true);
           } else {
@@ -609,22 +588,9 @@
           if (!tab?.isConnected) {
             return;
           }
-          try {
-            Promise.resolve(action.run(tab)).catch((err) =>
-              console.error(`[Zia] ${action.label} failed:`, err)
-            );
-          } catch (err) {
-            console.error(`[Zia] ${action.label} failed:`, err);
-          }
+          Promise.try(() => action.run(tab)).catch((err) => console.error(`[Zia] ${action.label} failed:`, err));
         });
-        card.addEventListener("mouseenter", () => {
-          clearTimeout(hideTimer);
-          holdSidebar(true);
-        });
-        card.addEventListener("mouseleave", () => {
-          holdSidebar(false);
-          hideSoon();
-        });
+        watchCard(card);
       }
       current = tab;
       fillTabCard(card, tab);
@@ -658,7 +624,7 @@
     });
 
     toolbox.addEventListener("mouseout", (event) => {
-      const tab = event.target?.closest?.(".tabbrowser-tab") || event.target?.closest?.(".tab-group-label-container");
+      const tab = event.target?.closest?.(".tabbrowser-tab, .tab-group-label-container");
       if (!tab) {
         return;
       }
@@ -675,7 +641,7 @@
     toolbox.addEventListener("wheel", () => hide(), { passive: true, capture: true });
     for (const type of ["TabSelect", "TabClose"]) {
       gBrowser.tabContainer.addEventListener(type, () => {
-        if ((Date.now() < keepCardUntil && folderCard && !folderCard.hidden) || [card, folderCard].some((each) => each && !each.hidden && each.matches(":hover"))) {
+        if ((Date.now() < keepCardUntil && folderCard && !folderCard.hidden) || cardHovered()) {
           return;
         }
         hide();

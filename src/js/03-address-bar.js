@@ -6,23 +6,25 @@
     if (!inputBox) {
       return;
     }
-    titleEl = document.createElementNS(XHTML_NS, "div");
-    titleEl.id = "zia-url-title";
-    const host = document.createElementNS(XHTML_NS, "span");
-    host.className = "zia-url-title-host";
-    const rest = document.createElementNS(XHTML_NS, "span");
-    rest.className = "zia-url-title-rest";
-    titleEl.append(host, rest);
-    inputBox.append(titleEl);
+    // each a host part and the rest
+    const titleBox = (id) => {
+      const box = document.createElementNS(XHTML_NS, "div");
+      box.id = id;
+      for (const part of ["host", "rest"]) {
+        const span = document.createElementNS(XHTML_NS, "span");
+        span.className = `zia-url-title-${part}`;
+        box.append(span);
+      }
+      inputBox.append(box);
+      return box;
+    };
+    titleEl = titleBox("zia-url-title");
+    plainEl = titleBox("zia-url-plain");
+  }
 
-    plainEl = document.createElementNS(XHTML_NS, "div");
-    plainEl.id = "zia-url-plain";
-    const plainHost = document.createElementNS(XHTML_NS, "span");
-    plainHost.className = "zia-url-title-host";
-    const plainRest = document.createElementNS(XHTML_NS, "span");
-    plainRest.className = "zia-url-title-rest";
-    plainEl.append(plainHost, plainRest);
-    inputBox.append(plainEl);
+  function showTitle(el, host, rest) {
+    el.firstChild.textContent = host;
+    el.lastChild.textContent = rest;
   }
 
   const TITLE_ONLY_PREF = "zia.urlbar.title-only";
@@ -36,9 +38,7 @@
   }
 
   function watchTitleOnly() {
-    const apply = () => updateTitle();
-    Services.prefs.addObserver(TITLE_ONLY_PREF, apply);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(TITLE_ONLY_PREF, apply));
+    watchPrefs(TITLE_ONLY_PREF, () => updateTitle());
   }
 
   function updateTitle() {
@@ -48,65 +48,45 @@
     const urlbar = gURLBar.textbox || document.getElementById("urlbar");
     const browser = gBrowser.selectedBrowser;
     const uri = browser?.currentURI;
-
     let host = "";
     try {
       if (uri && /^https?$/.test(uri.scheme)) {
         host = uri.displayHost.replace(/^www\./, "");
       }
     } catch (err) {
-      host = "";
+      // (an address with no host)
     }
-
     const title = (browser?.contentTitle || "").trim();
     const valid = urlbar.getAttribute("pageproxystate") === "valid";
 
     // Multiview reads as a browser feature ("Multiview · 3"), not a website.
     if (valid && isMultiviewURI(uri)) {
-      titleEl.firstChild.textContent = title || "Multiview";
-      titleEl.lastChild.textContent = "";
-      if (plainEl) {
-        plainEl.firstChild.textContent = title || "Multiview";
-        plainEl.lastChild.textContent = "";
-      }
+      showTitle(titleEl, title || "Multiview", "");
+      showTitle(plainEl, title || "Multiview", "");
       urlbar.setAttribute("zia-has-title", "true");
       return;
     }
-
     if (!host || !valid || isErrorPage(browser)) {
       urlbar.removeAttribute("zia-has-title");
       return;
     }
-
     let isHomePage = false;
+    let path = "";
     try {
-      const path = uri.filePath || "/";
-      isHomePage = (path === "/" || path === "") && !uri.query && !uri.ref;
+      isHomePage = (uri.filePath || "/") === "/" && !uri.query && !uri.ref;
+      path = uri.pathQueryRef || "";
     } catch (err) {
-      isHomePage = false;
+      // (an address without a path)
     }
     const hasTitle = /[\p{L}\p{N}]/u.test(title);
     // Title only (an option): the title alone, in the domain's place and
     // colour, even on a site's home page; a page with none shows its domain
     if (titleOnly() && hasTitle) {
-      titleEl.firstChild.textContent = title;
-      titleEl.lastChild.textContent = "";
+      showTitle(titleEl, title, "");
     } else {
-      titleEl.firstChild.textContent = host;
-      titleEl.lastChild.textContent = !isHomePage && hasTitle && title !== host ? ` / ${title}` : "";
+      showTitle(titleEl, host, !isHomePage && hasTitle && title !== host ? ` / ${title}` : "");
     }
-
-    if (plainEl) {
-      let path = "";
-      try {
-        path = uri.pathQueryRef || "";
-      } catch (err) {
-        path = "";
-      }
-      plainEl.firstChild.textContent = host;
-      plainEl.lastChild.textContent = path === "/" ? "" : path;
-    }
-
+    showTitle(plainEl, host, path === "/" ? "" : path);
     urlbar.setAttribute("zia-has-title", "true");
   }
 
@@ -160,7 +140,6 @@
           this,
           typing ? (typeof next === "string" && !keepSlash ? next.replace(BARE_SLASH, "$1") : next) : plainAddress(next)
         );
-
         if (holdWholeSelection && gURLBar.focused) {
           this.select();
         }
@@ -212,7 +191,6 @@
       (event) => {
         const opening = !urlbar.hasAttribute("breakout-extend") && !gURLBar.focused;
         closedLength = opening ? input.value.length : -1;
-
         holdWholeSelection = opening && event.button === 0;
       },
       true
@@ -394,8 +372,21 @@
 
   function alignOpenedUrlbar() {
     const urlbar = gURLBar.textbox || document.getElementById("urlbar");
-
-    if (urlbar?.getAttribute("zen-floating-urlbar") === "true" && !urlbarAtBottom()) {
+    // Opened as wide as the closed bar: Zen measures that as the layout changes, but not
+    // as compact mode takes the sidebar away, so it opened at its width beside the sidebar
+    const container = document.getElementById("urlbar-container");
+    const single = root.getAttribute("zen-single-toolbar") === "true";
+    if (urlbar?.hasAttribute("breakout-extend") && urlbar.getAttribute("zen-floating-urlbar") !== "true" && !single && container) {
+      const width = `${container.getBoundingClientRect().width}px`;
+      if (width !== "0px" && urlbar.style.getPropertyValue("--urlbar-width") !== width) {
+        urlbar.style.setProperty("--urlbar-width", width);
+      }
+    }
+    // (and in the sidebar, with Zen's single toolbar, it opens where Zen puts it: moved to
+    // keep the text where it was, it went past the window's left edge)
+    if ((urlbar?.getAttribute("zen-floating-urlbar") === "true" && !urlbarAtBottom()) || single) {
+      openOffset = 0;
+      openOffsetX = 0;
       root.style.setProperty("--zia-urlbar-open-offset", "0px");
       root.style.setProperty("--zia-urlbar-open-offset-x", "0px");
       return;
@@ -446,7 +437,6 @@
     setTimeout(alignOpenedUrlbar, 60);
     setTimeout(alignOpenedUrlbar, 200);
   }
-
 
   // Restarts a CSS animation keyed on an attribute, then clears it.
   function replayAttribute(el, name, ms, value = "true") {
@@ -518,19 +508,21 @@
     const ease = cubicBezier(0.3, 1.35, 0.5, 1);
     let cut = 0;
     let frame = 0;
-    const go = (target) => {
+    const setCut = (value) => {
+      cut = value;
+      button.style.setProperty("--zia-reload-cut", `${cut}deg`);
+    };
+    const go = (target, instant = false) => {
       cancelAnimationFrame(frame);
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        cut = target;
-        button.style.setProperty("--zia-reload-cut", `${cut}deg`);
+      if (instant || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        setCut(target);
         return;
       }
       const from = cut;
       const start = performance.now();
       const step = (now) => {
         const t = Math.min(1, (now - start) / RELOAD_HOVER_MS);
-        cut = from + (target - from) * ease(t);
-        button.style.setProperty("--zia-reload-cut", `${cut}deg`);
+        setCut(from + (target - from) * ease(t));
         if (t < 1) {
           frame = requestAnimationFrame(step);
         }
@@ -544,13 +536,5 @@
       }
     });
     button.addEventListener("mouseleave", () => go(0));
-    button.ziaReloadCut = (target, instant = false) => {
-      if (instant) {
-        cancelAnimationFrame(frame);
-        cut = target;
-        button.style.setProperty("--zia-reload-cut", `${cut}deg`);
-        return;
-      }
-      go(target);
-    };
+    button.ziaReloadCut = go;
   }

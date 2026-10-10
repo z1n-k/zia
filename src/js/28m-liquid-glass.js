@@ -128,7 +128,6 @@
       // (the window losing focus mid-press; not a field inside it)
       ["blur", (event) => event.target === window && letGo()],
     ];
-
     for (const [type, handler] of PRESS_EVENTS) {
       window.addEventListener(type, handler, true);
     }

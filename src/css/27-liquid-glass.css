@@ -93,15 +93,10 @@
   --zia-glass-press-wash: rgba(255, 255, 255, 0.12);
 }
 
-/* The press light (Clear's icon is its background picture, so it goes
-   without) */
+/* The press light (not on Clear, whose icon is its background picture; on a
+   Library section not yet chosen, its hover tile) */
 :root:not(#zia-none) .tabbrowser-tab[zen-essential][zia-glass-press] > .tab-stack > .tab-background,
-:root:not(#zia-none) zen-library [zia-glass-press]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip, .zia-library-rail):not(.zia-library-clear) {
-  background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent)) !important;
-}
-
-/* (a Library section not yet chosen: its hover tile, the light fading on
-   over the sliding tile as it arrives) */
+:root:not(#zia-none) zen-library [zia-glass-press]:is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip, .zia-library-rail):not(.zia-library-clear),
 :root:not(#zia-none) zen-library .zen-library-tab[zia-glass-press]::before {
   background-image: radial-gradient(circle 60px at var(--zia-press-x, 50%) var(--zia-press-y, 50%), var(--zia-press-light, transparent), 30%, var(--zia-press-wash, transparent)) !important;
 }

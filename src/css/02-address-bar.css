@@ -18,7 +18,6 @@
     height: var(--zia-urlbar-height) !important;
     min-height: var(--zia-urlbar-height) !important;
     max-height: var(--zia-urlbar-height) !important;
-
     --urlbar-height: var(--zia-urlbar-height) !important;
 
     & :is(.urlbar-input, #zia-url-title, #zia-url-plain) {
@@ -41,6 +40,32 @@
     background: var(--zia-urlbar-hover-bg) !important;
     box-shadow: none !important;
     outline: none !important;
+  }
+
+  /* In the sidebar (Zen's single toolbar) the bar is a field of its own, as in Dia: no
+     toolbar around it to say where it is, so it keeps a faint fill, brighter on hover */
+  :root[zen-single-toolbar="true"] #urlbar:not([breakout-extend]) > .urlbar-background {
+    background: color-mix(in srgb, currentColor 7%, transparent) !important;
+  }
+
+  :root[zen-single-toolbar="true"] #urlbar:is(:hover, [focused]):not([breakout-extend]) > .urlbar-background {
+    background: color-mix(in srgb, currentColor 11%, transparent) !important;
+  }
+
+  /* ...as tall as a tab */
+  :root[zen-single-toolbar="true"]:not([zia-split="true"]) #urlbar:not([breakout-extend], [zen-floating-urlbar="true"]) {
+    height: var(--zia-tab-height) !important;
+    min-height: var(--zia-tab-height) !important;
+    max-height: var(--zia-tab-height) !important;
+    --urlbar-height: var(--zia-tab-height) !important;
+    /* (Zen's 1px all round, and the fill's own inset, left it 2px shorter than a tab) */
+    padding: 0 !important;
+
+    & > .urlbar-background {
+      inset: 0 !important;
+      margin: 0 !important;
+      border-width: 0 !important;
+    }
   }
 
   /* Windows, with no tab open: the address bar's hover showed as a flat,
@@ -95,7 +120,6 @@
       corner-shape: var(--zia-squircle) !important;
       box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
       backdrop-filter: none !important;
-
       transform-origin: 50% 0 !important;
       animation: zia-urlbar-open 0.18s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
     }
@@ -230,9 +254,6 @@
     & .urlbarView-body-inner {
       padding-inline: 0 !important;
       margin-inline: 0 !important;
-    }
-
-    & .urlbarView-body-inner {
       padding-block: var(--zia-pop-list-pad) !important;
     }
 
@@ -286,7 +307,6 @@
     transition: opacity 0.3s ease;
     --zia-load-width: calc(var(--zia-load-progress, 0) * 100%);
     --zia-load-p: var(--zia-load-progress, 0);
-
     --zia-load-tint: color-mix(in srgb, var(--zia-loading-color) 30%, transparent),
       color-mix(in srgb, var(--zia-loading-color) 14%, transparent) 50%,
       transparent 100%;
@@ -295,18 +315,14 @@
       color-mix(in srgb, var(--zia-loading-color) 5%, transparent) 70%,
       transparent 100%;
     background:
-
       radial-gradient(farthest-side at 100% 100%, var(--zia-load-glow))
         calc(var(--zia-load-p) * 100% + (var(--zia-load-p) - 1) * 180px) 100% / 180px 100% no-repeat,
-
       radial-gradient(farthest-side at 0% 100%, var(--zia-load-glow))
         calc(var(--zia-load-p) * 100% + var(--zia-load-p) * 28px) 100% / 28px 100% no-repeat,
-
       radial-gradient(100% 100% at 100% 100%, var(--zia-load-tint))
         calc(var(--zia-load-p) * 100% + (var(--zia-load-p) - 1) * 240px) 100% / 240px 100% no-repeat,
       radial-gradient(100% 100% at 0% 100%, var(--zia-load-tint))
         calc(var(--zia-load-p) * 100% + var(--zia-load-p) * 36px) 100% / 36px 100% no-repeat,
-
       linear-gradient(
         to right,
         color-mix(in srgb, var(--zia-loading-color) 70%, transparent),
@@ -407,6 +423,14 @@
     pointer-events: none !important;
   }
 
+  /* (in the sidebar, Zen's single toolbar, Zen shows and fades each of them itself with
+     the sidebar hovered, as it does the extensions beside them: hidden here as well,
+     only the extensions showed till the bar itself was hovered, then faded in slower) */
+  :root[zen-single-toolbar="true"] #urlbar:not([breakout-extend]) :is(#identity-box, #page-action-buttons) {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
   /* Takes the address bar's colour as it changes with the site, like the
      icons beside it. */
   #zia-copy-link-button {
@@ -423,16 +447,30 @@
     list-style-image: url("chrome://sine/content/zia/icons/ui/check.svg") !important;
   }
 
+  /* (Dia's tile, measured: 23 by 22 with a 3.5px corner, 26px from one icon
+     to the next. At 26 square it nearly filled the bar's height, with three
+     times as much room to its right; Zen's 8px corner made it near round) */
   #urlbar :is(#zia-copy-link-button, #zen-site-data-icon-button) {
-    width: 26px !important;
-    min-width: 26px !important;
-    height: 26px !important;
-    min-height: 26px !important;
+    width: 23px !important;
+    min-width: 23px !important;
+    height: 22px !important;
+    min-height: 22px !important;
+    border-radius: 3.5px !important;
     padding: 0 !important;
     box-sizing: border-box !important;
     justify-content: center !important;
     align-items: center !important;
     align-self: center !important;
+  }
+
+  #urlbar #zen-site-data-icon-button {
+    margin-inline-start: 3px !important;
+  }
+
+  /* (Dia's tile is 12% over the bar, measured; Zen's was over twice that. The
+     icon's own ink, so it's dark on a light bar) */
+  #urlbar :is(#zia-copy-link-button, #zen-site-data-icon-button):is(:hover, [open]) {
+    background-color: color-mix(in srgb, currentColor 12%, transparent) !important;
   }
 
   #urlbar #zia-copy-link-button image {
@@ -487,12 +525,22 @@
 #stop-button {
   list-style-image: url("chrome://sine/content/zia/icons/stop.svg") !important;
 }
-#nav-bar :is(
+
+/* (the buttons themselves not in the sidebar's address bar, Zen's single toolbar, where
+   Zen fades them in and out with the site and copy buttons: still, they showed and went
+   at once, before those) */
+:root:not([zen-single-toolbar="true"]) #nav-bar :is(
   .unified-extensions-item,
   .webextension-browser-action,
   toolbarbutton[id$="-browser-action"],
   toolbarbutton[id$="-BAP"]
 ),
+#nav-bar :is(
+  .unified-extensions-item,
+  .webextension-browser-action,
+  toolbarbutton[id$="-browser-action"],
+  toolbarbutton[id$="-BAP"]
+)::before,
 #nav-bar :is(
   .unified-extensions-item,
   .webextension-browser-action,
@@ -504,16 +552,6 @@
   .toolbarbutton-badge,
   .unified-extensions-item-action-button
 ) {
-  transition: none !important;
-  animation: none !important;
-}
-
-#nav-bar :is(
-  .unified-extensions-item,
-  .webextension-browser-action,
-  toolbarbutton[id$="-browser-action"],
-  toolbarbutton[id$="-BAP"]
-)::before {
   transition: none !important;
   animation: none !important;
 }
@@ -642,7 +680,6 @@
       fill: currentColor !important;
     }
   }
-
 
   /* The "paste the copied link" suggestion: just the link, without the
      search engine's name in a chip at the far right */

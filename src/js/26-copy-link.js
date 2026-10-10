@@ -13,7 +13,6 @@
       name: "essential",
       icon: "card-pin",
       label: "Add to Essentials",
-
       // a split goes in whole, as a split essential: Zen can't make one of
       // its tabs an essential (it left the other stranded, without a title)
       run: (tab) => (inSplit(tab) ? addSplitToEssentials(tab) : gZenPinnedTabManager?.addToEssentials(tab)),
@@ -36,7 +35,6 @@
       name: "split",
       icon: "card-split",
       label: "Add to Split",
-
       run: (tab) => {
         const other = tab === gBrowser.selectedTab ? lastUsedOtherTab(tab) : gBrowser.selectedTab;
         if (other) {
@@ -117,11 +115,7 @@
   // button's <image>, whose picture comes from CSS on [zia-copied].
   function showCopiedIcon(button, icon) {
     const set = (copied) => () => {
-      if (copied) {
-        button.setAttribute("zia-copied", "true");
-      } else {
-        button.removeAttribute("zia-copied");
-      }
+      button.toggleAttribute("zia-copied", copied);
       if (icon?.localName === "img") {
         icon.setAttribute("src", copied ? COPIED_ICON : COPY_ICON);
       }
@@ -183,7 +177,6 @@
       const uri = gBrowser.selectedBrowser?.currentURI;
       button.hidden = !uri || !/^https?$/.test(uri.scheme);
     };
-
     // As faint as the site settings icon beside it (a fixed see-through
     // level); its colour follows the toolbar in CSS.
     const siteIcon = siteData.querySelector("image");

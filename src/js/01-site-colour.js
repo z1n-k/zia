@@ -1,7 +1,5 @@
-  // Every reading looks at the same band at the top of the page, 24px deep.
-  // The checker below used to read deeper than the rest, so on a page with
-  // a thin strip of another colour along its top edge the two disagreed,
-  // and the toolbar flicked between them for as long as the page was open.
+  // One band, 24px deep, for every reading: the checker once read deeper, and on
+  // a page with a thin strip of another colour at its top the toolbar flicked.
   const TOP_BAND = 24;
   const STRIP_SCALE = 0.5;
   const FULL_VIEW_SCALE = 0.125;
@@ -27,12 +25,10 @@
   const UNSURE_RECHECK = 200;
   let unsureColor = null;
 
-  // Off leaves the toolbar in the theme's own colour instead of the site's.
   const siteColorOn = () => Services.prefs.getBoolPref("zia.toolbar.site-color", true);
 
   function applyColor(rgb) {
-    // (off, the toolbar's left clear on Zen's own window colour, the
-    // sidebar's, 01-page-card-and-toolbar.css: it was Zia's near-black)
+    // off: clear over Zen's own window colour (01-page-card-and-toolbar.css), not Zia's near-black
     setFlag("zia-theme-toolbar", !siteColorOn());
     if (!siteColorOn()) {
       rgb = null;
@@ -60,22 +56,18 @@
     updateInkTint(rgb);
     const brightness = brightnessOf(rgb);
     const light = wantsDarkInk(rgb);
-    // A vivid colour (a strong red, say) is treated as mid even when it's a
-    // little darker: the dark sites' soft grey ink, and the fainter rest of
-    // the address, all but vanished on it.
+    // a vivid colour (a strong red) counts as mid even a little darker, white text
+    // and nothing faint: the dark sites' grey ink all but vanished on it
     const vivid = !light && brightness >= 40 && Math.max(...rgb.slice(0, 3)) - Math.min(...rgb.slice(0, 3)) >= 110;
     const mid = !light && (brightness >= INK_MAX || vivid);
     setFlag("zia-site-light", light);
     setFlag("zia-site-dark", brightness < INK_MAX && !vivid);
-    // Between the two (a strong red, say), white text stays but nothing on
-    // the toolbar is left faint.
     setFlag("zia-site-mid", mid);
     updateDarkSiteInk(rgb, mid ? INK_MAX : brightness);
   }
 
-  // The toolbar's text and buttons take the site's own hue, as in Dia: on
-  // a cream page they're a soft brown (Dia's own, measured) rather than a
-  // neutral grey. Grey pages (no hue to speak of) stay neutral.
+  // the toolbar's ink takes the site's hue, as in Dia (a soft brown on cream,
+  // measured); grey pages stay neutral
   function updateInkTint(rgb) {
     if (!rgb) {
       root.style.removeProperty("--zia-ink-h");
@@ -111,9 +103,8 @@
       return;
     }
     const base = rgb.slice(0, 3);
-    // White on black and near-black pages (GitHub's #0d1117 read as a
-    // brightness of 3, and got the dim grey meant for greyer darks), as
-    // in Dia; the soft grey only from there up.
+    // white on black and near-black pages, as in Dia (GitHub's #0d1117 read 3 and
+    // got the dim grey meant for greyer darks)
     const t = brightness <= BLACKISH ? 0 : Math.min(1, (brightness - BLACKISH) / (INK_MAX - 44 - BLACKISH));
     const level = brightness <= BLACKISH ? 251 : Math.round(150 + t * 26);
     root.style.setProperty("--zia-dark-ink", `hsl(var(--zia-ink-h, 0) var(--zia-ink-s, 0%) ${((level / 255) * 100).toFixed(1)}%)`);
@@ -122,30 +113,24 @@
       return;
     }
     const hover =
-
       brightness >= 10 ? base.map((c) => Math.round(c * 0.45)) : base.map((c) => Math.round(c + (255 - c) * 0.1));
     root.style.setProperty("--zia-urlbar-hover-bg", `rgb(${hover.join(", ")})`);
   }
 
   function fallbackColor() {
     const text = getComputedStyle(root).getPropertyValue("--zia-fallback-bg").trim();
-    const hex = text.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i)?.[1];
+    const hex = rgbOfHex(text);
     if (hex) {
-      const full = hex.length === 3 ? [...hex].map((c) => c + c).join("") : hex;
-      return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16));
+      return hex;
     }
     const parsed = parseColor(text);
     return parsed[3] ? parsed.slice(0, 3) : [18, 18, 18];
   }
 
-  function showFallbackColor() {
+  // a colour shown outright, any reading under way dropped
+  function showColor(rgb) {
     colorRequestId++;
-    applyColor(null);
-  }
-
-  function showErrorColor() {
-    colorRequestId++;
-    applyColor(ERROR_PAGE_COLOR);
+    applyColor(rgb);
   }
 
   function isErrorPage(browser) {
@@ -311,15 +296,14 @@
       return;
     }
     if (isErrorPage(browser)) {
-      showErrorColor();
+      showColor(ERROR_PAGE_COLOR);
       return;
     }
     // a site with a toolbar colour of its own (01b) keeps it, unread
     const manual = manualSiteColor(browser);
     if (manual) {
       pendingColor = null;
-      colorRequestId++;
-      applyColor(manual);
+      showColor(manual);
       colorCache.set(browser, manual);
       return;
     }
@@ -342,11 +326,9 @@
     const current = colorCache.get(browser) ?? null;
     let rgb = reading?.rgb ?? null;
 
-    // A reading that disagrees with the site's remembered colour is often a
-    // passing splash (Discord is white for a moment before its dark page),
-    // and by the time it arrived the page had moved on, so the toolbar
-    // flashed. It's only believed when a second reading a moment later
-    // agrees, which a site that really has changed colour still gives.
+    // A reading unlike the site's remembered colour is often a passing splash
+    // (Discord is white a moment before going dark), which made the toolbar flash:
+    // it's believed only when a second reading a moment later agrees.
     if (!fromScroll && rgb) {
       const remembered = rememberedSiteColor(browser);
       if (remembered && colorDistance(rgb, remembered) > CHECK_DISTANCE) {
@@ -364,38 +346,28 @@
         pendingColor = null;
         return;
       }
-
       if (colorDistance(rgb, current) <= SAME_COLOR_DISTANCE) {
         pendingColor = null;
         return;
       }
-
-      if (rgb) {
-        if (colorDistance(rgb, pendingColor) > SAME_COLOR_DISTANCE) {
-          pendingColor = rgb;
-          requestScrollSample();
-          return;
-        }
+      if (rgb && colorDistance(rgb, pendingColor) > SAME_COLOR_DISTANCE) {
+        pendingColor = rgb;
+        requestScrollSample();
+        return;
       }
     }
     pendingColor = null;
     applyColor(rgb);
     colorCache.set(browser, rgb);
-
     if (!fromScroll && rgb) {
       rememberSiteColor(browser, rgb);
     }
   }
 
-  // The colour checker. The toolbar's colour is read when a page loads, for
-  // a few seconds after, and on scrolling, so a page that changes later (a
-  // banner closing, a header recolouring itself, a slideshow) or whose very
-  // top edge is a thin line of another colour could leave it wrong. Every
-  // few seconds, while the tab is showing and settled, Zia reads the top of
-  // the page again. If two readings in a row agree with
-  // each other and not with the toolbar, the toolbar changes to match and
-  // the site's remembered colour is corrected. It also checks when the
-  // window comes back into view or is resized.
+  // The checker: the colour is read on load, for a few seconds after, and on
+  // scroll, so a page that changes later (or has a thin strip at its top) could
+  // leave it wrong. Every few seconds, and on focus or resize, the settled tab is
+  // read again; two readings agreeing with each other, not the toolbar, correct it.
   const CHECK_EVERY = 3000;
   const CHECK_DISTANCE = 24;
   let checkSuspect = null;
@@ -451,11 +423,8 @@
     });
   }
 
-  // Optionally the address bar's pop-up takes the toolbar's colour as it
-  // opens, so it reads as the same bar growing. The colour is copied once,
-  // when the pop-up opens, and kept until it closes: scrolling the page
-  // underneath (which can recolour the toolbar) doesn't change it. With the
-  // toolbar in the theme's colour, or Zen's own pop-up, nothing changes.
+  // optional: the address pop-up takes the toolbar's colour as it opens, frozen
+  // until it closes so scrolling the page can't change it
   const POP_UP_SITE_COLOR_PREF = "zia.urlbar.site-color";
 
   function freezePopUpColor(urlbar) {
@@ -469,8 +438,7 @@
     ) {
       return;
     }
-    // A see-through colour is laid over what the page would show behind it,
-    // so the pop-up is solid.
+    // a see-through colour laid over what's behind the page, so the pop-up is solid
     const behind = matchMedia("(prefers-color-scheme: dark)").matches ? [0, 0, 0, 255] : [255, 255, 255, 255];
     const rgb = colorOver(parseColor(text), behind);
     urlbar.style.setProperty("--zia-pop-site-bg", cssColor(rgb.slice(0, 3)));
@@ -518,10 +486,7 @@
     }
     siteColors = new Map();
     try {
-      const saved = JSON.parse(Services.prefs.getStringPref(SITE_COLORS_PREF, "{}"));
-      for (const [host, value] of Object.entries(saved)) {
-        siteColors.set(host, value);
-      }
+      siteColors = new Map(Object.entries(JSON.parse(Services.prefs.getStringPref(SITE_COLORS_PREF, "{}"))));
     } catch (err) {
       noteError("site colour: loadSiteColors", err);
     }
@@ -543,7 +508,6 @@
     while (colors.size > SITE_COLORS_MAX) {
       colors.delete(colors.keys().next().value);
     }
-
     if (!siteColorsSaveTimer) {
       siteColorsSaveTimer = setTimeout(() => {
         siteColorsSaveTimer = null;
@@ -563,16 +527,14 @@
     setFlag("zia-color-snap", true);
     const manual = siteColorOn() && !isErrorPage(browser) ? manualSiteColor(browser) : null;
     if (isErrorPage(browser)) {
-      showErrorColor();
+      showColor(ERROR_PAGE_COLOR);
     } else if (manual) {
-      colorRequestId++;
-      applyColor(manual);
+      showColor(manual);
       colorCache.set(browser, manual);
     } else if (isLoading(browser) || !colorCache.has(browser)) {
-      showFallbackColor();
+      showColor(null);
     } else {
-      colorRequestId++;
-      applyColor(colorCache.get(browser));
+      showColor(colorCache.get(browser));
     }
     requestAnimationFrame(() => requestAnimationFrame(() => setFlag("zia-color-snap", false)));
   }
@@ -612,14 +574,10 @@
       return;
     }
     updateColor(false, true);
-
-    setTimeout(() => updateColor(false, isLoading(browser)), 150);
-    setTimeout(() => updateColor(false, isLoading(browser)), 450);
-
-    setTimeout(() => updateColor(false, isLoading(browser)), 1200);
-    setTimeout(() => updateColor(false, isLoading(browser)), 2800);
-    // pages that recolour their header once their scripts run (GitHub)
-    setTimeout(() => updateColor(false, isLoading(browser)), 5000);
+    // (the last for pages that recolour their header once their scripts run: GitHub)
+    for (const ms of [150, 450, 1200, 2800, 5000]) {
+      setTimeout(() => updateColor(false, isLoading(browser)), ms);
+    }
   };
 
   window.ziaOnPageScroll = (browser, position) => {
@@ -638,9 +596,7 @@
     if (!panels) {
       return;
     }
-    const SCROLL_KEYS = new Set([
-      "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " ",
-    ]);
+    const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "]);
     let followUps = [];
     const onInput = () => {
       if (pageHelperWorks) {
@@ -665,48 +621,27 @@
   // changes every session: Firefox caches these modules by address, and
   // would otherwise keep running an older copy after Zia updates.
   function registerPdfActor() {
-    const version = `?v=${Date.now()}`;
-    try {
-      ChromeUtils.registerWindowActor("ZiaPdf", {
-        parent: { esModuleURI: `chrome://sine/content/zia/actors/ZiaPdfParent.sys.mjs${version}` },
-        child: {
-          esModuleURI: `chrome://sine/content/zia/actors/ZiaPdfChild.sys.mjs${version}`,
-          events: { DOMContentLoaded: {} },
-        },
-        allFrames: false,
-        messageManagerGroups: ["browsers"],
-        // Firefox only starts a helper inside a website's process when told
-        // it's safe there; this one's browser side does nothing.
-        safeForUntrustedWebProcess: true,
-      });
-    } catch (err) {
-      if (err?.name !== "NotSupportedError") {
-        console.error("[Zia] Could not register the PDF view:", err);
-      }
-    }
+    registerActor("ZiaPdf", { DOMContentLoaded: {} }, "the PDF view", `?v=${Date.now()}`);
   }
 
   function registerScrollActor() {
+    registerActor("Zia", { scroll: { capture: true, mozSystemGroup: true }, DOMContentLoaded: {}, pageshow: {} }, "scroll helper");
+  }
+
+  function registerActor(name, events, label, version = "") {
     try {
-      ChromeUtils.registerWindowActor("Zia", {
-        parent: { esModuleURI: "chrome://sine/content/zia/actors/ZiaParent.sys.mjs" },
-        child: {
-          esModuleURI: "chrome://sine/content/zia/actors/ZiaChild.sys.mjs",
-          events: {
-            scroll: { capture: true, mozSystemGroup: true },
-            DOMContentLoaded: {},
-            pageshow: {},
-          },
-        },
+      ChromeUtils.registerWindowActor(name, {
+        parent: { esModuleURI: `chrome://sine/content/zia/actors/${name}Parent.sys.mjs${version}` },
+        child: { esModuleURI: `chrome://sine/content/zia/actors/${name}Child.sys.mjs${version}`, events },
         allFrames: false,
         messageManagerGroups: ["browsers"],
-        // Firefox only starts a helper inside a website's process when told
-        // it's safe there; this one only reports how far a page scrolled.
+        // Firefox only starts a helper inside a website's process when told it's
+        // safe there; these only report back (the PDF one's browser side does nothing)
         safeForUntrustedWebProcess: true,
       });
     } catch (err) {
       if (err?.name !== "NotSupportedError") {
-        console.error("[Zia] Could not register scroll helper:", err);
+        console.error(`[Zia] Could not register ${label}:`, err);
       }
     }
   }

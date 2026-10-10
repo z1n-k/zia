@@ -64,11 +64,7 @@
     if (urlbar.style.getPropertyValue("--zia-typed-icon") === value) {
       return;
     }
-    if (value) {
-      urlbar.style.setProperty("--zia-typed-icon", value);
-    } else {
-      urlbar.style.removeProperty("--zia-typed-icon");
-    }
+    setStyle(urlbar, "--zia-typed-icon", value || null);
   }
 
   // The site's icon in the address bar while typing its address, or the
@@ -142,7 +138,6 @@
       if (!text || text === name) {
         continue;
       }
-
       if (!text.includes(name) && !action.hasAttribute("data-l10n-id")) {
         continue;
       }
@@ -207,9 +202,7 @@
     }
     const textLeft = inputRect.left + (parseFloat(getComputedStyle(input).paddingInlineStart) || 0);
     const iconError = iconRect.left - barIconRect.left;
-    const textError = titleRect.left - textLeft;
-
-    const gapError = textError - iconError;
+    const gapError = titleRect.left - textLeft - iconError;
 
     let moved = false;
     if (Math.abs(iconError) > 0.3) {
@@ -253,7 +246,7 @@
     if (!view || !background || !last) {
       return;
     }
-
+    popBottomTrim ??= parseFloat(getComputedStyle(urlbar).getPropertyValue("--zia-pop-bottom-trim")) || 0;
     const scroller = [view, ...view.querySelectorAll("*")].find((el) => el.scrollHeight > el.clientHeight + 1);
     if (scroller) {
       root.setAttribute("zia-pop-scrolls", "true");
@@ -264,7 +257,7 @@
       // row that fits whole, at rest, with the same gap as at the sides; the
       // space added at the list's end (the trim again) gives the last row the
       // same gap once it's scrolled to.
-      const trim = popBottomTrim ?? (parseFloat(getComputedStyle(urlbar).getPropertyValue("--zia-pop-bottom-trim")) || 0);
+      const trim = popBottomTrim;
       const untrimmed = popUpBottom(background) + trim;
       let end = null;
       for (const row of rows) {
@@ -282,16 +275,10 @@
         if (passesLeft > 0) {
           requestAnimationFrame(() => fitPopoverBottom(passesLeft - 1));
         }
-      } else {
-        popBottomTrim = trim;
       }
       return;
     }
     root.removeAttribute("zia-pop-scrolls");
-
-    if (popBottomTrim === null) {
-      popBottomTrim = parseFloat(getComputedStyle(urlbar).getPropertyValue("--zia-pop-bottom-trim")) || 0;
-    }
     const error = popUpBottom(background) - last.getBoundingClientRect().bottom - POP_BOTTOM_WANT;
     if (Math.abs(error) > 0.3 && passesLeft > 0) {
       popBottomTrim += error * POP_STEP;
@@ -320,7 +307,6 @@
         fillRowIcons(results);
         alignTypedTextWithRows(results);
         fitPopoverBottom();
-
         requestAnimationFrame(() => {
           alignTypedTextWithRows(results);
           fitPopoverBottom();

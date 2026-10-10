@@ -79,14 +79,7 @@
     new ResizeObserver(schedule).observe(essentials);
     new MutationObserver(schedule).observe(root, { attributes: true, attributeFilter: ["zen-sidebar-expanded"] });
     window.addEventListener("ZenWorkspacesUIUpdate", schedule);
-    Services.prefs.addObserver(FILL_ROW_PREF, schedule);
-    Services.prefs.addObserver(ZIA_WIDTH_PREF, schedule);
-    Services.prefs.addObserver(TWO_PER_ROW_PREF, schedule);
-    window.addEventListener("unload", () => {
-      Services.prefs.removeObserver(FILL_ROW_PREF, schedule);
-      Services.prefs.removeObserver(ZIA_WIDTH_PREF, schedule);
-      Services.prefs.removeObserver(TWO_PER_ROW_PREF, schedule);
-    });
+    watchPrefs([FILL_ROW_PREF, ZIA_WIDTH_PREF, TWO_PER_ROW_PREF], schedule);
     schedule();
   }
 
@@ -97,7 +90,6 @@
       }
     };
     addAll();
-
     setTimeout(addAll, 1500);
     gBrowser.tabContainer.addEventListener("TabGroupCreate", (event) => addFolderCloseButton(event.target));
   }

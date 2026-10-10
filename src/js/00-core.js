@@ -20,15 +20,39 @@
     console.debug(`[Zia] ${where}:`, err);
   }
 
+  // a setting (or several) watched for as long as the window is open
+  function watchPrefs(names, fn) {
+    for (const name of [names].flat()) {
+      Services.prefs.addObserver(name, fn);
+    }
+    window.addEventListener("unload", () => {
+      for (const name of [names].flat()) {
+        Services.prefs.removeObserver(name, fn);
+      }
+    });
+  }
+
+  // an attribute or style property set to a value, or (null) removed
+  function setAttr(el, name, value) {
+    if (value == null) {
+      el.removeAttribute(name);
+    } else {
+      el.setAttribute(name, value);
+    }
+  }
+  function setStyle(el, name, value) {
+    if (value == null) {
+      el.style.removeProperty(name);
+    } else {
+      el.style.setProperty(name, value);
+    }
+  }
+
   function setFlag(name, on) {
     if (on === root.hasAttribute(name)) {
       return;
     }
-    if (on) {
-      root.setAttribute(name, "true");
-    } else {
-      root.removeAttribute(name);
-    }
+    setAttr(root, name, on ? "true" : null);
   }
 
   // Address bar position (an option): at the bottom of the page instead of the

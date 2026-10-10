@@ -117,7 +117,6 @@
         background-color: currentColor;
         opacity: var(--zia-folder-mark-opacity);
         mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
-
         transform-origin: center;
         transition: rotate 0.22s cubic-bezier(0.2, 0.9, 0.3, 1);
       }
@@ -147,8 +146,10 @@
     padding-bottom: var(--zia-folder-inner-gap) !important;
   }
 
+  /* (a folder in a folder: in by the same on the left as at the top level, as its right
+     side is, so its name sits as far into its box inside a folder as outside one, and it
+     lands where the dragged one was shown) */
   & :is(zen-folder, tab-group:not([split-view-group])) {
-    --zia-folder-box-left: 0px;
     --zia-folder-box-right: calc(var(--zia-folder-right-fix, 0px) + var(--zia-folder-inner-gap));
     --zia-folder-box-bottom: var(--tab-margin-block);
   }
@@ -179,19 +180,9 @@
   --tab-margin-block: var(--zia-tab-gap) !important;
 }
 
-.tabbrowser-tab:not([zen-essential]) {
-  & > .tab-stack > .tab-background {
-    border-radius: var(--zia-tab-radius) !important;
-  }
-
-  & .tab-label-container {
-    font-size: var(--zia-text-size) !important;
-    font-weight: var(--zia-tab-weight) !important;
-  }
-}
-
-.tabbrowser-tab > .tab-stack > .tab-background {
-  corner-shape: round !important;
+.tabbrowser-tab:not([zen-essential]) .tab-label-container {
+  font-size: var(--zia-text-size) !important;
+  font-weight: var(--zia-tab-weight) !important;
 }
 
 /* A pinned tab moved off its page: the button over its icon that takes it
@@ -273,11 +264,9 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-
   border-radius: 7px;
   background-color: #1f1f1f;
   overflow: hidden;
-
   transition: width 150ms ease-out, height 150ms ease-out;
 
   &[zia-leaving] {
@@ -347,11 +336,10 @@
   opacity: 1 !important;
 }
 
-:root[zen-sidebar-expanded="true"] :is(zen-folder, tab-group:not([split-view-group])) {
-  &::before,
-  &::after {
-    corner-shape: var(--zia-squircle-row) !important;
-  }
+/* out over the page, where its page's picture stands in (an inline style
+   can't hide it against the rule above: this sheet's !important wins) */
+.tabbrowser-tab[zia-essential-proxy][zia-over-page] {
+  visibility: hidden !important;
 }
 
 .tabbrowser-tab[zen-essential] > .tab-stack > .tab-background {
@@ -446,7 +434,6 @@
 :is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container .tab-group-folder-icon:not(:has(.icon image:not([href=""]))) {
   background-color: var(--zia-folder-mark-color);
   mask: url("chrome://sine/content/zia/icons/tab-default.svg") center / 16px no-repeat;
-
   translate: 0 0;
 
   & svg :is(.back, .front, .dots) {
@@ -523,11 +510,9 @@
 #zia-space-label {
   display: flex;
   align-items: center;
-
   flex: 0 0 auto;
   width: max-content;
   max-width: 100%;
-
   padding: 0 8px;
   height: var(--zia-space-pill-height);
   /* Dia's space name, fitted off its pill edge by edge: a squircle,
@@ -578,7 +563,6 @@
 zen-folder > .tab-group-label-container > .zia-folder-close {
   display: none;
   list-style-image: url("chrome://browser/skin/zen-icons/close.svg");
-
   -moz-context-properties: fill, fill-opacity !important;
   fill: rgb(255, 255, 255) !important;
   fill-opacity: var(--zia-folder-mark-opacity) !important;
@@ -591,7 +575,6 @@ zen-folder > .tab-group-label-container > .zia-folder-close {
   border-radius: calc(var(--zia-close-radius) * var(--zia-squircle-grow));
   corner-shape: var(--zia-squircle) !important;
   flex-shrink: 0;
-
   margin-inline-start: auto;
 }
 
@@ -603,7 +586,6 @@ zen-folder[zia-hover-held] > .tab-group-label-container > .zia-folder-close {
 zen-folder > .tab-group-label-container > .zia-folder-close:hover {
   background-color: var(--zia-close-hover-bg);
 }
-
 
 /* The slot's arrow as a letter in a one-letter font (the same arrow its
    picture was, drawn solid; icons/zia-slot-arrow.ttf), so the light that
@@ -702,8 +684,8 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
 
   /* (a folder inside a closed folder keeps it hidden too: with a tab
      selected in the outer folder, Zen shows that tab alone) */
-  /* (its fade is quick: fading over the folder's whole closing time, the
-     edge of its dashes still showed under the folder's name as it shut) */
+  /* (it fades as the folder's tabs do as it closes over them, 06-tab-
+     animations: quicker, it was gone before the folder had moved, a snap) */
   &[collapsed] > .tab-group-container::after,
   :is(zen-folder, tab-group:not([split-view-group]))[collapsed] & > .tab-group-container::after {
     height: 0;
@@ -712,7 +694,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
     transition:
       height 0s var(--zia-slot-time, 0.18s),
       margin 0s var(--zia-slot-time, 0.18s),
-      opacity 90ms ease-out,
+      opacity 220ms ease-in,
       translate 100ms ease-out;
   }
   /* (there it shrinks away with the rest Zen hides, rather than waiting
@@ -724,7 +706,6 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
       opacity var(--zia-slot-time, 0.18s) ease-out,
       translate 100ms ease-out;
   }
-
 
   /* A tab dragged in takes the slot's place: the slot fades but keeps its
    * room (the layout never changes mid-drag), and the tab, which would

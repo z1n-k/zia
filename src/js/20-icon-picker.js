@@ -22,12 +22,17 @@
     return PathUtils.join(PathUtils.profileDir, "zia-icons", `tabler-${holder.ZiaTablerPack}.zip`);
   }
 
-  function pointAtIconPack(pack) {
+  // a resource:// host pointed at a folder or zip, unless it already is
+  function pointResource(host, spec) {
     const handler = Services.io.getProtocolHandler("resource").QueryInterface(Ci.nsIResProtocolHandler);
-    const jar = Services.io.newURI(`jar:${PathUtils.toFileURI(pack)}!/`);
-    if (!handler.hasSubstitution(ICON_HOST) || handler.getSubstitution(ICON_HOST).spec !== jar.spec) {
-      handler.setSubstitution(ICON_HOST, jar);
+    const uri = Services.io.newURI(spec);
+    if (!handler.hasSubstitution(host) || handler.getSubstitution(host).spec !== uri.spec) {
+      handler.setSubstitution(host, uri);
     }
+  }
+
+  function pointAtIconPack(pack) {
+    pointResource(ICON_HOST, `jar:${PathUtils.toFileURI(pack)}!/`);
   }
 
   // Folder and space icons are drawn as Zen restores them, before the rest
@@ -490,11 +495,8 @@
       render();
       box.focus({ preventScroll: true });
       page.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
-      tab.classList.add("selected");
       for (const other of tabs.children) {
-        if (other !== tab) {
-          other.classList.remove("selected");
-        }
+        other.classList.toggle("selected", other === tab);
       }
     }
 
@@ -526,14 +528,12 @@
           box.style[prop] = value;
         }
       }
-
       const rect = zenBox.getBoundingClientRect();
       if (rect.height > 0) {
         box.style.boxSizing = "border-box";
         box.style.height = `${rect.height}px`;
         box.style.minHeight = `${rect.height}px`;
       }
-
       const header = document.getElementById("PanelUI-zen-emojis-picker-header");
       if (header) {
         const row = getComputedStyle(header);
@@ -589,7 +589,6 @@
       const ziaPick = new Promise((resolve) => {
         resolvePick = resolve;
       });
-
       return Promise.race([
         zenPick.catch((err) => {
           if (picked) {

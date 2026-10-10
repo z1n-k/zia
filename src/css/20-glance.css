@@ -1,4 +1,3 @@
-
 /* Zen's glance buttons in Zia's look: one dark card, like the hover cards,
    the buttons inside it the shape of Zia's close buttons, Zia's icons */
 .zen-glance-sidebar-container {
@@ -73,13 +72,32 @@
   }
 }
 
+/* light mode: the card's light (as the hover cards are), so its buttons take their dark
+   ink and hover; white, they went unseen */
+:root[zia-light]:not(#zia-none) .zen-glance-sidebar-container {
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.1), 0 8px 24px rgba(0, 0, 0, 0.14);
+
+  & toolbarbutton {
+    color: rgb(28, 28, 32) !important;
+
+    /* (not the close asking to be sure, which stays red) */
+    &:hover:not([waitconfirmation]) {
+      background: rgba(0, 0, 0, 0.06) !important;
+    }
+  }
+
+  & > .zen-glance-sidebar-close[waitconfirmation] {
+    color: rgb(255, 255, 255) !important;
+  }
+}
+
 /* A glance on a normal tab: a small picture of the page, tipped at an
  angle like a card set down on the tab and cut off by the tab's bottom
  edge, as in Dia (zia.uc.js, glance thumbnails), in place of Zen's icon
  tile. Hovering the tab dims the picture and brings the tab's close button
  over it; that close shuts the glance first. On unless switched off
  (zia-glance-thumb-off on the root). */
-:root:not([zia-glance-thumb-off]) .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]:not(#zia-none) {
+:root:not([zia-glance-thumb-off]) .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-content > :is(.tabbrowser-tab[zen-glance-tab], .zia-glance-thumb-exit):not(#zia-none) {
   width: 36px !important;
   min-width: 36px !important;
   max-width: 36px !important;
@@ -89,8 +107,8 @@
   overflow: visible !important;
   /* the glance itself stays square to the tab, so this cut is level: the
    picture ends where the tab does, round corners and all (the tab's edges
-   are measured by zia.uc.js; till then, about where they will be) */
-  /* ...just inside the tab's edge line, which so stays whole over it */
+   are measured by zia.uc.js; till then, about where they will be), just
+   inside the tab's edge line, which so stays whole over it */
   --zia-glance-edge: calc(var(--zia-shine-width, 1px) + 0.5px);
   clip-path: inset(
     calc(var(--zia-glance-cut-top, -2px) + var(--zia-glance-edge))
@@ -98,7 +116,9 @@
     calc(var(--zia-glance-cut-bottom, -2px) + var(--zia-glance-edge))
     -12px round calc(var(--zia-tab-radius) - var(--zia-glance-edge))
   );
+}
 
+:root:not([zia-glance-thumb-off]) .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]:not(#zia-none) {
   /* taller than the tab has room for, so its foot, corners and all, is
    always below the cut */
   & > .tab-stack:not(#zia-none) {
@@ -234,22 +254,8 @@
    normal tab, so a copy stays here and sinks through the tab's bottom
    edge (zia.uc.js). */
 :root:not([zia-glance-thumb-off]) .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-content > .zia-glance-thumb-exit:not(#zia-none) {
-  width: 36px !important;
-  min-width: 36px !important;
-  max-width: 36px !important;
-  height: 30px !important;
-  min-height: 30px !important;
-  margin-inline-start: 6px !important;
-  overflow: visible !important;
   pointer-events: none;
   align-self: center;
-  --zia-glance-edge: calc(var(--zia-shine-width, 1px) + 0.5px);
-  clip-path: inset(
-    calc(var(--zia-glance-cut-top, -2px) + var(--zia-glance-edge))
-    calc(var(--zia-glance-cut-right, -4px) + var(--zia-glance-edge))
-    calc(var(--zia-glance-cut-bottom, -2px) + var(--zia-glance-edge))
-    -12px round calc(var(--zia-tab-radius) - var(--zia-glance-edge))
-  );
 
   & > .zia-glance-thumb-exit-card {
     position: relative;

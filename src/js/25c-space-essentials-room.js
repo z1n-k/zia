@@ -1,11 +1,7 @@
   // ---------- Room for the essentials above every space's tabs
-  // Zen keeps a space's tabs clear of the essentials with a top padding the
-  // essentials' height. It sets that on a space as you go to it, but a space
-  // made this session starts at 0 and wasn't always given it, so its tabs
-  // sat under the essentials and slid in under them as you switched to it
-  // (seen on Windows). With the essentials shared by every space, each space
-  // is given just that room; one being made (Zen's form, with no
-  // essentials over it) and one Zen is animating are left to Zen.
+  // Zen pads a space's tabs clear of the essentials as you go to it, but a space made
+  // this session started at 0 and its tabs slid in under them (Windows). With shared
+  // essentials each space gets that room; one being made or animated is left to Zen.
   function keepRoomForEssentials() {
     const separate = () => {
       try {

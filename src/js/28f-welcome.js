@@ -1,11 +1,6 @@
-
-  // The welcome tour (welcome/index.html): shown once on a first install,
-  // and once after a release that has something to show, over a blurred
-  // window. WELCOME_VERSION is the release that last asked for it: bump it
-  // with that release ("release + welcome card"), and anyone who hasn't
-  // seen that one gets the tour of what's new. Other releases leave it be.
-  // Once closed it stays closed; it can be switched off after updates, or
-  // asked for again, from Zia's settings.
+  // The welcome tour (welcome/index.html): once on a first install, and once after
+  // a release that bumps WELCOME_VERSION ("release + welcome card"), over a dimmed
+  // window. Closed, it stays closed; settings can switch it off or show it again.
   const WELCOME_VERSION = "2.95.9";
   const WELCOME_SEEN_PREF = "zia.welcome.seen";
   const WELCOME_UPDATES_PREF = "zia.welcome.show";
@@ -128,8 +123,7 @@
           showWelcome(mode);
         }
       };
-      Services.prefs.addObserver(pref, again);
-      window.addEventListener("unload", () => Services.prefs.removeObserver(pref, again));
+      watchPrefs(pref, again);
       again();
     }
   }

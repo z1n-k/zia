@@ -162,14 +162,13 @@
         el.removeAttribute("zia-no-glow");
       }
       const tab = gBrowser.selectedTab;
-      if (!tab || tab.hasAttribute("zen-essential")) {
+      if (tab.hasAttribute("zen-essential")) {
         return;
       }
       // (a split glows as a whole: at the top, it's the split that goes
       // without, whichever of its tabs is open)
       const split = tab.group?.hasAttribute?.("split-view-group") ? tab.group : null;
       const glowing = split || tab;
-
       const sections = [
         window.gZenWorkspaces?.pinnedTabsContainer,
         window.gZenWorkspaces?.activeWorkspaceStrip,
@@ -196,7 +195,6 @@
         return;
       }
       let above = false;
-      let below = false;
       for (const row of document.querySelectorAll(
         "#tabbrowser-tabs .tabbrowser-tab:not([zen-essential], [zen-empty-tab], [hidden]), #tabbrowser-tabs .tab-group-label-container"
       )) {
@@ -204,7 +202,6 @@
           continue;
         }
         const box = row.getBoundingClientRect();
-
         if (!box.height || !box.width || box.right <= mine.left || box.left >= mine.right) {
           continue;
         }
@@ -212,7 +209,6 @@
           continue;
         }
         above ||= box.bottom <= mine.top + 1;
-        below ||= box.top >= mine.bottom - 1;
       }
       if (!above) {
         glowing.setAttribute("zia-no-glow", "true");
@@ -223,7 +219,6 @@
       if (!pending) {
         pending = requestAnimationFrame(update);
       }
-
       setTimeout(update, 250);
     };
     for (const type of [
@@ -342,12 +337,11 @@
         if (stateFlags & STATE_START) {
           scrollPositions.delete(browser);
           startLoader();
-
           colorRequestId++;
         } else if (stateFlags & STATE_STOP) {
           if (isErrorPage(browser)) {
             cancelLoader();
-            showErrorColor();
+            showColor(ERROR_PAGE_COLOR);
           } else {
             finishLoader();
             scheduleColor(50);
@@ -383,7 +377,7 @@
         }
         if (flags & LOCATION_CHANGE_ERROR_PAGE) {
           cancelLoader();
-          showErrorColor();
+          showColor(ERROR_PAGE_COLOR);
         } else if (flags & LOCATION_CHANGE_SAME_DOCUMENT) {
           scheduleColor(150);
         } else {

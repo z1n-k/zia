@@ -16,18 +16,14 @@
     --zen-library-pill-bg: var(--zia-lib-tile) !important;
     --zen-library-pill-hover-bg: var(--zia-lib-tile-hover) !important;
     --zen-library-radius: var(--zia-tab-radius) !important;
-
     color: var(--zia-lib-ink) !important;
 
-    /* the side: no gradient or shadow, a quiet hairline from the list */
+    /* the side: no gradient or shadow, a quiet hairline from the list; the
+       sections, as essentials, in a narrower column than Zen's */
     & #zen-library-side {
       background: none !important;
       box-shadow: none !important;
       border-inline-end: 1px solid color-mix(in srgb, var(--zia-lib-ink) 7%, transparent) !important;
-    }
-
-    /* the sections, as essentials, in a narrower column than Zen's */
-    & #zen-library-side {
       min-width: 84px !important;
     }
 
@@ -51,11 +47,13 @@
     }
 
     & #zen-library-sidebar-tabs {
+      position: relative !important;
       gap: 8px !important;
       padding-inline: var(--zia-lib-side-start) var(--zia-lib-side-end) !important;
     }
 
     & .zen-library-tab {
+      z-index: 1;
       /* (Zen's animated icons at the 18px of Zia's line icons) */
       --zen-library-sprite-size: 18px !important;
       margin: 0 !important;
@@ -93,17 +91,8 @@
       }
     }
 
-    /* the drawn icons in the ink, not Zen's accent */
     /* The lit tile behind the chosen section, one for them all, sliding
        to the one chosen with Zia's spring (28k-library.js places it) */
-    & #zen-library-sidebar-tabs {
-      position: relative !important;
-    }
-
-    & .zen-library-tab {
-      z-index: 1;
-    }
-
     & .zia-library-rail {
       position: absolute;
       top: 0;
@@ -115,7 +104,6 @@
       /* (the glass edge, as on an essential) */
       box-shadow: var(--zia-glass-edge);
       pointer-events: none;
-
       transition: transform var(--zia-spring-time) var(--zia-spring), height var(--zia-spring-time) var(--zia-spring);
 
       &[instant] {
@@ -123,6 +111,7 @@
       }
     }
 
+    /* the drawn icons in the ink, not Zen's accent */
     & :is(.zen-library-tab-icon-image, .empty-state-icon-image) {
       --stroke: var(--zia-lib-ink) !important;
       /* (outline only: no fill when chosen, or while downloading) */
@@ -159,13 +148,12 @@
       height: 34px !important;
       /* the typing and its placeholder at the tabs' text size */
       font-size: var(--zia-text-size) !important;
+      background: var(--zia-lib-field) !important;
+      border-radius: var(--zia-tab-radius) !important;
 
       & input {
         font-size: inherit !important;
       }
-
-      background: var(--zia-lib-field) !important;
-      border-radius: var(--zia-tab-radius) !important;
     }
 
     & :is(.zen-library-filter-button, .zen-library-filter-done) {
@@ -381,7 +369,6 @@
 
       &:hover {
         background: var(--zia-lib-tile-hover) !important;
-        scale: 1.02 !important;
       }
     }
 
@@ -545,25 +532,6 @@
         border-radius: calc(4px * var(--zia-squircle-grow)) !important;
         scale: 1 !important;
       }
-    }
-  }
-
-  /* ...and the badge that flies there from the Library button as they fan
-     out the same 16px all the way: Zen grows it to twice its 20px on the
-     way, for its own list's big icons, so it landed huge over the name and
-     then snapped small. (Zen 1.23 sizes it with scale and a growing
-     transform and moves it with left and top; newer Zen moves it with the
-     transform, so that's kept, and is nothing on 1.23.) */
-  :root:not(#zia-none) #library-button-badge:not([downloading]) {
-    width: 16px !important;
-    height: 16px !important;
-    border-radius: calc(4px * var(--zia-squircle-grow)) !important;
-    scale: none !important;
-    transform: translate(var(--zen-library-badge-tx, 0px), var(--zen-library-badge-ty, 0px)) !important;
-  }
-
-  :root:not(#zia-none) #zen-library-download-list {
-    & .zen-library-download-list-download {
 
       /* in progress: Zia's ring in its loading blue */
       & .zen-library-download-badge[downloading] {
@@ -610,6 +578,20 @@
         margin: auto 6px auto 0 !important;
       }
     }
+  }
+
+  /* ...and the badge that flies there from the Library button as they fan
+     out the same 16px all the way: Zen grows it to twice its 20px on the
+     way, for its own list's big icons, so it landed huge over the name and
+     then snapped small. (Zen 1.23 sizes it with scale and a growing
+     transform and moves it with left and top; newer Zen moves it with the
+     transform, so that's kept, and is nothing on 1.23.) */
+  :root:not(#zia-none) #library-button-badge:not([downloading]) {
+    width: 16px !important;
+    height: 16px !important;
+    border-radius: calc(4px * var(--zia-squircle-grow)) !important;
+    scale: none !important;
+    transform: translate(var(--zen-library-badge-tx, 0px), var(--zen-library-badge-ty, 0px)) !important;
   }
 
   /* Clear, beside the downloads' filter (zia.uc.js): as the filter is drawn */
@@ -684,13 +666,10 @@
     }
   }
 
-  /* The list beside the sections */
-  zen-library {
-    /* the list runs to the Library's edge: Zen capped it at its own width
-       less its wider column, which left a gap at the right */
-    & .zen-library-section:not([data-section="spaces"]) {
-      max-width: none !important;
-    }
+  /* The list beside the sections runs to the Library's edge: Zen capped
+     it at its own width less its wider column, which left a gap at the right */
+  zen-library .zen-library-section:not([data-section="spaces"]) {
+    max-width: none !important;
   }
 
   /* The library's drawing as faint as the buttons beside it (the tab list's

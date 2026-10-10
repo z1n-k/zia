@@ -1,11 +1,7 @@
   // ---------- Folders brought back after being deleted
-  // Firefox keeps a deleted folder as a plain tab group, and Reopen Closed
-  // Tab (Cmd/Ctrl+Shift+T, or Zia's Cmd/Ctrl+Z) brings it back as one. It
-  // looked like the folder (Zia draws plain groups the same) but wasn't
-  // Zen's: it wouldn't collapse, Zia's folder animations passed it by, and
-  // having no icon it was named afresh by the local model. A group coming
-  // back with the id of a folder deleted this session is made into a folder
-  // again, with its name, icon, colour and tabs, and isn't named.
+  // Firefox keeps a deleted folder as a plain tab group and reopens it as one: it
+  // wouldn't collapse, Zia's animations passed it by, and it was named afresh. One
+  // back with a deleted folder's id is made a folder again, with its name, icon, colour.
   const DELETED_FOLDER_KEEP_MS = 30 * 60 * 1000;
   const deletedFolders = new Map();
 

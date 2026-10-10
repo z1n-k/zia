@@ -201,11 +201,7 @@
     const data = splitDataOf(essential);
     const side = essential.getAttribute("zia-split-focus") || essential.ziaLastSide || "a";
     const icon = data?.[side]?.icon;
-    if (icon) {
-      essential.style.setProperty("--zia-split-glow", cssUrl(icon));
-    } else {
-      essential.style.removeProperty("--zia-split-glow");
-    }
+    setStyle(essential, "--zia-split-glow", icon ? cssUrl(icon) : null);
   }
 
   // Selected look while its split is showing
@@ -596,7 +592,6 @@
     };
     window.SessionStore?.promiseAllWindowsRestored?.then(restore, restore);
     container.addEventListener("TabAddedToEssentials", (event) => drawSplitTile(event.target));
-    Services.prefs.addObserver(SPLIT_PREF, restore);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(SPLIT_PREF, restore));
+    watchPrefs(SPLIT_PREF, restore);
   }
 

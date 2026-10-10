@@ -3,7 +3,6 @@
     --zen-essential-bg-margin: 3px !important;
     --zen-essential-tab-selected-bg: rgba(92, 92, 94, 0.72) !important;
     --zen-essential-tab-selected-bg-hover: rgba(102, 102, 104, 0.66) !important;
-
     outline: none !important;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16) !important;
 
@@ -33,9 +32,7 @@
 
     &::before {
       corner-shape: var(--zia-squircle) !important;
-
       border-radius: calc(max(0px, calc(var(--zia-essential-radius) - var(--zen-essential-bg-margin) * var(--zia-essential-inner-tighten))) * var(--zia-squircle-grow)) !important;
-
       /* (the glass edge, as on the other essentials, a touch thicker so it
          holds its own against the colour round it) */
       box-shadow: var(--zia-glass-edge-thick) !important;
@@ -95,7 +92,6 @@
     --zia-glow-mix-1: color-mix(in srgb, color-mix(in srgb, var(--zia-glow-1) var(--zia-glow-hint), white) var(--zia-glow-strength), transparent);
     --zia-glow-mix-2: color-mix(in srgb, color-mix(in srgb, var(--zia-glow-2, var(--zia-glow-1)) var(--zia-glow-hint), white) var(--zia-glow-strength), transparent);
     --zia-glow-mix-3: color-mix(in srgb, color-mix(in srgb, var(--zia-glow-3, var(--zia-glow-1)) var(--zia-glow-hint), white) var(--zia-glow-strength), transparent);
-
     box-shadow:
       -6px 0 var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-glow-mix-1),
       6px 0 var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-glow-mix-2),
@@ -209,9 +205,15 @@
   position: relative;
 }
 
-/* The selected tab's fine shine round its edge (essentials have the glass
-   edge instead, 06) */
+/* The selected tab: its highlight and glow, and its fine shine round its
+   edge (essentials have the glass edge instead, 06) */
 .tabbrowser-tab:not([zen-essential])[visuallyselected] > .tab-stack > .tab-background {
+  background: var(--zia-active-tab-bg) !important;
+  box-shadow:
+    0 0 var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color),
+    0 calc(-1 * var(--zia-active-glow-reach)) var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color),
+    0 var(--zia-active-glow-reach) var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color) !important;
+
   &::after {
     content: "" !important;
     display: block !important;
@@ -223,24 +225,21 @@
     pointer-events: none !important;
     background: var(--zia-tab-shine-layers) !important;
     filter: none !important;
-
     mask:
       linear-gradient(#000 0 0) content-box exclude,
       linear-gradient(#000 0 0) !important;
   }
 }
 
-.tabbrowser-tab:not([zen-essential])[visuallyselected] > .tab-stack > .tab-background {
-  background: var(--zia-active-tab-bg) !important;
-
-  box-shadow:
-    0 0 var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color),
-    0 calc(-1 * var(--zia-active-glow-reach)) var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color),
-    0 var(--zia-active-glow-reach) var(--zia-active-glow-blur) var(--zia-active-glow-spread) var(--zia-active-glow-color) !important;
-}
-
 .tabbrowser-tab:not([zen-essential]) {
   --zen-active-tab-scale: 1 !important;
+}
+
+/* An essential keeps Zen's press, without its 0.01deg turn that puts it on the
+   GPU: the first press after a start, the squircle tile with the glass edge
+   showed a black cross as it was drawn there in pieces */
+.tabbrowser-tab[zen-essential]:active {
+  rotate: none !important;
 }
 
 /* Optional: no glow around the selected tab (or a split's group), just
@@ -248,7 +247,6 @@
 @media -moz-pref("zia.tabs.no-glow") {
   :root:not(#zia-none) {
     --zia-active-glow-color: transparent;
-
     & .tabbrowser-tab:not([zen-essential])[visuallyselected] > .tab-stack > .tab-background,
     & tab-group[split-view-group] > .tab-group-container {
       box-shadow: none !important;
@@ -270,7 +268,6 @@
 .tabbrowser-tab:not([busy], [crashed]) .tab-icon-image:is(:not([src]), [src=""], :-moz-broken, [src="chrome://branding/content/icon32.png"], [src="chrome://global/skin/icons/defaultFavicon.svg"]) {
   content: url("chrome://sine/content/zia/icons/tab-blank.svg") !important;
 }
-
 
 /* Asleep (unloaded) tabs and essentials fade their icon and title to about
    half; a folder does too once every tab in it is asleep. The selected tab

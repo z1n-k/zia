@@ -141,28 +141,23 @@
         const shown = !!folder?.isZenFolder && folderHasOwnIcon(folder);
         item.hidden = !shown;
         item.ziaFolder = shown ? folder : null;
-        if (shown && folder.hasAttribute("zia-icon-on-folder")) {
-          item.setAttribute("checked", "true");
-        } else {
-          item.removeAttribute("checked");
-        }
+        setAttr(item, "checked", shown && folder.hasAttribute("zia-icon-on-folder") ? "true" : null);
       },
       true
     );
   }
 
   function syncFolderMark(folder) {
-    const href = folderIconBox(folder)?.querySelector("svg .icon image")?.getAttribute("href") || "";
-    const icon = folderIconBox(folder)?.querySelector(":scope > .zia-fi");
+    const box = folderIconBox(folder);
+    const href = box?.querySelector("svg .icon image")?.getAttribute("href") || null;
+    const icon = box?.querySelector(":scope > .zia-fi");
     if (!icon) {
       return;
     }
     folder.toggleAttribute("zia-fi-marked", !!href);
     for (const mark of icon.querySelectorAll(".zia-fi-mark")) {
-      if (href && mark.getAttribute("src") !== href) {
-        mark.setAttribute("src", href);
-      } else if (!href) {
-        mark.removeAttribute("src");
+      if (mark.getAttribute("src") !== href) {
+        setAttr(mark, "src", href);
       }
     }
   }

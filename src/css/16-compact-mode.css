@@ -2,22 +2,6 @@
   box-shadow: var(--zia-glass-edge) !important;
 }
 
-/* Windows: Zen sizes the flyout sidebar's corners for its squarer Windows
-   curve (2.3 times the length), and Zia draws every corner as a circle, so
-   the sidebar came out far rounder than the page card and the window's own
-   corners. It takes the page card's corner instead, as Zen's curve is
-   divided back out of that (the card's usual corner, kept with the page
-   edge to edge, which squared it off). */
-@media (-moz-platform: windows) {
-  :root[zen-compact-mode="true"]:not(#zia-none) .zen-toolbar-background {
-    &,
-    &::before,
-    &::after {
-      border-radius: max(0px, calc(var(--zia-card-radius-base) - var(--zen-compact-mode-no-padding-radius-fix, 0px) / var(--zen-squircle-value, 1))) !important;
-    }
-  }
-}
-
 :root[zen-compact-mode="true"] #zen-appcontent-wrapper {
   position: relative !important;
   z-index: 0 !important;
@@ -25,15 +9,6 @@
 
 :root[zen-compact-mode="true"] #navigator-toolbox:not([animate="true"]) {
   z-index: 100 !important;
-}
-
-/* Windows, compact mode: no window-button box in the sidebar's top row.
-   The real minimise, maximise and close stay top right (zia.uc.js leaves
-   them there), and a box left in the row pushed the space's name out. */
-@media (-moz-platform: windows) {
-  :root[zen-compact-mode="true"] #zen-sidebar-top-buttons .titlebar-buttonbox-container {
-    display: none !important;
-  }
 }
 
 :root[zen-compact-mode="true"] #titlebar > #zen-sidebar-top-buttons {
@@ -85,6 +60,60 @@
   }
 }
 
+/* Zen's hidden toolbar (compact mode, "hide the toolbar"): it shows over the top of
+   the page as the pointer goes up, rather than growing into the layout and pushing
+   the page down (the page bounced, and moving under the pointer, the hover flickered).
+   Hidden, it's a clear strip where the pointer finds it, and the page, with nothing
+   above it, has all four corners round (its top ones were square). */
+@media -moz-pref("zen.view.compact.hide-toolbar") {
+  :root[zen-compact-mode="true"]:not([zen-single-toolbar="true"], [inDOMFullscreen="true"], [zia-urlbar-position="bottom"]):not(#zia-none) {
+    & #zen-appcontent-navbar-wrapper {
+      position: absolute !important;
+      top: 0;
+      inset-inline: 0;
+      z-index: 2;
+      /* (its hover reaches up over the gap above the page to the window's edge: crossing
+         that gap, the pointer left it, and it hid and came back, a flash. Still the
+         window's to drag by, and shown even while the rest is clipped away) */
+      overflow-clip-margin: var(--zia-card-top-gap);
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset-inline: 0;
+        bottom: 100%;
+        height: var(--zia-card-top-gap);
+        -moz-window-dragging: drag;
+      }
+    }
+
+    /* (hiding, it keeps its height till its contents have faded, as they fade in: it shut
+       at once and cut them off) */
+    & #zen-appcontent-navbar-wrapper:not([zen-has-hover], [has-popup-menu], [zen-compact-mode-active]) {
+      background-color: transparent !important;
+      border-bottom-color: transparent !important;
+      transition:
+        background-color var(--zen-hidden-toolbar-transition-duration, 0.2s) ease,
+        border-color var(--zen-hidden-toolbar-transition-duration, 0.2s) ease,
+        height 0s var(--zen-hidden-toolbar-transition-duration, 0.2s) !important;
+    }
+
+    /* (Zen pulls the page up as the toolbar shows, to undo its push down: with nothing
+       pushed, that lifted the page under it) */
+    & #tabbrowser-tabpanels[has-toolbar-hovered] .browserContainer {
+      margin-top: 0 !important;
+    }
+
+    & #tabbrowser-tabbox #tabbrowser-tabpanels .browserSidebarContainer {
+      border-radius: var(--zia-card-radius) !important;
+    }
+
+    & #tabbrowser-tabpanels :is(.browserSidebarContainer, .browserStack, browser) {
+      clip-path: inset(0 round var(--zia-card-radius));
+    }
+  }
+}
+
 #zen-dragover-background {
   display: none !important;
 }
@@ -92,7 +121,6 @@
 :root[zen-sidebar-expanded]:not([zia-space-name-in-list]) .zen-current-workspace-indicator:not(#zia-workspace-slot > .zen-current-workspace-indicator) {
   display: none !important;
 }
-
 
 /* Compact mode's flyout sidebar (and top toolbar) is a touch see-through,
    with the page blurred behind it; on by default, off in Zia's settings.
@@ -121,10 +149,25 @@
   }
 }
 
-/* Windows: minimise, maximise and close as Windows (and Dia) draw them, a
-   block behind each on hover and red behind close, the close button's block
-   following the window's corner (thanks to Zylaah) */
 @media (-moz-platform: windows) {
+  /* the flyout sidebar takes the page card's corner: Zen sizes it for its
+     squarer Windows curve, and drawn as a circle it came out far rounder */
+  :root[zen-compact-mode="true"]:not(#zia-none) .zen-toolbar-background {
+    &,
+    &::before,
+    &::after {
+      border-radius: max(0px, calc(var(--zia-card-radius-base) - var(--zen-compact-mode-no-padding-radius-fix, 0px) / var(--zen-squircle-value, 1))) !important;
+    }
+  }
+
+  /* no window-button box in compact's top row: the real ones stay top right
+     (zia.uc.js), and a box left in the row pushed the space's name out */
+  :root[zen-compact-mode="true"] #zen-sidebar-top-buttons .titlebar-buttonbox-container {
+    display: none !important;
+  }
+
+  /* minimise, maximise and close as Windows (and Dia) draw them: a block on
+     hover, red behind close, following the window's corner (thanks to Zylaah) */
   .titlebar-button,
   .titlebar-button:hover,
   .titlebar-button:hover:active {

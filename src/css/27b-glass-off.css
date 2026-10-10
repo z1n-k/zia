@@ -92,14 +92,10 @@
 
   /* a glance's card on its essential, and the ghost it flies from */
   .tabbrowser-tab[zen-essential] > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]:not(#zia-none) > .tab-stack > .tab-background,
-  .tabbrowser-tab[zen-essential] > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]:not(#zia-none) > .tab-stack > .tab-background::before {
+  .tabbrowser-tab[zen-essential] > .tab-stack > .tab-content > .tabbrowser-tab[zen-glance-tab]:not(#zia-none) > .tab-stack > .tab-background::before,
+  :root:not(#zia-none) .zia-glance-ghost {
     background: rgba(255, 255, 255, 0.2) !important;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2) !important;
-  }
-
-  :root:not(#zia-none) .zia-glance-ghost {
-    background: rgba(255, 255, 255, 0.2);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
   }
 
   /* the music player: a fine shine round it, following its squircle

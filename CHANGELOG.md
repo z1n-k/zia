@@ -4,6 +4,88 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.98.0] — 2026-10-10
+
+### Changed
+
+- A full clean-up of Zia's code, every one of its 83 files, with no change
+  in behaviour: 2,515 lines taken out and 1,210 rewritten, 1,305 fewer in
+  all, duplicate code merged into shared helpers and dead code removed.
+  With this release's fixes added back, Zia is 990 lines (3.5%) smaller
+  than 2.97.1.
+- Zia now supports Zen's **Only Sidebar** layout as well as **Sidebar and
+  Top Toolbar** (Collapsed Sidebar isn't supported yet), and the README
+  says so.
+- The selected tab's fine edge fades further between its corners, as
+  Dia's does: it read as a whole border.
+- The site settings and copy-link buttons in the address bar are Dia's
+  size and shape, a softly rounded square rather than near round, set as
+  far apart as Dia's and their tile fainter (it nearly filled the bar's
+  height and was twice as bright).
+- "Clear" and its arrow beside the separator show with the pointer on the
+  sidebar, as in Zen, the line running the full width otherwise (they
+  showed all the time, faint).
+
+### Fixed
+
+- A folder with one tab: the sheet in its icon is in the middle (it sat
+  half a pixel left).
+- An essential dragged down into the list taps (haptics) going into or
+  out of a folder's opening, as a tab does: it only tapped as the rows
+  moved.
+- A folder dropped into an empty folder lands inside it, the folder
+  opening to just its size at once. It landed below, the folder opening
+  round twice the room and shutting again.
+- A folder taken out of a folder, leaving it empty, shuts it without a
+  bounce jolting the line below.
+- A folder inside a folder sits as far into its box as one outside does
+  (its box ran 2px further left), as the dragged one showed.
+- No flash as a folder lands in or out of another folder: for a frame the
+  folder it left wrapped it again, or the one it went into shut round it.
+- Glance's buttons show in light spaces and light mode (white on the light
+  card, they were invisible).
+- Compact mode with Zen's "hide the toolbar": the toolbar comes in over
+  the top of the page instead of pushing it down (the page bounced and the
+  hover flickered), and the page keeps its round top corners while it's
+  hidden. The address bar opens as wide as it is closed (it opened at its
+  width from beside the sidebar). Moving the pointer up to the window's edge no
+  longer hides it for a moment, and it fades out as it fades in.
+- Zen's "Only Sidebar" layout (single toolbar): the address bar in the
+  sidebar is a field of its own, a faint fill as tall as a tab; its pop-up
+  opens inside the window (it was cut off on the left); its copy link and
+  site settings buttons show and fade with the extensions beside it (only
+  the extensions showed, and faster); extensions that don't fit sit on a
+  row of plain icon buttons rather than tiles; and Reload in the "..."
+  menu has its icon in its place (it sat right of the name, beside an
+  empty square).
+- Pressing an essential presses it in again, as in Zen.
+- Dragging a tab over the essentials: the tiles slide aside within their
+  own columns. Zen's drop cell made the grid change its columns (eight
+  essentials and the cell went three to a row) while the tiles still slid
+  by the old ones, so some were pushed past the sidebar's edge and cut off.
+- Dragging an essential out over the page (to split it): only its page's
+  picture shows, as for a tab. Its tile stayed behind at the sidebar's
+  edge as well.
+- A tab dragged into the essentials and back out (before it became one)
+  settles into its row at once, where it dipped and jolted while the list
+  caught up.
+- A selected split glows as brightly as a selected tab (it had only part
+  of the tab's glow).
+- A split dropped into the essentials keeps its halves where the dragged
+  tile showed them (each landed 2px wider, the two moving apart).
+- The first essential pressed after starting Zen no longer shows a black
+  cross on it.
+- An essential dragged down into the list goes into folders as a tab does:
+  the folder opens round it, it takes the folder's width, and it goes in and
+  out at the same points. The folder didn't open, and it went in early.
+- Dragging a space's only essential down into the list: the list stays
+  still, where it jumped up and the tab flashed over the first one.
+- An empty folder's "Drag tabs here" box fades as the folder closes over
+  it, as the tabs in a folder do; it was gone before the folder moved.
+- Dropping a tab: its × (or −) stays on, where it blinked off until the
+  pointer moved (Zen 1.23 hides them a new way). Dropping a folder into
+  another: the outer folder's box stays lit rather than blinking off.
+
 ## [2.97.1] — 2026-10-08
 
 ### Fixed

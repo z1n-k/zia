@@ -1,14 +1,7 @@
-
-  // Tab numbers: hold Cmd (Ctrl on Windows and Linux) and a small key shows
-  // at the end of each tab, and in the corner of each essential. Every tab
-  // you can see has one, essentials first, and Zia takes over Cmd/Ctrl+
-  // digit so each is reachable: Firefox's own shortcuts stop at 8 (9 is the
-  // last tab). Typing a number lights its key up (in Zia blue or the
-  // space's colour) and the tab is only chosen when the key is let go, so
-  // nothing loads by accident; past nine, type the digits in turn (1 then 2
-  // for the twelfth). Another key, or letting go with nothing typed,
-  // changes nothing. The keys show the moment it goes down and stay until
-  // it's let go or the window is left. Optionally they show all the time.
+  // Tab numbers: hold Cmd (Ctrl elsewhere) and a key shows on every visible tab and
+  // essential, Zia taking over Cmd/Ctrl+digit so all are reachable (Firefox's stop at
+  // 8). The typed number lights up and is chosen only on letting go, so nothing loads
+  // by accident; past nine, type the digits in turn. Optionally shown all the time.
   const TAB_NUMBERS_ALWAYS_PREF = "zia.tab-numbers.always";
   const TAB_NUMBERS_COLOR_PREF = "zia.tab-numbers.color";
 
@@ -100,14 +93,7 @@
         gBrowser.selectedTab = tab;
       }
     };
-    const startsANumber = (prefix) => {
-      for (let n = 1; n <= tabs.length; n++) {
-        if (String(n).startsWith(prefix)) {
-          return true;
-        }
-      }
-      return false;
-    };
+    const startsANumber = (prefix) => tabs.some((_, i) => String(i + 1).startsWith(prefix));
 
     const onDigit = (digit) => {
       if (!root.hasAttribute("zia-tab-numbers")) {
@@ -207,18 +193,14 @@
     }
     window.addEventListener("ZenWorkspacesUIUpdate", renumber);
     window.addEventListener("ZenWorkspaceChanged", renumber);
-    Services.prefs.addObserver(TAB_NUMBERS_ALWAYS_PREF, renumber);
+    watchPrefs(TAB_NUMBERS_ALWAYS_PREF, renumber);
 
     // Zia blue or the space's colour for the number being typed
     const showColor = () => {
       const space = Services.prefs.getStringPref(TAB_NUMBERS_COLOR_PREF, "zia") === "space";
-      if (space) {
-        root.setAttribute("zia-tab-number-color", "space");
-      } else {
-        root.removeAttribute("zia-tab-number-color");
-      }
+      setAttr(root, "zia-tab-number-color", space ? "space" : null);
     };
     showColor();
-    Services.prefs.addObserver(TAB_NUMBERS_COLOR_PREF, showColor);
+    watchPrefs(TAB_NUMBERS_COLOR_PREF, showColor);
     renumber();
   }

@@ -8,11 +8,7 @@
     outline: none !important;
   }
 
-  &[zen-compact-mode="true"] #zen-appcontent-wrapper {
-    margin-left: var(--zia-card-gap) !important;
-  }
-
-  &[zen-right-side="true"] #zen-appcontent-wrapper {
+  &:is([zen-compact-mode="true"], [zen-right-side="true"]) #zen-appcontent-wrapper {
     margin-left: var(--zia-card-gap) !important;
   }
 

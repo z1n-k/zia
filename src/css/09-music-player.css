@@ -15,23 +15,17 @@
   .zen-media-card {
     --zia-media-glow-a: rgb(90, 185, 245);
     --zia-media-glow-b: rgb(123, 77, 255);
-
     --zen-sidebar-notification-bg: rgb(0, 0, 0);
 
     background-color: var(--zia-media-rest, var(--zia-media-bg)) !important;
     background-image: none !important;
     isolation: isolate;
 
-    & .zen-media-info-vbox::before {
-      display: none !important;
-    }
-
     &::before {
       content: "";
       position: absolute;
       inset: 0;
       z-index: -1;
-      border-radius: inherit;
       pointer-events: none;
       background:
         radial-gradient(170px 110px at 16px 6px, color-mix(in srgb, var(--zia-media-glow-a) 32%, transparent), transparent 72%),
@@ -46,8 +40,6 @@
     border-radius: calc(var(--zia-media-radius) * var(--zia-squircle-grow)) !important;
     corner-shape: var(--zia-squircle) !important;
     outline: none !important;
-    /* its edge as the essentials': the glass edge with Zia's glass on, a
-       fine hairline with it off (27b) */
     box-shadow: var(--zia-media-edge, var(--zia-glass-edge)) !important;
     padding: 9px 10px !important;
 
@@ -111,8 +103,6 @@
       min-width: var(--zia-media-art-size) !important;
       min-height: var(--zia-media-art-size) !important;
       padding: 0 !important;
-      /* a squircle tile, as an essential's (the ring round it the same
-         shape, zia.uc.js) */
       border-radius: calc(7px * var(--zia-squircle-grow)) !important;
       corner-shape: var(--zia-squircle) !important;
       transition: opacity 0.2s ease, filter 0.2s ease;
@@ -169,8 +159,7 @@
     }
   }
 
-  /* (on Windows the picture itself came through square, the rounding only
-     on what's behind it: clipped there, as near the squircle as a clip goes) */
+  /* on Windows the picture came through square: clipped, as near the squircle as a clip goes */
   @media (-moz-platform: windows) {
     .zen-media-focus-button :is(.toolbarbutton-icon, image) {
       clip-path: inset(0 round calc(7px * var(--zia-squircle-grow) * 0.8));
@@ -318,16 +307,11 @@
   .zen-media-mute-button { grid-column: 1; grid-row: 3; justify-self: start !important; }
   .zen-media-previoustrack-button { grid-column: 3; grid-row: 3; }
   .zen-media-nexttrack-button { grid-column: 4; grid-row: 3; }
-  /* Zen hides it unless the page has exactly one video (YouTube has hidden
-   * previews too); the button picks the main video either way. */
+  /* Zen hides it unless the page has exactly one video; it picks the main video anyway */
   .zen-media-pip-button { grid-column: 5; grid-row: 3; display: flex !important; }
   .zen-media-close-button { grid-column: 6; grid-row: 3; }
 
-  .zen-media-mute-button,
-  .zen-media-previoustrack-button,
-  .zen-media-nexttrack-button,
-  .zen-media-pip-button,
-  .zen-media-close-button {
+  :is(.zen-media-mute-button, .zen-media-previoustrack-button, .zen-media-nexttrack-button, .zen-media-pip-button, .zen-media-close-button) {
     max-height: 0 !important;
     opacity: 0 !important;
     overflow: hidden !important;
@@ -364,8 +348,7 @@
     justify-self: end;
   }
 
-  /* With more than one card, the whole stack opens without the spring too,
-   * height included */
+  /* with more than one card, the whole stack opens without the spring, height too */
   &:hover:has(.zen-media-card ~ .zen-media-card) .zen-media-card:not([zen-reindexing]) {
     transition:
       transform 0.35s var(--zia-media-ease),
@@ -378,9 +361,8 @@
   &:hover {
     .zen-media-card {
       height: var(--zia-media-card-height-open) !important;
-      /* The stack fans open without the spring, which made the top card
-       * bounce; it keeps the spring when it closes, and the card still
-       * springs as it grows. */
+      /* the stack fans open without the spring, which bounced the top card; it
+         keeps the spring closing, and the card still springs as it grows */
       transition:
         transform 0.35s var(--zia-media-ease),
         opacity 0.3s var(--zia-media-ease),
@@ -424,11 +406,7 @@
       }
     }
 
-    .zen-media-mute-button,
-    .zen-media-previoustrack-button,
-    .zen-media-nexttrack-button,
-    .zen-media-pip-button,
-    .zen-media-close-button {
+    :is(.zen-media-mute-button, .zen-media-previoustrack-button, .zen-media-nexttrack-button, .zen-media-pip-button, .zen-media-close-button) {
       max-height: 30px !important;
       opacity: 1 !important;
       translate: 0 0;
@@ -529,8 +507,7 @@
   transition: opacity 0.2s var(--zia-media-ease) !important;
 }
 
-/* (not while the front card fades away, when the one behind is about to
-   take its place: it showed as an almost empty card until it did) */
+/* not while the front card fades away: the one behind showed almost empty until it took its place */
 #zen-media-controls-toolbar:not(:hover):has(.zen-media-card[stacked-behind]):not(:has(.zen-media-card:not([stacked-behind]):is([zen-hiding], [zen-removing]))) .zen-media-card[stacked-behind] {
   mask: linear-gradient(
     #000 0 calc(var(--zen-media-stack-peek, 8px) * var(--zen-media-card-peek-level, 1) / (1 - 0.04 * var(--zen-media-card-peek-level, 1))),

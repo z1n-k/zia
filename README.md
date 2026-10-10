@@ -28,7 +28,7 @@ the page, the toolbar, the sidebar, the address bar, PDFs, media and picture-in-
 ![Zia](https://raw.githubusercontent.com/z1n-k/zia/readme-images/hero.webp)
 
 > [!NOTE]
-> **Beta.** Tested on macOS, Windows and Linux in dark mode with the **Sidebar and Top Toolbar** layout. Light mode and Zen's other layouts get less testing: if something looks off, [open an issue](https://github.com/z1n-k/zia/issues) with a screenshot.
+> **Beta.** Tested on macOS, Windows and Linux in dark mode with Zen's **Sidebar and Top Toolbar** and **Only Sidebar** layouts. **Collapsed Sidebar** isn't supported yet, and light mode gets less testing: if something looks off, [open an issue](https://github.com/z1n-k/zia/issues) with a screenshot.
 
 ## Install
 
@@ -37,7 +37,7 @@ the page, the toolbar, the sidebar, the address bar, PDFs, media and picture-in-
 3. Paste `z1n-k/zia` into the box under the marketplace.
 4. Restart Zen when Sine asks. If Zia doesn't load, open `about:support` and click **Clear startup cache**.
 
-Then set **Look and Feel → Sidebar and Top Toolbar** and use dark mode. Updates arrive through Sine; the first start after one takes a moment while Zia sets up its icons.
+Then set **Look and Feel → Sidebar and Top Toolbar** (or **Only Sidebar**) and use dark mode. Updates arrive through Sine; the first start after one takes a moment while Zia sets up its icons.
 
 **Worth five minutes:** workspace and folder icons carry much of the look. ▶ [Setting up workspace icons](https://vimeo.com/1228144298)
 
@@ -441,7 +441,8 @@ Most only at the default level: if you've set one yourself in `about:config`, yo
 
 ## Known gaps
 
-- Light mode and Zen's layouts other than **Sidebar and Top Toolbar** are less polished.
+- Zia works with Zen's **Sidebar and Top Toolbar** and **Only Sidebar** layouts. **Collapsed Sidebar** isn't supported yet.
+- Light mode is less polished than dark.
 - Split essentials are experimental: Zen doesn't support them itself yet, so Zia works around it.
 - If your system is set to reduce motion, Zia keeps still too: the sound bars stop moving, and slides, springs and other animations are skipped or cut short. See below to turn it back on for Zen alone.
 

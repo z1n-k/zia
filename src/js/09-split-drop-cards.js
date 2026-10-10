@@ -66,11 +66,9 @@
     if (tab.splitView || tab.group?.hasAttribute?.("split-view-group") || tab.ziaSplit?.id || tab.hasAttribute("zia-split-tile")) {
       return false;
     }
-
     if (tab === current && current.splitView) {
       return false;
     }
-
     if (tab !== current && tab.splitView && current.splitView && tab.group && tab.group === current.group) {
       return false;
     }
@@ -111,7 +109,7 @@
         hideSplitDrop();
       }
     });
-    document.documentElement.appendChild(overlay);
+    root.appendChild(overlay);
     splitDrop.overlay = overlay;
     return overlay;
   }
@@ -120,7 +118,6 @@
   const DRAG_PICTURE_H = 125;
   let blankDragImage = null;
   const lastCursor = { x: 0, y: 0 };
-
   let lastBlankAt = 0;
 
   function hideSystemDragImage(dt, force = true) {
@@ -135,7 +132,7 @@
         blankDragImage.width = 32;
         blankDragImage.height = 32;
         blankDragImage.getContext("2d").clearRect(0, 0, 32, 32);
-        document.documentElement.appendChild(blankDragImage);
+        root.appendChild(blankDragImage);
       }
       dt.updateDragImage(blankDragImage, 16, 16);
       splitDrop.dragImageSet = true;
@@ -164,7 +161,7 @@
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
     if (!canvas.isConnected) {
-      document.documentElement.appendChild(canvas);
+      root.appendChild(canvas);
     }
     splitDrop.thumb = canvas;
     const ctx = canvas.getContext("2d");
@@ -186,7 +183,6 @@
       const cover = Math.max(width / pageW, height / pageH);
       const cropW = width / cover;
       const cropH = height / cover;
-
       const scroll = scrollPositions.get(browser) || { x: 0, y: 0 };
       const bitmap = await browser.drawSnapshot(
         scroll.x + (pageW - cropW) / 2,
@@ -257,7 +253,6 @@
       if (splitDrop.tab !== tab || !overlay.hasAttribute("open")) {
         return;
       }
-      splitDrop.dataTransfer = dt;
       hideSystemDragImage(dt);
       canvas.setAttribute("following", "true");
       movePicture(lastCursor.x, lastCursor.y);
@@ -285,7 +280,6 @@
     }
     splitDrop.tab = null;
     splitDrop.target = null;
-    splitDrop.dataTransfer = null;
     splitDrop.dragImageSet = false;
   }
 
@@ -304,7 +298,6 @@
         zone.style.setProperty("--zia-zone-ty", "0px");
         continue;
       }
-
       const box = overlay.getBoundingClientRect();
       const w = Math.min(ZONE_ACTIVE_W, box.width * 0.45);
       const h = Math.min(ZONE_ACTIVE_H, box.height * 0.86);
@@ -370,7 +363,6 @@
     if (!tab || !side) {
       return;
     }
-
     setTimeout(() => {
       try {
         splitTabToSide(tab, side, target);

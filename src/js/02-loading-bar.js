@@ -22,7 +22,6 @@
     const next = loader.shown + (Math.abs(diff) < 0.001 ? diff : diff * (loader.finishing ? 0.3 : 0.12));
     loader.shown = Math.max(loader.shown, next);
     drawProgress();
-
     if (loader.finishing && loader.shown >= 0.999) {
       loader.finishing = false;
       loader.hideTimer = setTimeout(() => setFlag("zia-loading", false), 150);
@@ -51,7 +50,6 @@
     stopLoaderTimers();
     loader.active = true;
     loader.finishing = false;
-
     if (fresh || !stillShowing) {
       loader.shown = from;
       loader.target = Math.max(from, 0.25);
@@ -59,9 +57,7 @@
     } else {
       loader.target = Math.max(loader.target, loader.shown, from);
     }
-
     setFlag("zia-loading", true);
-
     loader.estimateTimer = setInterval(() => {
       if (loader.target < 0.9) {
         loader.target += (0.9 - loader.target) * 0.06;

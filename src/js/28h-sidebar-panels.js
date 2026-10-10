@@ -1,4 +1,3 @@
-
   // Firefox's own sidebar panels (Bookmarks, History, Synced Tabs) are
   // pages of their own inside the panel, which Zia's chrome.css doesn't
   // reach: zia-sidebar.css is loaded into each as it opens. The panel's
@@ -51,8 +50,8 @@
       "--zia-row-text": labelColor(tabs.find((t) => !t.selected && !t.hasAttribute("visuallyselected"))) || "rgba(255, 255, 255, 0.8)",
       "--zia-row-text-selected": labelColor(gBrowser.selectedTab?.hasAttribute("zen-essential") ? null : gBrowser.selectedTab) || "rgb(255, 255, 255)",
       "--zia-row-inset": `${Math.max(0, Math.min(16, inset))}px`,
-      "--zia-row-hover-bg": getComputedStyle(document.documentElement).getPropertyValue("--zia-tab-hover-bg").trim() || "rgba(255, 255, 255, 0.115)",
-      "--zia-row-selected-bg": getComputedStyle(document.documentElement).getPropertyValue("--zia-active-tab-bg").trim() || "rgba(0, 0, 0, 0.1)",
+      "--zia-row-hover-bg": getComputedStyle(root).getPropertyValue("--zia-tab-hover-bg").trim() || "rgba(255, 255, 255, 0.115)",
+      "--zia-row-selected-bg": getComputedStyle(root).getPropertyValue("--zia-active-tab-bg").trim() || "rgba(0, 0, 0, 0.1)",
       "--zia-row-indent": `${folderIndent(tab)}px`,
       "--zia-row-icon-gap": `${within(icon ? label.getBoundingClientRect().left - icon.getBoundingClientRect().right : NaN, 2, 16, 8)}px`,
     };
@@ -92,26 +91,26 @@
     if (!background || !card) {
       return;
     }
-    const right = document.documentElement.getAttribute("zen-right-side") === "true";
+    const right = root.getAttribute("zen-right-side") === "true";
     // On the tab sidebar's own side, the panel sits between the tabs and
     // the card, parted from the tabs by a line: the gap from the tabs to
     // that line is the panel's gap after it, and before the card
     const panel = document.getElementById("sidebar-box");
     const panelOnRight = panel?.hasAttribute("sidebar-positionend");
-    if (panel && !panel.hidden && document.documentElement.hasAttribute("zia-panels-beside") && panelOnRight === right) {
+    if (panel && !panel.hidden && root.hasAttribute("zia-panels-beside") && panelOnRight === right) {
       const edge = panel.getBoundingClientRect();
       const gap = right ? background.left - edge.right : edge.left - background.right;
       if (gap >= 0 && gap < 40) {
-        document.documentElement.style.setProperty("--zia-panel-pad-window", `${gap}px`);
-        document.documentElement.style.setProperty("--zia-panel-pad-card", `${Math.max(0, gap - splitter)}px`);
+        root.style.setProperty("--zia-panel-pad-window", `${gap}px`);
+        root.style.setProperty("--zia-panel-pad-card", `${Math.max(0, gap - splitter)}px`);
       }
       return;
     }
     const windowSide = right ? window.innerWidth - background.right : background.left;
     const cardSide = right ? background.left - card.right : card.left - background.right;
     if (windowSide >= 0 && windowSide < 40 && cardSide >= 0 && cardSide < 40) {
-      document.documentElement.style.setProperty("--zia-panel-pad-window", `${windowSide}px`);
-      document.documentElement.style.setProperty("--zia-panel-pad-card", `${Math.max(0, cardSide - splitter)}px`);
+      root.style.setProperty("--zia-panel-pad-window", `${windowSide}px`);
+      root.style.setProperty("--zia-panel-pad-card", `${Math.max(0, cardSide - splitter)}px`);
     }
   }
 
@@ -124,15 +123,14 @@
     }
     const style = getComputedStyle(icon);
     let strength = (parseFloat(style.fillOpacity) || 1) * (parseFloat(style.opacity) || 1);
-    for (let el = icon.parentElement; el && el.id !== "zia-workspace-slot" && el !== document.documentElement; el = el.parentElement) {
+    for (let el = icon.parentElement; el && el.id !== "zia-workspace-slot" && el !== root; el = el.parentElement) {
       strength *= parseFloat(getComputedStyle(el).opacity) || 1;
       if (el.id === "downloads-button") {
         break;
       }
     }
-    const root = document.documentElement.style;
-    root.setProperty("--zia-panel-close-fill", style.fill && style.fill !== "none" ? style.fill : "rgb(255, 255, 255)");
-    root.setProperty("--zia-panel-close-opacity", String(Math.round(strength * 1000) / 1000));
+    root.style.setProperty("--zia-panel-close-fill", style.fill && style.fill !== "none" ? style.fill : "rgb(255, 255, 255)");
+    root.style.setProperty("--zia-panel-close-opacity", String(Math.round(strength * 1000) / 1000));
   }
 
   function matchTabs(doc) {
@@ -145,11 +143,7 @@
       }
     }
     // beside the page, the panel's own sides give the room
-    if (document.documentElement.hasAttribute("zia-panels-beside")) {
-      doc.documentElement.style.setProperty("--zia-panel-inset", "0px");
-    } else {
-      doc.documentElement.style.removeProperty("--zia-panel-inset");
-    }
+    setStyle(doc.documentElement, "--zia-panel-inset", root.hasAttribute("zia-panels-beside") ? "0px" : null);
     // the highlights' shape: the space name's own pill
     const label = document.getElementById("zia-space-label");
     if (label) {
@@ -194,7 +188,7 @@
       return;
     }
     const padding = parseFloat(getComputedStyle(header).paddingBottom) || 0;
-    document.documentElement.style.setProperty("--zia-panel-title-pad", `${Math.max(0, padding + wanted - now)}px`);
+    root.style.setProperty("--zia-panel-title-pad", `${Math.max(0, padding + wanted - now)}px`);
   }
 
   // The panel's title sits level with the space's name across the window
@@ -212,7 +206,7 @@
     const padding = parseFloat(getComputedStyle(header).paddingTop) || 0;
     const next = padding + off;
     if (next >= 0 && next < 40) {
-      document.documentElement.style.setProperty("--zia-panel-title-top", `${next}px`);
+      root.style.setProperty("--zia-panel-title-top", `${next}px`);
     }
   }
 
@@ -238,15 +232,15 @@
     const win = doc.defaultView;
     for (const field of doc.querySelectorAll("moz-input-search")) {
       const apply = () => {
-        const root = field.shadowRoot;
-        if (!root || root.ziaStyled) {
+        const shadow = field.shadowRoot;
+        if (!shadow || shadow.ziaStyled) {
           return;
         }
         try {
           const sheet = new win.CSSStyleSheet();
           sheet.replaceSync(SEARCH_FIELD_RULES);
-          root.adoptedStyleSheets = [...root.adoptedStyleSheets, sheet];
-          root.ziaStyled = true;
+          shadow.adoptedStyleSheets = [...shadow.adoptedStyleSheets, sheet];
+          shadow.ziaStyled = true;
         } catch (err) {
           noteError("sidebar panels: search field", err);
         }
@@ -376,8 +370,7 @@
       style();
     };
     markPlain();
-    Services.prefs.addObserver(SIDEBAR_PANELS_PREF, markPlain);
-    window.addEventListener("unload", () => Services.prefs.removeObserver(SIDEBAR_PANELS_PREF, markPlain));
+    watchPrefs(SIDEBAR_PANELS_PREF, markPlain);
     // each panel's page loads into the same #sidebar browser
     document.getElementById("sidebar")?.addEventListener("load", style, true);
     safely("placeSidebarPanel", placeSidebarPanel);
@@ -441,7 +434,7 @@
       }
     };
     place();
-    Services.prefs.addObserver(SIDEBAR_BESIDE_PREF, place);
+    watchPrefs(SIDEBAR_BESIDE_PREF, place);
 
     // no wider than Zen lets the tab sidebar be (dragging its edge stops
     // there too), and following that setting if it's changed
@@ -481,13 +474,7 @@
     cap();
     new MutationObserver(cap).observe(box, { attributes: true, attributeFilter: ["width", "style"] });
     new MutationObserver(cap).observe(gNavToolbox, { attributes: true, attributeFilter: ["style"] });
-    Services.prefs.addObserver(MAX_PREF, cap);
-    Services.prefs.addObserver(SIDEBAR_BESIDE_PREF, cap);
-    window.addEventListener("unload", () => {
-      Services.prefs.removeObserver(MAX_PREF, cap);
-      Services.prefs.removeObserver(SIDEBAR_BESIDE_PREF, cap);
-    });
-    window.addEventListener("unload", () => Services.prefs.removeObserver(SIDEBAR_BESIDE_PREF, place));
+    watchPrefs([MAX_PREF, SIDEBAR_BESIDE_PREF], cap);
     // moving it to the other side
     new MutationObserver(place).observe(box, { attributes: true, attributeFilter: ["sidebar-positionend"] });
 
@@ -510,12 +497,12 @@
     // colour is held a moment after, as the site catches up
     let zenSliding = false;
     new MutationObserver(() => {
-      const now = document.documentElement.hasAttribute("zen-compact-animating");
+      const now = root.hasAttribute("zen-compact-animating");
       if (now !== zenSliding) {
         zenSliding = now;
         sliding(now);
       }
-    }).observe(document.documentElement, { attributes: true, attributeFilter: ["zen-compact-animating"] });
+    }).observe(root, { attributes: true, attributeFilter: ["zen-compact-animating"] });
     const slide = (opening) => {
       const run = slideBox(opening);
       sliding(true);
@@ -532,7 +519,7 @@
       // is the tabs, so it's tucked under the page instead (the margin on
       // the page's side), never sliding over the tabs
       const onRight = box.hasAttribute("sidebar-positionend");
-      const besideTabs = onRight === (document.documentElement.getAttribute("zen-right-side") === "true");
+      const besideTabs = onRight === (root.getAttribute("zen-right-side") === "true");
       const side = onRight !== besideTabs ? "marginRight" : "marginLeft";
       const hidden = `-${box.getBoundingClientRect().width}px`;
       const motion = window.gZenUIManager?.motion;

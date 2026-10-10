@@ -130,17 +130,11 @@
   }
 
   // ---------- Clear in the Library's Downloads and History
-  // Zen's Library lists every download but has no way to empty the list,
-  // only to remove them one by one. A Clear button beside the filter does
-  // what Firefox's own Clear Downloads does: the finished, failed and
-  // cancelled ones leave the list and history (the files stay on disk,
-  // and one still downloading stays). The section is drawn by Zen when
-  // first shown and again after it's been put away, so the button is put
-  // back whenever it's missing. History's Clear opens Firefox's own Clear
-  // browsing data and cookies dialog, browsing history ticked, to choose
-  // what goes.
+  // Zen's Library can only remove downloads one by one: Clear does what Firefox's
+  // Clear Downloads does (finished ones leave the list and history, the files stay).
+  // Zen redraws the section, so it's put back whenever missing. History's Clear
+  // opens Firefox's Clear browsing data dialog.
   function dressLibrary() {
-
     const clearDownloads = () => {
       try {
         window.DownloadsCommon.getData(window, true).removeFinished();
@@ -223,6 +217,6 @@
     // (and before the downloads fan out above the Library button)
     document.getElementById("zen-library-button")?.addEventListener("mouseenter", () => safely("library: rows", matchLibraryRowsToTabs));
     safely("library: rows", matchLibraryRowsToTabs);
-    Services.prefs.addObserver(LIBRARY_ZEN_LOOK_PREF, () => watched && addButtons(watched));
+    watchPrefs(LIBRARY_ZEN_LOOK_PREF, () => watched && addButtons(watched));
   }
 
