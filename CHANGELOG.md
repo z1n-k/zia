@@ -8,6 +8,12 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
+- A full clean-up of Zia's code, every one of its 83 files, with no change
+  in behaviour: 2,515 lines taken out and 1,210 rewritten, 1,305 fewer in
+  all, duplicate code merged into shared helpers and dead code removed.
+  With this release's fixes added back, Zia is 990 lines (3.5%) smaller
+  than 2.97.1.
+
 - Zia now supports Zen's **Only Sidebar** layout as well as **Sidebar and
   Top Toolbar** (Collapsed Sidebar isn't supported yet), and the README
   says so.
