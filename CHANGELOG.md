@@ -8,6 +8,9 @@ Every release of Zia, newest first. The format follows
 
 ### Changed
 
+- Zia now supports Zen's **Only Sidebar** layout as well as **Sidebar and
+  Top Toolbar** (Collapsed Sidebar isn't supported yet), and the README
+  says so.
 - The selected tab's fine edge fades further between its corners, as
   Dia's does: it read as a whole border.
 - The site settings and copy-link buttons in the address bar are Dia's
@@ -63,6 +66,8 @@ Every release of Zia, newest first. The format follows
   caught up.
 - A selected split glows as brightly as a selected tab (it had only part
   of the tab's glow).
+- A split dropped into the essentials keeps its halves where the dragged
+  tile showed them (each landed 2px wider, the two moving apart).
 - The first essential pressed after starting Zen no longer shows a black
   cross on it.
 - An essential dragged down into the list goes into folders as a tab does:

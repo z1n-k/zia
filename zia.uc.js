@@ -12326,13 +12326,19 @@
     };
 
     // A split tile's halves fill an essential's inner box less 8px all round; a stand-in
-    // isn't that size, so its halves get the real ones' height (width follows), centred
-    const fitSplitHalves = (node, stackHeight, half = null) => {
+    // isn't that size, so its halves get the real ones' size, centred. With none to measure,
+    // worked out as the tile does it: 4:5, at most half its box less 3px (left to the
+    // stand-in's own narrower box, each landed 2px wider)
+    const fitSplitHalves = (node, stackHeight, half = null, tileWidth = 0) => {
       if (half) {
         node.style.setProperty("--zia-split-half-height", `${half.height}px`);
         node.style.setProperty("--zia-split-half-width", `${half.width}px`);
       } else if (stackHeight > 16) {
-        node.style.setProperty("--zia-split-half-height", `${stackHeight - 16}px`);
+        const height = stackHeight - 16;
+        node.style.setProperty("--zia-split-half-height", `${height}px`);
+        if (tileWidth > 16) {
+          node.style.setProperty("--zia-split-half-width", `${Math.min(height * 0.8, (tileWidth - 16) / 2 - 3)}px`);
+        }
       }
     };
 
@@ -12404,7 +12410,7 @@
         proxy.setAttribute("zen-essential", "true");
         proxy.setAttribute("pinned", "true");
         if (drag.split) {
-          fitSplitHalves(proxy, tile.stackHeight, tile.half);
+          fitSplitHalves(proxy, tile.stackHeight, tile.half, tile.width);
         }
         fadeSplitContent(proxy, PROXY_MS);
       }
