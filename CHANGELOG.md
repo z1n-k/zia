@@ -4,6 +4,27 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.99.0] — 2026-10-10
+
+### Added
+
+- Subtitles in picture-in-picture with Zia's look: Firefox's own subtitles
+  button, hidden along with its bottom corner controls, is back beside the
+  tuck button, with its panel (subtitles on or off, and the text size)
+  restyled to match.
+
+### Changed
+
+- Compact mode's flyout sidebar floats with an even gap at its top, side
+  and bottom, as Dia's does (it sat almost flush with the window's edges).
+
+### Fixed
+
+- With Zen's hidden toolbar, the compact flyout sidebar no longer has a
+  wider gap at its top than at its bottom.
+- The address bar opened from a new tab no longer sometimes jumps up and to
+  the left: a position left over from an earlier opening was used.
+
 ## [2.98.2] — 2026-10-10
 
 ### Changed

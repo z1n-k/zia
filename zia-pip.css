@@ -478,6 +478,209 @@
   display: none !important;
 }
 
+/* Subtitles: Firefox's own button, moved beside the tuck button (zia-pip.js),
+ * a square pill like it. It shows once the site's subtitles can show here,
+ * and fills in while they're on. */
+:root[zia-dia] #controls .zia-pip-end > #closed-caption {
+  appearance: none;
+  display: inline-flex;
+  flex: none;
+  width: 27px;
+  min-width: 27px;
+  max-width: none;
+  height: 27px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.22) url("chrome://sine/content/zia/icons/pip/captions.svg") center / 15px no-repeat;
+  -moz-window-dragging: no-drag;
+}
+
+:root[zia-dia][zia-cc-on] #controls .zia-pip-end > #closed-caption {
+  background-image: url("chrome://sine/content/zia/icons/pip/captions-on.svg");
+}
+
+:root[zia-dia] #controls .zia-pip-end > #closed-caption:is(:hover, :focus-visible, [aria-expanded="true"]) {
+  background-color: rgba(255, 255, 255, 0.32);
+}
+
+:root[zia-dia] #controls .zia-pip-end > #closed-caption:is(:disabled, [hidden]) {
+  display: none !important;
+}
+
+/* Its panel, frosted like the tuck picker, dropping from the top bar: a switch
+ * for the subtitles, then the text size as three segments. */
+:root[zia-dia] #controls > #settings {
+  position: fixed;
+  top: 44px;
+  right: 10px;
+  bottom: auto;
+  left: auto;
+  z-index: 40;
+  box-sizing: border-box;
+  width: 200px;
+  padding: 6px;
+  border-radius: 12px;
+  background: rgba(34, 34, 38, 0.94);
+  backdrop-filter: blur(16px);
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.16), 0 12px 30px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font: 500 12px/1.3 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  -moz-window-dragging: no-drag;
+  user-select: none;
+  transform-origin: top right;
+  animation: zia-pip-pop 0.3s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+:root[zia-dia] #controls > #settings.hide {
+  display: none;
+}
+
+:root[zia-dia] #settings :is(.arrow, .grey-line) {
+  display: none;
+}
+
+:root[zia-dia] #settings .box {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: inherit;
+}
+
+:root[zia-dia] #settings .panel-fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+:root[zia-dia] #settings .box label:not(.switch) {
+  color: inherit;
+  font-family: inherit;
+}
+
+:root[zia-dia] #settings .subtitle-grid {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  padding: 5px 4px 9px 6px;
+}
+
+:root[zia-dia] #subtitles-toggle-label {
+  padding: 0;
+  font-weight: 600;
+}
+
+:root[zia-dia] #settings .switch {
+  width: 30px;
+  height: 18px;
+  margin: 0;
+}
+
+:root[zia-dia] #settings .slider {
+  border-radius: 9px;
+  background-color: rgba(255, 255, 255, 0.2);
+  transition: background-color 0.2s ease;
+}
+
+:root[zia-dia] #settings .slider::before {
+  left: 2px;
+  bottom: 2px;
+  width: 14px;
+  height: 14px;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  transition: transform 0.3s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+:root[zia-dia] #settings input:checked + .slider {
+  background-color: rgba(90, 185, 245, 0.9);
+}
+
+:root[zia-dia] #settings input:checked + .slider::before {
+  transform: translateX(12px);
+}
+
+:root[zia-dia] #settings .font-size-selection {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  transition: opacity 0.2s ease;
+}
+
+/* (floated, the legend is an ordinary block the grid can place) */
+:root[zia-dia] #settings .font-size-selection > .panel-legend {
+  float: left;
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 0 0 6px;
+  padding: 0 0 0 6px;
+  color: rgba(255, 255, 255, 0.55);
+  font: 600 11px/1.3 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+:root[zia-dia] #settings .font-size-selection-radio {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: auto;
+  height: 28px;
+  padding: 0;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.08);
+  transition: background-color 0.15s ease, scale 0.2s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+:root[zia-dia] #settings .font-size-selection-radio:hover {
+  background-color: rgba(255, 255, 255, 0.14);
+}
+
+/* the round button goes; the whole segment is the target (player.js clicks it) */
+:root[zia-dia] #settings .font-size-selection-radio > input[type="radio"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+:root[zia-dia] #settings .font-size-selection-radio label {
+  font-weight: 600;
+  pointer-events: none;
+}
+
+/* each word at its own size, so the choice shows what it does */
+:root[zia-dia] #font-size-selection-radio-small label {
+  font-size: 10.5px;
+}
+
+:root[zia-dia] #font-size-selection-radio-medium label {
+  font-size: 12px;
+}
+
+:root[zia-dia] #font-size-selection-radio-large label {
+  font-size: 13.5px;
+}
+
+:root[zia-dia] #settings .font-size-selection-radio:has(> input:checked) {
+  background-color: rgba(255, 255, 255, 0.92);
+}
+
+:root[zia-dia] #settings .font-size-selection-radio:has(> input:checked) label {
+  color: #1c1c1f !important;
+}
+
+:root[zia-dia] #settings .font-size-selection-radio:has(> input:focus-visible) {
+  outline: 2px solid rgba(90, 185, 245, 0.9);
+  outline-offset: 1px;
+}
+
 /* The picker: a map of the screen with its five spots */
 .zia-pip-picker {
   display: none;

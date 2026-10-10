@@ -1472,7 +1472,7 @@
     const titleRect = title?.getBoundingClientRect();
     const rect = titleRect?.width ? titleRect : input?.getBoundingClientRect();
     if (rect?.width) {
-      closedTextRect = { left: rect.left, centerY: rect.top + rect.height / 2 };
+      closedTextRect = { left: rect.left, centerY: rect.top + rect.height / 2, at: Date.now() };
     }
   }
 
@@ -1511,12 +1511,16 @@
 
     // At the bottom the pop-up grows upwards from the bar, so the text always
     // stays where it was, however the bar was opened.
-    const openedByClick = urlbarAtBottom() || Date.now() - clickedUrlbarAt < 1500;
+    // (lined up only with where the text was at that click: taken earlier, say before compact
+    // mode moved the bar, or with Zen's new tab bar still open as it was clicked, the old
+    // spot sent the pop-up up and to the left)
+    const fresh = !!closedTextRect && (urlbarAtBottom() || clickedUrlbarAt - closedTextRect.at < 100);
+    const openedByClick = (urlbarAtBottom() || Date.now() - clickedUrlbarAt < 1500) && fresh;
     if (!openedByClick && openOffsetX) {
       openOffsetX = 0;
       root.style.setProperty("--zia-urlbar-open-offset-x", "0px");
     }
-    if (openedByClick && closedTextRect && inputRect?.width) {
+    if (openedByClick && inputRect?.width) {
       const dx = closedTextRect.left - inputRect.left;
       const dy = closedTextRect.centerY - (inputRect.top + inputRect.height / 2);
       if (Math.abs(dx) > 0.5) {

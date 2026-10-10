@@ -159,9 +159,36 @@
     }
   };
 
+  // Subtitles: Firefox's own button and its panel (on or off, and the text
+  // size) sat with the bottom-right controls Dia's look hides. While it's on
+  // they move up beside the tuck button, and Firefox still runs them; it
+  // enables the button once the site's subtitles can show here.
+  const ccButton = document.getElementById("closed-caption");
+  const ccParts = [ccButton, document.getElementById("settings")]
+    .filter(Boolean)
+    .map((el) => ({ el, parent: el.parentNode, next: el.nextSibling }));
+  const placeCaptions = (dia) => {
+    for (const part of ccParts) {
+      if (dia) {
+        if (part.el === ccButton) {
+          end.insertBefore(part.el, tuckButton);
+        } else {
+          controls.appendChild(part.el);
+        }
+      } else if (part.el.parentNode !== part.parent) {
+        part.parent.insertBefore(part.el, part.next?.parentNode === part.parent ? part.next : null);
+      }
+    }
+  };
+  const ccToggle = document.getElementById("subtitles-toggle");
+  const showCaptionsState = () => root.toggleAttribute("zia-cc-on", !!ccToggle?.checked);
+  ccToggle?.addEventListener("change", showCaptionsState);
+  showCaptionsState();
+
   const applyPrefs = () => {
     root.toggleAttribute("zia-dia", pref("zia.pip.dia-style", true));
     placeSound(root.hasAttribute("zia-dia"));
+    placeCaptions(root.hasAttribute("zia-dia"));
     root.toggleAttribute("zia-tuck-on", pref("zia.pip.tuck", true));
     roundCorners(root.hasAttribute("zia-dia"));
   };
