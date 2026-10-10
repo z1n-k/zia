@@ -2240,6 +2240,11 @@
     const to = closing ? (spaceStart && zenShut ? zenTo : zenShut ? Math.min(zenTo, shut) : shut) : 0;
     // Spring off: Zen's own timing, but still the folder opening over its
     // tabs (holdFolderContents); the setting is for the bounce only
+    // (a folder just dropped into it opens it, its room already made by the drag: at
+    // once, rather than shut and springing open again, 28-tab-dragging)
+    if ((folder.ziaDroppedUntil || 0) > Date.now() && !closing) {
+      return { from: to, to, closing, plain: true, keyframes: [{ marginTop: `${to}px` }, { marginTop: `${to}px` }], options: { ...options, duration: 0 } };
+    }
     if (!bounceOn() || lentOut) {
       return { from, to, closing, plain: true, keyframes: [{ marginTop: `${from}px` }, { marginTop: `${to}px` }], options };
     }
@@ -6197,14 +6202,15 @@
       .slice(0, 120);
   }
 
-  const MULTIVIEW_SITES = { yt: "YouTube", twv: "Twitch video", twc: "Twitch clip", vm: "Vimeo", dm: "Dailymotion" };
+  // (a Map: the kind comes from the page's address, and "constructor" isn't a site)
+  const MULTIVIEW_SITES = new Map([["yt", "YouTube"], ["twv", "Twitch video"], ["twc", "Twitch clip"], ["vm", "Vimeo"], ["dm", "Dailymotion"]]);
 
   function multiviewSite([kind, id]) {
     if (kind === "tw" || kind === "kick") {
       return `${kind === "tw" ? "twitch.tv" : "kick.com"}/${id}`;
     }
-    if (MULTIVIEW_SITES[kind]) {
-      return MULTIVIEW_SITES[kind];
+    if (MULTIVIEW_SITES.has(kind)) {
+      return MULTIVIEW_SITES.get(kind);
     }
     try {
       return new URL(id).hostname.replace(/^www\./, "");
@@ -12039,8 +12045,19 @@
         return;
       }
       const nestedIn = folder.parentElement?.closest?.("zen-folder") || null;
+      // (the folder it comes out of, emptied, shuts itself: without the bounce, as when a
+      // tab is taken out, or the line below jolted)
+      if (nestedIn) {
+        nestedIn.ziaLentUntil = Date.now() + 800;
+      }
       const into = target.folder?.isConnected && target.folder !== folder && !folder.contains(target.folder) ? target.folder : null;
       if (into) {
+        // (no longer empty: its slot went only on the next frame, and the folder opened
+        // round both, twice the room, for a moment)
+        into.removeAttribute("zia-empty");
+        if (isCollapsed(into)) {
+          into.ziaDroppedUntil = Date.now() + 500;
+        }
         // Dropped where Zia showed it inside a folder: there, before the row
         // it was shown above (at the end, if none or the folder is closed)
         const box = into.querySelector(":scope > .tab-group-container");
@@ -14039,8 +14056,10 @@
           const folder = drag.folder;
           const target = drag.target;
           // Into a closed folder Zia puts it there, Zen's drop not run: that opened the folder,
-          // the dropped one missing for a frame, and left it open
-          if (target.folder && isCollapsed(target.folder) && target.folder !== folder && !folder.contains(target.folder)) {
+          // the dropped one missing for a frame, and left it open. Into an empty one too: Zen
+          // moved it back out under the folder after Zia had put it in, and the folder, emptied,
+          // shut over the gap
+          if (target.folder && (isCollapsed(target.folder) || target.folder.hasAttribute("zia-empty")) && target.folder !== folder && !folder.contains(target.folder)) {
             event.preventDefault();
             event.stopPropagation();
           }
@@ -14051,6 +14070,9 @@
           setTimeout(() => {
             try {
               finishFolderDrop(folder, target);
+              // (held where it was let go in the same step, as a tab is: a frame showed it at its
+              // new place still shifted by the drag, up and back down)
+              repinLanding?.();
             } catch (err) {
               console.error("[Zia] Folder drop failed:", err);
             }
@@ -14333,6 +14355,8 @@
         droppedFrom = { node: drag.moving, top: from.top, left: from.left, tab: drag.tab, bg, bgLeft: bgBox?.left, bgWidth: bgBox?.width };
       }
       essentialDropped = null;
+      // (a folder let go is moved a step later: its folders keep their look till then)
+      const folderLanding = !!drag?.folder && pendingFinish;
       if (drag?.folder) {
         const dropped = drag.folder;
         // (a landing one goes just before its glide, which measures it)
@@ -14361,7 +14385,13 @@
         tab.removeAttribute("zia-into-empty");
         tab.style.removeProperty("--zia-slot-border");
       });
-      clearFolderPaint();
+      // (cleared at once, the folder it left wrapped it again, or the one it went into shut
+      // to its name, for a frame before it moved)
+      if (folderLanding) {
+        setTimeout(clearFolderPaint, 0);
+      } else {
+        clearFolderPaint();
+      }
       dropProxy();
       hideThumb(true);
       document.querySelectorAll("[zia-drag-away]").forEach((node) => node.removeAttribute("zia-drag-away"));

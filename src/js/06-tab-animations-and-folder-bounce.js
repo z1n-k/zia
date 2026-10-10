@@ -181,6 +181,11 @@
     const to = closing ? (spaceStart && zenShut ? zenTo : zenShut ? Math.min(zenTo, shut) : shut) : 0;
     // Spring off: Zen's own timing, but still the folder opening over its
     // tabs (holdFolderContents); the setting is for the bounce only
+    // (a folder just dropped into it opens it, its room already made by the drag: at
+    // once, rather than shut and springing open again, 28-tab-dragging)
+    if ((folder.ziaDroppedUntil || 0) > Date.now() && !closing) {
+      return { from: to, to, closing, plain: true, keyframes: [{ marginTop: `${to}px` }, { marginTop: `${to}px` }], options: { ...options, duration: 0 } };
+    }
     if (!bounceOn() || lentOut) {
       return { from, to, closing, plain: true, keyframes: [{ marginTop: `${from}px` }, { marginTop: `${to}px` }], options };
     }

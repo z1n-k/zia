@@ -25,6 +25,15 @@ Every release of Zia, newest first. The format follows
 - An essential dragged down into the list taps (haptics) going into or
   out of a folder's opening, as a tab does: it only tapped as the rows
   moved.
+- A folder dropped into an empty folder lands inside it, the folder
+  opening to just its size at once. It landed below, the folder opening
+  round twice the room and shutting again.
+- A folder taken out of a folder, leaving it empty, shuts it without a
+  bounce jolting the line below.
+- A folder inside a folder sits as far into its box as one outside does
+  (its box ran 2px further left), as the dragged one showed.
+- No flash as a folder lands in or out of another folder: for a frame the
+  folder it left wrapped it again, or the one it went into shut round it.
 - Pressing an essential presses it in again, as in Zen.
 - Dragging a tab over the essentials: the tiles slide aside within their
   own columns. Zen's drop cell made the grid change its columns (eight

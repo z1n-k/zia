@@ -146,8 +146,10 @@
     padding-bottom: var(--zia-folder-inner-gap) !important;
   }
 
+  /* (a folder in a folder: in by the same on the left as at the top level, as its right
+     side is, so its name sits as far into its box inside a folder as outside one, and it
+     lands where the dragged one was shown) */
   & :is(zen-folder, tab-group:not([split-view-group])) {
-    --zia-folder-box-left: 0px;
     --zia-folder-box-right: calc(var(--zia-folder-right-fix, 0px) + var(--zia-folder-inner-gap));
     --zia-folder-box-bottom: var(--tab-margin-block);
   }
