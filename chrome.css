@@ -624,6 +624,8 @@
       corner-shape: var(--zia-squircle) !important;
       box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
       backdrop-filter: none !important;
+      /* (up to the window's top edge, zia.uc.js) */
+      top: calc(-1 * var(--zia-pop-reach-top, 0px)) !important;
       transform-origin: 50% 0 !important;
       animation: zia-urlbar-open 0.18s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
     }
@@ -951,12 +953,12 @@
     list-style-image: url("chrome://sine/content/zia/icons/ui/check.svg") !important;
   }
 
-  /* (Dia's tile, measured: 23 by 22 with a 3.5px corner, 26px from one icon
+  /* (Dia's tile, measured: 22 square with a 3.5px corner, 26px from one icon
      to the next. At 26 square it nearly filled the bar's height, with three
      times as much room to its right; Zen's 8px corner made it near round) */
   #urlbar :is(#zia-copy-link-button, #zen-site-data-icon-button) {
-    width: 23px !important;
-    min-width: 23px !important;
+    width: 22px !important;
+    min-width: 22px !important;
     height: 22px !important;
     min-height: 22px !important;
     border-radius: 3.5px !important;
@@ -971,15 +973,16 @@
     margin-inline-start: 3px !important;
   }
 
-  /* (Dia's tile is 12% over the bar, measured; Zen's was over twice that. The
-     icon's own ink, so it's dark on a light bar) */
+  /* (Dia's tile is about 7% over the bar, measured; Zen's was several times
+     that. The icon's own ink, so it's dark on a light bar) */
   #urlbar :is(#zia-copy-link-button, #zen-site-data-icon-button):is(:hover, [open]) {
-    background-color: color-mix(in srgb, currentColor 12%, transparent) !important;
+    background-color: color-mix(in srgb, currentColor 7%, transparent) !important;
   }
 
+  /* (Dia's icons in them a touch smaller than the toolbar's 16px) */
   #urlbar #zia-copy-link-button image {
-    width: 16px !important;
-    height: 16px !important;
+    width: 14px !important;
+    height: 14px !important;
   }
 
   #zia-copy-link-button[hidden],
@@ -5897,8 +5900,8 @@ findbar {
   }
 
   #urlbar #zen-site-data-icon-button image {
-    width: 17px !important;
-    height: 16px !important;
+    width: 15px !important;
+    height: 14px !important;
   }
 
   #urlbar #urlbar-search-mode-indicator {

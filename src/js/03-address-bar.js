@@ -384,6 +384,9 @@
     }
     // (and in the sidebar, with Zen's single toolbar, it opens where Zen puts it: moved to
     // keep the text where it was, it went past the window's left edge)
+    if (urlbar) {
+      setStyle(urlbar, "--zia-pop-reach-top", null);
+    }
     if ((urlbar?.getAttribute("zen-floating-urlbar") === "true" && !urlbarAtBottom()) || single) {
       openOffset = 0;
       openOffsetX = 0;
@@ -418,6 +421,7 @@
         openOffset += dy;
         root.style.setProperty("--zia-urlbar-open-offset", `${openOffset}px`);
       }
+      reachWindowTop(urlbar);
       return;
     }
 
@@ -427,6 +431,16 @@
       openOffset += diff;
       root.style.setProperty("--zia-urlbar-open-offset", `${openOffset}px`);
     }
+    reachWindowTop(urlbar);
+  }
+
+  // The pop-up at the top of the window reaches up to its top edge, as Dia's does: it stopped
+  // the card's gap short of it. Its background grows up into that gap, so the address and
+  // the results stay where they are. Not at the bottom, in the sidebar or floating.
+  function reachWindowTop(urlbar) {
+    const top = urlbar.getBoundingClientRect().top;
+    const reach = !urlbarAtBottom() && top > 0 && top < 24 ? top : 0;
+    setStyle(urlbar, "--zia-pop-reach-top", reach ? `${reach}px` : null);
   }
 
   function alignOpenedUrlbarSoon() {
