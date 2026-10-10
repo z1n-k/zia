@@ -72,11 +72,30 @@
       top: 0;
       inset-inline: 0;
       z-index: 2;
+      /* (its hover reaches up over the gap above the page to the window's edge: crossing
+         that gap, the pointer left it, and it hid and came back, a flash. Still the
+         window's to drag by, and shown even while the rest is clipped away) */
+      overflow-clip-margin: var(--zia-card-top-gap);
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset-inline: 0;
+        bottom: 100%;
+        height: var(--zia-card-top-gap);
+        -moz-window-dragging: drag;
+      }
     }
 
+    /* (hiding, it keeps its height till its contents have faded, as they fade in: it shut
+       at once and cut them off) */
     & #zen-appcontent-navbar-wrapper:not([zen-has-hover], [has-popup-menu], [zen-compact-mode-active]) {
       background-color: transparent !important;
       border-bottom-color: transparent !important;
+      transition:
+        background-color var(--zen-hidden-toolbar-transition-duration, 0.2s) ease,
+        border-color var(--zen-hidden-toolbar-transition-duration, 0.2s) ease,
+        height 0s var(--zen-hidden-toolbar-transition-duration, 0.2s) !important;
     }
 
     /* (Zen pulls the page up as the toolbar shows, to undo its push down: with nothing

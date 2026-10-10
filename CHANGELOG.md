@@ -40,7 +40,8 @@ Every release of Zia, newest first. The format follows
   the top of the page instead of pushing it down (the page bounced and the
   hover flickered), and the page keeps its round top corners while it's
   hidden. The address bar opens as wide as it is closed (it opened at its
-  width from beside the sidebar).
+  width from beside the sidebar). Moving the pointer up to the window's edge no
+  longer hides it for a moment, and it fades out as it fades in.
 - Pressing an essential presses it in again, as in Zen.
 - Dragging a tab over the essentials: the tiles slide aside within their
   own columns. Zen's drop cell made the grid change its columns (eight
