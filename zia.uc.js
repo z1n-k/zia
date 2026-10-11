@@ -17750,6 +17750,27 @@
     return !!el && el.getAttribute("disabled") !== "true";
   };
   const openPane = (pane) => (win) => win.openPreferences(pane);
+
+  // A Settings page that's only just opening doesn't have Sine's page yet, and
+  // Firefox shows the last one you looked at instead: once Sine has added its
+  // page (up to 4 seconds), go there.
+  async function openSineMods(win) {
+    win.openPreferences("paneSineMods");
+    for (let i = 0; i < 40; i++) {
+      await new Promise((resolve) => win.setTimeout(resolve, 100));
+      const browser = win.gBrowser.selectedBrowser;
+      if (!browser.currentURI?.spec.startsWith("about:preferences")) {
+        continue;
+      }
+      const doc = browser.contentDocument;
+      if (doc?.getElementById("category-sine-mods")) {
+        if (doc.location.hash.toLowerCase() !== "#sinemods") {
+          browser.contentWindow.gotoPref("paneSineMods");
+        }
+        return;
+      }
+    }
+  }
   const openPage = (url) => (win) => win.openTrustedLinkIn(url, "tab");
   const copyText = (text) => {
     Cc["@mozilla.org/widget/clipboardhelper;1"].getService(Ci.nsIClipboardHelper).copyString(text);
@@ -17793,7 +17814,7 @@
 
   const ZIA_ACTIONS = [
     // Settings, straight to the page
-    ziaAction("Zia Settings", "settings", openPane("paneSineMods")),
+    ziaAction("Zia Settings", "settings", openSineMods),
     ziaAction("Keyboard Shortcuts", "settings", openPane("paneZenCKS")),
     ziaAction("Look and Feel Settings", "palette", openPane("paneZenLooks")),
     ziaAction("Spaces and Tabs Settings", "tab", openPane("paneZenTabManagement")),
@@ -17876,6 +17897,62 @@
     }
   }
 
+  // Zen matches commands loosely ("zia settings" found Sync Settings) and puts
+  // one you've used before first, so Enter ran the wrong one. A command now
+  // shows only when each word typed starts a word of its name (or of the space
+  // or extension it's for). Prefixed searches (Zen's action and space modes)
+  // are left as Zen has them.
+  const ACTIONS_PROVIDER = "ZenUrlbarProviderGlobalActions";
+
+  function actionsProvider() {
+    try {
+      const { ProvidersManager } = ChromeUtils.importESModule("moz-src:///browser/components/urlbar/UrlbarProvidersManager.sys.mjs");
+      return ProvidersManager.getInstanceForSap("urlbar").getProvider(ACTIONS_PROVIDER);
+    } catch (err) {
+      return null;
+    }
+  }
+
+  // (also its initials, so "pip" finds Picture-in-Picture)
+  function namesCommand(query, result) {
+    const plain = (text) => text.toLowerCase().replace(/['’]/g, "");
+    const words = plain(query).trim().split(/\s+/).filter(Boolean);
+    const name = plain(`${result.payload.title || ""} ${result.payload.prettyName || ""}`);
+    const nameWords = name.split(/[\s\-–:/.()]+/).filter(Boolean);
+    const initials = nameWords.map((nameWord) => nameWord[0]).join("");
+    return (
+      words.every((word) => nameWords.some((nameWord) => nameWord.startsWith(word))) ||
+      (words.length === 1 && words[0].length > 1 && initials.startsWith(words[0]))
+    );
+  }
+
+  function matchCommandsStrictly() {
+    const provider = actionsProvider();
+    if (!provider) {
+      return;
+    }
+    const original = provider.ziaOriginalStartQuery || provider.startQuery;
+    provider.ziaOriginalStartQuery = original;
+    provider.startQuery = function (queryContext, addCallback) {
+      if (queryContext.searchMode) {
+        return original.call(this, queryContext, addCallback);
+      }
+      return original.call(this, queryContext, (from, result) => {
+        if (namesCommand(queryContext.searchString || "", result)) {
+          addCallback(from, result);
+        }
+      });
+    };
+  }
+
+  function unmatchCommandsStrictly() {
+    const provider = actionsProvider();
+    if (provider?.ziaOriginalStartQuery) {
+      provider.startQuery = provider.ziaOriginalStartQuery;
+      delete provider.ziaOriginalStartQuery;
+    }
+  }
+
   // One window installs Zia's entries in the shared list (and the colour answer);
   // as it closes, another open window takes over, since functions made in a
   // closed window can't be run.
@@ -17894,6 +17971,7 @@
     actions.push(...ZIA_ACTIONS);
     actions.ziaOwner = window;
     colourProvider = registerColourAnswer();
+    matchCommandsStrictly();
   }
 
   function removeZiaEntries(actions, spacesOnly) {
@@ -17935,6 +18013,7 @@
         return;
       }
       removeZiaEntries(actions, false);
+      unmatchCommandsStrictly();
       actions.ziaOwner = null;
       try {
         colourProvider?.manager.unregisterProvider(colourProvider.provider);

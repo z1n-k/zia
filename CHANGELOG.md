@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.100.3] — 2026-10-11
+
+### Fixed
+
+- Address bar commands show only when what you type names them: each word
+  starts a word of the command's name, or you type its initials ("pip").
+  "zia settings" found Sync Settings too, and Zen put it first once it had
+  been used, so Enter opened Sync.
+- "Zia Settings" opens Sine Mods the first time too; a Settings page that
+  was only just opening showed the last page you'd looked at.
+
 ## [2.100.2] — 2026-10-11
 
 ### Added
