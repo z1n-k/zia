@@ -4,6 +4,29 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Commands in the address bar, alongside Zen's: settings pages in one step
+  (Zia's settings, keyboard shortcuts, look and feel, spaces and tabs,
+  search engine, privacy, sync), passwords, the task manager, copy the
+  link as Markdown or without tracking, mute and unmute, picture-in-picture,
+  reader view, translate, bookmark, reset zoom, site settings, clear a
+  site's cookies and data, developer tools, move a tab to another space or
+  a new window, close or unload the other tabs, add to Multiview,
+  downloads, clear recent history, what's new in Zia, and the page edge to
+  edge on or off.
+- Answers in the address bar: maths, units and time zones (Firefox's own,
+  now on by default) and colours, shown with a swatch; picking one copies it.
+
+### Changed
+
+- Zen's address bar commands that nobody types (next and previous tab or
+  space, reload, new blank window) are left out, and a few are named the
+  way people search for them: Copy Link, Duplicate Tab, Hard Refresh,
+  Unsplit View.
+
 ## [2.99.0] — 2026-10-10
 
 ### Added

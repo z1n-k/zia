@@ -14,6 +14,9 @@
     set("zen.urlbar.replace-newtab", !Services.prefs.getBoolPref("zia.newtab.real-tab", true));
     set("zen.splitView.enable-tab-drop", !Services.prefs.getBoolPref("zia.split.drop-cards", true));
     set("browser.urlbar.trimHttps", true);
+    // answers in the address bar: maths, and units and time zones (Firefox's own)
+    set("browser.urlbar.suggest.calculator", true);
+    set("browser.urlbar.unitConversion.enabled", true);
     set("browser.urlbar.untrimOnUserInteraction.featureGate", false);
     try {
       Services.prefs.setBoolPref("browser.urlbar.untrimOnUserInteraction", false);
