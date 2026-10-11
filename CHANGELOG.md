@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.100.2] — 2026-10-11
+
+### Added
+
+- With Zen's toolbar hidden in compact mode, Zen's small loading pill shows
+  at the top of the page, in Zia's loading colour, while a page loads (the
+  address bar's loading line was out of sight until the toolbar came out).
+
 ## [2.100.1] — 2026-10-11
 
 ### Changed

@@ -6541,6 +6541,18 @@ findbar {
   }
 }
 
+
+/* With Zen's toolbar hidden in compact mode, the address bar's loading line is
+   out of sight, so Zen's small loading pill at the page's top comes back, in
+   Zia's loading colour (Zia hides it otherwise: 14-small-overrides.css). Only
+   while the toolbar is hidden, and only if Zen's own setting for it is on. */
+@media -moz-pref("zen.view.compact.hide-toolbar") and -moz-pref("zen.view.enable-loading-indicator") {
+  :root[zen-compact-mode="true"]:not([zen-single-toolbar="true"], [inDOMFullscreen="true"], [zia-urlbar-position="bottom"]):has(#zen-appcontent-navbar-wrapper:not([zen-has-hover], [has-popup-menu], [zen-compact-mode-active])) #zen-loading-progress-bar {
+    display: flex !important;
+    --zen-loading-progress-bar-color: var(--zia-loading-color);
+    top: calc(var(--zia-card-top-gap) / 2 + 2px) !important;
+  }
+}
 .tabbrowser-tab .tab-reset-button,
 zen-folder .tab-reset-button {
   -moz-context-properties: fill, fill-opacity !important;
