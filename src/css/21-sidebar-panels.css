@@ -169,6 +169,13 @@
     padding-inline: 0 !important;
   }
 
+  /* an extension's panel (Claude, Bitwarden and the like) is a page with a
+     background of its own: rounded as the page's card is (Firefox's own
+     panels are see-through, so it changes nothing for them) */
+  & #sidebar {
+    clip-path: inset(0 round var(--zia-card-radius));
+  }
+
   /* the gap between it and the card, which is also the handle to resize
      it by */
   & #sidebar-splitter {

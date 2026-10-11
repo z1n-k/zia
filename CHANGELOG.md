@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.100.1] — 2026-10-11
+
+### Changed
+
+- An extension's sidebar panel (Bitwarden, Claude and the like) beside the
+  page has the page's rounded corners, as the page does; it was a square
+  block.
+
 ## [2.100.0] — 2026-10-11
 
 ### Added
