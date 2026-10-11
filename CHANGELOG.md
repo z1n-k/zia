@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.100.6] — 2026-10-11
+
+### Fixed
+
+- The toolbar matches Settings, the other about: pages and an empty tab: with
+  no web address, they were taken to have a toolbar colour picked for them
+  (an empty one), so the page was never read and the toolbar showed the
+  fallback colour (the space's, or grey). 2.100.5's fix only took effect
+  with this one.
+
 ## [2.100.5] — 2026-10-11
 
 ### Fixed

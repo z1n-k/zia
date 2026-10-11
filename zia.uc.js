@@ -782,7 +782,9 @@
 
   function manualSiteColor(browser) {
     const host = browser && siteKey(browser);
-    const value = host && loadManualColors()[host];
+    // (no site, as on Settings or an empty tab, is no colour: the empty key itself
+    // came back as one, black, and the page was never read)
+    const value = host ? loadManualColors()[host] : null;
     return typeof value === "string" ? value.split(",").map(Number) : null;
   }
 
