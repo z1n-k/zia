@@ -2958,6 +2958,14 @@ zen-split-fake-tab {
   }
 }
 
+/* Windows draws a tab's site icon a point and a half left of the folders'
+   icons and the New Tab + above it (macOS lines them up): brought in line */
+@media (-moz-platform: windows) {
+  #tabbrowser-tabs .tabbrowser-tab:not([zen-essential]) .tab-icon-stack {
+    translate: 1.5px 0;
+  }
+}
+
 zen-folder > .tab-group-label-container > .zia-folder-close {
   display: none;
   list-style-image: url("chrome://browser/skin/zen-icons/close.svg");

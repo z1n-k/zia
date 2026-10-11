@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.100.8] — 2026-10-11
+
+### Fixed
+
+- On Windows, a tab's site icon in the sidebar lines up with the folders'
+  icons and the New Tab + (it sat a point and a half to their left; macOS
+  already lined up).
+
 ## [2.100.7] — 2026-10-11
 
 ### Fixed
