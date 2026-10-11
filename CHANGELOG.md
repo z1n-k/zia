@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.100.5] — 2026-10-11
+
+### Fixed
+
+- The toolbar takes the colour Settings, the other about: pages and an empty
+  tab actually show: they can be see-through, and it took the space's colour
+  behind them (red over a dark Settings page) rather than the page's.
+
 ## [2.100.4] — 2026-10-11
 
 ### Fixed

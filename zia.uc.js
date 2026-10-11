@@ -238,11 +238,43 @@
 
   // When the scroll position isn't known the whole view is drawn small (one
   // row is 8px of page) and its top rows read
+  // Pages drawn by the browser itself (Settings and the other about: pages) and
+  // the empty tab can be see-through, showing the space's colour or gradient
+  // behind them, which the page's own picture doesn't have: the toolbar took the
+  // space's colour over a dark Settings page. These are read off the window,
+  // just as they show, along the top of the page.
+  function showsThrough(browser) {
+    return (
+      !browser.isRemoteBrowser ||
+      browser.getAttribute("transparent") === "true" ||
+      !!gBrowser.getTabForBrowser(browser)?.hasAttribute("zen-empty-tab")
+    );
+  }
+
+  function sampleShownTop(browser) {
+    const box = browser.getBoundingClientRect();
+    if (!box.width || !box.height) {
+      return null;
+    }
+    sampleShownTop.canvas ||= document.createElementNS(XHTML_NS, "canvas");
+    const canvas = sampleShownTop.canvas;
+    canvas.width = Math.max(1, Math.round(box.width * STRIP_SCALE));
+    canvas.height = Math.max(1, Math.round(TOP_BAND * STRIP_SCALE));
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    ctx.setTransform(STRIP_SCALE, 0, 0, STRIP_SCALE, 0, 0);
+    ctx.drawWindow(window, box.left, box.top, box.width, TOP_BAND, "rgb(0, 0, 0)", ctx.DRAWWINDOW_DRAW_VIEW);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    return commonColor(ctx.getImageData(0, 0, canvas.width, canvas.height).data, browser);
+  }
+
   async function sampleTopColor(browser) {
     const windowGlobal = browser?.browsingContext?.currentWindowGlobal;
     const width = browser?.clientWidth;
     if (!windowGlobal || !width) {
       return null;
+    }
+    if (showsThrough(browser)) {
+      return sampleShownTop(browser);
     }
     const backing = browser.getAttribute("transparent") === "true" ? "transparent" : "rgb(255, 255, 255)";
 
@@ -259,8 +291,11 @@
     ctx.drawImage(bitmap, 0, 0);
     bitmap.close();
 
-    const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    return commonColor(ctx.getImageData(0, 0, canvas.width, canvas.height).data, browser);
+  }
 
+  // the colour most of a reading is, and how much of it
+  function commonColor(data, browser) {
     const buckets = new Map();
     for (let i = 0; i < data.length; i += 4) {
       const key = ((data[i] >> 3) << 13) | ((data[i + 1] >> 3) << 8) | ((data[i + 2] >> 3) << 3) | (data[i + 3] >> 5);
