@@ -1,0 +1,30 @@
+name: Publish release
+
+# When a release is merged (theme.json's version has no release yet), it's
+# published straight away: tagged at the merge, with its changelog section as
+# the notes. Merging is the only step; nothing can be published before it.
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish this version if it's new
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(jq -r .version theme.json)
+          if gh release view "v$version" >/dev/null 2>&1; then
+            echo "v$version is already released"
+            exit 0
+          fi
+          scripts/build.sh --check
+          awk -v v="$version" 'index($0, "## [" v "]") == 1 { f = 1; next } /^## \[/ { f = 0 } f' CHANGELOG.md > notes.md
+          [ -s notes.md ] || { echo "CHANGELOG.md has no section for $version" >&2; exit 1; }
+          gh release create "v$version" --target "$GITHUB_SHA" --title "v$version" --notes-file notes.md --latest
