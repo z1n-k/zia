@@ -674,6 +674,12 @@
       & .urlbarView-shortcutContent {
         background-color: transparent !important;
         fill: rgba(255, 255, 255, 0.9) !important;
+        /* (Zen darkens these for its white chip, which Zia takes away) */
+        color: rgba(255, 255, 255, 0.55) !important;
+      }
+
+      & .urlbarView-favicon {
+        fill: rgba(255, 255, 255, 0.85) !important;
       }
     }
 
@@ -6641,11 +6647,32 @@ zen-folder .tab-reset-button {
   fill-opacity: 1 !important;
 }
 
+/* and on the selected row, which Zen darkens for its white chip */
+:is(:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar, #urlbar#urlbar[zia-pop-site="light"])[breakout-extend]:not([zia-classic]) .urlbarView-row[selected] {
+  & .urlbarView-favicon {
+    fill: rgba(28, 28, 30, 0.72) !important;
+  }
+
+  & .urlbarView-shortcutContent {
+    color: rgb(90, 94, 100) !important;
+  }
+}
+
 @media -moz-pref("layout.css.prefers-color-scheme.content-override", 1),
        (-moz-pref("layout.css.prefers-color-scheme.content-override", 2)) and (not (-moz-system-dark-theme)) {
   :root:not([privatebrowsingmode="temporary"]) #urlbar#urlbar[breakout-extend]:not([zia-classic]):not([zia-pop-site="dark"]) :is(#identity-icon, .urlbarView-favicon, .urlbarView-type-icon) {
     fill: rgba(28, 28, 30, 0.72) !important;
     fill-opacity: 1 !important;
+  }
+
+  :root:not([privatebrowsingmode="temporary"]) #urlbar#urlbar[breakout-extend]:not([zia-classic]):not([zia-pop-site="dark"]) .urlbarView-row[selected] {
+    & .urlbarView-favicon {
+      fill: rgba(28, 28, 30, 0.72) !important;
+    }
+
+    & .urlbarView-shortcutContent {
+      color: rgb(90, 94, 100) !important;
+    }
   }
 }
 

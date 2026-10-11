@@ -170,6 +170,12 @@
       & .urlbarView-shortcutContent {
         background-color: transparent !important;
         fill: rgba(255, 255, 255, 0.9) !important;
+        /* (Zen darkens these for its white chip, which Zia takes away) */
+        color: rgba(255, 255, 255, 0.55) !important;
+      }
+
+      & .urlbarView-favicon {
+        fill: rgba(255, 255, 255, 0.85) !important;
       }
     }
 
