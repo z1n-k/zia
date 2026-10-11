@@ -4,6 +4,18 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.100.4] — 2026-10-11
+
+### Fixed
+
+- Dragging tabs between spaces in the Library is Zen's own again: the tab
+  follows the pointer and Zen's line shows where it lands. Zia's sidebar drag
+  had taken it over, leaving the tab parked over the space it came from with
+  a gap behind it until it was let go.
+- An essential dragged down into a closed folder stays in it until its bottom
+  meets the bottom of the folder's opened slot, as a tab does; it left with
+  its bottom still well inside.
+
 ## [2.100.3] — 2026-10-11
 
 ### Fixed

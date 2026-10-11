@@ -36,11 +36,19 @@
 
     // What's dragged in the sidebar has Zia's own stand-in, so the system's picture is
     // blanked (for an essential, anything: it showed as a window-wide blurred band).
+    // A drag in the Library (its spaces' tabs) is Zen's own, with its own picture
+    // under the pointer and its drop line: Zia leaves it alone.
+    const inLibrary = (event) => event.composedPath?.().some((node) => node.localName === "zen-library");
+    let libraryDragging = false;
+    window.addEventListener("dragstart", (event) => (libraryDragging = !!inLibrary(event)), true);
+    window.addEventListener("dragend", () => (libraryDragging = false), true);
+
     const isTabGhost = (node) =>
-      !!(node?.querySelector?.("[drag-image]") || node?.hasAttribute?.("drag-image")) ||
+      !libraryDragging &&
+      (!!(node?.querySelector?.("[drag-image]") || node?.hasAttribute?.("drag-image")) ||
       !!essentialDragging ||
       !!node?.closest?.("#zen-essentials, .zen-essentials-container") ||
-      !!node?.querySelector?.(".tabbrowser-tab[zen-essential]");
+      !!node?.querySelector?.(".tabbrowser-tab[zen-essential]"));
     let essentialDragging = false;
     for (const name of ["setDragImage", "updateDragImage"]) {
       const original = DataTransfer.prototype[name];
@@ -2091,6 +2099,9 @@
     }, true);
 
     const onStart = (event) => {
+      if (inLibrary(event)) {
+        return;
+      }
       const tab = tabFromEvent(event);
       if (tab) {
         begin(tab, event);
@@ -2486,7 +2497,7 @@
 
     const onEssentialStart = (event) => {
       const tab = event.target?.closest?.(".tabbrowser-tab[zen-essential]");
-      if (!tab || tab.hasAttribute("zia-essential-proxy") || !featureOn("dia-tab-drag")) {
+      if (!tab || tab.hasAttribute("zia-essential-proxy") || !featureOn("dia-tab-drag") || inLibrary(event)) {
         return;
       }
       essentialDragging = true;
@@ -2605,7 +2616,11 @@
         return null;
       }
       if (isFolderEl(prev.node) && isCollapsed(prev.node)) {
-        return listMid(y) < prev.top + prev.height + listRoom.pitch * 0.4 ? prev.node : null;
+        // Once in, it stays until its bottom meets the slot's, as a tab's does (it's drawn
+        // centred on the pointer, so half a row past the name, plus the gap): at four
+        // tenths it left the folder with its bottom still well inside
+        const reach = listRoom.folder === prev.node ? listRoom.pitch / 2 + 2 : listRoom.pitch * 0.4;
+        return listMid(y) < prev.top + prev.height + reach ? prev.node : null;
       }
       const label = prev.node.classList?.contains("tab-group-label-container");
       const folder = label ? prev.node.parentElement : prev.node.parentElement?.closest?.(FOLDER_SELECTOR);

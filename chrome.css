@@ -2052,7 +2052,9 @@ tab-group[split-view-group]:has(.tabbrowser-tab[zia-split-of]) {
   display: none !important;
 }
 
-#zen-drag-indicator {
+/* Zen's drop line: Zia's gap shows where a tab lands instead. The Library's
+   drags are Zen's, and keep it (Zen puts it inside the space's column there) */
+#zen-drag-indicator:not(.zen-library-space-tabs > #zen-drag-indicator) {
   display: none !important;
 }
 
