@@ -373,6 +373,8 @@
 
 :is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container > label {
   font-size: var(--zia-text-size) !important;
+  /* in line with the tabs' names below (it started a point and a half left) */
+  translate: 1.5px 0;
 }
 
 @media -moz-pref("zia.urlbar.zia-look") {

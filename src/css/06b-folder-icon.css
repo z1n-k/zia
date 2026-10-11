@@ -55,6 +55,12 @@
   }
 }
 
+/* A folder's own icon (shown alone, not on the glass) sat a point and a half
+   left of the tabs' icons and the New Tab + below them: in line with them */
+:is(zen-folder, tab-group:not([split-view-group])):not([zia-icon-on-folder]) > .tab-group-label-container .tab-group-folder-icon:has(.icon image:not([href=""])) > svg {
+  translate: 1.5px 0;
+}
+
 /* closing eases home (kept plain, so the opening rules below win while open) */
 .zia-fi-fold > * {
   transition: transform 0.4s var(--fi-soft), opacity 0.25s var(--fi-soft), left 0.3s var(--fi-soft), right 0.3s var(--fi-soft);

@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.100.7] — 2026-10-11
+
+### Fixed
+
+- A folder's own icon and its name line up with the tabs' icons and names
+  (and the New Tab +) below it; both sat a point and a half to their left.
+
 ## [2.100.6] — 2026-10-11
 
 ### Fixed

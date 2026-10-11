@@ -2765,6 +2765,8 @@ zen-split-fake-tab {
 
 :is(zen-folder, tab-group:not([split-view-group])) > .tab-group-label-container > label {
   font-size: var(--zia-text-size) !important;
+  /* in line with the tabs' names below (it started a point and a half left) */
+  translate: 1.5px 0;
 }
 
 @media -moz-pref("zia.urlbar.zia-look") {
@@ -3335,6 +3337,12 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
       translate: 0 -0.08em;
     }
   }
+}
+
+/* A folder's own icon (shown alone, not on the glass) sat a point and a half
+   left of the tabs' icons and the New Tab + below them: in line with them */
+:is(zen-folder, tab-group:not([split-view-group])):not([zia-icon-on-folder]) > .tab-group-label-container .tab-group-folder-icon:has(.icon image:not([href=""])) > svg {
+  translate: 1.5px 0;
 }
 
 /* closing eases home (kept plain, so the opening rules below win while open) */
