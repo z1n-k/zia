@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.100.9] — 2026-10-12
+
+### Fixed
+
+- An empty tab is the same colour as the toolbar and the sidebar: Zen laid a
+  faint white wash over it (stronger in light mode), so it showed a shade
+  lighter.
+
 ## [2.100.8] — 2026-10-11
 
 ### Fixed

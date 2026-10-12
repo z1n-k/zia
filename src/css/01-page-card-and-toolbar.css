@@ -28,6 +28,9 @@
   }
 
   & #tabbrowser-tabbox #tabbrowser-tabpanels .browserSidebarContainer {
+    /* no white wash over a see-through page (an empty tab): Zen's glaze left it
+       a shade lighter than the toolbar and the sidebar, the same window colour */
+    --zen-transparent-browser-background: transparent !important;
     border-radius: 0 0 var(--zia-card-radius) var(--zia-card-radius) !important;
     box-shadow: none !important;
     border: none !important;
