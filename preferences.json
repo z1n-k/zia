@@ -42,6 +42,12 @@
   },
   {
     "type": "checkbox",
+    "label": "The ⋯ menu as a macOS menu: compact rows, your accent colour on the one you point at (off: Firefox's)",
+    "property": "zia.menus.mac-style",
+    "defaultValue": true
+  },
+  {
+    "type": "checkbox",
     "label": "Zia's rounded page corners (off: Zen's)",
     "property": "zia.page.rounding",
     "defaultValue": true

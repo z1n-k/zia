@@ -2393,6 +2393,27 @@ zen-split-fake-tab {
 .tabbrowser-tab[zia-essential-proxy] {
   translate: -50% -50% !important;
 }
+
+/* Several selected tabs dragged together (28-tab-dragging.js): the others are
+   folded into the dragged one, out of the list, and it shows how many */
+.tabbrowser-tab[zia-drag-companion] {
+  display: none !important;
+}
+
+.tabbrowser-tab[zia-drag-count] > .tab-stack > .tab-content::after {
+  content: attr(zia-drag-count);
+  flex: none;
+  min-width: 16px;
+  height: 16px;
+  margin-inline-start: 6px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: var(--zia-loading-color);
+  color: rgb(255, 255, 255);
+  font: 600 10px/16px -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  text-align: center;
+}
 @property --zia-folder-bottom-extra {
   syntax: "<length>";
   inherits: false;
@@ -6447,6 +6468,13 @@ findbar {
       }
     }
 
+    /* Zen gives the toolbar its space-coloured background here (as the flyout sidebar's),
+       which lay over Zia's page colour and tinted it the space's (green over a dark page):
+       the page's colour alone, as in the other layouts */
+    & #zen-appcontent-navbar-wrapper .zen-toolbar-background {
+      display: none !important;
+    }
+
     /* (hiding, it keeps its height till its contents have faded, as they fade in: it shut
        at once and cut them off) */
     & #zen-appcontent-navbar-wrapper:not([zen-has-hover], [has-popup-menu], [zen-compact-mode-active]) {
@@ -8104,9 +8132,15 @@ zen-folder .tab-reset-button {
     background-color: rgba(0, 0, 0, 0.07) !important;
   }
 
-  /* essentials: a fine dark edge round each tile */
+  /* essentials: a fine dark edge round each tile, or with Zia's glass on, the
+     glass's own light edge, as the dark spaces have (the plain line took its
+     place, so light spaces had no glass on their essentials) */
   & .tabbrowser-tab[zen-essential]:not([visuallyselected]) > .tab-stack > .tab-background {
     box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.07) !important;
+
+    @media -moz-pref("zia.glass") {
+      box-shadow: var(--zia-glass-edge) !important;
+    }
   }
 
   & .tabbrowser-tab[zen-essential]:not([visuallyselected]):hover > .tab-stack > .tab-background {
@@ -8634,10 +8668,18 @@ zen-folder .tab-reset-button {
       box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.1), 0 16px 40px rgba(0, 0, 0, 0.4) !important;
     }
 
-    /* spaces: each card rounded as the page is */
+    /* spaces: each card rounded as the page is (framed: with the page edge to
+       edge, the cards went square too) */
     & .zen-library-space,
     & .zen-library-space::before {
-      border-radius: var(--zia-card-radius) !important;
+      border-radius: var(--zia-card-radius-base) !important;
+    }
+
+    /* the row of spaces scrolls without a bar: Zen hides it while the Library
+       opens and shows it after, and where scroll bars always show, it took its
+       height from the cards as the opening ended, a jump */
+    & .zen-library-spaces {
+      scrollbar-width: none !important;
     }
 
     & .zen-library-space-header {
@@ -8850,8 +8892,8 @@ zen-folder .tab-reset-button {
 }
 /* The site panel (the site icon at the start of the address bar), drawn as
    Zia draws the rest: Zia's card (the hover cards' surface, squircle and
-   edge), its buttons and extensions as Zia's tiles (flat, a squircle, the
-   glass edge), the headings small and quiet as the Library's, and the
+   edge), its buttons and extensions as Zia's tiles (flat, a squircle, a
+   hairline), the headings small and quiet as the Library's, and the
    settings as rows that light up as tabs do, their icons on a tile rather
    than a bright disc, with no lines between them. Light spaces and light
    mode follow, the tiles mixed from the panel's own text colour. */
@@ -8868,7 +8910,9 @@ zen-folder .tab-reset-button {
   /* (a tab's corner: on tiles this short, the essentials' squircle size
      came out nearly a pill) */
   --zia-site-tile-radius: var(--zia-glass-button-radius);
-  --zia-site-tile-edge: var(--zia-glass-edge), inset 0 0 0 0.5px color-mix(in srgb, currentColor 6%, transparent);
+  /* (flat, as macOS's own pop-ups' buttons: the glass edge on every tile was heavy
+     beside them) */
+  --zia-site-tile-edge: inset 0 0 0 0.5px color-mix(in srgb, currentColor 6%, transparent);
   /* (its ink the card's, as the hover cards': Zen's followed the system's
      light or dark, which a light space's light card doesn't) */
   --panel-color: rgb(255, 255, 255) !important;
@@ -8890,6 +8934,10 @@ zen-folder .tab-reset-button {
     corner-shape: var(--zia-squircle) !important;
     border: none !important;
     box-shadow: var(--zia-glass-edge-lit) !important;
+    /* its colour set here, by the same light or dark as its ink: with the system
+       dark and the space light, the ink went dark and the light glass edge came on
+       while the panel stayed dark */
+    background: var(--zia-tab-card-bg) !important;
   }
 }
 
@@ -9147,6 +9195,62 @@ zen-workspace-creation {
 
   & .zen-workspace-creation-create-button {
     color: rgb(255, 255, 255) !important;
+  }
+}
+/* The ⋯ menu (and its History, Bookmarks and other pages) as a macOS menu:
+   compact 24px rows inset from the edges, the one pointed at in the system's
+   accent colour with white text and shortcut, thin quiet separators, and a
+   rounder panel. It was Firefox's own menu, unlike Zia's other pop-ups and
+   the system's beside them. Off in Zia's settings (Firefox's again). */
+@media -moz-pref("zia.menus.mac-style") {
+  #appMenu-popup {
+    --panel-border-radius: 12px !important;
+    --arrowpanel-border-radius: 12px !important;
+    --panel-subview-body-padding-block: 5px !important;
+    font-size: 13px !important;
+
+    & .subviewbutton {
+      min-height: 24px !important;
+      margin: 0 5px !important;
+      padding: 2px 8px !important;
+      border-radius: 6px !important;
+      gap: 0;
+
+      & > .toolbarbutton-icon {
+        width: 16px !important;
+        height: 16px !important;
+        margin-inline-end: 8px !important;
+      }
+
+      &:not([disabled]):is(:hover, :focus-visible, [open], [_moz-menuactive]) {
+        background-color: AccentColor !important;
+        color: AccentColorText !important;
+        fill: AccentColorText !important;
+
+        &[shortcut]::after {
+          color: AccentColorText !important;
+          opacity: 0.85;
+        }
+      }
+
+      &:not([disabled]):hover:active {
+        background-color: color-mix(in srgb, AccentColor 85%, black) !important;
+      }
+    }
+
+    & toolbarseparator {
+      margin: 5px 13px !important;
+      padding: 0 !important;
+      border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent) !important;
+      color: transparent !important;
+    }
+
+    /* the pages' headers (History, Bookmarks...): a quiet title, as macOS's */
+    & .panel-header {
+      min-height: 28px !important;
+      padding: 4px 10px !important;
+      font-size: 13px !important;
+    }
   }
 }
 /* The rename card (tidy-downloads/tidy-downloads.js; Tidy Downloads, by

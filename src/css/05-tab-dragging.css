@@ -357,3 +357,24 @@ zen-split-fake-tab {
 .tabbrowser-tab[zia-essential-proxy] {
   translate: -50% -50% !important;
 }
+
+/* Several selected tabs dragged together (28-tab-dragging.js): the others are
+   folded into the dragged one, out of the list, and it shows how many */
+.tabbrowser-tab[zia-drag-companion] {
+  display: none !important;
+}
+
+.tabbrowser-tab[zia-drag-count] > .tab-stack > .tab-content::after {
+  content: attr(zia-drag-count);
+  flex: none;
+  min-width: 16px;
+  height: 16px;
+  margin-inline-start: 6px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: var(--zia-loading-color);
+  color: rgb(255, 255, 255);
+  font: 600 10px/16px -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  text-align: center;
+}

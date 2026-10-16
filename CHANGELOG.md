@@ -4,6 +4,38 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.100.10] — 2026-10-16
+
+### Changed
+
+- The ⋯ menu is drawn as a macOS menu: compact rows, the one you point at in
+  your system's accent colour, thin separators and a rounder panel (off in
+  Zia's settings: "The ⋯ menu as a macOS menu").
+- The site panel's buttons and extensions are flat tiles, as macOS's own
+  pop-ups' buttons are, without the glass edge on each.
+
+### Fixed
+
+- Dragging one of several selected tabs takes them all: the others fold into
+  it (out of the list, the rows closing up, a count on the dragged tab) and
+  land with it. Only the dragged one moved, and the rest jumped across on
+  the drop.
+- With Liquid Glass on, a light space's essentials have the glass edge as
+  everything else does; the light theme's own plain line took its place.
+- With Zen's toolbar hidden in compact mode, the toolbar is only the page's
+  colour when it shows: Zen's space-coloured background lay over it there
+  and tinted it the space's (green over a dark page).
+- In a light space with the system in dark mode, the site panel is light, as
+  its text and glass edge are: it stayed dark, with dark text on it.
+- The Library's spaces keep their round corners with the page edge to edge,
+  and no longer shrink as the Library finishes opening where scroll bars
+  always show (the row's bar appeared under them).
+- Moving off a tab's hover card over the compact sidebar no longer makes the
+  sidebar flicker shut and open (thanks @Sylbird).
+- A tab's hover card shows its page's picture through Firefox's own
+  thumbnails, as intended; that call was made wrongly and always fell back
+  (thanks @Sylbird).
+
 ## [2.100.9] — 2026-10-12
 
 ### Fixed

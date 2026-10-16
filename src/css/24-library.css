@@ -468,10 +468,18 @@
       box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.1), 0 16px 40px rgba(0, 0, 0, 0.4) !important;
     }
 
-    /* spaces: each card rounded as the page is */
+    /* spaces: each card rounded as the page is (framed: with the page edge to
+       edge, the cards went square too) */
     & .zen-library-space,
     & .zen-library-space::before {
-      border-radius: var(--zia-card-radius) !important;
+      border-radius: var(--zia-card-radius-base) !important;
+    }
+
+    /* the row of spaces scrolls without a bar: Zen hides it while the Library
+       opens and shows it after, and where scroll bars always show, it took its
+       height from the cards as the opening ended, a jump */
+    & .zen-library-spaces {
+      scrollbar-width: none !important;
     }
 
     & .zen-library-space-header {

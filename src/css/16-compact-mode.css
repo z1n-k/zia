@@ -108,6 +108,13 @@
       }
     }
 
+    /* Zen gives the toolbar its space-coloured background here (as the flyout sidebar's),
+       which lay over Zia's page colour and tinted it the space's (green over a dark page):
+       the page's colour alone, as in the other layouts */
+    & #zen-appcontent-navbar-wrapper .zen-toolbar-background {
+      display: none !important;
+    }
+
     /* (hiding, it keeps its height till its contents have faded, as they fade in: it shut
        at once and cut them off) */
     & #zen-appcontent-navbar-wrapper:not([zen-has-hover], [has-popup-menu], [zen-compact-mode-active]) {

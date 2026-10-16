@@ -1,0 +1,56 @@
+/* The ⋯ menu (and its History, Bookmarks and other pages) as a macOS menu:
+   compact 24px rows inset from the edges, the one pointed at in the system's
+   accent colour with white text and shortcut, thin quiet separators, and a
+   rounder panel. It was Firefox's own menu, unlike Zia's other pop-ups and
+   the system's beside them. Off in Zia's settings (Firefox's again). */
+@media -moz-pref("zia.menus.mac-style") {
+  #appMenu-popup {
+    --panel-border-radius: 12px !important;
+    --arrowpanel-border-radius: 12px !important;
+    --panel-subview-body-padding-block: 5px !important;
+    font-size: 13px !important;
+
+    & .subviewbutton {
+      min-height: 24px !important;
+      margin: 0 5px !important;
+      padding: 2px 8px !important;
+      border-radius: 6px !important;
+      gap: 0;
+
+      & > .toolbarbutton-icon {
+        width: 16px !important;
+        height: 16px !important;
+        margin-inline-end: 8px !important;
+      }
+
+      &:not([disabled]):is(:hover, :focus-visible, [open], [_moz-menuactive]) {
+        background-color: AccentColor !important;
+        color: AccentColorText !important;
+        fill: AccentColorText !important;
+
+        &[shortcut]::after {
+          color: AccentColorText !important;
+          opacity: 0.85;
+        }
+      }
+
+      &:not([disabled]):hover:active {
+        background-color: color-mix(in srgb, AccentColor 85%, black) !important;
+      }
+    }
+
+    & toolbarseparator {
+      margin: 5px 13px !important;
+      padding: 0 !important;
+      border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent) !important;
+      color: transparent !important;
+    }
+
+    /* the pages' headers (History, Bookmarks...): a quiet title, as macOS's */
+    & .panel-header {
+      min-height: 28px !important;
+      padding: 4px 10px !important;
+      font-size: 13px !important;
+    }
+  }
+}

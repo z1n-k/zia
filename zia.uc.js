@@ -6436,6 +6436,7 @@
     "zia.toolbar.site-color",
     "zia.split.drop-cards",
     "zia.page.rounding",
+    "zia.menus.mac-style",
   ];
   const WATCHED_OPTIONS = ["zia.urlbar.zia-look", "zia.urlbar.dia-style", "zia.newtab.real-tab", "zia.toolbar.site-color", "zia.split.drop-cards"];
 
@@ -12942,6 +12943,19 @@
       }
       const split = !folder && target.group?.hasAttribute?.("split-view-group") ? target.group : null;
       const moving = folder || split || target;
+      // Several tabs selected: the others fold into the one dragged (out of the list, the
+      // rows closing up, a count on it), as macOS drags several things; Firefox moves them
+      // all on the drop, and they show again there. (Only the dragged one moved, and the
+      // rest jumped across on the drop.)
+      if (!folder && !split && target.multiselected) {
+        const others = gBrowser.selectedTabs.filter((tab) => tab !== target && !tab.hasAttribute("zen-essential") && tab.isConnected);
+        for (const tab of others) {
+          tab.setAttribute("zia-drag-companion", "true");
+        }
+        if (others.length) {
+          target.setAttribute("zia-drag-count", String(others.length + 1));
+        }
+      }
       const rows = measureRows(folder ? null : target);
       const mine = rows.find((row) => row.item === target || row.node === moving || (folder && folder.contains(row.node)));
       const box = layoutTop(moving);
@@ -14493,6 +14507,12 @@
       drag = null;
       pending = null;
       document.documentElement.removeAttribute("zia-dragging-tab");
+      for (const tab of document.querySelectorAll("[zia-drag-companion]")) {
+        tab.removeAttribute("zia-drag-companion");
+      }
+      for (const tab of document.querySelectorAll("[zia-drag-count]")) {
+        tab.removeAttribute("zia-drag-count");
+      }
       setFlag("zia-drag-over-essentials", false);
       muteZenHaptics(false);
       reclip();

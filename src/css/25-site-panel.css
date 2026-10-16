@@ -1,7 +1,7 @@
 /* The site panel (the site icon at the start of the address bar), drawn as
    Zia draws the rest: Zia's card (the hover cards' surface, squircle and
-   edge), its buttons and extensions as Zia's tiles (flat, a squircle, the
-   glass edge), the headings small and quiet as the Library's, and the
+   edge), its buttons and extensions as Zia's tiles (flat, a squircle, a
+   hairline), the headings small and quiet as the Library's, and the
    settings as rows that light up as tabs do, their icons on a tile rather
    than a bright disc, with no lines between them. Light spaces and light
    mode follow, the tiles mixed from the panel's own text colour. */
@@ -18,7 +18,9 @@
   /* (a tab's corner: on tiles this short, the essentials' squircle size
      came out nearly a pill) */
   --zia-site-tile-radius: var(--zia-glass-button-radius);
-  --zia-site-tile-edge: var(--zia-glass-edge), inset 0 0 0 0.5px color-mix(in srgb, currentColor 6%, transparent);
+  /* (flat, as macOS's own pop-ups' buttons: the glass edge on every tile was heavy
+     beside them) */
+  --zia-site-tile-edge: inset 0 0 0 0.5px color-mix(in srgb, currentColor 6%, transparent);
   /* (its ink the card's, as the hover cards': Zen's followed the system's
      light or dark, which a light space's light card doesn't) */
   --panel-color: rgb(255, 255, 255) !important;
@@ -40,6 +42,10 @@
     corner-shape: var(--zia-squircle) !important;
     border: none !important;
     box-shadow: var(--zia-glass-edge-lit) !important;
+    /* its colour set here, by the same light or dark as its ink: with the system
+       dark and the space light, the ink went dark and the light glass edge came on
+       while the panel stayed dark */
+    background: var(--zia-tab-card-bg) !important;
   }
 }
 
