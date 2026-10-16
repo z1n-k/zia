@@ -379,6 +379,26 @@
           "property": "zia.urlbar.zia-look",
           "value": true
         }
+      },
+      {
+        "if": {
+          "property": "zia.urlbar.full-url",
+          "value": false
+        }
+      }
+    ]
+  },
+  {
+    "type": "checkbox",
+    "label": "Show the page's full address rather than its domain and title",
+    "property": "zia.urlbar.full-url",
+    "defaultValue": false,
+    "conditions": [
+      {
+        "if": {
+          "property": "zia.urlbar.zia-look",
+          "value": true
+        }
       }
     ]
   },

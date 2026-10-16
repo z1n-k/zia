@@ -38,8 +38,11 @@
   }
 
   function watchTitleOnly() {
-    watchPrefs(TITLE_ONLY_PREF, () => updateTitle());
+    watchPrefs([TITLE_ONLY_PREF, FULL_URL_PREF], () => updateTitle());
   }
+
+  // (an option: the page's whole address, as Firefox shows it, rather than the domain and title)
+  const FULL_URL_PREF = "zia.urlbar.full-url";
 
   function updateTitle() {
     if (!titleEl) {
@@ -66,7 +69,7 @@
       urlbar.setAttribute("zia-has-title", "true");
       return;
     }
-    if (!host || !valid || isErrorPage(browser)) {
+    if (!host || !valid || isErrorPage(browser) || Services.prefs.getBoolPref(FULL_URL_PREF, false)) {
       urlbar.removeAttribute("zia-has-title");
       return;
     }

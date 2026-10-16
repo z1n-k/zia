@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.100.12] — 2026-10-16
+
+### Added
+
+- An option to show the page's full address in the address bar rather than
+  its domain and title (Zia's settings: "Show the page's full address rather
+  than its domain and title"; off by default).
+
 ## [2.100.11] — 2026-10-16
 
 ### Fixed
