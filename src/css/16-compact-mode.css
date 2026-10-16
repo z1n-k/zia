@@ -97,6 +97,8 @@
          that gap, the pointer left it, and it hid and came back, a flash. Still the
          window's to drag by, and shown even while the rest is clipped away) */
       overflow-clip-margin: var(--zia-card-top-gap);
+      /* (Zen 1.23.3 contains its paint, which cut that reach back off) */
+      contain: none !important;
 
       &::before {
         content: "";

@@ -4,6 +4,18 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.100.11] — 2026-10-16
+
+### Fixed
+
+- For Zen 1.23.3: the address bar's results have their gap above and below
+  again (the last row sat on the pop-up's edge), and the pop-up opens without
+  its edge jumping as it settles. Zen took out a box around the results
+  that Zia spaced them by.
+- For Zen 1.23.3: with Zen's toolbar hidden in compact mode, the toolbar
+  reaches up over the gap above the page again, so it doesn't flash on and
+  off as the pointer crosses it.
+
 ## [2.100.10] — 2026-10-16
 
 ### Changed

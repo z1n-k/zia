@@ -632,10 +632,6 @@
       transform-origin: 50% 0 !important;
       animation: zia-urlbar-open 0.18s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
     }
-
-    & .urlbarView-body-inner {
-      border-top: none !important;
-    }
   }
 
   @keyframes zia-urlbar-open {
@@ -760,16 +756,15 @@
       white-space: nowrap;
     }
 
-    & :is(.urlbarView, .urlbarView-body-outer, .urlbarView-results, #urlbar-results) {
+    & :is(.urlbarView, .urlbarView-results, #urlbar-results) {
       padding-inline: 0 !important;
       padding-block: 0 !important;
       margin-inline: 0 !important;
     }
 
-    & .urlbarView-body-inner {
-      padding-inline: 0 !important;
-      margin-inline: 0 !important;
-      padding-block: var(--zia-pop-list-pad) !important;
+    /* (outside the list's scroll, as the box around it had it till Zen 1.23.3 took that box out) */
+    & #urlbar-results {
+      margin-block: var(--zia-pop-list-pad) !important;
     }
 
     & .urlbarView {
@@ -792,14 +787,13 @@
 
     --urlbarView-item-inline-padding: 8px !important;
 
-    & :is(.urlbarView, .urlbarView-body-outer, .urlbarView-body-inner, .urlbarView-results, #urlbar-results) {
+    & :is(.urlbarView, .urlbarView-results, #urlbar-results) {
       width: 100% !important;
       max-width: 100% !important;
       margin-inline: 0 !important;
     }
 
-    & :is(.urlbarView-body-inner, .urlbarView-body-outer, .urlbarView-results, #urlbar-results) {
-      margin-block: 0 !important;
+    & :is(.urlbarView-results, #urlbar-results) {
       border-block: 0 !important;
     }
 
@@ -6457,6 +6451,8 @@ findbar {
          that gap, the pointer left it, and it hid and came back, a flash. Still the
          window's to drag by, and shown even while the rest is clipped away) */
       overflow-clip-margin: var(--zia-card-top-gap);
+      /* (Zen 1.23.3 contains its paint, which cut that reach back off) */
+      contain: none !important;
 
       &::before {
         content: "";
