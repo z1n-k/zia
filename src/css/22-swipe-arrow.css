@@ -219,3 +219,30 @@
     backdrop-filter: blur(24px) saturate(1.6);
   }
 }
+
+/* In a light space the bubble and its card of pages are light, so their arrow
+   and text are dark (they stayed white on it) */
+:root[zia-light] #zia-swipe {
+  color: rgba(0, 0, 0, 0.85);
+
+  & .zia-swipe-arrow {
+    color: rgba(0, 0, 0, 0.5);
+  }
+
+  &[will] .zia-swipe-arrow {
+    color: rgb(28, 28, 30);
+  }
+
+  & .zia-swipe-page {
+    color: rgba(0, 0, 0, 0.72);
+
+    &:is([selected], :hover) {
+      background: rgba(0, 0, 0, 0.07);
+      color: rgb(0, 0, 0);
+    }
+  }
+
+  & .zia-swipe-pages:hover .zia-swipe-page[selected]:not(:hover) {
+    color: rgba(0, 0, 0, 0.72);
+  }
+}

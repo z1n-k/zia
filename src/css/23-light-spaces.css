@@ -30,8 +30,11 @@
   --zia-fallback-bg: #f6f6f8;
   --zia-page-loading-bg: #ffffff;
 
-  /* the music card a white card, as the selected tab is */
+  /* the music card a white card, as the selected tab is (and over light grey
+     when opened, whatever the system's mode: in dark mode, the near-black
+     under it turned it a muddy grey) */
   --zia-media-bg: rgba(255, 255, 255, 0.62);
+  --zia-media-card-base: rgb(235, 235, 235);
 
   /* tab names: the rest a little softer, the open one full */
   & .tabbrowser-tab:not([zen-essential]) .tab-label-container {
@@ -169,6 +172,11 @@
   & #zen-media-controls-toolbar {
     & .zen-media-card {
       box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+
+      /* (with Zia's glass on, the glass's light edge, as the essentials) */
+      @media -moz-pref("zia.glass") {
+        box-shadow: var(--zia-glass-edge), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+      }
     }
 
     & .zen-media-title {

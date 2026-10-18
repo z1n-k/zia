@@ -675,9 +675,12 @@
   }
 
   /* The list beside the sections runs to the Library's edge: Zen capped
-     it at its own width less its wider column, which left a gap at the right */
+     it at its own width less its wider column, which left a gap at the right.
+     Capped still, at the Library's resting width less Zia's narrower column:
+     uncapped, it filled the Library as that narrowed from the spaces' width,
+     and the media grid re-wrapped all the way down, a jitter */
   zen-library .zen-library-section:not([data-section="spaces"]) {
-    max-width: none !important;
+    max-width: calc(418px - 84px) !important;
   }
 
   /* The library's drawing as faint as the buttons beside it (the tab list's

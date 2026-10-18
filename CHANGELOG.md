@@ -4,6 +4,31 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.100.13] — 2026-10-18
+
+### Fixed
+
+- In a light space, the music card has the glass edge with Liquid Glass on,
+  as everything else does, and opening it no longer turns it a muddy grey
+  when the system is in dark mode (thanks @OneGunBullet).
+- Switching the Library from Spaces to Media (or another section) no
+  longer jitters: the media grid stays laid out at its final width as the
+  Library narrows, rather than re-wrapping all the way down (thanks
+  @OneGunBullet).
+- Firefox's own buttons in the address bar (translate, reader view and the
+  rest, when they show) are the same small square tile as Zia's, with the
+  same faint highlight: they were rounder and brighter (thanks @OneGunBullet).
+- In a light space, the swipe-back arrow and its card of pages have dark
+  arrows and text, as they're light there: they stayed white (thanks
+  @OneGunBullet).
+- The ⋯ menu as a macOS menu, tidied (thanks @OneGunBullet): its separators
+  show again, a page with no icons (Help and Report...) isn't indented for
+  them, the corners follow the last row's, a page's footer button (Manage
+  bookmarks) sits as far from the bottom as any last row, a page's header
+  is spaced as the first row is, and the zoom row keeps Zen's straight line
+  above it, with its −, % and + each lighting up on their own rather than
+  the whole row.
+
 ## [2.100.12] — 2026-10-16
 
 ### Added

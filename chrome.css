@@ -976,6 +976,26 @@
     margin-inline-start: 3px !important;
   }
 
+  /* Firefox's own buttons there (translate, reader view, the star...), when
+     they show, as the same tile: they had Firefox's rounder, brighter one
+     (only at least 22 wide, so the translate one's language still fits) */
+  #urlbar #page-action-buttons > .urlbar-page-action:not(#zia-copy-link-button, #zen-site-data-icon-button) {
+    min-width: 22px !important;
+    height: 22px !important;
+    min-height: 22px !important;
+    border-radius: 3.5px !important;
+    padding-block: 0 !important;
+    margin-inline-start: 3px !important;
+    box-sizing: border-box !important;
+    justify-content: center !important;
+    align-items: center !important;
+    align-self: center !important;
+
+    &:is(:hover, [open]) {
+      background-color: color-mix(in srgb, currentColor 7%, transparent) !important;
+    }
+  }
+
   /* (Dia's tile is about 7% over the bar, measured; Zen's was several times
      that. The icon's own ink, so it's dark on a light bar) */
   #urlbar :is(#zia-copy-link-button, #zen-site-data-icon-button):is(:hover, [open]) {
@@ -7976,6 +7996,33 @@ zen-folder .tab-reset-button {
     backdrop-filter: blur(24px) saturate(1.6);
   }
 }
+
+/* In a light space the bubble and its card of pages are light, so their arrow
+   and text are dark (they stayed white on it) */
+:root[zia-light] #zia-swipe {
+  color: rgba(0, 0, 0, 0.85);
+
+  & .zia-swipe-arrow {
+    color: rgba(0, 0, 0, 0.5);
+  }
+
+  &[will] .zia-swipe-arrow {
+    color: rgb(28, 28, 30);
+  }
+
+  & .zia-swipe-page {
+    color: rgba(0, 0, 0, 0.72);
+
+    &:is([selected], :hover) {
+      background: rgba(0, 0, 0, 0.07);
+      color: rgb(0, 0, 0);
+    }
+  }
+
+  & .zia-swipe-pages:hover .zia-swipe-page[selected]:not(:hover) {
+    color: rgba(0, 0, 0, 0.72);
+  }
+}
 /* Light spaces: a space whose colour is light (Zen marks the window
    zen-should-be-dark-mode="false" and gives its sidebar dark text). Zia
    drew the sidebar for dark spaces only, white text and white-tinted
@@ -8008,8 +8055,11 @@ zen-folder .tab-reset-button {
   --zia-fallback-bg: #f6f6f8;
   --zia-page-loading-bg: #ffffff;
 
-  /* the music card a white card, as the selected tab is */
+  /* the music card a white card, as the selected tab is (and over light grey
+     when opened, whatever the system's mode: in dark mode, the near-black
+     under it turned it a muddy grey) */
   --zia-media-bg: rgba(255, 255, 255, 0.62);
+  --zia-media-card-base: rgb(235, 235, 235);
 
   /* tab names: the rest a little softer, the open one full */
   & .tabbrowser-tab:not([zen-essential]) .tab-label-container {
@@ -8147,6 +8197,11 @@ zen-folder .tab-reset-button {
   & #zen-media-controls-toolbar {
     & .zen-media-card {
       box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+
+      /* (with Zia's glass on, the glass's light edge, as the essentials) */
+      @media -moz-pref("zia.glass") {
+        box-shadow: var(--zia-glass-edge), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+      }
     }
 
     & .zen-media-title {
@@ -8871,9 +8926,12 @@ zen-folder .tab-reset-button {
   }
 
   /* The list beside the sections runs to the Library's edge: Zen capped
-     it at its own width less its wider column, which left a gap at the right */
+     it at its own width less its wider column, which left a gap at the right.
+     Capped still, at the Library's resting width less Zia's narrower column:
+     uncapped, it filled the Library as that narrowed from the spaces' width,
+     and the media grid re-wrapped all the way down, a jitter */
   zen-library .zen-library-section:not([data-section="spaces"]) {
-    max-width: none !important;
+    max-width: calc(418px - 84px) !important;
   }
 
   /* The library's drawing as faint as the buttons beside it (the tab list's
@@ -9200,23 +9258,23 @@ zen-workspace-creation {
    the system's beside them. Off in Zia's settings (Firefox's again). */
 @media -moz-pref("zia.menus.mac-style") {
   #appMenu-popup {
-    --panel-border-radius: 12px !important;
-    --arrowpanel-border-radius: 12px !important;
+    /* (the rows' corner plus their inset, so the last row's corners follow the panel's) */
+    --panel-border-radius: 11px !important;
+    --arrowpanel-border-radius: 11px !important;
+    /* the gap between a row's icon and its text, in Zen's own spacing: a row
+       with no icon then isn't held over for one */
+    --uc-arrowpanel-menuicon-margin-inline: 8px !important;
     --panel-subview-body-padding-block: 5px !important;
     font-size: 13px !important;
 
-    & .subviewbutton {
+    /* (not the zoom row, whose top line is Zen's separator there: rounded and
+       inset as a row, it bent, and it lit up whole as one) */
+    & .subviewbutton:not(#appMenu-zoom-controls, #appMenu-zoom-controls > .subviewbutton) {
       min-height: 24px !important;
       margin: 0 5px !important;
       padding: 2px 8px !important;
       border-radius: 6px !important;
       gap: 0;
-
-      & > .toolbarbutton-icon {
-        width: 16px !important;
-        height: 16px !important;
-        margin-inline-end: 8px !important;
-      }
 
       &:not([disabled]):is(:hover, :focus-visible, [open], [_moz-menuactive]) {
         background-color: AccentColor !important;
@@ -9234,17 +9292,37 @@ zen-workspace-creation {
       }
     }
 
+    /* the footer's button (Manage bookmarks...) as far from the bottom as the
+       last row of any page */
+    & .panel-subview-footer-button {
+      margin-bottom: 5px !important;
+    }
+
+    /* the zoom row's −, % and + light up each on its own, quietly */
+    & #appMenu-zoom-controls > .subviewbutton {
+      border-radius: 6px !important;
+      transition: background-color 0.12s ease;
+
+      &:not([disabled]):hover {
+        background-color: color-mix(in srgb, currentColor 12%, transparent) !important;
+      }
+
+      &:not([disabled]):hover:active {
+        background-color: color-mix(in srgb, currentColor 18%, transparent) !important;
+      }
+    }
+
+    /* (drawn in Zen's separator colour: Zia's own line was in a colour it had
+       made clear, and didn't show) */
     & toolbarseparator {
       margin: 5px 13px !important;
       padding: 0 !important;
-      border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent) !important;
-      color: transparent !important;
     }
 
     /* the pages' headers (History, Bookmarks...): a quiet title, as macOS's */
     & .panel-header {
-      min-height: 28px !important;
-      padding: 4px 10px !important;
+      min-height: 24px !important;
+      padding: 5px 10px 0 !important;
       font-size: 13px !important;
     }
   }
