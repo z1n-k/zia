@@ -11088,6 +11088,11 @@
         if (item.hasAttribute?.("zia-split-of") || item.group?.querySelector?.(":scope .tabbrowser-tab[zia-split-of]")) {
           continue;
         }
+        // nor the selected tabs folded into the one dragged: hidden, as 0-high rows each step
+        // past them moved nothing, and the dragged tab slid over the rows that should part
+        if (item.hasAttribute?.("zia-drag-companion")) {
+          continue;
+        }
         let node = nodeToMove(item);
         // A closed folder is one row, its name and the tab it shows (that tab as a row too
         // moved aside twice and came apart from it, uncovering the tabs it hides).

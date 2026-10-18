@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.100.16] — 2026-10-18
+
+### Fixed
+
+- Dragging several selected tabs: the rows move out of the dragged tab's way
+  at every step, as with one tab. The others folded into it still counted as
+  rows, so for a few steps nothing moved and it slid over the rows instead
+  (thanks @Y4k3d0).
+
 ## [2.100.15] — 2026-10-18
 
 ### Fixed
