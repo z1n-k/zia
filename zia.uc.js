@@ -6439,7 +6439,6 @@
     "zia.toolbar.site-color",
     "zia.split.drop-cards",
     "zia.page.rounding",
-    "zia.menus.mac-style",
   ];
   const WATCHED_OPTIONS = ["zia.urlbar.zia-look", "zia.urlbar.dia-style", "zia.newtab.real-tab", "zia.toolbar.site-color", "zia.split.drop-cards"];
 

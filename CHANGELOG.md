@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.100.14] — 2026-10-18
+
+### Removed
+
+- The ⋯ menu as a macOS menu, and its option: the menu is Firefox's (and
+  Zen's) again.
+
 ## [2.100.13] — 2026-10-18
 
 ### Fixed
