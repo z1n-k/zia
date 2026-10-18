@@ -4,6 +4,18 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.100.15] — 2026-10-18
+
+### Fixed
+
+- The site panel is always Zia's card, dark in a dark space and light in a
+  light one, with its text and icons to match. On macOS it showed the
+  system's own see-through backing instead, which follows macOS's mode (or
+  Zen's theme) rather than the space, so a light space under dark macOS
+  had dark text on a dark panel, and Zen's light theme in a dark space
+  white text on a white one (thanks @OneGunBullet). 2.100.10's fix for
+  this didn't take: Zen's own rule outranked it.
+
 ## [2.100.14] — 2026-10-18
 
 ### Removed

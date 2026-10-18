@@ -42,11 +42,18 @@
     corner-shape: var(--zia-squircle) !important;
     border: none !important;
     box-shadow: var(--zia-glass-edge-lit) !important;
-    /* its colour set here, by the same light or dark as its ink: with the system
-       dark and the space light, the ink went dark and the light glass edge came on
-       while the panel stayed dark */
-    background: var(--zia-tab-card-bg) !important;
   }
+}
+
+/* its colour painted inside it, by the same light or dark as its ink. On macOS Zen
+   clears every arrow panel's own background, out of reach of Zia's styles, to show
+   the system's material, which is dark or light with macOS or Zen's theme rather
+   than the space: its ink and the panel didn't match (dark on dark, white on white).
+   (Zen gives this panel no padding, so this fills it.) */
+#zen-unified-site-data-panel > panelmultiview {
+  background-color: var(--zia-tab-card-bg) !important;
+  border-radius: var(--panel-border-radius) !important;
+  corner-shape: var(--zia-squircle) !important;
 }
 
 /* the four buttons along the top: share, reader view, screenshot, bookmark */
