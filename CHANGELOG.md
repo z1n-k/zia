@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.100.17] — 2026-10-18
+
+### Fixed
+
+- With Zen's single toolbar, a bookmarks bar and the window controls hidden,
+  the bar shows over the page as the pointer reaches the top, rather than
+  pushing the page down and pulling it back up each time (thanks
+  @RvatyGraty).
+
 ## [2.100.16] — 2026-10-18
 
 ### Fixed

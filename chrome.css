@@ -6518,6 +6518,31 @@ findbar {
   }
 }
 
+/* Zen's single toolbar with the bookmarks bar, collapsed (Zen's "hide window
+   controls"): shown, the bar grew into the layout and pushed the page down, and
+   shrank back, pulling it up, each time the pointer reached the window's top (a
+   jitter there and over the window buttons). It shows over the page instead, on
+   the space's colour (Zen's own layer for it, which it otherwise keeps for compact
+   mode); the page keeps its place. */
+@media -moz-pref("zen.view.hide-window-controls") {
+  :root[zen-single-toolbar="true"][zen-has-bookmarks]:not([customizing], [inDOMFullscreen="true"]):not(#zia-none) {
+    & #zen-appcontent-wrapper {
+      position: relative !important;
+    }
+
+    & #zen-appcontent-navbar-wrapper {
+      position: absolute !important;
+      top: 0;
+      inset-inline: 0;
+      z-index: 2;
+
+      & .zen-toolbar-background {
+        display: flex !important;
+      }
+    }
+  }
+}
+
 #zen-dragover-background {
   display: none !important;
 }
