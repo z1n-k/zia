@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- With Zen's single toolbar, the address bar in the sidebar has a tab's
+  corners as well as its height, rather than its own tighter ones.
+
 ## [2.101.4] — 2026-10-19
 
 ### Fixed

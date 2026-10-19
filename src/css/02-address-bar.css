@@ -52,8 +52,10 @@
     background: color-mix(in srgb, currentColor 11%, transparent) !important;
   }
 
-  /* ...as tall as a tab */
+  /* ...as tall as a tab, and as round (its own corner was tighter than the tabs
+     under it) */
   :root[zen-single-toolbar="true"]:not([zia-split="true"]) #urlbar:not([breakout-extend], [zen-floating-urlbar="true"]) {
+    --zia-urlbar-radius: var(--zia-tab-radius) !important;
     height: var(--zia-tab-height) !important;
     min-height: var(--zia-tab-height) !important;
     max-height: var(--zia-tab-height) !important;
