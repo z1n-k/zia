@@ -1533,6 +1533,14 @@
     }
   }
 }
+
+/* With the space's name left above the tabs, as Zen has it (Zia's settings), the
+   slot it would go in is out of the top row too: empty, it still stretched across
+   the row and kept its buttons pushed to the end, where Zia puts them, and moving
+   them in Customize Toolbar didn't bring them back */
+:root[zia-space-name-in-list] #zia-workspace-slot {
+  display: none !important;
+}
 @media -moz-pref("zen.theme.essentials-favicon-bg") {
   .tabbrowser-tab[zen-essential][visuallyselected] > .tab-stack > .tab-background {
     --zen-essential-bg-margin: 3px !important;
