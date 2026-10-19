@@ -162,6 +162,11 @@
       top: 0;
       inset-inline: 0;
       z-index: 2;
+      /* (Zen's grow and fade as it shows and hides: Zia's toolbar colour fade took
+         their place, so it came and went at once) */
+      transition:
+        height var(--zen-hidden-toolbar-transition) 0.2s,
+        opacity var(--zen-hidden-toolbar-transition) 0.2s !important;
       /* (its hover reaches up over the gap above the page to the window's edge,
          as in compact mode) */
       overflow-clip-margin: var(--zia-card-top-gap);

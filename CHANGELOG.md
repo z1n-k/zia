@@ -16,6 +16,13 @@ Every release of Zia, newest first. The format follows
 
 ### Fixed
 
+- With Zen's single toolbar and the window controls hidden, the bar with the
+  window buttons grows and fades in and out again: Zia's toolbar colour fade
+  had replaced Zen's animation, so it came and went at once (thanks Gin The
+  Cerberus).
+- Where the window buttons aren't beside it (Windows and Linux), the space's
+  name and icon sit level with the sidebar's buttons rather than 1.5px below
+  them (thanks Gin The Cerberus).
 - With "Show the space's name above the tabs, as Zen does" on, the sidebar's
   top row lets go of Zia's arrangement: its empty slot for the name kept the
   row's buttons pushed to the end (thanks Gin The Cerberus).

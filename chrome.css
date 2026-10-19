@@ -1541,6 +1541,14 @@
 :root[zia-space-name-in-list] #zia-workspace-slot {
   display: none !important;
 }
+
+/* The name sits a little low to line up with macOS's traffic lights beside it.
+   With no window buttons in the row (Windows and Linux keep them top right), it's
+   level with the row's own buttons instead: 1.5px low beside them, the space's
+   icon and name looked off centre */
+#zen-sidebar-top-buttons:not(:has(> .titlebar-buttonbox-container)) #zia-workspace-slot > .zen-current-workspace-indicator {
+  translate: none !important;
+}
 @media -moz-pref("zen.theme.essentials-favicon-bg") {
   .tabbrowser-tab[zen-essential][visuallyselected] > .tab-stack > .tab-background {
     --zen-essential-bg-margin: 3px !important;
@@ -6601,6 +6609,11 @@ findbar {
       top: 0;
       inset-inline: 0;
       z-index: 2;
+      /* (Zen's grow and fade as it shows and hides: Zia's toolbar colour fade took
+         their place, so it came and went at once) */
+      transition:
+        height var(--zen-hidden-toolbar-transition) 0.2s,
+        opacity var(--zen-hidden-toolbar-transition) 0.2s !important;
       /* (its hover reaches up over the gap above the page to the window's edge,
          as in compact mode) */
       overflow-clip-margin: var(--zia-card-top-gap);

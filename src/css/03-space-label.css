@@ -113,3 +113,11 @@
 :root[zia-space-name-in-list] #zia-workspace-slot {
   display: none !important;
 }
+
+/* The name sits a little low to line up with macOS's traffic lights beside it.
+   With no window buttons in the row (Windows and Linux keep them top right), it's
+   level with the row's own buttons instead: 1.5px low beside them, the space's
+   icon and name looked off centre */
+#zen-sidebar-top-buttons:not(:has(> .titlebar-buttonbox-container)) #zia-workspace-slot > .zen-current-workspace-indicator {
+  translate: none !important;
+}
