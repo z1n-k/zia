@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- On Windows, a space's emoji or icon sits level with its name and the
+  sidebar's buttons. An old Windows rule still pushed it 2px down, from when
+  the whole name sat lower, and 2.101.2's lift didn't outweigh it, so it
+  stayed low (thanks Gin The Cerberus).
+
 ## [2.101.2] — 2026-10-19
 
 ### Changed

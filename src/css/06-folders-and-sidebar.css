@@ -539,15 +539,6 @@
   margin-inline-end: var(--zia-space-icon-gap);
 }
 
-/* Windows' emoji (Segoe UI Emoji) draws its picture lower in its line than
-   macOS's, the same for every emoji: a space's emoji sat about 2px below the
-   name and the buttons beside it, and is lifted level with them */
-@media (-moz-platform: windows) {
-  #zia-space-label[zia-has-icon]::before {
-    translate: 0 -2px;
-  }
-}
-
 #zia-space-label > .zia-space-svg {
   display: flex;
   flex: 0 0 auto;
@@ -564,15 +555,6 @@
   width: 16px;
   height: 16px;
   color: inherit;
-}
-
-/* Windows' font sits its text lower in the line than macOS's, which left
-   the space's icon riding high beside the name; it's brought level. */
-@media (-moz-platform: windows) {
-  #zia-space-label:is([zia-has-icon])::before,
-  #zia-space-label > .zia-space-svg {
-    translate: 0 2px;
-  }
 }
 
 /* Windows draws a tab's site icon a point and a half left of the folders'
