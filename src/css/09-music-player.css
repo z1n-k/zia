@@ -17,7 +17,9 @@
     --zia-media-glow-b: rgb(123, 77, 255);
     --zen-sidebar-notification-bg: rgb(0, 0, 0);
 
-    background-color: var(--zia-media-rest, var(--zia-media-bg)) !important;
+    /* see-through, a shade of whatever's under it (the space's colour, its
+       grain), as the selected tab is */
+    background-color: var(--zia-media-bg) !important;
     background-image: none !important;
     isolation: isolate;
 
@@ -374,7 +376,7 @@
         transition: none !important;
       }
 
-      background-color: var(--zia-media-solid, var(--zia-media-card-base)) !important;
+      background-color: var(--zia-media-bg) !important;
     }
 
     .zen-media-progress-hbox {

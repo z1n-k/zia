@@ -42,11 +42,9 @@
     const tint = resolveColor(rootStyle.getPropertyValue("--zia-media-bg"));
     const base = resolveColor(rootStyle.getPropertyValue("--zia-media-card-base"));
     if (!paint || !tint || !base) {
-      root.style.removeProperty("--zia-media-rest");
       root.style.removeProperty("--zia-media-solid");
       return;
     }
-    root.style.setProperty("--zia-media-rest", cssColor(colorOver(tint, paint)));
     root.style.setProperty("--zia-media-solid", cssColor(colorOver(tint, colorOver(paint, base))));
   }
 

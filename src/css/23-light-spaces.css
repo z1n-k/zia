@@ -30,9 +30,9 @@
   --zia-fallback-bg: #f6f6f8;
   --zia-page-loading-bg: #ffffff;
 
-  /* the music card a white card, as the selected tab is (and over light grey
-     when opened, whatever the system's mode: in dark mode, the near-black
-     under it turned it a muddy grey) */
+  /* the music card a white card, as the selected tab is (and its solid shade,
+     which the downloads take, over light grey whatever the system's mode: in
+     dark mode, the near-black under it turned it a muddy grey) */
   --zia-media-bg: var(--zia-active-tab-bg);
   --zia-media-card-base: rgb(235, 235, 235);
 

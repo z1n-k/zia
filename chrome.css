@@ -4523,7 +4523,9 @@ zen-workspace arrowscrollbox::part(scrollbox) {
     --zia-media-glow-b: rgb(123, 77, 255);
     --zen-sidebar-notification-bg: rgb(0, 0, 0);
 
-    background-color: var(--zia-media-rest, var(--zia-media-bg)) !important;
+    /* see-through, a shade of whatever's under it (the space's colour, its
+       grain), as the selected tab is */
+    background-color: var(--zia-media-bg) !important;
     background-image: none !important;
     isolation: isolate;
 
@@ -4880,7 +4882,7 @@ zen-workspace arrowscrollbox::part(scrollbox) {
         transition: none !important;
       }
 
-      background-color: var(--zia-media-solid, var(--zia-media-card-base)) !important;
+      background-color: var(--zia-media-bg) !important;
     }
 
     .zen-media-progress-hbox {
@@ -8225,9 +8227,9 @@ zen-folder .tab-reset-button {
   --zia-fallback-bg: #f6f6f8;
   --zia-page-loading-bg: #ffffff;
 
-  /* the music card a white card, as the selected tab is (and over light grey
-     when opened, whatever the system's mode: in dark mode, the near-black
-     under it turned it a muddy grey) */
+  /* the music card a white card, as the selected tab is (and its solid shade,
+     which the downloads take, over light grey whatever the system's mode: in
+     dark mode, the near-black under it turned it a muddy grey) */
   --zia-media-bg: var(--zia-active-tab-bg);
   --zia-media-card-base: rgb(235, 235, 235);
 
