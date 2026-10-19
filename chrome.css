@@ -6518,6 +6518,15 @@ findbar {
   }
 }
 
+/* Compact mode with the window buttons on the left (macOS): Zen sets the toolbar
+   3px further from the page's left edge than its right, so the first button sat
+   closer to its edge than the last did: the same on both sides */
+@media -moz-pref("zen.view.compact.hide-tabbar") or -moz-pref("zen.view.use-single-toolbar") {
+  :root[zen-compact-mode="true"][zen-window-buttons-reversed="true"]:not(#zia-none) #zen-appcontent-navbar-wrapper #nav-bar {
+    margin-right: calc(var(--zen-element-separation) - 3px) !important;
+  }
+}
+
 /* Zen's single toolbar, collapsed (Zen's "hide window controls"): shown, the bar
    grew into the layout and pushed the page down, and shrank back, pulling it up,
    each time the pointer reached the window's top (a jitter there and over the
