@@ -54,7 +54,7 @@
   },
   {
     "type": "checkbox",
-    "label": "Ultra: effects from Libraries.dev (a thinking orb while a tab loads, and more to come)",
+    "label": "Ultra: effects from Libraries.dev (a thinking orb while a tab loads, the music player glowing as it plays)",
     "property": "zia.ultra",
     "defaultValue": false
   },

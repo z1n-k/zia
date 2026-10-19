@@ -14,3 +14,11 @@
 .tabbrowser-tab[zia-orb] :is(.tab-throbber, .tab-icon-pending, .tab-icon-image) {
   visibility: hidden !important;
 }
+
+/* The music player card's glow (28b-ultra-glow.css) under its text and buttons:
+   the card is its own stack (isolation), so the glow sits over its background
+   and under the rest */
+#zen-media-controls-toolbar .zen-media-card:has(> .zia-glow) {
+  position: relative;
+  --zia-glow-z: -1;
+}

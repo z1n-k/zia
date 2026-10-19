@@ -9943,3 +9943,173 @@ zen-workspace-creation {
 .tabbrowser-tab[zia-orb] :is(.tab-throbber, .tab-icon-pending, .tab-icon-image) {
   visibility: hidden !important;
 }
+
+/* The music player card's glow (28b-ultra-glow.css) under its text and buttons:
+   the card is its own stack (isolation), so the glow sits over its background
+   and under the rest */
+#zen-media-controls-toolbar .zen-media-card:has(> .zia-glow) {
+  position: relative;
+  --zia-glow-z: -1;
+}
+/* Zia glow: the bottom-edge glow of voice-glow 0.3.0 (VoiceBeam), ported without React.
+   voice-glow is MIT licensed, Copyright (c) 2026 Jakub Antalik. See NOTES.md.
+
+   ziaGlow() appends .zia-glow to the card. The card must be position: relative
+   and carry the border-radius; the glow inherits it and clips to it.
+
+   Hooks the host can set on the card (all default to 1 / auto):
+     --zia-glow-z                 stacking of the glow; -1 puts it under the card's
+                                  content when the card is a stacking context
+                                  (isolation: isolate), auto overlays it as VoiceBeam does
+     --zia-glow-stroke-opacity    the coloured 1px edge
+     --zia-glow-inner-opacity     the soft light inside the edge
+     --zia-glow-bloom-opacity     the blurred halo
+     --zia-glow-band-opacity      the line along the bend
+     --zia-glow-core-opacity      the white epicentre (light theme) */
+
+.zia-glow {
+  /* written every frame by glow.js; these are the first-frame values */
+  --zg-w: 1;
+  --zg-h: 0.8;
+  --zg-mw: 1;
+  --zg-glow: 0.4;
+  --zg-cx: 0px;
+  --zg-cy: 0px;
+  --zg-bh: 0px;
+  --zg-hue: 0deg;
+  --zg-x0: 0px;
+  --zg-x1: -31px;
+  --zg-x2: 31px;
+  --zg-x3: -61px;
+  --zg-x4: 61px;
+  --zg-x5: -92px;
+  --zg-x6: 92px;
+  --zg-l0: 1;
+  --zg-l1: 1;
+  --zg-l2: 1;
+  --zg-l3: 1;
+  --zg-l4: 1;
+  --zg-l5: 1;
+  --zg-l6: 1;
+  --zg-y0: 0px;
+  --zg-y1: 0px;
+  --zg-y2: 0px;
+  --zg-y3: 0px;
+  --zg-y4: 0px;
+  --zg-y5: 0px;
+  --zg-y6: 0px;
+
+  position: absolute;
+  inset: 0;
+  z-index: var(--zia-glow-z, auto);
+  border-radius: inherit;
+  corner-shape: inherit;
+  overflow: hidden;
+  isolation: isolate;
+  pointer-events: none;
+  /* VoiceBeam fades in over 0.6s and out over 0.5s, both "ease" */
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.5s ease,
+    visibility 0s linear 0.5s;
+}
+
+.zia-glow[data-on] {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.6s ease,
+    visibility 0s;
+}
+
+.zia-glow-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  corner-shape: inherit;
+  pointer-events: none;
+}
+
+.zia-glow-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Inner glow: the lobes as soft light inside the element, kept to a band along the
+   edges and to the centred range ellipse. */
+.zia-glow-inner {
+  z-index: 1;
+  box-shadow: var(--zg-shadow);
+  mask-composite: intersect, add;
+  opacity: calc(var(--zg-glow) * var(--zg-inner-k) * var(--zia-glow-inner-opacity, 1) * var(--zg-strength));
+  filter: var(--zg-tone);
+}
+
+/* Stroke: the palette painted into the 1px edge ring, with a hot core at the centre. */
+.zia-glow-stroke {
+  z-index: 2;
+  padding: 1px;
+  mask-clip: border-box, content-box, border-box;
+  mask-origin: border-box, content-box, border-box;
+  mask-composite: intersect, exclude;
+  opacity: calc(var(--zg-glow) * var(--zg-stroke-k) * var(--zia-glow-stroke-opacity, 1) * var(--zg-strength));
+  filter: var(--zg-tone);
+}
+
+/* Bloom: the blurred halo, tallest of the three. */
+.zia-glow-bloom {
+  z-index: 3;
+  opacity: calc(var(--zg-glow) * var(--zg-bloom-k) * var(--zia-glow-bloom-opacity, 1) * var(--zg-strength));
+  filter: blur(var(--zg-blur)) var(--zg-tone);
+}
+
+/* Distortion: the inner light and the bloom are split at the band line; the copies
+   under it carry the displacement filter (set inline, it names the instance's filter). */
+.zia-glow-inner:not(.zia-glow-warp),
+.zia-glow-bloom:not(.zia-glow-warp) {
+  clip-path: var(--zg-clip-above, none);
+}
+
+.zia-glow-warp {
+  clip-path: var(--zg-clip-below, none);
+}
+
+.zia-glow[data-warp-off] .zia-glow-layer:not(.zia-glow-warp) {
+  clip-path: none;
+}
+
+.zia-glow[data-warp-off] .zia-glow-warp {
+  display: none;
+}
+
+/* Band: the canvas the loop draws the bend's contour on. */
+.zia-glow-band {
+  z-index: 4;
+  width: 100%;
+  height: 100%;
+  opacity: calc(var(--zia-glow-band-opacity, 1) * var(--zg-strength));
+  filter: var(--zg-tone);
+}
+
+/* Epicentre (light theme): a white wash at the source under the band line. The blur
+   sits on the wrapper and the clip on the child, so the cut edge is blurred too. */
+.zia-glow-core {
+  display: none;
+  z-index: 4;
+  overflow: hidden;
+  filter: blur(var(--zg-core-blur));
+  opacity: calc(min(1, var(--zg-glow) * var(--zg-core-k)) * var(--zia-glow-core-opacity, 1));
+}
+
+.zia-glow[data-core] .zia-glow-core {
+  display: block;
+}
+
+.zia-glow-core > div {
+  position: absolute;
+  inset: 0;
+  clip-path: var(--zg-clip-below, none);
+}

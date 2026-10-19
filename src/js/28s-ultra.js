@@ -77,6 +77,49 @@
     syncAll();
   }
 
+  // The music player card glows along its bottom edge while it plays, as
+  // voice-glow's beam does under a voice (28t-ultra-glow-engine.js): the
+  // browser can't hear the tab, so it follows a gentle, music-like level, and
+  // sinks and fades out when paused. Under the card's text and buttons.
+  function watchUltraGlow() {
+    const glows = new Map();
+    const dark = () => !root.hasAttribute("zia-light");
+    const cards = () => document.querySelectorAll("#zen-media-controls-toolbar .zen-media-card");
+
+    const sync = () => {
+      const on = ultraOn();
+      const seen = new Set();
+      for (const card of on ? cards() : []) {
+        seen.add(card);
+        let glow = glows.get(card);
+        if (!glow) {
+          glow = ziaGlow(card, { dark: dark() });
+          glows.set(card, glow);
+        }
+        glow.setPlaying(card.classList.contains("playing"));
+      }
+      for (const [card, glow] of glows) {
+        if (!seen.has(card)) {
+          glow.destroy();
+          glows.delete(card);
+        }
+      }
+    };
+
+    const toolbar = document.getElementById("zen-media-controls-toolbar");
+    if (toolbar) {
+      new MutationObserver(sync).observe(toolbar, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
+    }
+    new MutationObserver(() => {
+      for (const glow of glows.values()) {
+        glow.setDark(dark());
+      }
+    }).observe(root, { attributes: true, attributeFilter: ["zia-light"] });
+    watchPrefs(ULTRA_PREF, sync);
+    sync();
+  }
+
   function watchUltra() {
     safely("watchUltraOrbs", watchUltraOrbs);
+    safely("watchUltraGlow", watchUltraGlow);
   }
