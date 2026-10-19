@@ -602,6 +602,38 @@
     transform: translate(var(--zen-library-badge-tx, 0px), var(--zen-library-badge-ty, 0px)) !important;
   }
 
+  /* The same for a download still going: Zen's ring, 25px, thick and filled,
+     landed over the row's and snapped to Zia's thin 18px one. It's the
+     row's ring all the way, its fill and shadow (kept on the Library button,
+     over the icon) fading as it flies. */
+  :root:not(#zia-none) #library-button-badge[downloading] {
+    width: 18px !important;
+    height: 18px !important;
+    border-width: 2px !important;
+    scale: none !important;
+    transform: translate(var(--zen-library-badge-tx, 0px), var(--zen-library-badge-ty, 0px)) !important;
+    transition:
+      --zen-library-progress var(--zen-library-open-duration) var(--zen-library-open-easing),
+      background-color var(--zen-library-open-duration) ease,
+      box-shadow var(--zen-library-open-duration) ease !important;
+
+    & .zen-library-download-progress {
+      --thickness: 2px;
+      --progress: var(--zia-loading-color);
+      --border-color: color-mix(in srgb, currentColor 18%, transparent);
+    }
+  }
+
+  :root:not(#zia-none) #zen-sidebar-foot-buttons[zen-library-stack-open] #library-button-badge[downloading] {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    transition:
+      visibility 0s var(--zen-library-open-duration),
+      --zen-library-progress var(--zen-library-open-duration) var(--zen-library-open-easing),
+      background-color var(--zen-library-open-duration) ease,
+      box-shadow var(--zen-library-open-duration) ease !important;
+  }
+
   /* Clear, beside the downloads' filter (zia.uc.js): as the filter is drawn */
   /* With Clear beside it, Filter's name squeezed the search field until its
      placeholder was cut off: both are square icon buttons, named on hover */
