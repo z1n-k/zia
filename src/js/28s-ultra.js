@@ -1,10 +1,9 @@
-  // ---------- Ultra (zia.ultra, off by default)
+  // ---------- Ultra (zia.ultra, on by default)
   // Effects ported from Libraries.dev (https://libraries.dev, MIT, by Jakub
   // Antalik), each where its author places it: a thinking orb for loading, a
-  // glow under what's playing, a border beam while a page loads and a pulse
-  // round the address pop-up.
+  // glow under what's playing.
   const ULTRA_PREF = "zia.ultra";
-  const ultraOn = () => Services.prefs.getBoolPref(ULTRA_PREF, false);
+  const ultraOn = () => Services.prefs.getBoolPref(ULTRA_PREF, true);
 
   // A loading tab's spinner as a thinking orb (28r-ultra-orb-engine.js):
   // "connecting" until the page starts arriving, then "searching", the dotted
@@ -232,61 +231,7 @@
     sync();
   }
 
-  // The address bar's loading line as border-beam's beam along its bottom edge
-  // (28u-ultra-beam-engine.js), once the page has been loading a moment; Zia's
-  // own line gives way to it (28-ultra.css). Zia keeps zia-loading on the root
-  // until its line has finished.
-  function watchUltraLoadingBeam() {
-    const urlbar = gURLBar.textbox || document.getElementById("urlbar");
-    if (!urlbar) {
-      return;
-    }
-    let timer = 0;
-    const sync = () => {
-      clearTimeout(timer);
-      if (!ultraOn() || root.getAttribute("zia-loading") !== "true") {
-        ziaBeam(urlbar, "line", false);
-        return;
-      }
-      if (urlbar.getAttribute("zia-beam") === "line") {
-        // (back on, if it was fading out)
-        ziaBeam(urlbar, "line");
-      } else {
-        timer = setTimeout(() => ziaBeam(urlbar, "line"), 600);
-      }
-    };
-    new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ["zia-loading"] });
-    watchPrefs(ULTRA_PREF, sync);
-    sync();
-  }
-
-  // A pulse of border-beam's glow round the address pop-up as it opens, once
-  // (about 1.2s). On the pop-up's own shape (.urlbar-background: its squircle,
-  // its reach to the top of the window, its opening scale), not the bar's box.
-  function watchUltraPopUpPulse() {
-    const urlbar = gURLBar.textbox || document.getElementById("urlbar");
-    const background = urlbar?.querySelector(".urlbar-background");
-    if (!background) {
-      return;
-    }
-    let closedAt = -Infinity;
-    new MutationObserver(() => {
-      if (!urlbar.hasAttribute("breakout-extend")) {
-        // (it shrinks back to the bar: gone at once)
-        ziaBeamDestroy(background);
-        closedAt = performance.now();
-        return;
-      }
-      // (not again on a quick close and reopen while typing)
-      if (ultraOn() && performance.now() - closedAt > 300 && !background.hasAttribute("zia-beam")) {
-        ziaBeamFlash(background, "pulse", 700);
-      }
-    }).observe(urlbar, { attributes: true, attributeFilter: ["breakout-extend"] });
-  }
-
   function watchUltra() {
     safely("watchUltraOrbs", watchUltraOrbs);
     safely("watchUltraGlow", watchUltraGlow);
-    safely("watchUltraLoadingBeam", watchUltraLoadingBeam);
-    safely("watchUltraPopUpPulse", watchUltraPopUpPulse);
   }

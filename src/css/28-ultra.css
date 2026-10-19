@@ -1,4 +1,4 @@
-/* Ultra (zia.ultra, off by default): effects ported from Libraries.dev
+/* Ultra (zia.ultra, on by default): effects ported from Libraries.dev
    (https://libraries.dev, MIT, by Jakub Antalik). zia.uc.js puts each in. */
 
 /* A loading tab's thinking orb, in its icon's place: the spinner goes while
@@ -28,26 +28,5 @@
 #zen-media-controls-toolbar .zen-media-card::before {
   @media -moz-pref("zia.ultra") {
     display: none !important;
-  }
-}
-
-/* The address bar's border beam while a page loads (28c-ultra-beam.css): at
-   the bar's radius (set on the beam alone, so it doesn't reach the pop-up's
-   pulse inside the bar), not over the open pop-up, and in place of Zia's own
-   loading line while it shows. Under reduced motion the beam doesn't show, so
-   Zia's line stays. */
-@media -moz-pref("zia.ultra") {
-  #urlbar > .zia-beam {
-    --zia-beam-radius: var(--zia-urlbar-radius);
-  }
-
-  #urlbar[breakout-extend] > .zia-beam {
-    display: none !important;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    #urlbar[zia-beam="line"]:not([breakout-extend])::after {
-      opacity: 0 !important;
-    }
   }
 }

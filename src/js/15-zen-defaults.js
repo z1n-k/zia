@@ -27,6 +27,8 @@
     for (const feature of FEATURES) {
       set(`zia.features.${feature}`, true);
     }
+    // Ultra's effects, on unless switched off (the stylesheet reads it too)
+    set("zia.ultra", true);
     // Downloads a model the first time, so it's something to opt into
     set("zia.features.folder-icon-suggest", false);
 

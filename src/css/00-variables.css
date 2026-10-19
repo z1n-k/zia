@@ -125,8 +125,8 @@
   --zia-split-card-radius: 14px;
 
   --zia-split-backdrop: rgb(23, 23, 23);
-  /* (the music player as dark as the selected tab: it was its own, darker shade) */
-  --zia-media-bg: var(--zia-active-tab-bg);
+  /* (the music player a deeper shade of the sidebar than the selected tab) */
+  --zia-media-bg: rgba(0, 0, 0, 0.25);
   --zia-media-card-height: 64px;
   --zia-media-card-height-open: 124px;
   --zia-media-radius: 12.5px;
