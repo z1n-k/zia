@@ -54,7 +54,7 @@
   },
   {
     "type": "checkbox",
-    "label": "Ultra: extra effects (a thinking orb while a tab loads, the music player glowing as it plays)",
+    "label": "Ultra: extra effects (a thinking orb while a tab loads, a light along the address bar while a page loads and round its pop-up as it opens, the music player glowing in its artwork's colours)",
     "property": "zia.ultra",
     "defaultValue": false
   },

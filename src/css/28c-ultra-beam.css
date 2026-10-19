@@ -1,0 +1,465 @@
+/* Zia border beam
+   Two effects from the border-beam npm package (v1.4.1, MIT License,
+   Copyright (c) 2026 Jakub Antalik, https://libraries.dev/beam), ported to a
+   plain stylesheet:
+
+     [zia-beam="line"]   the package's size="line": a glow travels along the
+                         element's bottom edge while something loads
+     [zia-beam="pulse"]  the package's size="pulse-outside": a glow breathes
+                         outside the element's edge to highlight it
+
+   ziaBeam() in beam.js sets the attribute and adds the one child these rules
+   paint: <div class="zia-beam"><div class="zia-beam-bloom"></div></div>.
+   Colours are the package's default "colorful" palette. Dark is the default;
+   under [zia-light] (Zia sets it on the root) the package's theme="light"
+   tuning applies.
+
+   Knobs the host can set on the element, or on el > .zia-beam alone (they
+   inherit into any beam nested inside el):
+     --zia-beam-radius     the corner radius (default: the element's own
+                           border-top-left-radius, read by beam.js)
+     --zia-beam-strength   0..1, dims the effect (the package's strength prop)
+     --zia-beam-z          z-index of the beam's layer (default auto)
+
+   beam.js writes on .zia-beam: --zb-r-auto, --zb-border, --zb-corner,
+   --zb-outline / --zb-hole / --zb-ring (the element's outline and edge as
+   clip paths, so the beam follows a corner-shape too: Firefox clips overflow
+   and masks round whatever the corner-shape), --zb-sx / --zb-sy and the
+   pulse's --zb-b*. */
+
+@property --zia-beam-opacity {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --zia-beam-x {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --zia-beam-w {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+@property --zia-beam-h {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+@property --zia-beam-spike {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+@property --zia-beam-spike2 {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+@property --zia-beam-edge {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+
+@property --zia-beam-hue {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@property --zia-beam-hue-bloom {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+/* (set by ziaBeam only when the element was position: static) */
+[zia-beam-anchor] {
+  position: relative !important;
+}
+
+/* The beam's own box covers the element's border box. */
+[zia-beam] > .zia-beam {
+  --zb-r: var(--zia-beam-radius, var(--zb-r-auto, 16px));
+  --zb-border: 0px;
+  position: absolute;
+  inset: calc(-1 * var(--zb-border));
+  z-index: var(--zia-beam-z, auto);
+  border-radius: var(--zb-r);
+  pointer-events: none;
+  isolation: isolate;
+
+  &::before,
+  &::after,
+  & > .zia-beam-bloom {
+    content: "";
+    position: absolute;
+    pointer-events: none;
+  }
+}
+
+/* ---------------------------------------------------------------- line --- */
+/* A spot of light rides the bottom edge left to right every 3.1 s, widening
+   in the middle and fading in and out at the ends; its height breathes and
+   the bloom's spikes flicker on their own, slower cycles. Everything is
+   clipped to the element's outline (the package: overflow: hidden plus
+   clip-path: inset(0 round r) on each layer). */
+
+[zia-beam="line"] > .zia-beam {
+  --zb-k-stroke: 1.14;
+  --zb-k-inner: 0.7;
+  --zb-k-bloom: 0.8;
+  --zb-sat: 1.2;
+  --zb-inner-shadow: rgba(255, 255, 255, 0.1);
+  clip-path: var(--zb-outline, inset(0 round var(--zb-r)));
+  animation:
+    zia-beam-travel 3.1s linear infinite,
+    zia-beam-edge 3.1s linear infinite,
+    zia-beam-breathe 4s ease-in-out infinite,
+    zia-beam-spike 4.1s ease-in-out infinite,
+    zia-beam-spike2 5.3s ease-in-out infinite,
+    zia-beam-hue 12s ease-in-out infinite,
+    zia-beam-hue-bloom 8s ease-in-out infinite,
+    zia-beam-fade-in 0.6s ease forwards;
+
+  &[fading] {
+    animation:
+      zia-beam-travel 3.1s linear infinite,
+      zia-beam-edge 3.1s linear infinite,
+      zia-beam-breathe 4s ease-in-out infinite,
+      zia-beam-spike 4.1s ease-in-out infinite,
+      zia-beam-spike2 5.3s ease-in-out infinite,
+      zia-beam-hue 12s ease-in-out infinite,
+      zia-beam-hue-bloom 8s ease-in-out infinite,
+      zia-beam-fade-out 0.5s ease var(--zb-fade-delay, 0s) forwards;
+  }
+
+  /* stroke: the 1px edge, lit only around the travelling spot */
+  &::after {
+    inset: 0;
+    border-radius: max(0px, var(--zb-r) - 1px);
+    corner-shape: var(--zb-corner, round);
+    padding: 1px;
+    background:
+      radial-gradient(ellipse calc(24px * var(--zia-beam-w)) calc(28px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100%) calc(100% + 2px), rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.12) 30%, transparent 65%),
+      radial-gradient(ellipse calc(36px * var(--zia-beam-w)) calc(36px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100%) calc(100% + 2px), rgb(255, 50, 100), transparent),
+      radial-gradient(ellipse calc(30px * var(--zia-beam-w)) calc(32px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% + 39px) 100%, rgb(40, 180, 220), transparent),
+      radial-gradient(ellipse calc(33px * var(--zia-beam-w)) calc(28px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% - 36px) calc(100% + 2px), rgb(50, 200, 80), transparent),
+      radial-gradient(ellipse calc(29px * var(--zia-beam-w)) calc(34px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% - 54px) 100%, rgb(180, 40, 240), transparent),
+      radial-gradient(ellipse calc(27px * var(--zia-beam-w)) calc(30px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% + 51px) calc(100% - 1px), rgb(255, 160, 30), transparent),
+      radial-gradient(ellipse calc(36px * var(--zia-beam-w)) calc(24px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% + 21px) calc(100% + 1px), rgb(100, 70, 255), transparent),
+      radial-gradient(ellipse calc(30px * var(--zia-beam-w)) calc(22px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% - 21px) 100%, rgb(40, 140, 255), transparent),
+      radial-gradient(ellipse calc(25px * var(--zia-beam-w)) calc(28px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% + 66px) calc(100% + 1px), rgb(240, 50, 180), transparent),
+      radial-gradient(ellipse calc(23px * var(--zia-beam-w)) calc(30px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% - 66px) calc(100% - 1px), rgb(30, 185, 170), transparent);
+    mask:
+      radial-gradient(ellipse calc(78px * var(--zia-beam-w)) calc(60px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100%) 100%, white 0%, rgba(255, 255, 255, 0.5) 45%, transparent 100%),
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask-composite: intersect, exclude;
+    clip-path: var(--zb-ring, none);
+    z-index: 2;
+    opacity: calc(var(--zia-beam-opacity) * var(--zia-beam-edge) * var(--zb-k-stroke) * var(--zia-beam-strength, 1));
+    filter: hue-rotate(var(--zia-beam-hue)) brightness(1.3) saturate(var(--zb-sat));
+  }
+
+  /* inner glow: soft colour inside the edge, faded towards the middle */
+  &::before {
+    inset: 0;
+    border-radius: var(--zb-r);
+    corner-shape: var(--zb-corner, round);
+    background:
+      radial-gradient(ellipse calc(33px * var(--zia-beam-w)) calc(30px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100%) 100%, rgba(255, 50, 100, 0.48), transparent),
+      radial-gradient(ellipse calc(24px * var(--zia-beam-w)) calc(26px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% + 39px) calc(100% - 3px), rgba(40, 180, 220, 0.42), transparent),
+      radial-gradient(ellipse calc(27px * var(--zia-beam-w)) calc(24px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% - 36px) 100%, rgba(50, 200, 80, 0.48), transparent),
+      radial-gradient(ellipse calc(23px * var(--zia-beam-w)) calc(28px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% - 54px) calc(100% - 2px), rgba(180, 40, 240, 0.42), transparent),
+      radial-gradient(ellipse calc(24px * var(--zia-beam-w)) calc(24px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% + 51px) calc(100% - 1px), rgba(255, 160, 30, 0.5), transparent),
+      radial-gradient(ellipse calc(30px * var(--zia-beam-w)) calc(20px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% + 21px) 100%, rgba(100, 70, 255, 0.45), transparent),
+      radial-gradient(ellipse calc(25px * var(--zia-beam-w)) calc(18px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% - 21px) calc(100% - 2px), rgba(40, 140, 255, 0.4), transparent),
+      radial-gradient(ellipse calc(21px * var(--zia-beam-w)) calc(24px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% + 66px) 100%, rgba(240, 50, 180, 0.45), transparent),
+      radial-gradient(ellipse calc(18px * var(--zia-beam-w)) calc(26px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% - 66px) calc(100% - 1px), rgba(30, 185, 170, 0.52), transparent);
+    box-shadow: inset 0 0 9px 1px var(--zb-inner-shadow);
+    mask-image:
+      radial-gradient(ellipse calc(78px * var(--zia-beam-w)) calc(60px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100%) 100%, white 0%, rgba(255, 255, 255, 0.5) 45%, transparent 100%),
+      linear-gradient(white, transparent 28px, transparent calc(100% - 28px), white),
+      linear-gradient(to right, white, transparent 28px, transparent calc(100% - 28px), white);
+    mask-composite: intersect, add;
+    z-index: 1;
+    opacity: calc(var(--zia-beam-opacity) * var(--zia-beam-edge) * var(--zb-k-inner) * var(--zia-beam-strength, 1));
+    filter: hue-rotate(var(--zia-beam-hue)) brightness(1.3) saturate(var(--zb-sat));
+  }
+
+  /* bloom: blurred light over the spot, plus thin coloured spikes standing at
+     fixed points along the edge that the spot uncovers as it passes */
+  & > .zia-beam-bloom {
+    inset: 0;
+    border-radius: max(0px, var(--zb-r) - 1px);
+    corner-shape: var(--zb-corner, round);
+    background:
+      radial-gradient(ellipse calc(0.8px * var(--zia-beam-spike)) calc(92px * var(--zia-beam-h)) at 8% calc(100% - 2px), rgb(255, 60, 80), rgb(255, 60, 80) 30%, transparent 88%),
+      radial-gradient(ellipse calc(10px * var(--zia-beam-spike2)) calc(35px * var(--zia-beam-h)) at 22% calc(100% - 4px), rgba(40, 190, 180, 0.98), rgba(40, 190, 180, 0.49) 50%, transparent 95%),
+      radial-gradient(ellipse calc(2px * (2 - var(--zia-beam-spike))) calc(72px * var(--zia-beam-h)) at 36% calc(100% - 3px), rgb(100, 70, 255), rgba(100, 70, 255, 1) 40%, transparent 90%),
+      radial-gradient(ellipse calc(14px * var(--zia-beam-spike2)) calc(28px * var(--zia-beam-h)) at 50% calc(100% - 2px), rgba(255, 170, 40, 0.59), rgba(255, 170, 40, 0.29) 55%, transparent 96%),
+      radial-gradient(ellipse calc(1.2px * (2 - var(--zia-beam-spike2))) calc(85px * var(--zia-beam-h)) at 64% calc(100% - 4px), rgb(50, 200, 100), rgba(50, 200, 100, 1) 35%, transparent 89%),
+      radial-gradient(ellipse calc(7px * var(--zia-beam-spike)) calc(45px * var(--zia-beam-h)) at 78% calc(100% - 2px), rgba(200, 50, 240, 0.91), rgba(200, 50, 240, 0.45) 48%, transparent 94%),
+      radial-gradient(ellipse calc(0.6px * (2 - var(--zia-beam-spike))) calc(60px * var(--zia-beam-h)) at 92% calc(100% - 3px), rgb(40, 140, 255), rgba(40, 140, 255, 1) 42%, transparent 91%),
+      radial-gradient(ellipse calc(21px * var(--zia-beam-spike)) calc(15px * var(--zia-beam-spike2)) at calc(var(--zia-beam-x) * 100%) calc(100% + 1px), rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.9) 20%, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
+      radial-gradient(ellipse calc(42px * var(--zia-beam-w)) calc(40px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100%) 100%, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.12) 25%, rgba(255, 255, 255, 0.03) 55%, transparent 80%);
+    mask: radial-gradient(ellipse calc(84px * var(--zia-beam-w)) calc(110px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100%) 100%, white 0%, rgba(255, 255, 255, 0.5) 35%, transparent 100%);
+    z-index: 3;
+    opacity: calc(var(--zia-beam-opacity) * var(--zia-beam-edge) * var(--zb-k-bloom) * var(--zia-beam-strength, 1));
+    filter: blur(8px) hue-rotate(var(--zia-beam-hue-bloom)) brightness(1.3) saturate(var(--zb-sat));
+  }
+}
+
+/* light: dark ink instead of white light, wider colour spread, more saturation */
+[zia-light] [zia-beam="line"] > .zia-beam {
+  --zb-k-stroke: 0.16;
+  --zb-k-inner: 0.32;
+  --zb-k-bloom: 0.3;
+  --zb-sat: 1.95;
+  --zb-inner-shadow: rgba(0, 0, 0, 0.14);
+
+  &::after {
+    background:
+      radial-gradient(ellipse calc(35px * var(--zia-beam-w)) calc(28px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100%) calc(100% + 2px), rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.25) 35%, transparent 70%),
+      radial-gradient(ellipse calc(45px * var(--zia-beam-w)) calc(36px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100%) calc(100% + 2px), rgb(255, 50, 100), transparent),
+      radial-gradient(ellipse calc(35px * var(--zia-beam-w)) calc(32px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% + 65px) 100%, rgb(40, 140, 255), transparent),
+      radial-gradient(ellipse calc(40px * var(--zia-beam-w)) calc(28px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% - 60px) calc(100% + 2px), rgb(50, 200, 80), transparent),
+      radial-gradient(ellipse calc(35px * var(--zia-beam-w)) calc(34px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% - 90px) 100%, rgb(180, 40, 240), transparent),
+      radial-gradient(ellipse calc(38px * var(--zia-beam-w)) calc(30px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% + 85px) calc(100% - 1px), rgb(30, 185, 170), transparent),
+      radial-gradient(ellipse calc(50px * var(--zia-beam-w)) calc(24px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% + 35px) calc(100% + 1px), rgb(100, 70, 255), transparent),
+      radial-gradient(ellipse calc(40px * var(--zia-beam-w)) calc(22px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% - 35px) 100%, rgb(40, 140, 255), transparent),
+      radial-gradient(ellipse calc(35px * var(--zia-beam-w)) calc(28px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% + 110px) calc(100% + 1px), rgb(255, 120, 40), transparent),
+      radial-gradient(ellipse calc(30px * var(--zia-beam-w)) calc(30px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100% - 110px) calc(100% - 1px), rgb(240, 50, 180), transparent);
+  }
+
+  & > .zia-beam-bloom {
+    background:
+      radial-gradient(ellipse calc(0.8px * var(--zia-beam-spike)) calc(92px * var(--zia-beam-h)) at 8% calc(100% - 2px), rgb(200, 30, 60), rgba(200, 30, 60, 0.85) 30%, transparent 88%),
+      radial-gradient(ellipse calc(10px * var(--zia-beam-spike2)) calc(35px * var(--zia-beam-h)) at 22% calc(100% - 4px), rgb(20, 150, 140), rgba(20, 150, 140, 0.7) 50%, transparent 95%),
+      radial-gradient(ellipse calc(2px * (2 - var(--zia-beam-spike))) calc(72px * var(--zia-beam-h)) at 36% calc(100% - 3px), rgb(80, 50, 200), rgba(80, 50, 200, 0.8) 40%, transparent 90%),
+      radial-gradient(ellipse calc(14px * var(--zia-beam-spike2)) calc(28px * var(--zia-beam-h)) at 50% calc(100% - 2px), rgba(210, 130, 0, 0.7), rgba(210, 130, 0, 0.46) 55%, transparent 96%),
+      radial-gradient(ellipse calc(1.2px * (2 - var(--zia-beam-spike2))) calc(85px * var(--zia-beam-h)) at 64% calc(100% - 4px), rgb(30, 160, 70), rgba(30, 160, 70, 0.82) 35%, transparent 89%),
+      radial-gradient(ellipse calc(7px * var(--zia-beam-spike)) calc(45px * var(--zia-beam-h)) at 78% calc(100% - 2px), rgb(160, 30, 190), rgba(160, 30, 190, 0.7) 48%, transparent 94%),
+      radial-gradient(ellipse calc(1px * (2 - var(--zia-beam-spike))) calc(60px * var(--zia-beam-h)) at 92% calc(100% - 3px), rgb(30, 100, 200), rgba(30, 100, 200, 0.78) 42%, transparent 91%),
+      radial-gradient(ellipse calc(50px * var(--zia-beam-w)) calc(32px * var(--zia-beam-h)) at calc(var(--zia-beam-x) * 100%) 100%, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.18) 30%, rgba(0, 0, 0, 0.03) 60%, transparent 85%);
+  }
+}
+
+@keyframes zia-beam-travel {
+  0% { --zia-beam-x: 0.06; --zia-beam-w: 0.5; }
+  10% { --zia-beam-x: 0.15; --zia-beam-w: 0.8; }
+  20% { --zia-beam-x: 0.25; --zia-beam-w: 1.1; }
+  30% { --zia-beam-x: 0.35; --zia-beam-w: 1.3; }
+  40% { --zia-beam-x: 0.44; --zia-beam-w: 1.45; }
+  50% { --zia-beam-x: 0.5; --zia-beam-w: 1.5; }
+  60% { --zia-beam-x: 0.56; --zia-beam-w: 1.45; }
+  70% { --zia-beam-x: 0.65; --zia-beam-w: 1.3; }
+  80% { --zia-beam-x: 0.75; --zia-beam-w: 1.1; }
+  90% { --zia-beam-x: 0.85; --zia-beam-w: 0.8; }
+  100% { --zia-beam-x: 0.94; --zia-beam-w: 0.5; }
+}
+
+@keyframes zia-beam-edge {
+  0% { --zia-beam-edge: 0; }
+  12.5% { --zia-beam-edge: 0; }
+  32.5% { --zia-beam-edge: 1; }
+  67.5% { --zia-beam-edge: 1; }
+  87.5% { --zia-beam-edge: 0; }
+  100% { --zia-beam-edge: 0; }
+}
+
+@keyframes zia-beam-breathe {
+  0%, 100% { --zia-beam-h: 0.8; }
+  25% { --zia-beam-h: 1.25; }
+  55% { --zia-beam-h: 0.85; }
+  80% { --zia-beam-h: 1.3; }
+}
+
+@keyframes zia-beam-spike {
+  0% { --zia-beam-spike: 0.8; }
+  25% { --zia-beam-spike: 1.3; }
+  50% { --zia-beam-spike: 0.9; }
+  75% { --zia-beam-spike: 1.4; }
+  100% { --zia-beam-spike: 0.8; }
+}
+
+@keyframes zia-beam-spike2 {
+  0% { --zia-beam-spike2: 1.2; }
+  25% { --zia-beam-spike2: 0.7; }
+  50% { --zia-beam-spike2: 1.4; }
+  75% { --zia-beam-spike2: 0.8; }
+  100% { --zia-beam-spike2: 1.2; }
+}
+
+/* (the package's hue range is 30deg, capped at 13deg for line; +10 on the bloom) */
+@keyframes zia-beam-hue {
+  0%, 100% { --zia-beam-hue: -13deg; }
+  50% { --zia-beam-hue: 13deg; }
+}
+
+@keyframes zia-beam-hue-bloom {
+  0%, 100% { --zia-beam-hue-bloom: -23deg; }
+  50% { --zia-beam-hue-bloom: 23deg; }
+}
+
+@keyframes zia-beam-fade-in {
+  to { --zia-beam-opacity: 1; }
+}
+
+/* (beam.js starts it part-way, by a negative --zb-fade-delay, when the beam is
+   turned off before its fade-in finished; the package jumps to full first) */
+@keyframes zia-beam-fade-out {
+  from { --zia-beam-opacity: 1; }
+  to { --zia-beam-opacity: 0; }
+}
+
+/* --------------------------------------------------------------- pulse --- */
+/* Colour hugs the element's edge and breathes: blobs swell, drift and dim on
+   their own slow cycles (beam.js's loop writes --zb-b*), the hue turns a full
+   circle every 14 s, and a wide blurred halo blooms outward.
+   The package sits the core and halo behind an opaque child (z-index: -1);
+   here they're clipped out of the element's own outline instead (--zb-hole,
+   beam.js), so they never show through the element whatever its background
+   or stacking, and only the stroke rides on its 1px edge. */
+
+[zia-beam="pulse"] > .zia-beam {
+  --zb-k-stroke: 0.94;
+  --zb-k-core: 0.34;
+  --zb-k-bloom: 0.3;
+  --zb-core-blur: 3px;
+  --zb-bloom-blur: 22.5px;
+  --zb-bloom-alpha: 0.77;
+  --zb-bright: 1.9;
+  --zb-sat: 1.2;
+  /* resting values; beam.js overrides them inline while the pulse breathes */
+  --zb-bw1: 1;
+  --zb-bh1: 1;
+  --zb-bx1: 0px;
+  --zb-by1: 0px;
+  --zb-bw2: 1;
+  --zb-bh2: 1;
+  --zb-bx2: 0px;
+  --zb-by2: 0px;
+  --zb-bw3: 1;
+  --zb-bh3: 1;
+  --zb-bx3: 0px;
+  --zb-by3: 0px;
+  --zb-bgh: 1;
+  --zb-bop-tl: 1;
+  --zb-bop-tr: 1;
+  --zb-bop-bl: 1;
+  --zb-bop-br: 1;
+  --zb-hue: 0deg;
+  --zb-sx: 1;
+  --zb-sy: 1;
+  /* the coloured blobs, shared by the stroke and the core */
+  --zb-blobs:
+    radial-gradient(ellipse calc(80px * var(--zb-bw1) * var(--zb-sx)) calc(19px * var(--zb-bh1) * var(--zb-bgh) * var(--zb-sy)) at calc(27% + var(--zb-bx1)) calc(0% + var(--zb-by1)), rgba(255, 50, 100, var(--zb-bop-tl)), transparent),
+    radial-gradient(ellipse calc(74px * var(--zb-bw2) * var(--zb-sx)) calc(11px * var(--zb-bh2) * var(--zb-bgh) * var(--zb-sy)) at calc(73% + var(--zb-bx2)) calc(-1% + var(--zb-by2)), rgba(255, 120, 40, var(--zb-bop-tr)), transparent),
+    radial-gradient(ellipse calc(15px * var(--zb-bw3) * var(--zb-sx)) calc(44px * var(--zb-bh3) * var(--zb-bgh) * var(--zb-sy)) at calc(100% + var(--zb-bx3)) calc(33% + var(--zb-by3)), rgba(240, 50, 180, var(--zb-bop-tr)), transparent),
+    radial-gradient(ellipse calc(19px * var(--zb-bw1) * var(--zb-sx)) calc(38px * var(--zb-bh1) * var(--zb-bgh) * var(--zb-sy)) at calc(101% + var(--zb-bx1)) calc(72% + var(--zb-by1)), rgba(180, 40, 240, var(--zb-bop-br)), transparent),
+    radial-gradient(ellipse calc(84px * var(--zb-bw2) * var(--zb-sx)) calc(13px * var(--zb-bh2) * var(--zb-bgh) * var(--zb-sy)) at calc(67% + var(--zb-bx2)) calc(100% + var(--zb-by2)), rgba(100, 70, 255, var(--zb-bop-br)), transparent),
+    radial-gradient(ellipse calc(60px * var(--zb-bw3) * var(--zb-sx)) calc(21px * var(--zb-bh3) * var(--zb-bgh) * var(--zb-sy)) at calc(24% + var(--zb-bx3)) calc(101% + var(--zb-by3)), rgba(40, 140, 255, var(--zb-bop-bl)), transparent),
+    radial-gradient(ellipse calc(17px * var(--zb-bw1) * var(--zb-sx)) calc(40px * var(--zb-bh1) * var(--zb-bgh) * var(--zb-sy)) at calc(0% + var(--zb-bx1)) calc(60% + var(--zb-by1)), rgba(50, 200, 80, var(--zb-bop-bl)), transparent),
+    radial-gradient(ellipse calc(13px * var(--zb-bw2) * var(--zb-sx)) calc(32px * var(--zb-bh2) * var(--zb-bgh) * var(--zb-sy)) at calc(-1% + var(--zb-bx2)) calc(28% + var(--zb-by2)), rgba(30, 185, 170, var(--zb-bop-tl)), transparent);
+  animation: zia-beam-fade-in 0.6s ease forwards;
+
+  &[fading] {
+    animation: zia-beam-fade-out 0.5s ease var(--zb-fade-delay, 0s) forwards;
+  }
+
+  &::before {
+    content: none;
+  }
+
+  /* stroke: the blobs on the element's 1px edge (above it, as in the package) */
+  &::after {
+    inset: 0;
+    border-radius: var(--zb-r);
+    corner-shape: var(--zb-corner, round);
+    padding: 1px;
+    background: var(--zb-blobs);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    clip-path: var(--zb-ring, none);
+    z-index: 2;
+    will-change: opacity, filter;
+    opacity: calc(var(--zia-beam-opacity) * var(--zb-k-stroke) * var(--zia-beam-strength, 1));
+    filter: hue-rotate(var(--zb-hue)) brightness(var(--zb-bright)) saturate(var(--zb-sat));
+  }
+
+  /* core and halo, cut out of the element's outline */
+  & > .zia-beam-bloom {
+    inset: 0;
+    clip-path: var(--zb-hole, none);
+    z-index: 1;
+
+    &::before,
+    &::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+      transform: scale(0.95, 0.9);
+    }
+
+    /* core: the same blobs 10px out, squeezed a little and softened */
+    &::before {
+      inset: -10px;
+      border-radius: calc(var(--zb-r) + 10px);
+      background: var(--zb-blobs);
+      will-change: opacity, filter;
+      opacity: calc(var(--zia-beam-opacity) * var(--zb-k-core) * var(--zia-beam-strength, 1));
+      filter: blur(var(--zb-core-blur)) hue-rotate(var(--zb-hue)) brightness(var(--zb-bright)) saturate(var(--zb-sat));
+    }
+
+    /* halo: a still, wider bloom 30px out, heavily blurred */
+    &::after {
+      inset: -30px;
+      border-radius: calc(var(--zb-r) + 30px);
+      background:
+        radial-gradient(ellipse calc(110px * var(--zb-sx)) calc(30px * var(--zb-sy)) at 27% 3%, rgba(255, 50, 100, var(--zb-bloom-alpha)), transparent),
+        radial-gradient(ellipse calc(100px * var(--zb-sx)) calc(20px * var(--zb-sy)) at 73% 1%, rgba(255, 120, 40, var(--zb-bloom-alpha)), transparent),
+        radial-gradient(ellipse calc(26px * var(--zb-sx)) calc(62px * var(--zb-sy)) at 100% 33%, rgba(240, 50, 180, var(--zb-bloom-alpha)), transparent),
+        radial-gradient(ellipse calc(30px * var(--zb-sx)) calc(56px * var(--zb-sy)) at 101% 72%, rgba(180, 40, 240, var(--zb-bloom-alpha)), transparent),
+        radial-gradient(ellipse calc(120px * var(--zb-sx)) calc(22px * var(--zb-sy)) at 67% 99%, rgba(100, 70, 255, var(--zb-bloom-alpha)), transparent),
+        radial-gradient(ellipse calc(88px * var(--zb-sx)) calc(32px * var(--zb-sy)) at 24% 99%, rgba(40, 140, 255, var(--zb-bloom-alpha)), transparent),
+        radial-gradient(ellipse calc(28px * var(--zb-sx)) calc(58px * var(--zb-sy)) at 0% 60%, rgba(50, 200, 80, var(--zb-bloom-alpha)), transparent);
+      will-change: transform;
+      opacity: calc(var(--zia-beam-opacity) * var(--zb-k-bloom) * var(--zia-beam-strength, 1));
+      filter: blur(var(--zb-bloom-blur)) hue-rotate(var(--zb-hue)) brightness(var(--zb-bright)) saturate(var(--zb-sat));
+    }
+  }
+}
+
+/* light: stronger edge and core, tighter bloom, less saturation */
+[zia-light] [zia-beam="pulse"] > .zia-beam {
+  --zb-k-stroke: 1.96;
+  --zb-k-core: 1.04;
+  --zb-k-bloom: 0.42;
+  --zb-core-blur: 6px;
+  --zb-bloom-blur: 15px;
+  --zb-bloom-alpha: 1;
+  --zb-bright: 1.7;
+  --zb-sat: 0.6;
+}
+
+/* ------------------------------------------------------ reduced motion --- */
+/* As the package: its pulse types turn every animation off under reduced
+   motion, fade-in included, so the glow never shows (and its loop never
+   starts); for its travelling types the author's advice is to turn the beam
+   off. beam.js doesn't run the pulse loop then, and turning a beam off
+   removes it at once. */
+@media (prefers-reduced-motion: reduce) {
+  [zia-beam] > .zia-beam {
+    display: none !important;
+  }
+}
