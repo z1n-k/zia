@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- With Zen's single toolbar, compact mode's sidebar floats with the same even
+  gap from the window's edges as with the top toolbar. It sat flush against
+  them, and the window's own rounded corner cut into the sidebar's beside it,
+  so that corner came out rounder than the rest (thanks @OneGunBullet).
+
 ## [2.101.6] — 2026-10-19
 
 ### Changed
