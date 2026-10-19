@@ -1485,6 +1485,45 @@
 
   let openOffset = 0;
 
+  // Optional (zia.urlbar.center-text): the address centred on the toolbar, not in the bar,
+  // which the buttons either side push off the toolbar's middle; and held there as the
+  // bar's own buttons show and hide on hover (re-centred in what was left, it slid aside
+  // each time). Measured as either changes size, before it's drawn. Only the toolbar's
+  // bar, closed: in the sidebar (Zen's single toolbar) or open, it's as it was.
+  function watchCenteredAddress() {
+    const urlbar = gURLBar.textbox || document.getElementById("urlbar");
+    const box = gURLBar.inputField?.parentNode;
+    const toolbar = document.getElementById("zen-appcontent-navbar-wrapper");
+    if (!urlbar || !box || !toolbar) {
+      return;
+    }
+    const update = () => {
+      let shift = 0;
+      if (
+        Services.prefs.getBoolPref("zia.urlbar.center-text", false) &&
+        root.getAttribute("zen-single-toolbar") !== "true" &&
+        !urlbar.hasAttribute("breakout-extend") &&
+        urlbar.getAttribute("zen-floating-urlbar") !== "true"
+      ) {
+        const bar = box.getBoundingClientRect();
+        const card = toolbar.getBoundingClientRect();
+        if (bar.width && card.width) {
+          // (a fifth of the bar at most either way: a long address keeps most of its room)
+          const most = bar.width / 5;
+          shift = Math.max(-most, Math.min(most, card.left + card.width / 2 - (bar.left + bar.width / 2)));
+        }
+      }
+      setStyle(urlbar, "--zia-center-shift", Math.abs(shift) >= 1 ? `${Math.round(shift)}px` : null);
+    };
+    const observer = new ResizeObserver(update);
+    observer.observe(box, { box: "border-box" });
+    observer.observe(toolbar, { box: "border-box" });
+    new MutationObserver(update).observe(urlbar, { attributes: true, attributeFilter: ["breakout-extend", "zen-floating-urlbar"] });
+    watchPrefs("zia.urlbar.center-text", update);
+    window.addEventListener("unload", () => observer.disconnect());
+    update();
+  }
+
   function desiredOpenTop() {
     return parseFloat(getComputedStyle(root).getPropertyValue("--zia-urlbar-open-top")) || 0;
   }
@@ -18579,6 +18618,7 @@
     safely("watchScrollInput", watchScrollInput);
     safely("createTitleElement", createTitleElement);
     safely("watchTitleOnly", watchTitleOnly);
+    safely("watchCenteredAddress", watchCenteredAddress);
     safely("addDownloadProgress", addDownloadProgress);
     safely("flyFirstDownloadToButton", flyFirstDownloadToButton);
     safely("flyDownloadRows", flyDownloadRows);

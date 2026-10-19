@@ -732,6 +732,13 @@
       text-align: center !important;
       justify-content: center !important;
     }
+
+    /* ...on the toolbar's middle rather than the bar's, padded on one side by
+       twice the gap between them (zia.uc.js) */
+    #urlbar:not([zen-floating-urlbar="true"], [breakout-extend]) :is(.urlbar-input, #zia-url-title, #zia-url-plain) {
+      padding-left: max(0px, 2 * var(--zia-center-shift, 0px)) !important;
+      padding-right: max(0px, -2 * var(--zia-center-shift, 0px)) !important;
+    }
   }
 }
 
