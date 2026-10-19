@@ -1800,6 +1800,24 @@
     }
   }
 
+  /* In a light space (or light mode) less: the names there are dark ink a little
+     softened already, and faded to half on the pale sidebar they all but vanished */
+  :root[zia-light]:not(#zia-none):not(#zia-none-2) {
+    & .tabbrowser-tab[pending]:not([selected], [visuallyselected]) {
+      & :is(.tab-icon-stack, .tab-icon-image) {
+        filter: opacity(0.75);
+      }
+
+      & .tab-label-container {
+        filter: opacity(0.8);
+      }
+    }
+
+    & :is(zen-folder, tab-group:not([split-view-group])):has(.tabbrowser-tab[pending]):not(:has(.tabbrowser-tab:not([pending]))) > .tab-group-label-container {
+      filter: opacity(0.8);
+    }
+  }
+
   /* an asleep essential's tile fades with it */
   :root:not(#zia-none) .tabbrowser-tab[zen-essential][pending]:not([selected], [visuallyselected]) > .tab-stack > .tab-background {
     filter: opacity(0.6);
