@@ -687,6 +687,13 @@
   color: var(--zia-toolbar-ink, currentColor) !important;
 }
 
+/* Extension buttons in the toolbar spaced as Zen's own beside them: each
+   took 2px either side the others didn't, so the gaps grew wherever an
+   extension sat (31px a button, as share, back and the menu take) */
+#zen-appcontent-navbar-wrapper #nav-bar-customization-target > :is([id$="-browser-action"], [id$="-BAP"]) {
+  margin-inline: 0.5px !important;
+}
+
 @media -moz-pref("zia.urlbar.zia-look") {
   :root #urlbar[breakout-extend]:not([zia-classic]) {
     color-scheme: dark !important;
