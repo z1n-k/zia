@@ -539,6 +539,15 @@
   margin-inline-end: var(--zia-space-icon-gap);
 }
 
+/* Windows' emoji (Segoe UI Emoji) draws its picture lower in its line than
+   macOS's, the same for every emoji: a space's emoji sat about 4px below the
+   name and the buttons beside it, and is lifted level with them */
+@media (-moz-platform: windows) {
+  #zia-space-label[zia-has-icon]::before {
+    translate: 0 -4px;
+  }
+}
+
 #zia-space-label > .zia-space-svg {
   display: flex;
   flex: 0 0 auto;

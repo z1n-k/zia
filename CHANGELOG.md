@@ -14,6 +14,12 @@ Every release of Zia, newest first. The format follows
   site's own top right. Zen's "Hide window controls" brings the old way back
   (thanks Gin The Cerberus).
 
+### Fixed
+
+- On Windows, a space's emoji is level with its name and the sidebar's
+  buttons: Windows draws emoji lower in their line than macOS, so it sat
+  about 4px low (thanks Gin The Cerberus).
+
 ## [2.101.1] — 2026-10-19
 
 ### Changed
