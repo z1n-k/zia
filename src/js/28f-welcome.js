@@ -18,7 +18,9 @@
     // which sit over anything else in the window
     overlay.setAttribute("popover", "manual");
     const frame = document.createElementNS(XHTML_NS, "iframe");
-    frame.setAttribute("src", `${WELCOME_URL}#${mode === "update" ? `update-${WELCOME_VERSION}` : mode}`);
+    // (with Ultra on, the page puts its wordmark in liquid metal)
+    const ultra = Services.prefs.getBoolPref("zia.ultra", false) ? "?ultra" : "";
+    frame.setAttribute("src", `${WELCOME_URL}${ultra}#${mode === "update" ? `update-${WELCOME_VERSION}` : mode}`);
     frame.setAttribute("title", "Welcome to Zia");
     overlay.append(frame);
 

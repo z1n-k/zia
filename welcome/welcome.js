@@ -305,6 +305,17 @@
   }
   let at = 0;
 
+  // With Zia's Ultra mode on (?ultra), the wordmark in liquid metal (metal.js),
+  // one at a time: the slide you leave keeps its picture, unseen
+  const ultra = new URLSearchParams(location.search).has("ultra");
+  let metal = null;
+  function metalMark(visual) {
+    metal?.destroy();
+    metal = null;
+    const mark = visual.querySelector(".mark");
+    if (mark && typeof window.ziaMetalText === "function") metal = window.ziaMetalText(mark);
+  }
+
   function renderTour() {
     const tour = TOURS[mode];
     const el = document.getElementById("tour");
@@ -341,6 +352,7 @@
       const visual = slides[at].querySelector(".visual");
       setHTML(visual, FEATURES[tour.list[at]].v());
       startWires(visual);
+      if (ultra) metalMark(visual);
       atEl.textContent = at + 1;
       back.hidden = at === 0;
       gh.hidden = !FEATURES[tour.list[at]].gh;
@@ -369,6 +381,17 @@
   });
 
 
-  renderTour();
-  trimKeys(document.body);
+  // (metal.js loaded first: put on a wordmark already showing, it blinks)
+  function start() {
+    renderTour();
+    trimKeys(document.body);
+  }
+  if (ultra) {
+    const script = document.createElement("script");
+    script.src = "metal.js";
+    script.onload = script.onerror = start;
+    document.head.append(script);
+  } else {
+    start();
+  }
 })();
