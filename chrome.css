@@ -2487,6 +2487,14 @@ zen-split-fake-tab {
   display: none !important;
 }
 
+/* (macOS counts what's dragged itself, in its red badge by the pointer: Zia's own on
+   the dragged tab only doubled it there, a blue dot squeezed past its close button) */
+@media (-moz-platform: macos) {
+  .tabbrowser-tab[zia-drag-count] > .tab-stack > .tab-content::after {
+    display: none !important;
+  }
+}
+
 .tabbrowser-tab[zia-drag-count] > .tab-stack > .tab-content::after {
   content: attr(zia-drag-count);
   flex: none;

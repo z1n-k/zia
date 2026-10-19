@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- On macOS, dragging several selected tabs no longer shows a blue dot on the
+  dragged tab: Zia's count there doubled macOS's own red badge by the pointer.
+
 ## [2.101.3] — 2026-10-19
 
 ### Changed
