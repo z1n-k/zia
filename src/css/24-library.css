@@ -215,6 +215,10 @@
 
     & .zen-library-search-results {
       padding: 0 var(--zia-lib-pad) 8px !important;
+      /* (scrolls without a bar, as the row of spaces: Zen hides it while the
+         Library opens and shows it after, and where scroll bars always show,
+         the list narrowed for it as the opening ended, its media reflowing) */
+      scrollbar-width: none !important;
 
       &[scrolled] {
         border-top-color: color-mix(in srgb, var(--zia-lib-ink) 10%, transparent) !important;
