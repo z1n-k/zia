@@ -25,6 +25,9 @@ Every release of Zia, newest first. The format follows
   or dark with macOS, with Zia's tiles and corners (thanks @OneGunBullet).
 - With asleep tabs dimmed, a light space's asleep tabs fade less, so they're
   still easy to read on the pale sidebar (thanks Briski).
+- Compact mode's sidebar has Zia's card corners, as its hover cards and
+  pop-ups do, the same all round: the window's own corner could cut into the
+  one beside it, which came out rounder than the rest (thanks @OneGunBullet).
 
 ### Fixed
 

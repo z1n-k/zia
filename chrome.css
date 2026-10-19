@@ -6655,17 +6655,22 @@ findbar {
   }
 }
 
-@media (-moz-platform: windows) {
-  /* the flyout sidebar takes the page card's corner: Zen sizes it for its
-     squarer Windows curve, and drawn as a circle it came out far rounder */
-  :root[zen-compact-mode="true"]:not(#zia-none) .zen-toolbar-background {
-    &,
-    &::before,
-    &::after {
-      border-radius: max(0px, calc(var(--zia-card-radius-base) - var(--zen-compact-mode-no-padding-radius-fix, 0px) / var(--zen-squircle-value, 1))) !important;
-    }
+/* Compact mode's flyout sidebar has Zia's card corners all round, as its hover
+   cards and pop-ups do. Zen sized them from the window's corner as it guesses
+   it (10px on macOS, 11px on Tahoe): where the window's real corner is rounder,
+   it cut into the flyout's corner beside it (top left, or top right with the
+   sidebar on the right), which came out rounder than the other three. Rounder
+   than the window's corner reaches, all four are the same. */
+:root[zen-compact-mode="true"]:not(#zia-none) #zen-toolbar-background {
+  &,
+  &::before,
+  &::after {
+    border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow)) !important;
+    corner-shape: var(--zia-squircle) !important;
   }
+}
 
+@media (-moz-platform: windows) {
   /* no window-button box in compact's top row: the real ones stay top right
      (zia.uc.js), and a box left in the row pushed the space's name out */
   :root[zen-compact-mode="true"] #zen-sidebar-top-buttons .titlebar-buttonbox-container {
