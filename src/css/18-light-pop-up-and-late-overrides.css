@@ -91,6 +91,16 @@
   --urlbarView-separator-color: transparent !important;
 }
 
+/* With Zia's glass on, the floating bar's pop-up is glass as the toolbar's is, its edge
+   and lift on its own corners: once it listed anything, Zen drew it, without them */
+@media -moz-pref("zia.glass") {
+  #urlbar[breakout-extend]:not([zia-classic])[zen-floating-urlbar="true"] > .urlbar-background {
+    border-radius: calc(var(--zia-pop-radius) * var(--zia-squircle-grow)) !important;
+    corner-shape: var(--zia-squircle) !important;
+    box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
+  }
+}
+
 :root:not(#zia-none) .tabbrowser-tab[zia-morph] > .tab-stack > .tab-background {
   margin-inline-start: var(--zia-morph-bg-start) !important;
   margin-inline-end: var(--zia-morph-bg-end) !important;
