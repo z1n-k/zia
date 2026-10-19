@@ -9087,9 +9087,13 @@ zen-folder .tab-reset-button {
    clears every arrow panel's own background, out of reach of Zia's styles, to show
    the system's material, which is dark or light with macOS or Zen's theme rather
    than the space: its ink and the panel didn't match (dark on dark, white on white).
-   (Zen gives this panel no padding, so this fills it.) */
+   Mostly the card's colour, so the ink reads on it whichever the system's is, with
+   that material showing through the rest: wholly the card's, it lost the see-through
+   look macOS's own pop-ups have. (Elsewhere the panel's own background is the card's
+   colour under it, so it's solid as before.) (Zen gives this panel no padding, so
+   this fills it.) */
 #zen-unified-site-data-panel > panelmultiview {
-  background-color: var(--zia-tab-card-bg) !important;
+  background-color: color-mix(in srgb, var(--zia-tab-card-bg) 60%, transparent) !important;
   border-radius: var(--panel-border-radius) !important;
   corner-shape: var(--zia-squircle) !important;
 }
