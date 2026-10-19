@@ -18,7 +18,7 @@ Every release of Zia, newest first. The format follows
 
 - On Windows, a space's emoji is level with its name and the sidebar's
   buttons: Windows draws emoji lower in their line than macOS, so it sat
-  about 4px low (thanks Gin The Cerberus).
+  about 2px low (thanks Gin The Cerberus).
 
 ## [2.101.1] — 2026-10-19
 

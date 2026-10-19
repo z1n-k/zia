@@ -3043,11 +3043,11 @@ zen-split-fake-tab {
 }
 
 /* Windows' emoji (Segoe UI Emoji) draws its picture lower in its line than
-   macOS's, the same for every emoji: a space's emoji sat about 4px below the
+   macOS's, the same for every emoji: a space's emoji sat about 2px below the
    name and the buttons beside it, and is lifted level with them */
 @media (-moz-platform: windows) {
   #zia-space-label[zia-has-icon]::before {
-    translate: 0 -4px;
+    translate: 0 -2px;
   }
 }
 
