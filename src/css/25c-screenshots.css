@@ -1,0 +1,19 @@
+/* The screenshot buttons (Save visible, Save full page) that show top right as
+   a screenshot starts, as Zia's card: its colour, squircle, edge and lift,
+   light in a light space; the buttons as Zia's tiles (zia.uc.js puts their
+   look in, out of reach of these styles). The dimmed page and its region
+   picking are drawn in the page, out of reach of any theme. */
+:root:not(#zia-none) screenshots-buttons {
+  padding: 6px !important;
+  background-color: var(--zia-tab-card-bg) !important;
+  color: rgb(255, 255, 255) !important;
+  color-scheme: dark;
+  border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow)) !important;
+  corner-shape: var(--zia-squircle) !important;
+  box-shadow: var(--zia-glass-edge-lit), var(--zia-glass-pop-lift) !important;
+}
+
+:root[zia-light]:not(#zia-none) screenshots-buttons {
+  color: rgb(28, 28, 32) !important;
+  color-scheme: light;
+}

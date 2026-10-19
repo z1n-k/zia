@@ -515,6 +515,12 @@
     ]
   },
   {
+    "type": "checkbox",
+    "label": "Show the ⋯ menu at the end of the toolbar",
+    "property": "zia.toolbar.menu-button",
+    "defaultValue": false
+  },
+  {
     "type": "separator",
     "label": "Media",
     "id": "zia-section-media"

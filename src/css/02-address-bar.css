@@ -523,6 +523,23 @@
   margin-inline: 0 !important;
 }
 
+/* The ⋯ menu (Firefox's app menu) is hidden, as Dia and Arc have none; it's
+   shown again in Zia's settings. Kept in its place at no width rather than
+   taken out: Firefox's notices (an update ready, an add-on added) still
+   point at it, and opened from the keyboard the menu still has its corner. */
+@media not -moz-pref("zia.toolbar.menu-button") {
+  #PanelUI-button {
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+}
+
 #zen-toggle-compact-mode {
   list-style-image: url("chrome://sine/content/zia/icons/sidebar.svg") !important;
 }

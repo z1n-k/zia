@@ -1038,6 +1038,23 @@
   margin-inline: 0 !important;
 }
 
+/* The ⋯ menu (Firefox's app menu) is hidden, as Dia and Arc have none; it's
+   shown again in Zia's settings. Kept in its place at no width rather than
+   taken out: Firefox's notices (an update ready, an add-on added) still
+   point at it, and opened from the keyboard the menu still has its corner. */
+@media not -moz-pref("zia.toolbar.menu-button") {
+  #PanelUI-button {
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+}
+
 #zen-toggle-compact-mode {
   list-style-image: url("chrome://sine/content/zia/icons/sidebar.svg") !important;
 }
@@ -9371,6 +9388,25 @@ zen-workspace-creation {
   & .zen-workspace-creation-create-button {
     color: rgb(255, 255, 255) !important;
   }
+}
+/* The screenshot buttons (Save visible, Save full page) that show top right as
+   a screenshot starts, as Zia's card: its colour, squircle, edge and lift,
+   light in a light space; the buttons as Zia's tiles (zia.uc.js puts their
+   look in, out of reach of these styles). The dimmed page and its region
+   picking are drawn in the page, out of reach of any theme. */
+:root:not(#zia-none) screenshots-buttons {
+  padding: 6px !important;
+  background-color: var(--zia-tab-card-bg) !important;
+  color: rgb(255, 255, 255) !important;
+  color-scheme: dark;
+  border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow)) !important;
+  corner-shape: var(--zia-squircle) !important;
+  box-shadow: var(--zia-glass-edge-lit), var(--zia-glass-pop-lift) !important;
+}
+
+:root[zia-light]:not(#zia-none) screenshots-buttons {
+  color: rgb(28, 28, 32) !important;
+  color-scheme: light;
 }
 /* The rename card (tidy-downloads/tidy-downloads.js; Tidy Downloads, by
    Bxthesda and Zylaah, with their permission): a small copy of Zia's glass
