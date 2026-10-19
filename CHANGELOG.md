@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- On Windows and Linux, with Zen's single toolbar, the window buttons are in a
+  strip above the page that's always there, as Dia's title bar is, rather than
+  hidden until the pointer reached the window's very top and then laid over the
+  site's own top right. Zen's "Hide window controls" brings the old way back
+  (thanks Gin The Cerberus).
+
 ## [2.101.1] — 2026-10-19
 
 ### Changed

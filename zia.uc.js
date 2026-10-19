@@ -6022,6 +6022,14 @@
     // used any more; the Tabler ones have their own file.
     IOUtils.remove(PathUtils.join(PathUtils.profileDir, "zia-icon-vectors.json"), { ignoreAbsent: true }).catch(() => {});
     set("zen.widget.mac.mono-window-controls", false);
+    // Windows and Linux: with Zen's single toolbar, the window buttons in a strip
+    // above the page that's always there, as Dia's title bar is, rather than hidden
+    // until the pointer reached the window's top and then laid over the page (they
+    // covered the site's own top right, and showed only from the very edge). Zen's
+    // "hide window controls" brings that back. (macOS keeps them in the sidebar.)
+    if (AppConstants.platform !== "macosx") {
+      set("zen.view.hide-window-controls", false);
+    }
     set("zen.urlbar.replace-newtab", !Services.prefs.getBoolPref("zia.newtab.real-tab", true));
     set("zen.splitView.enable-tab-drop", !Services.prefs.getBoolPref("zia.split.drop-cards", true));
     set("browser.urlbar.trimHttps", true);
