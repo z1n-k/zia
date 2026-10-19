@@ -1061,7 +1061,32 @@
       jumpToEnd(folder);
     };
 
-    const finishDrop = (tab, target) => {
+    // Several selected tabs let go together: the others (folded into the dragged one) land
+    // beside it in the order they had, as Firefox lays out a multiple drop. Firefox's own
+    // drop placed them by its measure of the list, which Zia's drag had moved, so they
+    // went to its end.
+    const finishDrop = (tab, target, party = null) => {
+      placeDropped(tab, target);
+      const at = party?.indexOf(tab) ?? -1;
+      if (at < 0 || !tab.isConnected || tab.group?.hasAttribute("split-view-group")) {
+        return;
+      }
+      const pinned = !target.below;
+      let anchor = tab;
+      for (const other of party.slice(at + 1)) {
+        pinFor(other, pinned);
+        placeAfter(other, anchor);
+        anchor = other;
+      }
+      anchor = tab;
+      for (const other of party.slice(0, at).reverse()) {
+        pinFor(other, pinned);
+        placeBefore(other, anchor);
+        anchor = other;
+      }
+    };
+
+    const placeDropped = (tab, target) => {
       if (!tab?.isConnected) {
         return;
       }
@@ -3226,11 +3251,13 @@
         } else if (tab && !drag.folder && !drag.away && drag.target?.hand) {
           const target = drag.target;
           // Zia places it, Zen's drop not run: told to drop it where it was, Zen still took a tab
-          // in a closed folder out of it for a frame (its favicon flashing left of where it lands)
-          if (!tab.multiselected) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
+          // in a closed folder out of it for a frame (its favicon flashing left of where it lands).
+          // Several selected go with it (finishDrop), in the order they're in now.
+          const party = tab.multiselected
+            ? gBrowser.selectedTabs.filter((t) => t.isConnected && !t.hasAttribute("zen-essential") && !t.group?.hasAttribute?.("split-view-group"))
+            : null;
+          event.preventDefault();
+          event.stopPropagation();
           heldFolder = target.folder || null;
           heldPinned = !target.below;
           pendingFinish = true;
@@ -3238,7 +3265,7 @@
           // room made for it in a folder had closed and it showed outside, full width, for a frame
           const run = () => {
             try {
-              finishDrop(tab, target);
+              finishDrop(tab, target, party);
               // (its width put right as it moves: the row's new width showed
               // first otherwise, 14px narrower)
               refitLanding?.();
