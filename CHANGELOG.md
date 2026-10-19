@@ -4,6 +4,52 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.101.0] — 2026-10-19
+
+### Changed
+
+- The ⋯ menu at the end of the toolbar is hidden, as Dia and Arc have none.
+  "Show the ⋯ menu at the end of the toolbar" (Page) brings it back
+  (thanks @OneGunBullet).
+- The screenshot buttons (Save visible, Save full page) are Zia's card, with
+  its colour, corners and edge, light in a light space, and the buttons are
+  Zia's tiles rather than Firefox's (thanks @OneGunBullet).
+- With "Centre the address bar's text" on, the address is centred on the
+  toolbar rather than in the bar, which the buttons either side pushed off
+  the middle, and it stays put as the bar's own buttons show on hover
+  instead of sliding aside (thanks @OneGunBullet).
+- With Glass on, the floating address bar's pop-up has the glass edge the
+  toolbar's has, and with the pop-up's blur on it's see-through from the
+  moment it opens, not only once it lists something (thanks @OneGunBullet).
+- The site panel is see-through on macOS again, in Zen's own colours, light
+  or dark with macOS, with Zia's tiles and corners (thanks @OneGunBullet).
+- With asleep tabs dimmed, a light space's asleep tabs fade less, so they're
+  still easy to read on the pale sidebar (thanks Briski).
+
+### Fixed
+
+- With Zen's single toolbar and the window controls hidden, the bar shows
+  over the page with or without the bookmarks bar, the page no longer jumps
+  up and down as the pointer reaches the window's top, and the gap above
+  the page is the same as at its sides (thanks @PowerFactory384 and
+  @RvatyGraty).
+- A new tab opening your search engine's page with the address bar ready
+  to type is empty straight away, rather than showing the page's address
+  until it loaded (thanks @thoroughmas).
+- Extension buttons in the toolbar are spaced as Zen's own beside them; the
+  gaps grew wherever an extension sat (thanks @OneGunBullet).
+- A download in progress keeps the row's ring size as its icon flies from
+  the Library button, rather than landing big and snapping small (thanks
+  @OneGunBullet).
+- In an empty space, the toolbar is the same colour as the page under it,
+  not a greyer shade (thanks @OneGunBullet).
+- The Library's Media, Downloads and History lists scroll without a bar, so
+  they no longer jump narrower as the Library finishes opening where scroll
+  bars always show (thanks @OneGunBullet).
+- Several selected tabs dragged together land where they're let go, beside
+  each other in their order, rather than at the end of the list (thanks
+  @Y4k3d0).
+
 ## [2.100.17] — 2026-10-18
 
 ### Fixed
