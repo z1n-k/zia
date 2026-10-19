@@ -185,7 +185,9 @@
         seen.add(card);
         let glow = glows.get(card);
         if (!glow) {
-          glow = ziaGlow(card, { dark: dark() });
+          // (the card's squircle, as Zia sets it: it's what the glow is cut to)
+          const cornerShape = getComputedStyle(card).getPropertyValue("--zia-squircle").trim();
+          glow = ziaGlow(card, { dark: dark(), cornerShape });
           glows.set(card, glow);
           card.__ziaGlowArt = undefined;
         }

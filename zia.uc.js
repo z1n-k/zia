@@ -19793,7 +19793,9 @@
         seen.add(card);
         let glow = glows.get(card);
         if (!glow) {
-          glow = ziaGlow(card, { dark: dark() });
+          // (the card's squircle, as Zia sets it: it's what the glow is cut to)
+          const cornerShape = getComputedStyle(card).getPropertyValue("--zia-squircle").trim();
+          glow = ziaGlow(card, { dark: dark(), cornerShape });
           glows.set(card, glow);
           card.__ziaGlowArt = undefined;
         }
@@ -20069,13 +20071,17 @@ function ziaGlowArc(x, w, r, inset = 0, n = 2) {
   return r - r * Math.pow(Math.max(0, 1 - Math.pow(k, n)), 1 / n);
 }
 
-// The exponent of the host's corners: CSS draws corner-shape superellipse(K) as
-// |x|^n + |y|^n = 1 with n = 2^K (round is K = 1, squircle K = 2).
-function ziaGlowCornerExp(container) {
+// The host's corner-shape: the one given, else its own.
+function ziaGlowCornerShapeOf(container, given) {
   const style = getComputedStyle(container);
-  const shape = (style.getPropertyValue("corner-bottom-left-shape") || style.getPropertyValue("corner-shape") || "")
+  return (given || style.getPropertyValue("corner-bottom-left-shape") || style.getPropertyValue("corner-shape") || "")
     .trim()
     .split(/\s+(?![^(]*\))/)[0];
+}
+
+// Its exponent: CSS draws corner-shape superellipse(K) as |x|^n + |y|^n = 1 with
+// n = 2^K (round is K = 1, squircle K = 2).
+function ziaGlowCornerExp(shape) {
   const named = { round: 1, squircle: 2, bevel: 0, square: 8 };
   let k = named[shape];
   const m = shape.match(/^superellipse\(\s*([^)]*)\)$/);
@@ -20117,8 +20123,8 @@ function ziaGlowOutlinePath(w, h, r, n, inset) {
 }
 
 // The glow is clipped to the host's outline, and its edge stroke drawn along it,
-// as paths: overflow and mask clipping don't all follow corner-shape, and the
-// glow came out rounder than a squircle card at its bottom corners.
+// as paths: Firefox clips overflow (and masks) to a round corner whatever the
+// corner-shape, and the glow came out rounder than a squircle card.
 function ziaGlowOutline(g, w, h) {
   const { radius, cornerN } = g.cfg;
   const key = `${w} ${h} ${radius} ${cornerN}`;
@@ -20223,7 +20229,7 @@ function ziaGlowBuild(g, scale) {
     dark: g.dark,
     scale: F,
     radius: ziaGlowRadiusOf(g.container),
-    cornerN: ziaGlowCornerExp(g.container),
+    cornerShape: ziaGlowCornerShapeOf(g.container, g.cornerShape),
     threshold: P.threshold,
     attack: P.attack,
     release: P.release,
@@ -20256,6 +20262,7 @@ function ziaGlowBuild(g, scale) {
     hueRange: g.colors ? Math.min(10, T.hueRange) : T.hueRange,
     hueDuration: T.hueDuration,
   };
+  cfg.cornerN = ziaGlowCornerExp(cfg.cornerShape);
   g.cfg = cfg;
   g.dirty = false;
 
@@ -20717,7 +20724,7 @@ function ziaGlowWake(g) {
   ziaGlowStart();
 }
 
-function ziaGlow(container, { dark = true } = {}) {
+function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
   ziaGlowListen();
   const doc = container.ownerDocument;
   const id = `zia-glow-distort-${++ziaGlowCount}`;
@@ -20808,6 +20815,7 @@ function ziaGlow(container, { dark = true } = {}) {
     filterTop: -1,
     warpOff: true,
     dark: !!dark,
+    cornerShape,
     colors: null,
     colorKey: "",
     outlineKey: "",

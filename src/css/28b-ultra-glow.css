@@ -3,7 +3,8 @@
 
    ziaGlow() appends .zia-glow to the card. The card must be position: relative
    and carry the border-radius; the glow clips to its outline, corner-shape
-   included (a path glow.js writes, --zg-outline).
+   included, by a path glow.js writes (--zg-outline): Firefox clips overflow to
+   a round corner whatever the corner-shape, rounder than a squircle card.
 
    Hooks the host can set on the card (all default to 1 / auto):
      --zia-glow-z                 stacking of the glow; -1 puts it under the card's
@@ -50,8 +51,7 @@
   position: absolute;
   inset: 0;
   z-index: var(--zia-glow-z, auto);
-  border-radius: inherit;
-  corner-shape: inherit;
+  /* (square: the path rounds it) */
   overflow: hidden;
   clip-path: var(--zg-outline, none);
   isolation: isolate;
@@ -75,8 +75,7 @@
 .zia-glow-layer {
   position: absolute;
   inset: 0;
-  border-radius: inherit;
-  corner-shape: inherit;
+  /* (square: rounded, Firefox would clip them round too) */
   pointer-events: none;
 }
 
