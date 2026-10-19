@@ -329,6 +329,9 @@
 
     gBrowser.addTabsProgressListener({
       onStateChange(browser, webProgress, request, stateFlags) {
+        if (webProgress.isTopLevel && stateFlags & STATE_START) {
+          blankLoadingNewTabAddress(browser, request);
+        }
         if (!webProgress.isTopLevel || !(stateFlags & STATE_IS_WINDOW)) {
           return;
         }

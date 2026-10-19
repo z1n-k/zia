@@ -2062,33 +2062,23 @@
   // bar, already open to type in, so it had to be deleted first (Zen 1.23
   // writes a page's address in as it loads, even with the bar in use). It's
   // kept empty instead, until something's typed there or in the page.
-  function keepNewTabAddressEmpty(browser, location) {
-    const tab = gBrowser.getTabForBrowser?.(browser);
-    if (!tab?.ziaBlankAddress || !searchHomeUrl || !location) {
-      return;
-    }
-    if (tab.ziaTypedInPage || location.spec === "about:newtab" || location.spec === "about:blank") {
-      return;
-    }
-    let home = null;
+  function isSearchHome(uri) {
     try {
-      home = Services.io.newURI(searchHomeUrl);
+      const home = Services.io.newURI(searchHomeUrl);
+      return uri.prePath === home.prePath && uri.filePath === home.filePath;
     } catch (err) {
-      return;
+      return false;
     }
-    // (the search page itself: a search from it, or anywhere else, shows
-    // its address as usual from then on)
-    if (location.prePath !== home.prePath || location.filePath !== home.filePath) {
-      tab.ziaBlankAddress = false;
-      return;
-    }
+  }
+
+  function clearNewTabAddress(browser, tab, uri) {
     const clear = () => {
       if (gBrowser.selectedTab !== tab || tab.ziaTypedInPage || !tab.ziaBlankAddress) {
         return;
       }
       // (what's in the bar is still the page's own address, not typing)
       const shown = gURLBar.value || "";
-      if (shown && (gURLBar.valueIsTyped || !location.spec.includes(shown.replace(/^https?:\/\//, "").replace(/\/$/, "")))) {
+      if (shown && (gURLBar.valueIsTyped || !uri.spec.includes(shown.replace(/^https?:\/\//, "").replace(/\/$/, "")))) {
         tab.ziaBlankAddress = false;
         return;
       }
@@ -2097,6 +2087,42 @@
     };
     clear();
     requestAnimationFrame(clear);
+  }
+
+  function keepNewTabAddressEmpty(browser, location) {
+    const tab = gBrowser.getTabForBrowser?.(browser);
+    if (!tab?.ziaBlankAddress || !searchHomeUrl || !location) {
+      return;
+    }
+    if (tab.ziaTypedInPage || location.spec === "about:newtab" || location.spec === "about:blank") {
+      return;
+    }
+    // (the search page itself: a search from it, or anywhere else, shows
+    // its address as usual from then on)
+    if (!isSearchHome(location)) {
+      tab.ziaBlankAddress = false;
+      return;
+    }
+    clearNewTabAddress(browser, tab, location);
+  }
+
+  // Firefox shows the address a new tab is loading as soon as the load
+  // starts, so the search page's sat in the bar until it arrived, a second
+  // or two on a slow connection: it's cleared from the start of the load
+  function blankLoadingNewTabAddress(browser, request) {
+    const tab = gBrowser.getTabForBrowser?.(browser);
+    if (!tab?.ziaBlankAddress || tab.ziaTypedInPage || !searchHomeUrl) {
+      return;
+    }
+    let uri = null;
+    try {
+      uri = request?.QueryInterface(Ci.nsIChannel).originalURI;
+    } catch (err) {
+      return;
+    }
+    if (uri && isSearchHome(uri)) {
+      clearNewTabAddress(browser, tab, uri);
+    }
   }
 
   function closeNewTabUrlbar(tab) {
@@ -18573,6 +18599,9 @@
 
     gBrowser.addTabsProgressListener({
       onStateChange(browser, webProgress, request, stateFlags) {
+        if (webProgress.isTopLevel && stateFlags & STATE_START) {
+          blankLoadingNewTabAddress(browser, request);
+        }
         if (!webProgress.isTopLevel || !(stateFlags & STATE_IS_WINDOW)) {
           return;
         }
