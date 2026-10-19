@@ -6990,7 +6990,9 @@ zen-folder .tab-reset-button {
    behind it. Whichever colour it has (dark, light or the site's) comes
    from --zia-urlbar-open-bg, so this works with all of them. */
 @media -moz-pref("zia.urlbar.pop-up-blur") {
-  :root:not(#zia-none):not(#zia-none-2) #urlbar#urlbar[breakout-extend]:not([zia-classic]) > .urlbar-background {
+  /* (the floating bar too while nothing's listed under it yet: never "extended"
+     then, it was drawn solid) */
+  :root:not(#zia-none):not(#zia-none-2) #urlbar#urlbar:is([breakout-extend], [zen-floating-urlbar="true"]):not([zia-classic]) > .urlbar-background {
     background: color-mix(in srgb, var(--zia-urlbar-open-bg) 78%, transparent) !important;
     backdrop-filter: blur(24px) saturate(1.6) !important;
   }
