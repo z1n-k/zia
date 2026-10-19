@@ -52,6 +52,9 @@ Every release of Zia, newest first. The format follows
 - Several selected tabs dragged together land where they're let go, beside
   each other in their order, rather than at the end of the list (thanks
   @Y4k3d0).
+- With "Show the space's name above the tabs, as Zen does" on, the sidebar's
+  top row lets go of Zia's arrangement: its empty slot for the name kept the
+  row's buttons pushed to the end (thanks Gin The Cerberus).
 
 ## [2.100.17] — 2026-10-18
 
