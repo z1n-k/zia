@@ -419,6 +419,14 @@
   }
 }
 
+/* An empty tab (a space with no tabs open): the page shows the window's colour
+   through it, and the toolbar is clear too, the same colour. Painted as a site's,
+   it took what the page's top was read as, which misses what macOS draws of the
+   window (its see-through material), so it came out a greyer shade over it. */
+:root[zen-has-empty-tab="true"]:not(#zia-none):not([inDOMFullscreen="true"]):not([popup-window]) #zen-appcontent-navbar-wrapper {
+  background-color: transparent !important;
+}
+
 /* Optional: the page edge to edge, with no gap, rounded corners or shadow
    around it. Zen's own zen.theme.content-element-separation = 0 does the
    same, so that's followed too. */
