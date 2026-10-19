@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- The music player card is the same shade as the selected tab, in dark and
+  light spaces, rather than a shade of its own.
+
 ## [2.101.5] — 2026-10-19
 
 ### Changed

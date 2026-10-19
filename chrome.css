@@ -125,7 +125,8 @@
   --zia-split-card-radius: 14px;
 
   --zia-split-backdrop: rgb(23, 23, 23);
-  --zia-media-bg: rgba(0, 0, 0, 0.225);
+  /* (the music player as dark as the selected tab: it was its own, darker shade) */
+  --zia-media-bg: var(--zia-active-tab-bg);
   --zia-media-card-height: 64px;
   --zia-media-card-height-open: 124px;
   --zia-media-radius: 12.5px;
@@ -8220,7 +8221,7 @@ zen-folder .tab-reset-button {
   /* the music card a white card, as the selected tab is (and over light grey
      when opened, whatever the system's mode: in dark mode, the near-black
      under it turned it a muddy grey) */
-  --zia-media-bg: rgba(255, 255, 255, 0.62);
+  --zia-media-bg: var(--zia-active-tab-bg);
   --zia-media-card-base: rgb(235, 235, 235);
 
   /* tab names: the rest a little softer, the open one full */
