@@ -8197,6 +8197,13 @@ zen-folder .tab-reset-button {
     color: var(--zia-sidebar-ink) !important;
   }
 
+  /* (in compact mode's flyout, the rest a little stronger: there the sidebar is
+     nearly white and see-through, which draws its text thinner, and the softened
+     names read faint) */
+  &[zen-compact-mode="true"] .tabbrowser-tab:not([zen-essential], [visuallyselected]) .tab-label-container {
+    color: color-mix(in srgb, var(--zia-sidebar-ink) 90%, transparent) !important;
+  }
+
   & .tabbrowser-tab:not([zen-essential])[visuallyselected] > .tab-stack > .tab-background {
     box-shadow:
       0 0 0 0.5px rgba(0, 0, 0, 0.06),
