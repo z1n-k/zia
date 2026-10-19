@@ -6518,14 +6518,15 @@ findbar {
   }
 }
 
-/* Zen's single toolbar with the bookmarks bar, collapsed (Zen's "hide window
-   controls"): shown, the bar grew into the layout and pushed the page down, and
-   shrank back, pulling it up, each time the pointer reached the window's top (a
-   jitter there and over the window buttons). It shows over the page instead, on
-   the space's colour (Zen's own layer for it, which it otherwise keeps for compact
-   mode); the page keeps its place. */
+/* Zen's single toolbar, collapsed (Zen's "hide window controls"): shown, the bar
+   grew into the layout and pushed the page down, and shrank back, pulling it up,
+   each time the pointer reached the window's top (a jitter there and over the
+   window buttons). Collapsed, its sliver still sat above the page, so the gap
+   there was twice the sides'. It shows over the page instead, on the space's
+   colour (Zen's own layer for it, which it otherwise keeps for compact mode); the
+   page keeps its place, the same gap from the top as from the sides. */
 @media -moz-pref("zen.view.hide-window-controls") {
-  :root[zen-single-toolbar="true"][zen-has-bookmarks]:not([customizing], [inDOMFullscreen="true"]):not(#zia-none) {
+  :root[zen-single-toolbar="true"]:not([customizing], [inDOMFullscreen="true"]):not(#zia-none) {
     & #zen-appcontent-wrapper {
       position: relative !important;
     }
@@ -6535,10 +6536,29 @@ findbar {
       top: 0;
       inset-inline: 0;
       z-index: 2;
+      /* (its hover reaches up over the gap above the page to the window's edge,
+         as in compact mode) */
+      overflow-clip-margin: var(--zia-card-top-gap);
+      contain: none !important;
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset-inline: 0;
+        bottom: 100%;
+        height: var(--zia-card-top-gap);
+        -moz-window-dragging: drag;
+      }
 
       & .zen-toolbar-background {
         display: flex !important;
       }
+    }
+
+    /* (Zen pulls the page up as the bar shows, to undo its push down: with
+       nothing pushed, that lifted the page under it, its top cut off) */
+    & #tabbrowser-tabpanels[has-toolbar-hovered] .browserContainer {
+      margin-top: 0 !important;
     }
   }
 }
