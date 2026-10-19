@@ -7,6 +7,7 @@
 //   glow.setPlaying(true);   // fades in, follows a synthetic music level
 //   glow.setPlaying(false);  // the level settles and the glow fades out
 //   glow.setDark(false);     // switch palette and tuning
+//   glow.setColors(list);    // the lobes' colours ("rgb(r, g, b)"), or null for the theme's
 //   glow.setMotion(m);       // optional: the package's `motion` (see NOTES.md)
 //   glow.destroy();
 //
@@ -209,8 +210,9 @@ function ziaGlowCornerRadius(radius, w, h) {
   return Math.max(0, Math.min(radius, w / 2, h / 2));
 }
 
-// How far a corner arc of radius r lifts the bottom edge at x.
-function ziaGlowArc(x, w, r, inset = 0) {
+// How far a corner of radius r lifts the bottom edge at x: a quarter of
+// |x|^n + |y|^n = 1, a circle at n = 2.
+function ziaGlowArc(x, w, r, inset = 0, n = 2) {
   if (r <= 0) {
     return 0;
   }
@@ -221,8 +223,82 @@ function ziaGlowArc(x, w, r, inset = 0) {
   if (d <= 0) {
     return r;
   }
-  const k = r - d;
-  return r - Math.sqrt(Math.max(0, r * r - k * k));
+  const k = (r - d) / r;
+  return r - r * Math.pow(Math.max(0, 1 - Math.pow(k, n)), 1 / n);
+}
+
+// The exponent of the host's corners: CSS draws corner-shape superellipse(K) as
+// |x|^n + |y|^n = 1 with n = 2^K (round is K = 1, squircle K = 2).
+function ziaGlowCornerExp(container) {
+  const style = getComputedStyle(container);
+  const shape = (style.getPropertyValue("corner-bottom-left-shape") || style.getPropertyValue("corner-shape") || "")
+    .trim()
+    .split(/\s+(?![^(]*\))/)[0];
+  const named = { round: 1, squircle: 2, bevel: 0, square: 8 };
+  let k = named[shape];
+  const m = shape.match(/^superellipse\(\s*([^)]*)\)$/);
+  if (m) {
+    k = parseFloat(m[1]);
+    if (!Number.isFinite(k)) {
+      k = /^-/.test(m[1].trim()) ? 0 : 8;
+    }
+  }
+  return Math.pow(2, Math.max(0, Math.min(8, k ?? 1)));
+}
+
+// The host's outline as a path, inset by `inset`: its corners as CSS draws them.
+function ziaGlowOutlinePath(w, h, r, n, inset) {
+  const x0 = inset;
+  const y0 = inset;
+  const x1 = w - inset;
+  const y1 = h - inset;
+  const rr = Math.max(0, Math.min(r - inset, (x1 - x0) / 2, (y1 - y0) / 2));
+  const e = 2 / n;
+  const f = (v) => v.toFixed(2);
+  const pts = [];
+  for (const [cx, cy, a0] of [
+    [x0 + rr, y0 + rr, Math.PI],
+    [x1 - rr, y0 + rr, 1.5 * Math.PI],
+    [x1 - rr, y1 - rr, 0],
+    [x0 + rr, y1 - rr, 0.5 * Math.PI],
+  ]) {
+    for (let i = 0; i <= 16; i++) {
+      const a = a0 + (Math.PI / 2) * (i / 16);
+      const c = Math.cos(a);
+      const s = Math.sin(a);
+      pts.push(
+        `${f(cx + rr * Math.sign(c) * Math.pow(Math.abs(c), e))} ${f(cy + rr * Math.sign(s) * Math.pow(Math.abs(s), e))}`
+      );
+    }
+  }
+  return `M ${pts.join(" L ")} Z`;
+}
+
+// The glow is clipped to the host's outline, and its edge stroke drawn along it,
+// as paths: overflow and mask clipping don't all follow corner-shape, and the
+// glow came out rounder than a squircle card at its bottom corners.
+function ziaGlowOutline(g, w, h) {
+  const { radius, cornerN } = g.cfg;
+  const key = `${w} ${h} ${radius} ${cornerN}`;
+  if (key === g.outlineKey) {
+    return;
+  }
+  g.outlineKey = key;
+  const outer = ziaGlowOutlinePath(w, h, radius, cornerN, 0);
+  const inner = ziaGlowOutlinePath(w, h, radius, cornerN, 1);
+  g.root.style.setProperty("--zg-outline", `path("${outer}")`);
+  g.root.style.setProperty("--zg-ring", `path(evenodd, "${outer} ${inner}")`);
+}
+
+// The band's fringes in the lobes' colours (light themes tint the core too).
+function ziaGlowBandFrom(colors, T) {
+  const rgb = (c) => (String(c).match(/\d+(\.\d+)?/g) || [255, 255, 255]).slice(0, 3).join(", ");
+  return {
+    core: T === ZIA_GLOW_THEMES.dark ? T.band.core : rgb(colors[0]),
+    above: rgb(colors[0]),
+    mid: rgb(colors[1]),
+    below: rgb(colors[2]),
+  };
 }
 
 // A believable, gentle "music is playing" level (0..1, before the gate and envelope):
@@ -299,11 +375,13 @@ function ziaGlowListen() {
 function ziaGlowBuild(g, scale) {
   const T = g.dark ? ZIA_GLOW_THEMES.dark : ZIA_GLOW_THEMES.light;
   const P = ZIA_GLOW_TUNING;
+  const colors = g.colors || T.colors;
   const F = scale;
   const cfg = {
     dark: g.dark,
     scale: F,
     radius: ziaGlowRadiusOf(g.container),
+    cornerN: ziaGlowCornerExp(g.container),
     threshold: P.threshold,
     attack: P.attack,
     release: P.release,
@@ -329,10 +407,11 @@ function ziaGlowBuild(g, scale) {
     bandTailCurve: P.bandTailCurve,
     bandTailOverflow: P.bandTailOverflow * F,
     bandAberration: P.bandAberration,
-    bandColors: T.band,
+    bandColors: g.colors ? ziaGlowBandFrom(g.colors, T) : T.band,
     distortion: g.displace ? P.distortion : 0,
     coreLight: T.coreLight,
-    hueRange: T.hueRange,
+    // (a narrower drift for colours given, so they stay the picture's)
+    hueRange: g.colors ? Math.min(10, T.hueRange) : T.hueRange,
     hueDuration: T.hueDuration,
   };
   g.cfg = cfg;
@@ -351,7 +430,7 @@ function ziaGlowBuild(g, scale) {
   const lobes = (alpha, sw, sh, y, stop) =>
     ZIA_GLOW_LOBES.map((lobe, i) => {
       const color =
-        alpha >= 1 ? T.colors[i] : T.colors[i].replace("rgb(", "rgba(").replace(")", `, ${alpha.toFixed(2)})`);
+        alpha >= 1 ? colors[i] : colors[i].replace("rgb(", "rgba(").replace(")", `, ${alpha.toFixed(2)})`);
       return (
         `radial-gradient(ellipse calc(${Math.round(lobe.w * sw)}px * var(--zg-w)) ` +
         `calc(${Math.round(lobe.h * sh)}px * var(--zg-h) * var(--zg-l${i})) ` +
@@ -374,7 +453,7 @@ function ziaGlowBuild(g, scale) {
       `at ${at} calc(100% + 2px + var(--zg-cy)), rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.22) 35%, transparent 70%)`;
 
   const strokeBg = `${spot}, ${lobes(1, glowWidth * P.strokeScale, glowHeight * P.strokeScale, 2, fade)}`;
-  const strokeMask = `${range(170, 64, 45, 0)}, linear-gradient(#fff 0 0), linear-gradient(#fff 0 0)`;
+  const strokeMask = range(170, 64, 45, 0);
   const innerBg = lobes(
     0.46,
     glowWidth * 0.9 * P.innerScale,
@@ -470,7 +549,7 @@ function ziaGlowBandPoints(cfg, e, w, h) {
     const d =
       ziaGlowBell(u, cfg.bandCurve, cfg.bandSpread, cfg.bandSkew) +
       ziaGlowTail(Math.abs(x - cx), reach, tail, cfg.bandTailPosition, cfg.bandTailCurve);
-    const lift = e.corner > 0 ? ziaGlowArc(x, w, radius) * e.corner : 0;
+    const lift = e.corner > 0 ? ziaGlowArc(x, w, radius, 0, cfg.cornerN) * e.corner : 0;
     pts.push([x, base - peak * d - lift]);
   }
   return pts;
@@ -611,6 +690,7 @@ function ziaGlowStep(g, ts, reduced) {
     ziaGlowBuild(g, scale);
   }
   const cfg = g.cfg;
+  ziaGlowOutline(g, w, h);
   const s = g.s;
   const dt = s.lastTs ? Math.min(0.05, (ts - s.lastTs) / 1000) : 1 / 60;
   s.lastTs = ts;
@@ -666,7 +746,7 @@ function ziaGlowStep(g, ts, reduced) {
   const radius = ziaGlowCornerRadius(cfg.radius, w, h);
   const follow = gather * m.cornerFollow;
   const spot = 30 * cfg.scale * wide;
-  st.setProperty("--zg-cy", `${(-ziaGlowArc(w / 2 + cx * wide, w, radius, spot * 1.4) * follow).toFixed(1)}px`);
+  st.setProperty("--zg-cy", `${(-ziaGlowArc(w / 2 + cx * wide, w, radius, spot * 1.4, cfg.cornerN) * follow).toFixed(1)}px`);
 
   // Distortion settles out while the glow is gathered, and is off under reduced motion.
   s.warp = ziaGlowFollow(s.warp, gather > 0.02 ? 0 : 1, dt, 0.35, 0.06);
@@ -697,7 +777,7 @@ function ziaGlowStep(g, ts, reduced) {
     st.setProperty(`--zg-x${i}`, `${(x * pull).toFixed(1)}px`);
     st.setProperty(`--zg-l${i}`, (gain * ziaGlowRingFade(x, ring)).toFixed(3));
     const lx = w / 2 + (cx + x * pull) * wide;
-    st.setProperty(`--zg-y${i}`, `${(-ziaGlowArc(lx, w, radius, spot) * follow).toFixed(1)}px`);
+    st.setProperty(`--zg-y${i}`, `${(-ziaGlowArc(lx, w, radius, spot, cfg.cornerN) * follow).toFixed(1)}px`);
   }
   const hue =
     reduced || cfg.hueRange === 0
@@ -886,6 +966,9 @@ function ziaGlow(container, { dark = true } = {}) {
     filterTop: -1,
     warpOff: true,
     dark: !!dark,
+    colors: null,
+    colorKey: "",
+    outlineKey: "",
     dirty: true,
     cfg: null,
     playing: false,
@@ -939,6 +1022,21 @@ function ziaGlow(container, { dark = true } = {}) {
         return;
       }
       g.dark = on;
+      g.dirty = true;
+      if (g.playing) {
+        ziaGlowWake(g);
+      }
+    },
+    // The lobes' colours, "rgb(r, g, b)" strings repeated round the seven, with the
+    // band's fringes from the first three; null for the theme's own.
+    setColors(list) {
+      list = Array.isArray(list) && list.length ? list : null;
+      const key = list ? list.join("|") : "";
+      if (g.destroyed || key === g.colorKey) {
+        return;
+      }
+      g.colorKey = key;
+      g.colors = list ? ZIA_GLOW_LOBES.map((_, i) => list[i % list.length]) : null;
       g.dirty = true;
       if (g.playing) {
         ziaGlowWake(g);

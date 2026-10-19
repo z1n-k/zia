@@ -2,7 +2,8 @@
    voice-glow is MIT licensed, Copyright (c) 2026 Jakub Antalik. See NOTES.md.
 
    ziaGlow() appends .zia-glow to the card. The card must be position: relative
-   and carry the border-radius; the glow inherits it and clips to it.
+   and carry the border-radius; the glow clips to its outline, corner-shape
+   included (a path glow.js writes, --zg-outline).
 
    Hooks the host can set on the card (all default to 1 / auto):
      --zia-glow-z                 stacking of the glow; -1 puts it under the card's
@@ -52,6 +53,7 @@
   border-radius: inherit;
   corner-shape: inherit;
   overflow: hidden;
+  clip-path: var(--zg-outline, none);
   isolation: isolate;
   pointer-events: none;
   /* VoiceBeam fades in over 0.6s and out over 0.5s, both "ease" */
@@ -95,13 +97,11 @@
   filter: var(--zg-tone);
 }
 
-/* Stroke: the palette painted into the 1px edge ring, with a hot core at the centre. */
+/* Stroke: the palette painted into the 1px edge ring (a path along the card's
+   outline, --zg-ring), with a hot core at the centre. */
 .zia-glow-stroke {
   z-index: 2;
-  padding: 1px;
-  mask-clip: border-box, content-box, border-box;
-  mask-origin: border-box, content-box, border-box;
-  mask-composite: intersect, exclude;
+  clip-path: var(--zg-ring, none);
   opacity: calc(var(--zg-glow) * var(--zg-stroke-k) * var(--zia-glow-stroke-opacity, 1) * var(--zg-strength));
   filter: var(--zg-tone);
 }

@@ -22,3 +22,11 @@
   position: relative;
   --zia-glow-z: -1;
 }
+
+/* The glow takes the artwork's colours (28s-ultra.js), so the soft wash of them
+   behind the artwork on hover goes */
+#zen-media-controls-toolbar .zen-media-card::before {
+  @media -moz-pref("zia.ultra") {
+    display: none !important;
+  }
+}
