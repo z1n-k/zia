@@ -6,7 +6,18 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- On Windows and Linux, Zen's "Hide window controls" is left as you have it
+  again: 2.101.2 turned it off, so the window buttons stayed on screen, which
+  wasn't wanted.
+
 ### Fixed
+
+- On Windows, with Zen's single toolbar and the window controls hidden, the
+  corner where the window buttons show opens them, so pointing straight at
+  close works; only the window's very edge above it did (thanks Gin The
+  Cerberus).
 
 - On Windows, a space's emoji or icon sits level with its name and the
   sidebar's buttons. An old Windows rule still pushed it 2px down, from when
