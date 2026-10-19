@@ -1,0 +1,16 @@
+/* Ultra (zia.ultra, off by default): effects ported from Libraries.dev
+   (https://libraries.dev, MIT, by Jakub Antalik). zia.uc.js puts each in. */
+
+/* A loading tab's thinking orb, in its icon's place: the spinner goes while
+   it shows (28s-ultra.js) */
+.tab-icon-stack > canvas.zia-orb {
+  grid-area: 1 / 1;
+  place-self: center;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+
+.tabbrowser-tab[zia-orb] :is(.tab-throbber, .tab-icon-pending, .tab-icon-image) {
+  visibility: hidden !important;
+}

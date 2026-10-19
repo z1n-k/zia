@@ -53,6 +53,12 @@
     "defaultValue": false
   },
   {
+    "type": "checkbox",
+    "label": "Ultra: effects from Libraries.dev (a thinking orb while a tab loads, and more to come)",
+    "property": "zia.ultra",
+    "defaultValue": false
+  },
+  {
     "type": "separator",
     "label": "Tabs and essentials",
     "id": "zia-section-tabs"

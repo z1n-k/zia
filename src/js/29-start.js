@@ -284,6 +284,7 @@
     safely("watchTitleOnly", watchTitleOnly);
     safely("watchCenteredAddress", watchCenteredAddress);
     safely("watchScreenshotButtons", watchScreenshotButtons);
+    safely("watchUltra", watchUltra);
     safely("addDownloadProgress", addDownloadProgress);
     safely("flyFirstDownloadToButton", flyFirstDownloadToButton);
     safely("flyDownloadRows", flyDownloadRows);
