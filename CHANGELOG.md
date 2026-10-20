@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.103.3] — 2026-10-20
+
+### Fixed
+
+- Cmd/Ctrl+0 resets the page's zoom again: Zia's tab numbers held it back
+  along with the other digits. A 0 still carries on a number being typed
+  (10, 20) (thanks Charles Darwin).
+
 ## [2.103.2] — 2026-10-20
 
 ### Changed
