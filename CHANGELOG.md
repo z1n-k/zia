@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.102.2] — 2026-10-20
+
+### Fixed
+
+- In a light space, the sound badge on an essential's (or a pinned tab's) icon
+  is a white disc with dark bars, as the selected tab is a white card. The dark
+  disc sat heavy on the pale tiles, with the bars dark on it.
+
 ## [2.102.1] — 2026-10-20
 
 ### Changed
