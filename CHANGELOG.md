@@ -4,6 +4,19 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.103.4] — 2026-10-20
+
+### Fixed
+
+- A new tab group's name field takes typing again alongside Advanced Tab
+  Groups. Both opened a name field for the group, and the mod, closing its
+  own, closed Zen's, leaving it stuck: nothing could be typed, Rename stopped
+  taking a name, and the compact sidebar stayed out even after the group was
+  deleted. With the mod, its own field is the one opened; either way it opens
+  once the tab's menu has closed (thanks Briski).
+- In compact mode the sidebar stays out while a group's name is typed in
+  Advanced Tab Groups' field too, and goes once it's done.
+
 ## [2.103.3] — 2026-10-20
 
 ### Fixed
