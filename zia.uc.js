@@ -6404,6 +6404,8 @@
     } catch (err) {
       noteError("zen defaults: address bar look", err);
     }
+    // the ⋯ menu at the end of the toolbar, shown unless it's been switched off
+    set("zia.toolbar.menu-button", true);
     set("zia.essentials.fill-row", false);
     set("zia.essentials.split", true);
     set("zia.pip.dia-style", true);

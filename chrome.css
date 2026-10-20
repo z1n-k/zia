@@ -1045,10 +1045,11 @@
   margin-inline: 0 !important;
 }
 
-/* The ⋯ menu (Firefox's app menu) is hidden, as Dia and Arc have none; it's
-   shown again in Zia's settings. Kept in its place at no width rather than
-   taken out: Firefox's notices (an update ready, an add-on added) still
-   point at it, and opened from the keyboard the menu still has its corner. */
+/* The ⋯ menu (Firefox's app menu) shows at the end of the toolbar; it can be
+   hidden in Zia's settings, as Dia and Arc have none. Hidden, it's kept in its
+   place at no width rather than taken out: Firefox's notices (an update ready,
+   an add-on added) still point at it, and opened from the keyboard the menu
+   still has its corner. */
 @media not -moz-pref("zia.toolbar.menu-button") {
   #PanelUI-button {
     width: 0 !important;

@@ -560,7 +560,7 @@
     "type": "checkbox",
     "label": "Show the ⋯ menu at the end of the toolbar",
     "property": "zia.toolbar.menu-button",
-    "defaultValue": false
+    "defaultValue": true
   },
   {
     "type": "separator",
