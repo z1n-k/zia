@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.103.8] — 2026-10-20
+
+### Changed
+
+- The ⋯ menu shows at the end of the toolbar by default. Anyone who switched
+  it off in Zia's settings keeps it hidden.
+
 ## [2.103.7] — 2026-10-20
 
 ### Fixed
