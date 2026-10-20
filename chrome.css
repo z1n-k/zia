@@ -6546,61 +6546,64 @@ findbar {
    the page as the pointer goes up, rather than growing into the layout and pushing
    the page down (the page bounced, and moving under the pointer, the hover flickered).
    Hidden, it's a clear strip where the pointer finds it, and the page, with nothing
-   above it, has all four corners round (its top ones were square). */
+   above it, has all four corners round (its top ones were square). With
+   zia.compact.zen-toolbar-reveal on, Zen's own: it pushes the page down. */
 @media -moz-pref("zen.view.compact.hide-toolbar") {
-  :root[zen-compact-mode="true"]:not([zen-single-toolbar="true"], [inDOMFullscreen="true"], [zia-urlbar-position="bottom"]):not(#zia-none) {
-    & #zen-appcontent-navbar-wrapper {
-      position: absolute !important;
-      top: 0;
-      inset-inline: 0;
-      z-index: 2;
-      /* (its hover reaches up over the gap above the page to the window's edge: crossing
-         that gap, the pointer left it, and it hid and came back, a flash. Still the
-         window's to drag by, and shown even while the rest is clipped away) */
-      overflow-clip-margin: var(--zia-card-top-gap);
-      /* (Zen 1.23.3 contains its paint, which cut that reach back off) */
-      contain: none !important;
-
-      &::before {
-        content: "";
-        position: absolute;
+  @media not -moz-pref("zia.compact.zen-toolbar-reveal") {
+    :root[zen-compact-mode="true"]:not([zen-single-toolbar="true"], [inDOMFullscreen="true"], [zia-urlbar-position="bottom"]):not(#zia-none) {
+      & #zen-appcontent-navbar-wrapper {
+        position: absolute !important;
+        top: 0;
         inset-inline: 0;
-        bottom: 100%;
-        height: var(--zia-card-top-gap);
-        -moz-window-dragging: drag;
+        z-index: 2;
+        /* (its hover reaches up over the gap above the page to the window's edge: crossing
+           that gap, the pointer left it, and it hid and came back, a flash. Still the
+           window's to drag by, and shown even while the rest is clipped away) */
+        overflow-clip-margin: var(--zia-card-top-gap);
+        /* (Zen 1.23.3 contains its paint, which cut that reach back off) */
+        contain: none !important;
+
+        &::before {
+          content: "";
+          position: absolute;
+          inset-inline: 0;
+          bottom: 100%;
+          height: var(--zia-card-top-gap);
+          -moz-window-dragging: drag;
+        }
       }
-    }
 
-    /* Zen gives the toolbar its space-coloured background here (as the flyout sidebar's),
-       which lay over Zia's page colour and tinted it the space's (green over a dark page):
-       the page's colour alone, as in the other layouts */
-    & #zen-appcontent-navbar-wrapper .zen-toolbar-background {
-      display: none !important;
-    }
+      /* Zen gives the toolbar its space-coloured background here (as the flyout sidebar's),
+         which lay over Zia's page colour and tinted it the space's (green over a dark page):
+         the page's colour alone, as in the other layouts */
+      & #zen-appcontent-navbar-wrapper .zen-toolbar-background {
+        display: none !important;
+      }
 
-    /* (hiding, it keeps its height till its contents have faded, as they fade in: it shut
-       at once and cut them off) */
-    & #zen-appcontent-navbar-wrapper:not([zen-has-hover], [has-popup-menu], [zen-compact-mode-active]) {
-      background-color: transparent !important;
-      border-bottom-color: transparent !important;
-      transition:
-        background-color var(--zen-hidden-toolbar-transition-duration, 0.2s) ease,
-        border-color var(--zen-hidden-toolbar-transition-duration, 0.2s) ease,
-        height 0s var(--zen-hidden-toolbar-transition-duration, 0.2s) !important;
-    }
+      /* (hiding, it keeps its height till its contents have faded, as they fade in: it shut
+         at once and cut them off) */
+      & #zen-appcontent-navbar-wrapper:not([zen-has-hover], [has-popup-menu], [zen-compact-mode-active]) {
+        background-color: transparent !important;
+        border-bottom-color: transparent !important;
+        transition:
+          background-color var(--zen-hidden-toolbar-transition-duration, 0.2s) ease,
+          border-color var(--zen-hidden-toolbar-transition-duration, 0.2s) ease,
+          height 0s var(--zen-hidden-toolbar-transition-duration, 0.2s) !important;
+      }
 
-    /* (Zen pulls the page up as the toolbar shows, to undo its push down: with nothing
-       pushed, that lifted the page under it) */
-    & #tabbrowser-tabpanels[has-toolbar-hovered] .browserContainer {
-      margin-top: 0 !important;
-    }
+      /* (Zen pulls the page up as the toolbar shows, to undo its push down: with nothing
+         pushed, that lifted the page under it) */
+      & #tabbrowser-tabpanels[has-toolbar-hovered] .browserContainer {
+        margin-top: 0 !important;
+      }
 
-    & #tabbrowser-tabbox #tabbrowser-tabpanels .browserSidebarContainer {
-      border-radius: var(--zia-card-radius) !important;
-    }
+      & #tabbrowser-tabbox #tabbrowser-tabpanels .browserSidebarContainer {
+        border-radius: var(--zia-card-radius) !important;
+      }
 
-    & #tabbrowser-tabpanels :is(.browserSidebarContainer, .browserStack, browser) {
-      clip-path: inset(0 round var(--zia-card-radius));
+      & #tabbrowser-tabpanels :is(.browserSidebarContainer, .browserStack, browser) {
+        clip-path: inset(0 round var(--zia-card-radius));
+      }
     }
   }
 }

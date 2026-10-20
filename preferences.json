@@ -309,6 +309,20 @@
     "defaultValue": false
   },
   {
+    "type": "checkbox",
+    "label": "Compact mode: the hidden top toolbar pushes the page down as it shows, as Zen's does (off: it fades in over the page)",
+    "property": "zia.compact.zen-toolbar-reveal",
+    "defaultValue": false,
+    "conditions": [
+      {
+        "if": {
+          "property": "zen.view.compact.hide-toolbar",
+          "value": true
+        }
+      }
+    ]
+  },
+  {
     "type": "separator",
     "label": "Address bar and new tabs",
     "id": "zia-section-address"
