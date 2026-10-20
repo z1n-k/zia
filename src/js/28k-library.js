@@ -73,6 +73,12 @@
       return;
     }
     let rail = column.querySelector(":scope > .zia-library-rail");
+    // (none with Zen's own Library look: unstyled but for its glass edge, it sat
+    // as an empty box under the sections)
+    if (libraryZenLook()) {
+      rail?.remove();
+      return;
+    }
     if (!rail) {
       rail = document.createElementNS(XHTML_NS, "div");
       rail.className = "zia-library-rail";
@@ -221,6 +227,11 @@
     // (and before the downloads fan out above the Library button)
     document.getElementById("zen-library-button")?.addEventListener("mouseenter", () => safely("library: rows", matchLibraryRowsToTabs));
     safely("library: rows", matchLibraryRowsToTabs);
-    watchPrefs(LIBRARY_ZEN_LOOK_PREF, () => watched && addButtons(watched));
+    watchPrefs(LIBRARY_ZEN_LOOK_PREF, () => {
+      if (watched) {
+        addButtons(watched);
+        safely("library: rail", () => railLibrarySections(watched));
+      }
+    });
   }
 
