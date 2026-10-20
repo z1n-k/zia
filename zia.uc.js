@@ -10539,18 +10539,13 @@
     const thumb = card.querySelector(".zia-tab-card-thumb");
     const token = ++thumbToken;
     thumb.hidden = !wantsTabThumb(shown);
-    // (with Ultra on, a pixel mosaic while it's taken, 28s-ultra.js)
-    ultraThumbStop();
     if (!thumb.hidden) {
       const ratio = Math.max(1, window.devicePixelRatio || 1);
       // (the card's set width: it's still hidden here)
       const width = parseFloat(getComputedStyle(root).getPropertyValue("--zia-tab-card-width")) || 260;
       thumb.width = Math.round(width * ratio);
       thumb.height = Math.round(width * TAB_THUMB_RATIO * ratio);
-      const loader = ultraThumbStart(thumb);
-      drawTabThumb(thumb, shown, token)
-        .then(() => token === thumbToken && thumb.isConnected && ultraThumbReveal(loader, thumb))
-        .catch((err) => noteError("hover card: thumbnail", err));
+      drawTabThumb(thumb, shown, token).catch((err) => noteError("hover card: thumbnail", err));
     }
 
     const row = card.querySelector("#zia-tab-card-actions");
@@ -10896,9 +10891,6 @@
             each.removeAttribute("zia-closing");
             each.removeAttribute("zia-open");
           }
-        }
-        if (card?.hidden) {
-          ultraThumbStop();
         }
       }, CARD_OUT_MS);
     };
@@ -17390,6 +17382,8 @@
       sectionWatcher.observe(library, { childList: true, subtree: true, attributes: true, attributeFilter: ["open", "active"] });
       addButtons(library);
       safely("library: lift media", () => liftMediaUnderCursor(library));
+      // (with Ultra on, its pictures dissolve in from a pixel mosaic, 28s-ultra.js)
+      safely("library: media loader", () => ultraWatchMedia(library));
     };
     const toolbox = document.getElementById("navigator-toolbox");
     if (toolbox?.parentNode) {
@@ -19624,8 +19618,8 @@
   // Effects ported from Libraries.dev (https://libraries.dev, MIT, by Jakub
   // Antalik), each where its author places it: a thinking orb for loading, a
   // glow under what's playing, the Library's chosen section springing to the
-  // next, liquid metal along the loading line, and a pixel mosaic while a
-  // hover card's preview is taken (the colour round the open essential
+  // next, liquid metal along the loading line, and the Library's pictures
+  // dissolving in from a pixel mosaic (the colour round the open essential
   // drifting is 28-ultra.css).
   const ULTRA_PREF = "zia.ultra";
   const ultraOn = () => Services.prefs.getBoolPref(ULTRA_PREF, true);
@@ -19877,47 +19871,92 @@
     );
   }
 
-  // A tab hover card's page preview (27-hover-cards.js): img-fx's pixel mosaic
-  // churns in its place while Firefox takes the picture, then dissolves into
-  // it (28y-ultra-image-engine.js), quicker than the package's 3s, as a card
-  // is a glance. One at a time: a card refilled for another tab starts again.
-  let ultraThumbFx = null;
+  // The pictures in the Library's Media (Zen loads each as its tile comes into
+  // view): img-fx's pixel mosaic churns where the picture will be, takes the
+  // picture's own shape once it's loaded, and dissolves into it
+  // (28y-ultra-image-engine.js). Videos and file icons as they were.
+  // 28k-library.js hands each Library over as it's made.
+  function ultraWatchMedia(library) {
+    const THUMB = "img.zen-library-media-thumb:not(.zen-library-media-file)";
+    const live = new Map();
 
-  function ultraThumbStop() {
-    ultraThumbFx?.destroy();
-    ultraThumbFx = null;
-  }
+    const finish = (img) => {
+      const entry = live.get(img);
+      if (!entry) {
+        return;
+      }
+      live.delete(img);
+      entry.fx.destroy();
+      entry.box.remove();
+      img.removeAttribute("zia-media-loading");
+    };
 
-  function ultraThumbStart(thumb) {
-    ultraThumbStop();
-    if (!ultraOn()) {
-      return null;
-    }
-    try {
-      ultraThumbFx = ziaImgFx(thumb, {
-        preset: "pixels-organic",
-        dark: !root.hasAttribute("zia-light"),
-        // (long enough to read as the loader, not a flicker, on a quick picture)
-        minChurnMs: 350,
-        revealSeconds: 1.2,
-      });
-    } catch (err) {
-      noteError("ultra: preview loader", err);
-    }
-    return ultraThumbFx;
-  }
-
-  function ultraThumbReveal(fx, thumb) {
-    if (!fx || fx !== ultraThumbFx) {
-      return;
-    }
-    fx.reveal(thumb, {
-      onDone: () => {
-        if (ultraThumbFx === fx) {
-          ultraThumbStop();
+    const start = (img) => {
+      const frame = img.parentNode;
+      if (live.has(img) || !frame || !ultraOn() || libraryZenLook()) {
+        return;
+      }
+      const box = document.createElementNS(XHTML_NS, "div");
+      box.className = "zia-media-load";
+      frame.append(box);
+      let fx = null;
+      try {
+        fx = ziaImgFx(box, {
+          preset: "pixels-organic",
+          dark: !root.hasAttribute("zia-light"),
+          // (a picture read from disk comes at once: long enough to read as the loader)
+          minChurnMs: 450,
+          revealSeconds: 1.6,
+        });
+      } catch (err) {
+        noteError("ultra: media loader", err);
+      }
+      if (!fx) {
+        box.remove();
+        return;
+      }
+      img.setAttribute("zia-media-loading", "true");
+      live.set(img, { fx, box });
+      const reveal = () => {
+        if (live.get(img)?.fx !== fx) {
+          return;
         }
-      },
-    });
+        if (!img.naturalWidth) {
+          finish(img);
+          return;
+        }
+        // the picture's own box (shown whole, no larger than it is), then into it
+        const fw = frame.clientWidth;
+        const fh = frame.clientHeight;
+        const k = Math.min(1, fw / img.naturalWidth, fh / img.naturalHeight);
+        const w = img.naturalWidth * k;
+        const h = img.naturalHeight * k;
+        Object.assign(box.style, { left: `${(fw - w) / 2}px`, top: `${(fh - h) / 2}px`, width: `${w}px`, height: `${h}px` });
+        // (once the mosaic has taken the new size)
+        requestAnimationFrame(() => requestAnimationFrame(() => live.get(img)?.fx === fx && fx.reveal(img, { onDone: () => finish(img) })));
+      };
+      if (img.complete) {
+        reveal();
+      } else {
+        img.addEventListener("load", reveal, { once: true });
+        img.addEventListener("error", () => finish(img), { once: true });
+      }
+    };
+
+    new MutationObserver((records) => {
+      for (const record of records) {
+        for (const node of record.addedNodes) {
+          if (node.nodeType === 1 && node.matches(THUMB)) {
+            start(node);
+          }
+        }
+      }
+      for (const img of live.keys()) {
+        if (!img.isConnected) {
+          finish(img);
+        }
+      }
+    }).observe(library, { childList: true, subtree: true });
   }
 
   function watchUltra() {

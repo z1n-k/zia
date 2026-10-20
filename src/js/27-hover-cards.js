@@ -154,18 +154,13 @@
     const thumb = card.querySelector(".zia-tab-card-thumb");
     const token = ++thumbToken;
     thumb.hidden = !wantsTabThumb(shown);
-    // (with Ultra on, a pixel mosaic while it's taken, 28s-ultra.js)
-    ultraThumbStop();
     if (!thumb.hidden) {
       const ratio = Math.max(1, window.devicePixelRatio || 1);
       // (the card's set width: it's still hidden here)
       const width = parseFloat(getComputedStyle(root).getPropertyValue("--zia-tab-card-width")) || 260;
       thumb.width = Math.round(width * ratio);
       thumb.height = Math.round(width * TAB_THUMB_RATIO * ratio);
-      const loader = ultraThumbStart(thumb);
-      drawTabThumb(thumb, shown, token)
-        .then(() => token === thumbToken && thumb.isConnected && ultraThumbReveal(loader, thumb))
-        .catch((err) => noteError("hover card: thumbnail", err));
+      drawTabThumb(thumb, shown, token).catch((err) => noteError("hover card: thumbnail", err));
     }
 
     const row = card.querySelector("#zia-tab-card-actions");
@@ -511,9 +506,6 @@
             each.removeAttribute("zia-closing");
             each.removeAttribute("zia-open");
           }
-        }
-        if (card?.hidden) {
-          ultraThumbStop();
         }
       }, CARD_OUT_MS);
     };
