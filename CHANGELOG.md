@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.102.5] — 2026-10-20
+
+### Fixed
+
+- In compact mode with Zen's toolbar hidden, + New Tab and Cmd/Ctrl+T open
+  Zen's floating address bar rather than a real tab. A real tab's address
+  bar, ready for typing, brought the hidden toolbar out and kept it there
+  until another tab was chosen (thanks Briski).
+
 ## [2.102.4] — 2026-10-20
 
 ### Changed
