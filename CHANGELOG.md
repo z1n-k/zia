@@ -4,6 +4,21 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.103.5] — 2026-10-20
+
+### Changed
+
+- An empty name field in the sidebar (a new group's, a folder's, a tab's, in
+  Zen's field or Advanced Tab Groups') says "Type a name" (thanks Briski).
+- In compact mode, a name entered with Enter leaves the sidebar out for a
+  second before it slides away, rather than at once (thanks Briski).
+
+### Fixed
+
+- Ultra: two fine lines no longer sweep across the open essential. Its colour
+  turned slowly, and the edges of the blurred colour's layer showed as it
+  turned; the colour still drifts and swells (thanks Poumpky).
+
 ## [2.103.4] — 2026-10-20
 
 ### Fixed
