@@ -2224,20 +2224,27 @@
     });
   }
 
+  // A new tab's address bar, empty and with the cursor in it as Firefox leaves it, is let
+  // go of unless "New tabs start in the address bar" is on: the page has the typing (its
+  // own search box). For any new tab page, an extension's or Zen's as well as the search
+  // engine's: left with the cursor, Zen floated the bar over the middle of the page,
+  // the toolbar's address field left empty.
   function closeNewTabUrlbar(tab) {
-    if (!searchHomeUrl || !newTabSearchEnabled()) {
-      if (compactToolbarHidden()) {
+    if (focusAddressBarOnNewTab()) {
+      if (searchHomeUrl && newTabSearchEnabled()) {
+        keepNewTabUrlbar(tab);
+      } else if (compactToolbarHidden()) {
         floatNewTabUrlbar(tab);
       }
       return;
     }
-    if (focusAddressBarOnNewTab()) {
-      keepNewTabUrlbar(tab);
-      return;
-    }
-    requestAnimationFrame(() => {
+    let touched = false;
+    const touch = () => (touched = true);
+    gURLBar?.textbox?.addEventListener("mousedown", touch, { once: true });
+    gURLBar?.inputField?.addEventListener("input", touch, { once: true });
+    const letGo = () => {
       try {
-        if (!gURLBar?.focused || gBrowser.selectedTab !== tab) {
+        if (touched || !gURLBar?.focused || gBrowser.selectedTab !== tab || gURLBar.value) {
           return;
         }
         gURLBar.view?.close();
@@ -2246,7 +2253,16 @@
       } catch (err) {
         noteError("new tabs: closeNewTabUrlbar", err);
       }
-    });
+    };
+    requestAnimationFrame(letGo);
+    // (an extension's page, arriving, can put the cursor back in the bar)
+    for (const ms of [250, 700]) {
+      setTimeout(letGo, ms);
+    }
+    setTimeout(() => {
+      gURLBar?.textbox?.removeEventListener("mousedown", touch);
+      gURLBar?.inputField?.removeEventListener("input", touch);
+    }, 800);
   }
 
   function watchNewTabPage() {
