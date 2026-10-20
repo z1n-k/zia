@@ -1,8 +1,8 @@
   // ---------- Ultra (zia.ultra, on by default)
   // Effects ported from Libraries.dev (https://libraries.dev, MIT, by Jakub
   // Antalik), each where its author places it: a thinking orb for loading, a
-  // glow under what's playing, a border beam while a page loads, a springing
-  // highlight moving between tabs and the Library's sections.
+  // glow under what's playing, a border beam while a page loads, and the
+  // Library's chosen section springing to the next.
   const ULTRA_PREF = "zia.ultra";
   const ultraOn = () => Services.prefs.getBoolPref(ULTRA_PREF, true);
 
@@ -260,157 +260,85 @@
     sync();
   }
 
-  // The spring without the liquid: no droplet trailing behind
-  const ULTRA_SPRING = { trail: 0, reach: 0 };
-
-  // The selected tab's highlight springs to the tab you pick, squashing as it
-  // goes and settling with a bounce (28v-ultra-goo-engine.js, liquid-gooey's
-  // "move" without its liquid: no droplet trailing it). Only between plain
-  // tabs of one space, both on screen and not far apart; anything else
-  // switches as before.
-  function watchUltraGoo() {
-    const BG = ":scope > .tab-stack > .tab-background";
-    // (px: a longer jump just switches)
-    const MAX_TRAVEL = 12 * 38;
-    const spaces = new WeakMap();
-    // the one moving now, if any
-    let current = null;
-
-    const bgOf = (tab) => tab?.querySelector?.(BG);
-    const boxOf = (tab) => tab?.closest?.("zen-workspace arrowscrollbox.workspace-arrowscrollbox");
-    const scrollportOf = (box) =>
-      (box.scrollbox || box.shadowRoot?.querySelector('[part~="scrollbox"]'))?.getBoundingClientRect();
-    const plain = (tab) =>
-      tab?.isConnected &&
-      !tab.closing &&
-      !tab.hidden &&
-      !tab.hasAttribute("zen-essential") &&
-      !tab.closest("tab-group[split-view-group], :is(zen-folder, tab-group)[collapsed]");
-    const light = () => root.hasAttribute("zia-light");
-
-    const gooFor = (box) => {
-      const known = spaces.get(box);
-      if (known?.layer.isConnected) {
-        return known.goo;
-      }
-      known?.goo.destroy();
-      const layer = document.createElementNS(XHTML_NS, "div");
-      layer.className = "zia-goo-layer";
-      layer.setAttribute("aria-hidden", "true");
-      box.prepend(layer);
-      const goo = ziaGoo(layer, {
-        radius: parseFloat(getComputedStyle(root).getPropertyValue("--zia-tab-radius")) || 9.5,
-        background: "var(--zia-active-tab-bg)",
-        ...ULTRA_SPRING,
-        bounds: () => scrollportOf(box),
-        onStart: () => root.setAttribute("zia-goo-travel", "true"),
-        onSettle: () => {
-          root.removeAttribute("zia-goo-travel");
-          current = null;
-        },
-      });
-      spaces.set(box, { goo, layer });
-      return goo;
-    };
-
-    // The highlight's look, from the tab now showing it: its own glow (plain,
-    // in its favicon's colours, the light card's shadow, or none), and its
-    // shine as a fine ring
-    let lastShadow = null;
-    const shadowOf = (bg) => {
-      const own = getComputedStyle(bg).boxShadow;
-      const ring = light() ? "inset 0 0 0 0.5px rgba(0,0,0,.07)" : "inset 0 0 0 0.5px rgba(255,255,255,.17)";
-      return own && own !== "none" ? `${own}, ${ring}` : ring;
-    };
-    // (a folder's open tab is its own shade)
-    const colourOf = (bg) => getComputedStyle(bg).getPropertyValue("--zia-active-tab-bg").trim();
-
-    gBrowser.tabContainer.addEventListener("TabSelect", (event) => {
-      const tab = event.target;
-      const prev = event.detail?.previousTab;
-      const box = boxOf(tab);
-      const expanded = root.getAttribute("zen-sidebar-expanded") === "true";
-      if (!ultraOn() || document.hidden || !expanded || !plain(tab) || !box) {
-        current?.stop();
-        return;
-      }
-      const to = bgOf(tab).getBoundingClientRect();
-      if (current) {
-        // mid-move: on to the new tab, in the same space
-        if (spaces.get(box)?.goo === current) {
-          current.moveTo(null, to);
-        } else {
-          current.stop();
-        }
-        return;
-      }
-      if (!plain(prev) || boxOf(prev) !== box) {
-        return;
-      }
-      const from = bgOf(prev).getBoundingClientRect();
-      const port = scrollportOf(box);
-      const onScreen = (r) => r.height > 4 && port && r.bottom > port.top && r.top < port.bottom;
-      if (!onScreen(from) || Math.abs(to.top - from.top) > MAX_TRAVEL || Math.abs(to.height - from.height) > 1) {
-        return;
-      }
-      const goo = gooFor(box);
-      const shadow = shadowOf(bgOf(tab));
-      if (shadow !== lastShadow) {
-        goo.restyle({ shadow });
-        lastShadow = shadow;
-      }
-      current = goo;
-      goo.moveTo(from, to, { fromBackground: colourOf(bgOf(prev)), background: colourOf(bgOf(tab)) });
-    });
-
-    // The tabs moving under it: straight over to the real highlight
-    for (const type of ["TabClose", "TabMove", "TabGroupCollapse", "TabGroupExpand", "dragstart"]) {
-      gBrowser.tabContainer.addEventListener(type, () => current?.stop(), true);
-    }
-    // (a space switch, as 04-space-label.js listens)
-    window.addEventListener("ZenWorkspacesUIUpdate", () => current?.stop());
-    watchPrefs(ULTRA_PREF, () => {
-      if (!ultraOn()) {
-        current?.stop();
-      }
-    });
-  }
-
   // The Library's chosen-section tile (28k-library.js) springs to the section
-  // you pick as the selected tab does, rather than sliding
+  // you pick: it chases a point easing there over 0.3s on liquid-gooey's
+  // "move" spring (stiffness 380, damping 18), squashing with its speed. The
+  // tile itself moves, glass edge and all. False under reduced motion.
   const ultraRails = new WeakMap();
 
-  function ultraRailMove(column, rail, from) {
-    const to = rail.getBoundingClientRect();
-    if (Math.abs(to.top - from.top) < 1 || !to.height) {
-      return;
+  // CSS "ease", cubic-bezier(0.25, 0.1, 0.25, 1)
+  function ultraEase(p) {
+    const curve = (t, a, b) => 3 * t * (1 - t) * (1 - t) * a + 3 * t * t * (1 - t) * b + t * t * t;
+    let lo = 0;
+    let hi = 1;
+    let t = p;
+    for (let i = 0; i < 20; i++) {
+      t = (lo + hi) / 2;
+      if (curve(t, 0.25, 0.25) < p) {
+        lo = t;
+      } else {
+        hi = t;
+      }
     }
-    let entry = ultraRails.get(column);
-    if (!entry?.layer.isConnected) {
-      entry?.goo.destroy();
-      const layer = document.createElementNS(XHTML_NS, "div");
-      layer.className = "zia-goo-layer zia-library-goo";
-      layer.setAttribute("aria-hidden", "true");
-      column.insertBefore(layer, rail);
-      const style = getComputedStyle(rail);
-      const goo = ziaGoo(layer, {
-        // (its squircle's round radius: the squircle grows it by half)
-        radius: parseFloat(getComputedStyle(root).getPropertyValue("--zia-essential-radius")) || 12,
-        background: style.backgroundColor,
-        shadow: style.boxShadow !== "none" ? style.boxShadow : "",
-        ...ULTRA_SPRING,
-        onStart: () => (rail.style.visibility = "hidden"),
-        onSettle: () => rail.style.removeProperty("visibility"),
-      });
-      entry = { goo, layer };
-      ultraRails.set(column, entry);
+    return curve(t, 0.1, 1);
+  }
+
+  function ultraRailSpring(rail, from, to) {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return false;
     }
-    entry.goo.moveTo(from, to);
+    let m = ultraRails.get(rail);
+    const moving = !!m?.frame;
+    if (!m) {
+      m = { y: from, v: 0, frame: 0 };
+      ultraRails.set(rail, m);
+    }
+    // (mid-spring, on from where it's got to)
+    m.start = moving ? m.point : from;
+    if (!moving) {
+      m.y = from;
+      m.v = 0;
+    }
+    m.to = to;
+    m.t0 = performance.now();
+    m.last = m.t0;
+    rail.setAttribute("instant", "true");
+    rail.setAttribute("placed", "true");
+    const step = (now) => {
+      const dt = Math.min(0.032, Math.max(0, now - m.last) / 1000);
+      m.last = now;
+      const p = Math.min(1, (now - m.t0) / 300);
+      m.point = m.start + (m.to - m.start) * ultraEase(p);
+      m.v += (380 * (m.point - m.y) - 18 * m.v) * dt;
+      m.y += m.v * dt;
+      const speed = Math.abs(m.v);
+      if (p >= 1 && Math.abs(m.y - m.to) < 0.25 && speed < 4) {
+        m.frame = 0;
+        rail.style.transform = `translateY(${m.to}px)`;
+        requestAnimationFrame(() => !m.frame && rail.removeAttribute("instant"));
+        return;
+      }
+      const stretch = speed > 2 ? Math.min(0.3, speed * 0.0006) : 0;
+      rail.style.transform = `translateY(${m.y.toFixed(2)}px) scale(${(1 / (1 + stretch * 0.65)).toFixed(4)}, ${(1 + stretch).toFixed(4)})`;
+      m.frame = requestAnimationFrame(step);
+    };
+    if (!moving) {
+      m.frame = requestAnimationFrame(step);
+    }
+    return true;
+  }
+
+  // (any other placing of the tile ends its spring)
+  function ultraRailStop(rail) {
+    const m = ultraRails.get(rail);
+    if (m?.frame) {
+      cancelAnimationFrame(m.frame);
+      m.frame = 0;
+    }
   }
 
   function watchUltra() {
     safely("watchUltraOrbs", watchUltraOrbs);
     safely("watchUltraGlow", watchUltraGlow);
     safely("watchUltraLoadingBeam", watchUltraLoadingBeam);
-    safely("watchUltraGoo", watchUltraGoo);
   }

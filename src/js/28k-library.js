@@ -93,22 +93,20 @@
     if (!box.height) {
       return;
     }
-    // (with Ultra on, it's put there at once and springs there in the
-    // selected tab's way instead, 28s-ultra.js)
-    const from = !instantly && !rail.hidden && rail.hasAttribute("placed") && ultraOn() ? rail.getBoundingClientRect() : null;
-    if (from) {
-      instantly = true;
-    }
+    // With Ultra on, it springs there instead (28s-ultra.js); any other
+    // placing ends that
+    const was = rail.hasAttribute("placed") && !rail.hidden ? new DOMMatrix(getComputedStyle(rail).transform).m42 : null;
     rail.hidden = false;
-    rail.toggleAttribute("instant", instantly);
     rail.style.height = `${box.height}px`;
+    if (!instantly && was !== null && Math.abs(was - top) > 0.5 && ultraOn() && ultraRailSpring(rail, was, top)) {
+      return;
+    }
+    ultraRailStop(rail);
+    rail.toggleAttribute("instant", instantly);
     rail.style.transform = `translateY(${top}px)`;
     rail.setAttribute("placed", "true");
     if (instantly) {
       requestAnimationFrame(() => rail.removeAttribute("instant"));
-    }
-    if (from) {
-      ultraRailMove(column, rail, from);
     }
   }
 
