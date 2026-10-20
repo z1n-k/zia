@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.102.6] — 2026-10-20
+
+### Changed
+
+- In compact mode with Zen's toolbar hidden, the toolbar opens in the
+  window's gap above the page, as Zen's does: clear, on the space's own
+  colour, with the page under it the rounded card. It had been drawn inside
+  the page's card in the site's colour, so it came in as another bar below
+  the gap. The site stays where it is as the toolbar shows (thanks Briski).
+
 ## [2.102.5] — 2026-10-20
 
 ### Fixed
