@@ -4,6 +4,39 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.102.0] — 2026-10-20
+
+### Added
+
+- **Ultra**, on by default (under Look), a set of extra effects. Switch it off
+  for Zia as it was; under your system's reduced motion they stand still.
+  - A loading tab's spinner becomes a small dotted orb that turns while the
+    page connects and loads, once it's been loading a moment (a quick load
+    keeps its icon).
+  - The address bar's loading line is liquid metal: silver, with the metal's
+    light moving along it, or gunmetal grey on a light space. It keeps its
+    width, thickness and movement, and with the loading bar in Zen's accent
+    colour it keeps that colour.
+  - The music player glows along its bottom edge in its artwork's colours
+    while you point at it as it plays, rising and falling like music, cut to
+    the card's corners. The artwork's colour behind it on hover gives way to
+    it.
+  - The colour Zen draws round the open essential (its "essentials favicon
+    background") slowly drifts about.
+  - The Library's Media pictures dissolve in from a moving pixel mosaic as they
+    load, the mosaic taking each picture's shape.
+  - The Library's chosen-section tile stretches as it springs to the section
+    you pick, and squashes as it lands.
+  - The welcome tour's Zia wordmark is liquid metal.
+- What's new shows Ultra once after this update, and the welcome tour shows it
+  second.
+
+### Changed
+
+- The music player card is see-through, as the selected tab is: a darker shade
+  of whatever's under it rather than a solid colour, so a space's colour and
+  grain show through it.
+
 ## [2.101.7] — 2026-10-19
 
 ### Fixed
