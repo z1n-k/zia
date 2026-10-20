@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.102.15] — 2026-10-20
+
+### Fixed
+
+- After a folder inside a closed folder has been opened and shut where it is,
+  opening the folder round it no longer drops the tab shown down for a moment
+  and back up: its other tabs are held shut as Zen leaves the tabs it hides
+  (thanks Bxthesda).
+
 ## [2.102.14] — 2026-10-20
 
 ### Fixed
