@@ -75,7 +75,7 @@ zen-folder:has(> .tab-group-container > :is(.tabbrowser-tab, tab-group[split-vie
   overflow-y: clip;
 }
 
-zen-folder[collapsed][has-active] .tabbrowser-tab:not([selected], [visuallyselected], [folder-active="true"], [atg-folder-active], tab-group[split-view-group]:has(.tabbrowser-tab:is([selected], [visuallyselected], [folder-active="true"])) .tabbrowser-tab) {
+zen-folder[collapsed][has-active] .tabbrowser-tab:not([selected], [visuallyselected], [folder-active="true"], [atg-folder-active], tab-group[split-view-group]:has(.tabbrowser-tab:is([selected], [visuallyselected], [folder-active="true"])) .tabbrowser-tab, [zia-open-in-closed] .tabbrowser-tab) {
   opacity: 0 !important;
   /* (fading as Zen shrinks them, rather than gone at once, which showed as
      an empty gap closing up) */
@@ -93,7 +93,7 @@ zen-folder[collapsed][zia-was-active] .tabbrowser-tab {
    folder's hidden tabs reachable just below it: hovering there brought up
    the last tab's card and a click opened it. Only the tabs a collapsed
    folder shows can be pointed at. */
-zen-folder[collapsed] .tabbrowser-tab:not([selected], [visuallyselected], [folder-active="true"], [atg-folder-active]) {
+zen-folder[collapsed] .tabbrowser-tab:not([selected], [visuallyselected], [folder-active="true"], [atg-folder-active], [zia-open-in-closed] .tabbrowser-tab) {
   pointer-events: none;
 }
 

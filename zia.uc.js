@@ -2937,9 +2937,28 @@
     );
   }
 
-  // Clicking a kept inner folder name opened it with everything round it still hidden,
-  // so nothing showed: the folders it's in open too.
+  // Clicking the name of a folder kept inside a closed folder (it holds the tab the
+  // closed one shows) opens it where it is: its tabs show under its name, and the rest
+  // of the closed folder stays hidden (zia-open-in-closed, 06-folders-and-sidebar.css).
+  // The folders round it had opened too, bringing back every other folder in them.
+  // Clicked again, it closes back to the tab it shows.
+  const OPEN_IN_CLOSED = "zia-open-in-closed";
+
   function openKeptFolderNames() {
+    const inShowingClosedFolder = (folder) => {
+      for (let el = folder.parentElement?.closest(FOLDER_SELECTOR); el; el = el.parentElement?.closest(FOLDER_SELECTOR)) {
+        if (el.hasAttribute("collapsed") && el.hasAttribute("has-active")) {
+          return true;
+        }
+      }
+      return false;
+    };
+    const unmarkWithin = (folder) => {
+      for (const el of folder.querySelectorAll(`[${OPEN_IN_CLOSED}]`)) {
+        el.removeAttribute(OPEN_IN_CLOSED);
+      }
+    };
+
     window.addEventListener(
       "click",
       (event) => {
@@ -2948,42 +2967,61 @@
         }
         const label = event.target?.closest?.(".tab-group-label-container");
         const folder = label?.parentElement;
-        if (!isFolder(folder) || !folder.hasAttribute("collapsed") || !folder.querySelector('.tabbrowser-tab:is([selected], [folder-active="true"])')) {
+        if (!isFolder(folder) || folder.hasAttribute(OPEN_IN_CLOSED) || !folder.querySelector('.tabbrowser-tab:is([selected], [folder-active="true"])')) {
           return;
         }
         if (event.target.closest(".tab-group-label-container toolbarbutton, .tab-close-button, .tab-reset-button, [anonid], button")) {
           return;
         }
-        const outer = [];
-        for (let el = folder.parentElement?.closest(FOLDER_SELECTOR); el; el = el.parentElement?.closest(FOLDER_SELECTOR)) {
-          if (el.hasAttribute("collapsed")) {
-            outer.unshift(el);
-          }
-        }
-        if (!outer.length) {
+        if (!inShowingClosedFolder(folder)) {
           return;
         }
-        event.stopPropagation();
-        event.preventDefault();
-        // One at a time, outermost first: asked to open while the folder
-        // round it was still opening, Zen let it be
-        const openNext = (list) => {
-          const el = list.shift();
-          if (!el) {
-            return;
+        folder.setAttribute(OPEN_IN_CLOSED, "true");
+        // (open already, hidden with the rest as the folder round it closed: shown as
+        // it is, rather than Zen closing it)
+        if (!folder.hasAttribute("collapsed")) {
+          event.stopPropagation();
+          event.preventDefault();
+          const hidden = (folder.allItems || []).filter((item) => item.style.height === "0px" || item.style.opacity === "0");
+          if (hidden.length) {
+            window.gZenFolders?.styleCleanup?.(hidden);
           }
-          el.collapsed = false;
-          requestAnimationFrame(() => {
-            const moving = [el.groupStartElement, el.groupContainer]
-              .filter(Boolean)
-              .flatMap((node) => node.getAnimations());
-            Promise.all(moving.map((a) => a.finished.catch(() => {}))).then(() => openNext(list));
-          });
-        };
-        openNext([...outer, folder]);
+        }
       },
       true
     );
+
+    // Closed again, or a folder round it opened or closed, or the closed folder no
+    // longer showing a tab, it's back to how Zen has it
+    window.addEventListener(
+      "TabGroupCollapse",
+      (event) => {
+        if (isFolder(event.target)) {
+          event.target.removeAttribute(OPEN_IN_CLOSED);
+          unmarkWithin(event.target);
+        }
+      },
+      true
+    );
+    window.addEventListener(
+      "TabGroupExpand",
+      (event) => {
+        if (isFolder(event.target)) {
+          unmarkWithin(event.target);
+        }
+      },
+      true
+    );
+    const tabs = gBrowser.tabContainer;
+    if (tabs) {
+      new MutationObserver((records) => {
+        for (const { target } of records) {
+          if (isFolder(target) && !target.hasAttribute("has-active")) {
+            unmarkWithin(target);
+          }
+        }
+      }).observe(tabs, { subtree: true, attributes: true, attributeFilter: ["has-active"] });
+    }
   }
 
   // Pinned tabs tucked away keep showing the open tab among them, as a closed folder

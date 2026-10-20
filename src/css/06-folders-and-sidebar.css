@@ -807,8 +807,10 @@ zen-workspace[zia-keep-folder-names] .tab-group-container > :is(.tabbrowser-tab[
    holding that tab (or the one it goes on showing once another is
    selected) keeps its name, with the tab under it, as it would be
    open. Zen hides the name and pulls the tab out to the closed folder's
-   edge, which left the inner folder's box round the lone tab. */
-:root:not(#zia-none) zen-folder[collapsed]:is([has-active], [zia-was-active]) :is(zen-folder, tab-group:not([split-view-group])):is(:has(.tabbrowser-tab:is([selected], [folder-active="true"])), [zia-keeps-name]) > .tab-group-label-container,
+   edge, which left the inner folder's box round the lone tab. (Not with the
+   space's pinned tabs tucked away, which hide the closed folder's name and
+   that tab: the inner folder's name was left there on its own.) */
+:root:not(#zia-none) zen-folder[collapsed]:is([has-active], [zia-was-active]):not(zen-workspace[collapsedpinnedtabs] *) :is(zen-folder, tab-group:not([split-view-group])):is(:has(.tabbrowser-tab:is([selected], [folder-active="true"])), [zia-keeps-name]) > .tab-group-label-container,
 :root:not(#zia-none) zen-folder[zia-revealing] [zia-keeps-name] > .tab-group-label-container {
   height: calc(var(--tab-margin-block) * 2 + var(--tab-min-height)) !important;
   opacity: 1 !important;
@@ -822,8 +824,9 @@ zen-workspace[zia-keep-folder-names] .tab-group-container > :is(.tabbrowser-tab[
 /* Zen leaves the other tabs in that inner folder at their full height (it
    only shrinks the closed folder's own), see-through, so the inner folder's
    box stretched far below the tab shown. They shrink away with the rest:
-   no height, so their minimum height, which can be animated, sets it. */
-:root:not(#zia-none) zen-folder[collapsed]:is([has-active], [zia-was-active]) :is(zen-folder, tab-group:not([split-view-group])) .tabbrowser-tab:not([selected], [visuallyselected], [folder-active="true"], [zia-kept-tab], [atg-folder-active], tab-group[split-view-group]:has(.tabbrowser-tab:is([selected], [visuallyselected], [folder-active="true"])) .tabbrowser-tab) {
+   no height, so their minimum height, which can be animated, sets it. (Not
+   once that inner folder's name is clicked: it opens where it is, zia.uc.js.) */
+:root:not(#zia-none) zen-folder[collapsed]:is([has-active], [zia-was-active]) :is(zen-folder, tab-group:not([split-view-group])) .tabbrowser-tab:not([selected], [visuallyselected], [folder-active="true"], [zia-kept-tab], [atg-folder-active], tab-group[split-view-group]:has(.tabbrowser-tab:is([selected], [visuallyselected], [folder-active="true"])) .tabbrowser-tab, [zia-open-in-closed] .tabbrowser-tab) {
   height: 0 !important;
   min-height: 0 !important;
   margin-block: 0 !important;
@@ -837,7 +840,7 @@ zen-workspace[zia-keep-folder-names] .tab-group-container > :is(.tabbrowser-tab[
 /* ...and a folder in it that Zen hides goes entirely: its box and outline
    stayed as a thin line that could still be hovered, and, open, its room at
    the bottom left a gap under the tab shown */
-:root:not(#zia-none) zen-folder[collapsed]:is([has-active], [zia-was-active]) :is(zen-folder, tab-group:not([split-view-group])):not(:has(.tabbrowser-tab:is([selected], [folder-active="true"])), [zia-keeps-name]) {
+:root:not(#zia-none) zen-folder[collapsed]:is([has-active], [zia-was-active]) :is(zen-folder, tab-group:not([split-view-group])):not(:has(.tabbrowser-tab:is([selected], [folder-active="true"])), [zia-keeps-name], [zia-open-in-closed] *) {
   pointer-events: none;
   padding-bottom: 0 !important;
   transition: padding-bottom 0.18s ease-in-out !important;
