@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.103.7] — 2026-10-20
+
+### Fixed
+
+- The toolbar's text and icons stand out on bright site colours. On a bright
+  colour that takes dark ink (a vivid green, a yellow, an orange) the ink, a
+  soft one made for white and cream pages, came out barely darker than the
+  colour; it's darkened there as far as it takes to read as well as on a light
+  grey. White, cream and grey pages keep the ink they had (thanks Bxthesda).
+
 ## [2.103.6] — 2026-10-20
 
 ### Fixed
