@@ -234,10 +234,11 @@
     sync();
   }
 
-  // The Library's chosen-section tile (28k-library.js), as it springs to the
-  // section you pick (its own slide, on Zia's spring), stretches as it goes
-  // and squashes as it lands, as liquid-gooey's "move" does, glass edge and
-  // all. Nothing under reduced motion.
+  // The Library's chosen-section tile (28k-library.js), as it slides to the
+  // section you pick, stretches a touch as it goes and squashes a touch as it
+  // lands, as liquid-gooey's "move" does, glass edge and all (on a gentler
+  // spring than its own, 28-ultra.css, so the two don't add up to a wobble).
+  // Nothing under reduced motion.
   function ultraRailSquash(rail) {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches || typeof rail.animate !== "function") {
       return;
@@ -246,12 +247,11 @@
     rail.ziaSquash = rail.animate(
       [
         { scale: "1 1" },
-        { scale: "0.88 1.16", offset: 0.3 },
-        { scale: "1.06 0.93", offset: 0.62 },
-        { scale: "0.98 1.02", offset: 0.82 },
+        { scale: "0.97 1.05", offset: 0.35 },
+        { scale: "1.02 0.98", offset: 0.7 },
         { scale: "1 1" },
       ],
-      { duration: 520, easing: "ease-out" }
+      { duration: 400, easing: "ease-out" }
     );
   }
 

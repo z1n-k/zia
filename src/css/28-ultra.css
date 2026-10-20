@@ -133,3 +133,13 @@
     opacity: 0 !important;
   }
 }
+
+/* The Library's chosen-section tile on a gentler spring than Zia's own, as
+   it stretches and squashes on the way too (28s-ultra.js) */
+@media -moz-pref("zia.ultra") {
+  zen-library .zia-library-rail:not([instant]) {
+    transition:
+      transform var(--zia-spring-time) cubic-bezier(0.3, 1.12, 0.5, 1),
+      height var(--zia-spring-time) cubic-bezier(0.3, 1.12, 0.5, 1) !important;
+  }
+}
