@@ -154,8 +154,9 @@
   --zia-hover-card-shadow: none;
   --zia-color-fade: 0.15s;
   /* the toolbar's ink, with a faint touch of the site's hue (zia.uc.js
-     sets the hue and strength; without them it's the plain grey) */
-  --zia-light-ink: hsl(var(--zia-ink-h, 240) var(--zia-ink-s, 3.5%) 40%);
+     sets the hue and strength, and darkens it on a bright colour it'd
+     vanish on; without them it's the plain grey) */
+  --zia-light-ink: hsl(var(--zia-ink-h, 240) var(--zia-ink-s, 3.5%) var(--zia-light-ink-l, 40%));
 }
 
 /* A Zen whose Firefox can't draw a squircle (corner-shape) draws every

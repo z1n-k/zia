@@ -43,6 +43,7 @@
     if (!rgb) {
       root.style.removeProperty("--zia-site-bg");
       updateInkTint(null);
+      updateLightInk(null);
       const lightFallback = wantsDarkInk(fallback);
       setFlag("zia-site-light", lightFallback);
       setFlag("zia-site-dark", !lightFallback);
@@ -60,6 +61,7 @@
     // and nothing faint: the dark sites' grey ink all but vanished on it
     const vivid = !light && brightness >= 40 && Math.max(...rgb.slice(0, 3)) - Math.min(...rgb.slice(0, 3)) >= 110;
     const mid = !light && (brightness >= INK_MAX || vivid);
+    updateLightInk(light ? rgb : null);
     setFlag("zia-site-light", light);
     setFlag("zia-site-dark", brightness < INK_MAX && !vivid);
     setFlag("zia-site-mid", mid);
@@ -74,6 +76,15 @@
       root.style.removeProperty("--zia-ink-s");
       return;
     }
+    const [h, s] = hueAndSaturationOf(rgb);
+    root.style.setProperty("--zia-ink-h", `${Math.round(h)}`);
+    // a third of the site's saturation, as Dia does
+    root.style.setProperty("--zia-ink-s", `${Math.round(s * INK_SATURATION * 100)}%`);
+  }
+
+  const INK_SATURATION = 0.34;
+
+  function hueAndSaturationOf(rgb) {
     const [r, g, b] = rgb.slice(0, 3).map((c) => c / 255);
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
@@ -91,9 +102,41 @@
         h = 60 * ((r - g) / d + 4);
       }
     }
-    root.style.setProperty("--zia-ink-h", `${Math.round((h + 360) % 360)}`);
-    // a third of the site's saturation, as Dia does
-    root.style.setProperty("--zia-ink-s", `${Math.round(Math.min(s, 1) * 34)}%`);
+    return [(h + 360) % 360, Math.min(s, 1)];
+  }
+
+  // The dark ink is a soft one (the site's hue at 40%), made for cream and white.
+  // On a bright colour that isn't light (a vivid green, say, which takes dark ink as
+  // white can't be read on it) it all but vanished: there it's darkened, as far as
+  // it takes to stand out as well as it does on a light grey.
+  const LIGHT_INK_LIGHTNESS = 40;
+  const MIN_INK_CONTRAST = 4.5;
+
+  function updateLightInk(rgb) {
+    if (!rgb) {
+      root.style.removeProperty("--zia-light-ink-l");
+      return;
+    }
+    const [h, s] = hueAndSaturationOf(rgb);
+    const behind = luminanceOf(rgb) + 0.05;
+    let lightness = LIGHT_INK_LIGHTNESS;
+    while (lightness > 0 && behind / (luminanceOf(rgbOfHsl(h, s * INK_SATURATION, lightness / 100)) + 0.05) < MIN_INK_CONTRAST) {
+      lightness -= 1;
+    }
+    if (lightness === LIGHT_INK_LIGHTNESS) {
+      root.style.removeProperty("--zia-light-ink-l");
+    } else {
+      root.style.setProperty("--zia-light-ink-l", `${lightness}%`);
+    }
+  }
+
+  function rgbOfHsl(h, s, l) {
+    const a = s * Math.min(l, 1 - l);
+    const f = (n) => {
+      const k = (n + h / 30) % 12;
+      return Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))));
+    };
+    return [f(0), f(8), f(4)];
   }
 
   function updateDarkSiteInk(rgb, brightness, inkOnly = false) {
@@ -302,15 +345,19 @@
     return ((r * 299 + g * 587 + b * 114) / 1000) * (a / 255) + behind * (1 - a / 255);
   }
 
-  // How far white text stands out on a colour (WCAG contrast, 1 to 21).
-  function whiteContrastOn([r, g, b, a = 255]) {
+  // A colour's relative luminance (WCAG), over the window's own if see-through
+  function luminanceOf([r, g, b, a = 255]) {
     const behind = matchMedia("(prefers-color-scheme: dark)").matches ? 0 : 255;
     const channel = (c) => {
       const v = (c * (a / 255) + behind * (1 - a / 255)) / 255;
       return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
     };
-    const luminance = 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
-    return 1.05 / (luminance + 0.05);
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+  }
+
+  // How far white text stands out on a colour (WCAG contrast, 1 to 21).
+  function whiteContrastOn(rgb) {
+    return 1.05 / (luminanceOf(rgb) + 0.05);
   }
 
   // Dark text on light colours, and on bright mid colours (a vivid green,
