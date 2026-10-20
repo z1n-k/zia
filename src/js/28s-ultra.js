@@ -2,8 +2,9 @@
   // Effects ported from Libraries.dev (https://libraries.dev, MIT, by Jakub
   // Antalik), each where its author places it: a thinking orb for loading, a
   // glow under what's playing, the Library's chosen section springing to the
-  // next, and liquid metal along the loading line (the colour round the open
-  // essential drifting is 28-ultra.css).
+  // next, liquid metal along the loading line, and a pixel mosaic while a
+  // hover card's preview is taken (the colour round the open essential
+  // drifting is 28-ultra.css).
   const ULTRA_PREF = "zia.ultra";
   const ultraOn = () => Services.prefs.getBoolPref(ULTRA_PREF, true);
 
@@ -252,6 +253,49 @@
       ],
       { duration: 520, easing: "ease-out" }
     );
+  }
+
+  // A tab hover card's page preview (27-hover-cards.js): img-fx's pixel mosaic
+  // churns in its place while Firefox takes the picture, then dissolves into
+  // it (28y-ultra-image-engine.js), quicker than the package's 3s, as a card
+  // is a glance. One at a time: a card refilled for another tab starts again.
+  let ultraThumbFx = null;
+
+  function ultraThumbStop() {
+    ultraThumbFx?.destroy();
+    ultraThumbFx = null;
+  }
+
+  function ultraThumbStart(thumb) {
+    ultraThumbStop();
+    if (!ultraOn()) {
+      return null;
+    }
+    try {
+      ultraThumbFx = ziaImgFx(thumb, {
+        preset: "pixels-organic",
+        dark: !root.hasAttribute("zia-light"),
+        // (long enough to read as the loader, not a flicker, on a quick picture)
+        minChurnMs: 350,
+        revealSeconds: 1.2,
+      });
+    } catch (err) {
+      noteError("ultra: preview loader", err);
+    }
+    return ultraThumbFx;
+  }
+
+  function ultraThumbReveal(fx, thumb) {
+    if (!fx || fx !== ultraThumbFx) {
+      return;
+    }
+    fx.reveal(thumb, {
+      onDone: () => {
+        if (ultraThumbFx === fx) {
+          ultraThumbStop();
+        }
+      },
+    });
   }
 
   function watchUltra() {
