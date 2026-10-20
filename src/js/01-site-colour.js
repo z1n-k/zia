@@ -176,6 +176,14 @@
     );
   }
 
+  // Read off the window, the page's top shows whatever's over it: with the address
+  // pop-up open (or Zen's floating bar) the toolbar took the pop-up's colour, as a
+  // scroll of Settings read it again (#444). Not read while something's over it.
+  function chromeOverPage() {
+    const urlbar = gURLBar?.textbox || document.getElementById("urlbar");
+    return !!(urlbar?.hasAttribute("breakout-extend") || urlbar?.getAttribute("zen-floating-urlbar") === "true" || gURLBar?.view?.isOpen);
+  }
+
   function sampleShownTop(browser) {
     const box = browser.getBoundingClientRect();
     if (!box.width || !box.height) {
@@ -346,6 +354,9 @@
       return;
     }
 
+    if (showsThrough(browser) && chromeOverPage()) {
+      return;
+    }
     const id = ++colorRequestId;
     let reading = null;
     try {
@@ -411,7 +422,8 @@
   async function checkColor() {
     const browser = gBrowser.selectedBrowser;
     if (checking || document.hidden || !siteColorOn() || !browser || isErrorPage(browser) || isLoading(browser) ||
-        scrollTimer || scrollSampling || !colorCache.has(browser) || colorPick || manualSiteColor(browser)) {
+        scrollTimer || scrollSampling || !colorCache.has(browser) || colorPick || manualSiteColor(browser) ||
+        (showsThrough(browser) && chromeOverPage())) {
       return;
     }
     checking = true;
