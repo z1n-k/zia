@@ -4,6 +4,19 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.103.1] — 2026-10-20
+
+### Fixed
+
+- The address bar pop-up reaches down past its last row on Windows, where the
+  row still hung out below its edge: it fits itself again as the list changes
+  size, and its background covers the last row if its height falls short
+  (#450, thanks PowerFactory384).
+- Light spaces on Windows are light whatever's behind the window: with
+  Windows' see-through window (Mica or Acrylic) a light space showed what was
+  behind it, white over a white app and dark over the desktop, so the light
+  look only seemed to work some of the time (thanks Briski).
+
 ## [2.103.0] — 2026-10-20
 
 ### Added
