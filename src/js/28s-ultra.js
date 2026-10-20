@@ -1,8 +1,9 @@
   // ---------- Ultra (zia.ultra, on by default)
   // Effects ported from Libraries.dev (https://libraries.dev, MIT, by Jakub
   // Antalik), each where its author places it: a thinking orb for loading, a
-  // glow under what's playing, a border beam while a page loads, and the
-  // Library's chosen section springing to the next.
+  // glow under what's playing, and the Library's chosen section springing
+  // to the next (the address bar's loading line in border-beam's ocean
+  // colours is 28-ultra.css).
   const ULTRA_PREF = "zia.ultra";
   const ultraOn = () => Services.prefs.getBoolPref(ULTRA_PREF, true);
 
@@ -232,34 +233,6 @@
     sync();
   }
 
-  // The address bar's loading line as border-beam's beam along its bottom edge,
-  // in its blue "ocean" colours (28u-ultra-beam-engine.js), once the page has
-  // been loading a moment; Zia's own line gives way to it (28-ultra.css). Zia keeps zia-loading on the root
-  // until its line has finished.
-  function watchUltraLoadingBeam() {
-    const urlbar = gURLBar.textbox || document.getElementById("urlbar");
-    if (!urlbar) {
-      return;
-    }
-    let timer = 0;
-    const sync = () => {
-      clearTimeout(timer);
-      if (!ultraOn() || root.getAttribute("zia-loading") !== "true") {
-        ziaBeam(urlbar, "line", false);
-        return;
-      }
-      if (urlbar.getAttribute("zia-beam") === "line") {
-        // (back on, if it was fading out)
-        ziaBeam(urlbar, "line");
-      } else {
-        timer = setTimeout(() => ziaBeam(urlbar, "line"), 600);
-      }
-    };
-    new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ["zia-loading"] });
-    watchPrefs(ULTRA_PREF, sync);
-    sync();
-  }
-
   // The Library's chosen-section tile (28k-library.js) springs to the section
   // you pick: it chases a point easing there over 0.3s on liquid-gooey's
   // "move" spring (stiffness 380, damping 18), squashing with its speed. The
@@ -340,5 +313,4 @@
   function watchUltra() {
     safely("watchUltraOrbs", watchUltraOrbs);
     safely("watchUltraGlow", watchUltraGlow);
-    safely("watchUltraLoadingBeam", watchUltraLoadingBeam);
   }

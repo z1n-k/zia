@@ -314,6 +314,12 @@
     --zia-load-tint: color-mix(in srgb, var(--zia-loading-color) 30%, transparent),
       color-mix(in srgb, var(--zia-loading-color) 14%, transparent) 50%,
       transparent 100%;
+    --zia-load-line: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--zia-loading-color) 70%, transparent),
+      var(--zia-loading-color) 85%,
+      color-mix(in srgb, var(--zia-loading-color) 55%, white) 100%
+    );
     --zia-load-glow: color-mix(in srgb, var(--zia-loading-color) 36%, transparent),
       color-mix(in srgb, var(--zia-loading-color) 16%, transparent) 35%,
       color-mix(in srgb, var(--zia-loading-color) 5%, transparent) 70%,
@@ -327,12 +333,7 @@
         calc(var(--zia-load-p) * 100% + (var(--zia-load-p) - 1) * 240px) 100% / 240px 100% no-repeat,
       radial-gradient(100% 100% at 0% 100%, var(--zia-load-tint))
         calc(var(--zia-load-p) * 100% + var(--zia-load-p) * 36px) 100% / 36px 100% no-repeat,
-      linear-gradient(
-        to right,
-        color-mix(in srgb, var(--zia-loading-color) 70%, transparent),
-        var(--zia-loading-color) 85%,
-        color-mix(in srgb, var(--zia-loading-color) 55%, white) 100%
-      ) left bottom / var(--zia-load-width) 1.5px no-repeat;
+      var(--zia-load-line) left bottom / var(--zia-load-width) 1.5px no-repeat;
   }
 
   :root[zia-loading="true"] #urlbar:not([breakout-extend])::after,
