@@ -19619,8 +19619,8 @@
   // Effects ported from Libraries.dev (https://libraries.dev, MIT, by Jakub
   // Antalik), each where its author places it: a thinking orb for loading, a
   // glow under what's playing, the Library's chosen section springing to the
-  // next, and liquid metal along the loading line and through the colour
-  // behind the open essential.
+  // next, and liquid metal along the loading line (the colour round the open
+  // essential drifting is 28-ultra.css).
   const ULTRA_PREF = "zia.ultra";
   const ultraOn = () => Services.prefs.getBoolPref(ULTRA_PREF, true);
 
@@ -19975,46 +19975,10 @@
     sync();
   }
 
-  // The colour Zen draws behind the open essential (its icon's, blurred) with
-  // silver liquid metal through it, moving very slowly (28-ultra.css lays it)
-  function watchUltraEssentialMetal() {
-    const FAVICON_BG = "zen.theme.essentials-favicon-bg";
-    const canvas = document.createElementNS(XHTML_NS, "canvas");
-    canvas.className = "zia-metal-sheen";
-    canvas.setAttribute("aria-hidden", "true");
-    let metal = null;
-    const sync = () => {
-      const tab = gBrowser.selectedTab;
-      const bg = tab?.hasAttribute("zen-essential") && tab.querySelector(":scope > .tab-stack > .tab-background");
-      if (!ultraOn() || !Services.prefs.getBoolPref(FAVICON_BG, false) || !bg) {
-        metal?.destroy();
-        metal = null;
-        canvas.remove();
-        return;
-      }
-      if (canvas.parentNode !== bg) {
-        bg.append(canvas);
-      }
-      const box = bg.getBoundingClientRect();
-      const ratio = Math.min(2, window.devicePixelRatio || 1);
-      canvas.width = Math.max(8, Math.round(box.width * ratio));
-      canvas.height = Math.max(8, Math.round(box.height * ratio));
-      metal ||= ziaMetalSurface(canvas, { speed: 0.08, every: 120, light: root.hasAttribute("zia-light") });
-    };
-    gBrowser.tabContainer.addEventListener("TabSelect", sync);
-    new MutationObserver(() => metal?.setLight(root.hasAttribute("zia-light"))).observe(root, {
-      attributes: true,
-      attributeFilter: ["zia-light"],
-    });
-    watchPrefs([ULTRA_PREF, FAVICON_BG], sync);
-    sync();
-  }
-
   function watchUltra() {
     safely("watchUltraOrbs", watchUltraOrbs);
     safely("watchUltraGlow", watchUltraGlow);
     safely("watchUltraMetalLine", watchUltraMetalLine);
-    safely("watchUltraEssentialMetal", watchUltraEssentialMetal);
   }
 // Zia glow: a colourful glow along the bottom edge of a card that rises and
 // blooms while media plays. A framework-free port of the "glow" look of

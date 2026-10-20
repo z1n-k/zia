@@ -10017,27 +10017,37 @@ zen-workspace-creation {
   }
 }
 
-/* The colour Zen draws behind the open essential (its icon's, blurred: Zen's
-   "essentials favicon background") with silver liquid metal through it, very
-   slowly moving (28s-ultra.js), over the colour and under the essential's
-   own lighter inner card */
+/* The colour Zen draws round the open essential's inner card (its icon's,
+   blurred: Zen's "essentials favicon background") slowly moving about: it
+   turns, drifts and swells on cycles of their own lengths, so the colours
+   wander round the edge without repeating for minutes. Still under reduced
+   motion. */
 @media -moz-pref("zia.ultra") and -moz-pref("zen.theme.essentials-favicon-bg") {
-  .tabbrowser-tab[zen-essential][visuallyselected] > .tab-stack > .tab-background > canvas.zia-metal-sheen {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    mix-blend-mode: soft-light;
-    opacity: 0.9;
-    pointer-events: none;
+  @media (prefers-reduced-motion: no-preference) {
+    .tabbrowser-tab[zen-essential][visuallyselected] > .tab-stack > .tab-background::after {
+      animation:
+        zia-essential-turn 37s linear infinite,
+        zia-essential-drift 23s ease-in-out infinite alternate,
+        zia-essential-swell 17s ease-in-out infinite alternate !important;
+    }
   }
+}
 
-  /* (Zen's colour is under everything, at -1; its inner card goes over the
-     metal) */
-  .tabbrowser-tab[zen-essential][visuallyselected] > .tab-stack > .tab-background:has(> canvas.zia-metal-sheen)::before {
-    z-index: 1 !important;
-  }
+@keyframes zia-essential-turn {
+  to { rotate: 360deg; }
+}
+
+@keyframes zia-essential-drift {
+  0% { translate: -6% -4%; }
+  30% { translate: 5% -2%; }
+  55% { translate: -2% 6%; }
+  80% { translate: 6% 3%; }
+  100% { translate: -4% 5%; }
+}
+
+@keyframes zia-essential-swell {
+  from { scale: 1.1; }
+  to { scale: 1.35; }
 }
 /* Zia glow: the bottom-edge glow of voice-glow 0.3.0 (VoiceBeam), ported without React.
    voice-glow is MIT licensed, Copyright (c) 2026 Jakub Antalik. See NOTES.md.
