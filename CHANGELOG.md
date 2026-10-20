@@ -4,6 +4,26 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.102.7] — 2026-10-20
+
+### Fixed
+
+- In compact mode with Zen's toolbar hidden, + New Tab and Cmd/Ctrl+T open a
+  real tab again, with its address bar floating over it, as Zen's own new
+  tab's does, so the hidden toolbar stays hidden. 2.102.5 had made a new tab
+  Zen's floating address bar, with no tab opened till something was typed
+  (thanks Briski).
+- Zen's floating address bar no longer brings the hidden toolbar down with it
+  in compact mode, an empty bar above, or pulls the page up under it
+  (thanks Briski).
+- Clicking the name of a folder kept inside a closed folder (it holds the tab
+  the closed one shows) opens just that folder, where it is: the folders round
+  it opened too, bringing back every other folder in them. Clicked again, it
+  closes back to the tab it shows (thanks Bxthesda).
+- With the space's pinned tabs tucked away, a closed folder showing a tab from
+  a folder inside it no longer leaves that inner folder's name behind on its
+  own (thanks Bxthesda).
+
 ## [2.102.6] — 2026-10-20
 
 ### Changed
