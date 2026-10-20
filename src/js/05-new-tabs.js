@@ -114,6 +114,10 @@
       if (gBrowser.selectedTab !== tab || tab.ziaTypedInPage) {
         return;
       }
+      if (compactToolbarHidden()) {
+        floatUrlbar();
+        return;
+      }
       if (!gURLBar.focused) {
         gURLBar.focus();
         gURLBar.select();
@@ -200,8 +204,44 @@
     }
   }
 
+  // Compact mode with Zen's top toolbar hidden: Zen brings the toolbar out while
+  // the address bar has the cursor, so a new tab's, ready to type in, held it out
+  // till the tab was left
+  function compactToolbarHidden() {
+    return (
+      root.getAttribute("zen-compact-mode") === "true" &&
+      root.getAttribute("zen-single-toolbar") !== "true" &&
+      root.getAttribute("zia-urlbar-position") !== "bottom" &&
+      Services.prefs.getBoolPref("zen.view.compact.hide-toolbar", false)
+    );
+  }
+
+  // ...so there it opens floating over the new tab, as Zen's own new tab does,
+  // and the toolbar stays hidden (16-compact-mode.css). (Zen's way in: an empty
+  // search, which opens the bar's list.)
+  function floatUrlbar() {
+    try {
+      if (!gURLBar.focused || !gURLBar.hasAttribute("breakout-extend")) {
+        gURLBar.search("");
+      }
+    } catch (err) {
+      noteError("new tabs: floatUrlbar", err);
+    }
+  }
+
+  function floatNewTabUrlbar(tab) {
+    requestAnimationFrame(() => {
+      if (gBrowser.selectedTab === tab && gURLBar.focused && !gURLBar.value) {
+        floatUrlbar();
+      }
+    });
+  }
+
   function closeNewTabUrlbar(tab) {
     if (!searchHomeUrl || !newTabSearchEnabled()) {
+      if (compactToolbarHidden()) {
+        floatNewTabUrlbar(tab);
+      }
       return;
     }
     if (focusAddressBarOnNewTab()) {

@@ -253,6 +253,31 @@
   }
 }
 
+/* Zen's floating address bar (a new tab, or typing) opens over the middle of the
+   window, so the hidden toolbar stays hidden: Zen brought it out too, an empty bar
+   above (the address bar it holds was off in the middle), and pulled the page up
+   under it as for the toolbar shown. (Still shown with the pointer up there.) */
+@media -moz-pref("zen.view.compact.hide-toolbar") {
+  :root[zen-compact-mode="true"]:not([zen-single-toolbar="true"], [inDOMFullscreen="true"], [zia-urlbar-position="bottom"], [zia-split="true"]):not(#zia-none):has(#urlbar[zen-floating-urlbar="true"]):not(:has(#zen-appcontent-navbar-wrapper:is([zen-has-hover], [has-popup-menu]))) {
+    & #zen-appcontent-navbar-wrapper {
+      height: var(--zia-card-top-gap) !important;
+      overflow: clip !important;
+    }
+
+    & #zen-appcontent-navbar-container {
+      visibility: hidden !important;
+    }
+
+    & #urlbar {
+      visibility: visible !important;
+    }
+
+    & #tabbrowser-tabpanels[has-toolbar-hovered] .browserContainer {
+      margin-top: 0 !important;
+    }
+  }
+}
+
 /* Zen's single toolbar, collapsed (Zen's "hide window controls"): shown, the bar
    grew into the layout and pushed the page down, and shrank back, pulling it up,
    each time the pointer reached the window's top (a jitter there and over the
