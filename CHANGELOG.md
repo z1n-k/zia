@@ -4,6 +4,19 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.102.3] — 2026-10-20
+
+### Added
+
+- A setting (Look, with Zen's toolbar hidden in compact mode) for Zen's own
+  hidden toolbar: it pushes the page down as it shows, rather than fading in
+  over the page as Zia's does (thanks Briski).
+
+### Fixed
+
+- With Ultra, the Library's Media pictures dissolve in from the pixel mosaic
+  each time Media is opened, not only the first time they load.
+
 ## [2.102.2] — 2026-10-20
 
 ### Fixed
