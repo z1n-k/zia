@@ -417,19 +417,38 @@
       return null;
     }
     const scale = window.devicePixelRatio || 1;
+    // Growing back to its own size ("auto"): to the size it has open, measured,
+    // and handed back to auto at the end. Held at the size it started at till
+    // then, the tabs faded in squashed onto one row and popped to their height
+    // once done.
+    const natural = {};
+    if (Number.isFinite(parseFloat(a?.height)) && !Number.isFinite(parseFloat(b.height))) {
+      const style = element.style;
+      const saved = [style.height, style.minHeight];
+      style.height = "";
+      style.minHeight = "";
+      natural.height = element.getBoundingClientRect().height;
+      natural.minHeight = parseFloat(getComputedStyle(element).minHeight);
+      [style.height, style.minHeight] = saved;
+    }
     const tracks = [];
     for (const prop of props) {
       const from = parseFloat(a?.[prop]);
-      const to = parseFloat(b[prop]);
+      let to = parseFloat(b[prop]);
+      let end;
+      if (Number.isFinite(from) && !Number.isFinite(to) && Number.isFinite(natural[prop]) && natural[prop] > 0) {
+        to = natural[prop];
+        end = b[prop];
+      }
       const numeric = Number.isFinite(from) && Number.isFinite(to);
       if (prop === "height" && (!numeric || from === to)) {
         return null;
       }
       if (numeric) {
-        tracks.push({ prop, from, to, unit: prop === "opacity" ? "" : "px" });
+        tracks.push({ prop, from, to, end, unit: prop === "opacity" ? "" : "px" });
       } else if (Number.isFinite(from)) {
-        // Growing back to a natural size ("auto"): hold the size it starts
-        // at until the very end, when the tab is its full height anyway.
+        // (anything else growing back to its own size holds where it starts
+        // until the very end)
         tracks.push({ prop, hold: a[prop], end: b[prop] });
       } else {
         tracks.push({ prop, hold: b[prop], end: b[prop] });
@@ -447,6 +466,10 @@
       for (const track of tracks) {
         if (track.hold !== undefined) {
           frame[track.prop] = i === count ? track.end : track.hold;
+          continue;
+        }
+        if (track.end !== undefined && i === count) {
+          frame[track.prop] = track.end;
           continue;
         }
         let value = track.from + (track.to - track.from) * k;
