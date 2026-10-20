@@ -20325,16 +20325,15 @@
   }
 
   // The colour Zen draws round the open essential's inner card (its icon's, blurred:
-  // Zen's "essentials favicon background") slowly moving about: it drifts and swells
-  // on cycles of their own lengths, so the colours wander round the edge without
-  // repeating for minutes. Still under reduced motion. (It turned as well, but the
-  // blurred colour is cut off at the top and bottom of its layer, and turning, those
-  // cut edges swept across the tile as two fine lines.) Set going by Zia
+  // Zen's "essentials favicon background") slowly moving about: it turns, drifts
+  // and swells on cycles of their own lengths, so the colours wander round the edge
+  // without repeating for minutes. Still under reduced motion. Set going by Zia
   // rather than in CSS, on the page's own clock: Zen draws the colour only while the
   // essential is chosen, and as a CSS animation it started again from the beginning
   // each time it came back (a glance on the essential closing, say), a jump. Set
   // going again each time, it comes back where it would be had it run all along.
   const ESSENTIAL_DRIFT = [
+    [[{ rotate: "0deg" }, { rotate: "360deg" }], { duration: 37000, direction: "normal" }],
     [
       [
         { translate: "-6% -4%", easing: "ease-in-out" },
@@ -20360,14 +20359,19 @@
       }
       drifting.clear();
     };
-    const start = (tab) => {
-      const background = tab.querySelector(":scope > .tab-stack > .tab-background");
-      if (!background) {
-        return;
-      }
+    const backgroundOf = (tab) => tab.querySelector(":scope > .tab-stack > .tab-background");
+    const halt = (background) => {
       for (const animation of drifting.get(background) || []) {
         animation.cancel();
       }
+      drifting.delete(background);
+    };
+    const start = (tab) => {
+      const background = backgroundOf(tab);
+      if (!background) {
+        return;
+      }
+      halt(background);
       drifting.set(
         background,
         ESSENTIAL_DRIFT.map(([keyframes, timing]) => {
@@ -20387,14 +20391,24 @@
         start(tab);
       }
     };
-    // (an essential chosen again: its colour is drawn anew, so its drift too)
+    // (an essential chosen again: its colour is drawn anew, so its drift too. Left,
+    // the drift stops: the same layer is then the fine edge round its tile, which
+    // drifted, swelled and turned out of the tile, as two lines and then gone)
     new MutationObserver((records) => {
       if (!wanted()) {
         return;
       }
       for (const { target } of records) {
-        if (target.hasAttribute("zen-essential") && target.hasAttribute("visuallyselected")) {
+        if (!target.hasAttribute("zen-essential")) {
+          continue;
+        }
+        if (target.hasAttribute("visuallyselected")) {
           start(target);
+        } else {
+          const background = backgroundOf(target);
+          if (background) {
+            halt(background);
+          }
         }
       }
       for (const [background, animations] of drifting) {
