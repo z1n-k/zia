@@ -62,6 +62,13 @@
       <div class="dim"></div><div class="glow"></div>
       <div class="row"><svg class="ico" viewBox="0 0 24 24"><path d="M15 8h.01"/><path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12"/><path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5"/><path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3"/></svg>black-dog-on-road.jpg</div>
       <svg class="cursor" viewBox="0 0 24 24"><path d="M5.2 3.6c-.7-.3-1.4.4-1.1 1.1l6.9 15.6c.3.8 1.5.7 1.7-.1l1.8-5.6c.1-.3.3-.5.6-.6l5.6-1.8c.8-.2.9-1.4.1-1.7z"/></svg></div>`,
+    // 2.102: Ultra, its effects together: the essential's colours drifting,
+    // a thinking orb on a loading tab, the music card's glow, the metal loading
+    // line, and the word itself in metal
+    ultra: () => `<div class="stage ultra"><div class="uside"><div class="uess"><i class="ring"></i><i class="in"></i><i class="ic"></i></div><div class="uess plain"><i class="in"></i><i class="ic"></i></div>
+      <div class="urow on"><i class="orb"></i><i class="ln"></i></div><div class="urow"><i class="ico"></i><i class="ln"></i></div><div class="urow"><i class="ico"></i><i class="ln s"></i></div>
+      <div class="ucard"><i class="uglow"></i><i class="uart"></i><i class="ut1"></i><i class="ut2"></i></div></div>
+      <div class="ubar"><i class="uurl"></i><i class="uload"></i></div><div class="upage"><div class="mark">Ultra</div></div></div>`,
     ink: () => `<div class="stage ink"><div class="bar"><svg viewBox="0 0 24 24"><path d="M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z"/><path d="M9 4v16"/></svg><svg viewBox="0 0 24 24"><path d="M15 6l-6 6l6 6"/></svg><svg viewBox="0 0 24 24" class="off"><path d="M9 6l6 6l-6 6"/></svg><svg viewBox="0 0 24 24"><path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/></svg>
       <span class="url"><b>journal.page</b> / Morning pages</span></div>
       <div class="body"><i class="h"></i><i class="l"></i><i class="l"></i><i class="l s"></i></div></div>`,
@@ -88,13 +95,14 @@
     ink: { v: WIRES.ink, t: "The site's own ink", d: "The toolbar's text and buttons take a touch of each site's colour: a soft brown on a cream page, a soft grey on a white one." },
     liquid: { v: WIRES.liquid, t: "Liquid glass", d: "Essentials, cards and buttons are glass now: lit along their top and bottom edges, with a fine dark line down their sides. Press one and it lights up under your finger." },
     rename: { v: WIRES.rename, t: "Downloads that name themselves", d: "Turn it on in settings, and each download gets a clear name from an AI service you choose, or one running on your own computer. It reads the page and even looks at photos. Undo puts the old name back." },
+    ultra: { v: WIRES.ultra, t: "Ultra", d: "Zia's extra effects, on from the start: a thinking orb while a tab loads, a liquid-metal loading line, the music player glowing in its artwork's colours, the open essential's colours drifting, and the Library's sections springing. Switch it off in Zia's settings for a calmer look." },
     flight: { v: WIRES.flight, t: "Downloads fly to the Library", d: "Save a file and it lifts off as a little row with its name, swoops away and drops into the Library button, the window dimming as it goes, as in Dia." },
     icons: { v: WIRES.icons, t: "5,166 icons, or your own", d: "Search Tabler's set by what you mean, not what it's called. Or right-click a folder and choose an SVG." },
   };
 
   const TOURS = {
-    install: { eyebrow: "Welcome to Zia", list: ["intro", "liquid", "numbers", "undo", "split", "color", "glassfolder", "cards", "tabpeek", "panels", "music", "address", "multiview", "pip", "pdf", "icons", "rename", "flight", "star"] },
-    update: { eyebrow: "New in Zia", list: ["whatsnew", "flight", "star"] },
+    install: { eyebrow: "Welcome to Zia", list: ["intro", "ultra", "liquid", "numbers", "undo", "split", "color", "glassfolder", "cards", "tabpeek", "panels", "music", "address", "multiview", "pip", "pdf", "icons", "rename", "flight", "star"] },
+    update: { eyebrow: "New in Zia", list: ["whatsnew", "ultra", "star"] },
   };
 
   // Numbered tabs and undo step through a little story, over and over

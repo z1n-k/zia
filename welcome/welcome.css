@@ -543,3 +543,53 @@ kbd > span, .w-key > span { position: static; display: block; text-box: trim-bot
 
 /* hairlines: a faint light along the top edge of each surface */
 .w-row, .w-page, .pv, .search { box-shadow: inset 0 .18cqw 0 rgba(255,255,255,.045); }
+
+/* Ultra: the essential's colours drifting, a thinking orb on a loading tab,
+   the music card's glow, the metal loading line, and the word in metal */
+.ultra { background: #0f0f10; }
+.ultra .uside { left: 0; top: 0; bottom: 0; width: 30cqw; background: rgba(255,255,255,.025); }
+.ultra .uess { left: 2.4cqw; top: 4cqw; width: 12cqw; height: 8.4cqw; border-radius: 2.4cqw; corner-shape: superellipse(1.93); overflow: hidden; background: rgba(255,255,255,.06); }
+.ultra .uess.plain { left: 15.6cqw; }
+.ultra .uess .ring { inset: -40%; background: conic-gradient(from 0deg, #5865f2, #e04, #fa0, #2bd, #5865f2); filter: blur(1.6cqw) saturate(1.4);
+  animation: u-turn 9s linear infinite, u-drift 5s ease-in-out infinite alternate; }
+.ultra .uess .in { inset: .5cqw; border-radius: 2cqw; corner-shape: superellipse(1.93); background: rgba(72,72,76,.88); }
+.ultra .uess.plain .in { inset: 0; background: none; }
+.ultra .uess .ic { left: 50%; top: 50%; width: 3.2cqw; height: 3.2cqw; translate: -50% -50%; border-radius: 50%; background: #5865f2; }
+.ultra .uess.plain .ic { background: #e5484d; }
+.ultra .urow { left: 2.4cqw; right: 2.4cqw; height: 4.8cqw; border-radius: 1.4cqw; }
+.ultra .urow:nth-of-type(3) { top: 16cqw; }
+.ultra .urow:nth-of-type(4) { top: 21.6cqw; }
+.ultra .urow:nth-of-type(5) { top: 27.2cqw; }
+.ultra .urow.on { background: rgba(255,255,255,.08); }
+.ultra .urow .ico, .ultra .urow .orb { left: 1.4cqw; top: 1.2cqw; width: 2.4cqw; height: 2.4cqw; border-radius: .6cqw; background: rgba(255,255,255,.35); }
+.ultra .urow .ln { left: 5.4cqw; top: 1.8cqw; width: 14cqw; height: 1.2cqw; border-radius: .6cqw; background: rgba(255,255,255,.22); }
+.ultra .urow .ln.s { width: 9cqw; }
+/* (a dotted globe turning, as the thinking orb's "searching") */
+.ultra .urow .orb { border-radius: 50%; background: radial-gradient(circle, #fff 26%, transparent 32%) 0 0 / .6cqw .6cqw;
+  mask: radial-gradient(circle, #000 52%, transparent 72%); animation: u-orb 1.6s linear infinite; }
+.ultra .ucard { left: 2.4cqw; right: 2.4cqw; bottom: 3cqw; height: 11cqw; border-radius: 2.4cqw; corner-shape: superellipse(1.93); overflow: hidden; background: rgba(0,0,0,.28); box-shadow: inset 0 0 0 .2cqw rgba(255,255,255,.08); }
+.ultra .uglow { left: 4%; right: 4%; bottom: -5cqw; height: 12cqw; border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 100%, rgba(255,70,120,.75), rgba(60,190,255,.5) 38%, rgba(175,70,255,.3) 58%, transparent 72%);
+  filter: blur(1.6cqw); animation: u-glow 1.8s ease-in-out infinite alternate; }
+.ultra .uart { left: 1.6cqw; top: 1.6cqw; width: 7.8cqw; height: 7.8cqw; border-radius: 1.4cqw; background: linear-gradient(135deg, #3d8a6b, #1f3a5a); }
+.ultra .ut1 { left: 11cqw; top: 3cqw; width: 11cqw; height: 1.4cqw; border-radius: .7cqw; background: rgba(255,255,255,.8); }
+.ultra .ut2 { left: 11cqw; top: 6cqw; width: 7cqw; height: 1.1cqw; border-radius: .6cqw; background: rgba(255,255,255,.35); }
+.ultra .ubar { left: 34cqw; right: 4cqw; top: 4cqw; height: 6cqw; border-radius: 1.8cqw; overflow: hidden; background: rgba(255,255,255,.06); }
+.ultra .uurl { left: 2.4cqw; top: 2.4cqw; width: 22cqw; height: 1.2cqw; border-radius: .6cqw; background: rgba(255,255,255,.4); }
+/* (silver, a light running along it as the metal's does) */
+.ultra .uload { left: 0; bottom: 0; height: .3cqw; width: 0;
+  background: linear-gradient(90deg, rgba(170,176,190,.7), #cdd2de 40%, #fff 50%, #cdd2de 60%, #f0f2f8) 0 0 / 200% 100%;
+  box-shadow: 0 0 1.4cqw .2cqw rgba(225,232,250,.35); animation: u-load 3.4s var(--ease) infinite, u-shine 1.2s linear infinite; }
+.ultra .upage { left: 34cqw; right: 4cqw; top: 13cqw; bottom: 4cqw; border-radius: 2cqw; background: rgba(255,255,255,.035); }
+.ultra .mark { left: 50%; top: 50%; translate: -50% -50%; font: 650 9cqw/1 -apple-system, "SF Pro Display", system-ui, sans-serif; letter-spacing: -.04em; color: #e9e9ec; white-space: nowrap; }
+@keyframes u-turn { to { rotate: 360deg; } }
+@keyframes u-drift { from { translate: -6% -4%; scale: 1.05; } to { translate: 6% 5%; scale: 1.25; } }
+@keyframes u-orb { to { background-position: 1.2cqw .6cqw; } }
+@keyframes u-glow { from { transform: scale(.85, .8); opacity: .65; } to { transform: scale(1.1, 1.15); opacity: 1; } }
+@keyframes u-load { 0% { width: 0; opacity: 1; } 70% { width: 100%; opacity: 1; } 85%, 100% { width: 100%; opacity: 0; } }
+@keyframes u-shine { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .ultra * { animation: none !important; }
+  .ultra .uload { width: 62%; }
+}
+

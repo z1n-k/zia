@@ -15739,7 +15739,7 @@
   // The welcome tour (welcome/index.html): once on a first install, and once after
   // a release that bumps WELCOME_VERSION ("release + welcome card"), over a dimmed
   // window. Closed, it stays closed; settings can switch it off or show it again.
-  const WELCOME_VERSION = "2.95.9";
+  const WELCOME_VERSION = "2.102.0";
   const WELCOME_SEEN_PREF = "zia.welcome.seen";
   const WELCOME_UPDATES_PREF = "zia.welcome.show";
   const WELCOME_AGAIN_PREF = "zia.welcome.again";
