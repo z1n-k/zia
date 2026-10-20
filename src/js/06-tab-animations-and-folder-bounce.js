@@ -403,7 +403,7 @@
       // (a folder opened where it is inside a closed one: Zen's own grow and shrink.
       // Held at no height till the end, as here, its tabs popped in once done, as
       // there's no shrinking rule round them to carry the motion)
-      motion.group.hasAttribute("zia-open-in-closed")
+      motion.group.matches("[zia-open-in-closed], [zia-closing-in-closed]")
     ) {
       return null;
     }
@@ -740,6 +740,9 @@
   // The folders round it had opened too, bringing back every other folder in them.
   // Clicked again, it closes back to the tab it shows.
   const OPEN_IN_CLOSED = "zia-open-in-closed";
+  // (while one shuts: its tabs still let show, for the shrink)
+  const CLOSING_IN_CLOSED = "zia-closing-in-closed";
+  const IN_CLOSED_MS = 200;
 
   function openKeptFolderNames() {
     const inShowingClosedFolder = (folder) => {
@@ -754,6 +757,43 @@
       for (const el of folder.querySelectorAll(`[${OPEN_IN_CLOSED}]`)) {
         el.removeAttribute(OPEN_IN_CLOSED);
       }
+    };
+
+    // Its tabs come and go as it opens and shuts (all but the one it keeps showing).
+    // Zen's grow and shrink go nowhere for them, as it's the closed folder's rules
+    // that hide them, not Zen: shutting, they dropped to nothing at once and faded on
+    // top of the tab shown; opening again, they were there at once. So Zia moves them,
+    // each tab's height and fade together, measured now and started before the next
+    // paint, over whatever Zen starts.
+    const passing = (folder) =>
+      [...(folder.groupContainer?.children || [])].filter(
+        (item) =>
+          (item.matches(".tabbrowser-tab:not([zen-empty-tab])") || item.matches("tab-group[split-view-group]")) &&
+          !item.matches('[selected], [visuallyselected], [folder-active="true"], [zia-kept-tab]') &&
+          !item.querySelector?.('.tabbrowser-tab:is([selected], [folder-active="true"])')
+      );
+    const swing = (folder, opening) => {
+      const items = passing(folder).map((item) => {
+        const style = item.style;
+        const saved = [style.height, style.minHeight];
+        style.height = "";
+        style.minHeight = "";
+        const height = item.getBoundingClientRect().height;
+        [style.height, style.minHeight] = saved;
+        return { item, height };
+      });
+      const moving = [];
+      requestAnimationFrame(() => {
+        for (const { item, height } of items) {
+          if (!height) {
+            continue;
+          }
+          const open = { height: `${height}px`, minHeight: `${height}px`, opacity: 1 };
+          const shut = { height: "0px", minHeight: "0px", opacity: 0 };
+          moving.push(item.animate(opening ? [shut, open] : [open, shut], { duration: IN_CLOSED_MS, easing: "ease-in-out", fill: opening ? "none" : "forwards" }));
+        }
+      });
+      return moving;
     };
 
     window.addEventListener(
@@ -807,29 +847,34 @@
         if (!folder.hasAttribute(OPEN_IN_CLOSED)) {
           return;
         }
-        // (once Zen has shrunk its tabs away: dropped at once, the closed folder's
-        // rules hid them before Zen's shrink could show, so it shut in a blink)
-        let timer = 0;
-        const done = (doneEvent) => {
-          if (doneEvent && doneEvent.target !== folder) {
-            return;
-          }
-          clearTimeout(timer);
-          folder.removeEventListener("TabGroupAnimationComplete", done);
+        // (the closed folder's rules take them once they've shrunk away)
+        folder.setAttribute(CLOSING_IN_CLOSED, "true");
+        const moving = swing(folder, false);
+        clearTimeout(folder.ziaClosingTimer);
+        folder.ziaClosingTimer = setTimeout(() => {
+          folder.removeAttribute(CLOSING_IN_CLOSED);
           if (folder.hasAttribute("collapsed")) {
             folder.removeAttribute(OPEN_IN_CLOSED);
           }
-        };
-        folder.addEventListener("TabGroupAnimationComplete", done);
-        timer = setTimeout(done, 600);
+          for (const animation of moving) {
+            animation.cancel();
+          }
+        }, IN_CLOSED_MS + 40);
       },
       true
     );
     window.addEventListener(
       "TabGroupExpand",
       (event) => {
-        if (isFolder(event.target)) {
-          unmarkWithin(event.target);
+        const folder = event.target;
+        if (!isFolder(folder)) {
+          return;
+        }
+        unmarkWithin(folder);
+        if (folder.hasAttribute(OPEN_IN_CLOSED)) {
+          clearTimeout(folder.ziaClosingTimer);
+          folder.removeAttribute(CLOSING_IN_CLOSED);
+          swing(folder, true);
         }
       },
       true

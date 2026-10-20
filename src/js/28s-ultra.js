@@ -1,8 +1,8 @@
   // ---------- Ultra (zia.ultra, on by default)
   // Effects ported from Libraries.dev (https://libraries.dev, MIT, by Jakub
   // Antalik), each where its author places it: a thinking orb for loading, a
-  // glow under what's playing, and the Library's chosen section springing to
-  // the next (the colour round the open essential drifting is 28-ultra.css).
+  // glow under what's playing, the Library's chosen section springing to the
+  // next, and the colour round the open essential drifting.
   const ULTRA_PREF = "zia.ultra";
   const ultraOn = () => Services.prefs.getBoolPref(ULTRA_PREF, true);
 
@@ -253,7 +253,92 @@
     );
   }
 
+  // The colour Zen draws round the open essential's inner card (its icon's, blurred:
+  // Zen's "essentials favicon background") slowly moving about: it turns, drifts
+  // and swells on cycles of their own lengths, so the colours wander round the edge
+  // without repeating for minutes. Still under reduced motion. Set going by Zia
+  // rather than in CSS, on the page's own clock: Zen draws the colour only while the
+  // essential is chosen, and as a CSS animation it started again from the beginning
+  // each time it came back (a glance on the essential closing, say), a jump. Set
+  // going again each time, it comes back where it would be had it run all along.
+  const ESSENTIAL_DRIFT = [
+    [[{ rotate: "0deg" }, { rotate: "360deg" }], { duration: 37000, direction: "normal" }],
+    [
+      [
+        { translate: "-6% -4%", easing: "ease-in-out" },
+        { translate: "5% -2%", offset: 0.3, easing: "ease-in-out" },
+        { translate: "-2% 6%", offset: 0.55, easing: "ease-in-out" },
+        { translate: "6% 3%", offset: 0.8, easing: "ease-in-out" },
+        { translate: "-4% 5%" },
+      ],
+      { duration: 23000, direction: "alternate" },
+    ],
+    [[{ scale: 1.1, easing: "ease-in-out" }, { scale: 1.35 }], { duration: 17000, direction: "alternate" }],
+  ];
+
+  function watchUltraEssentialDrift() {
+    const drifting = new Map();
+    const still = matchMedia("(prefers-reduced-motion: reduce)");
+    const wanted = () => ultraOn() && Services.prefs.getBoolPref("zen.theme.essentials-favicon-bg", false) && !still.matches;
+    const stop = () => {
+      for (const animations of drifting.values()) {
+        for (const animation of animations) {
+          animation.cancel();
+        }
+      }
+      drifting.clear();
+    };
+    const start = (tab) => {
+      const background = tab.querySelector(":scope > .tab-stack > .tab-background");
+      if (!background) {
+        return;
+      }
+      for (const animation of drifting.get(background) || []) {
+        animation.cancel();
+      }
+      drifting.set(
+        background,
+        ESSENTIAL_DRIFT.map(([keyframes, timing]) => {
+          const animation = background.animate(keyframes, { ...timing, iterations: Infinity, pseudoElement: "::after" });
+          // (the page's clock: wherever it's started, it's where the others are)
+          animation.startTime = 0;
+          return animation;
+        })
+      );
+    };
+    const sync = () => {
+      stop();
+      if (!wanted()) {
+        return;
+      }
+      for (const tab of document.querySelectorAll(".tabbrowser-tab[zen-essential][visuallyselected]")) {
+        start(tab);
+      }
+    };
+    // (an essential chosen again: its colour is drawn anew, so its drift too)
+    new MutationObserver((records) => {
+      if (!wanted()) {
+        return;
+      }
+      for (const { target } of records) {
+        if (target.hasAttribute("zen-essential") && target.hasAttribute("visuallyselected")) {
+          start(target);
+        }
+      }
+      for (const [background, animations] of drifting) {
+        if (!background.isConnected) {
+          animations.forEach((animation) => animation.cancel());
+          drifting.delete(background);
+        }
+      }
+    }).observe(gNavToolbox, { subtree: true, attributes: true, attributeFilter: ["visuallyselected"] });
+    watchPrefs([ULTRA_PREF, "zen.theme.essentials-favicon-bg"], sync);
+    still.addEventListener("change", sync);
+    sync();
+  }
+
   function watchUltra() {
     safely("watchUltraOrbs", watchUltraOrbs);
     safely("watchUltraGlow", watchUltraGlow);
+    safely("watchUltraEssentialDrift", watchUltraEssentialDrift);
   }

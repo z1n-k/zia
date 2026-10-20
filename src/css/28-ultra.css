@@ -33,39 +33,6 @@
   }
 }
 
-/* The colour Zen draws round the open essential's inner card (its icon's,
-   blurred: Zen's "essentials favicon background") slowly moving about: it
-   turns, drifts and swells on cycles of their own lengths, so the colours
-   wander round the edge without repeating for minutes. Still under reduced
-   motion. */
-@media -moz-pref("zia.ultra") and -moz-pref("zen.theme.essentials-favicon-bg") {
-  @media (prefers-reduced-motion: no-preference) {
-    .tabbrowser-tab[zen-essential][visuallyselected] > .tab-stack > .tab-background::after {
-      animation:
-        zia-essential-turn 37s linear infinite,
-        zia-essential-drift 23s ease-in-out infinite alternate,
-        zia-essential-swell 17s ease-in-out infinite alternate !important;
-    }
-  }
-}
-
-@keyframes zia-essential-turn {
-  to { rotate: 360deg; }
-}
-
-@keyframes zia-essential-drift {
-  0% { translate: -6% -4%; }
-  30% { translate: 5% -2%; }
-  55% { translate: -2% 6%; }
-  80% { translate: 6% 3%; }
-  100% { translate: -4% 5%; }
-}
-
-@keyframes zia-essential-swell {
-  from { scale: 1.1; }
-  to { scale: 1.35; }
-}
-
 /* The Library's chosen-section tile on a gentler spring than Zia's own, as
    it stretches and squashes on the way too (28s-ultra.js) */
 @media -moz-pref("zia.ultra") {

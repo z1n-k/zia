@@ -2639,7 +2639,7 @@
       // (a folder opened where it is inside a closed one: Zen's own grow and shrink.
       // Held at no height till the end, as here, its tabs popped in once done, as
       // there's no shrinking rule round them to carry the motion)
-      motion.group.hasAttribute("zia-open-in-closed")
+      motion.group.matches("[zia-open-in-closed], [zia-closing-in-closed]")
     ) {
       return null;
     }
@@ -2976,6 +2976,9 @@
   // The folders round it had opened too, bringing back every other folder in them.
   // Clicked again, it closes back to the tab it shows.
   const OPEN_IN_CLOSED = "zia-open-in-closed";
+  // (while one shuts: its tabs still let show, for the shrink)
+  const CLOSING_IN_CLOSED = "zia-closing-in-closed";
+  const IN_CLOSED_MS = 200;
 
   function openKeptFolderNames() {
     const inShowingClosedFolder = (folder) => {
@@ -2990,6 +2993,43 @@
       for (const el of folder.querySelectorAll(`[${OPEN_IN_CLOSED}]`)) {
         el.removeAttribute(OPEN_IN_CLOSED);
       }
+    };
+
+    // Its tabs come and go as it opens and shuts (all but the one it keeps showing).
+    // Zen's grow and shrink go nowhere for them, as it's the closed folder's rules
+    // that hide them, not Zen: shutting, they dropped to nothing at once and faded on
+    // top of the tab shown; opening again, they were there at once. So Zia moves them,
+    // each tab's height and fade together, measured now and started before the next
+    // paint, over whatever Zen starts.
+    const passing = (folder) =>
+      [...(folder.groupContainer?.children || [])].filter(
+        (item) =>
+          (item.matches(".tabbrowser-tab:not([zen-empty-tab])") || item.matches("tab-group[split-view-group]")) &&
+          !item.matches('[selected], [visuallyselected], [folder-active="true"], [zia-kept-tab]') &&
+          !item.querySelector?.('.tabbrowser-tab:is([selected], [folder-active="true"])')
+      );
+    const swing = (folder, opening) => {
+      const items = passing(folder).map((item) => {
+        const style = item.style;
+        const saved = [style.height, style.minHeight];
+        style.height = "";
+        style.minHeight = "";
+        const height = item.getBoundingClientRect().height;
+        [style.height, style.minHeight] = saved;
+        return { item, height };
+      });
+      const moving = [];
+      requestAnimationFrame(() => {
+        for (const { item, height } of items) {
+          if (!height) {
+            continue;
+          }
+          const open = { height: `${height}px`, minHeight: `${height}px`, opacity: 1 };
+          const shut = { height: "0px", minHeight: "0px", opacity: 0 };
+          moving.push(item.animate(opening ? [shut, open] : [open, shut], { duration: IN_CLOSED_MS, easing: "ease-in-out", fill: opening ? "none" : "forwards" }));
+        }
+      });
+      return moving;
     };
 
     window.addEventListener(
@@ -3043,29 +3083,34 @@
         if (!folder.hasAttribute(OPEN_IN_CLOSED)) {
           return;
         }
-        // (once Zen has shrunk its tabs away: dropped at once, the closed folder's
-        // rules hid them before Zen's shrink could show, so it shut in a blink)
-        let timer = 0;
-        const done = (doneEvent) => {
-          if (doneEvent && doneEvent.target !== folder) {
-            return;
-          }
-          clearTimeout(timer);
-          folder.removeEventListener("TabGroupAnimationComplete", done);
+        // (the closed folder's rules take them once they've shrunk away)
+        folder.setAttribute(CLOSING_IN_CLOSED, "true");
+        const moving = swing(folder, false);
+        clearTimeout(folder.ziaClosingTimer);
+        folder.ziaClosingTimer = setTimeout(() => {
+          folder.removeAttribute(CLOSING_IN_CLOSED);
           if (folder.hasAttribute("collapsed")) {
             folder.removeAttribute(OPEN_IN_CLOSED);
           }
-        };
-        folder.addEventListener("TabGroupAnimationComplete", done);
-        timer = setTimeout(done, 600);
+          for (const animation of moving) {
+            animation.cancel();
+          }
+        }, IN_CLOSED_MS + 40);
       },
       true
     );
     window.addEventListener(
       "TabGroupExpand",
       (event) => {
-        if (isFolder(event.target)) {
-          unmarkWithin(event.target);
+        const folder = event.target;
+        if (!isFolder(folder)) {
+          return;
+        }
+        unmarkWithin(folder);
+        if (folder.hasAttribute(OPEN_IN_CLOSED)) {
+          clearTimeout(folder.ziaClosingTimer);
+          folder.removeAttribute(CLOSING_IN_CLOSED);
+          swing(folder, true);
         }
       },
       true
@@ -19762,8 +19807,8 @@
   // ---------- Ultra (zia.ultra, on by default)
   // Effects ported from Libraries.dev (https://libraries.dev, MIT, by Jakub
   // Antalik), each where its author places it: a thinking orb for loading, a
-  // glow under what's playing, and the Library's chosen section springing to
-  // the next (the colour round the open essential drifting is 28-ultra.css).
+  // glow under what's playing, the Library's chosen section springing to the
+  // next, and the colour round the open essential drifting.
   const ULTRA_PREF = "zia.ultra";
   const ultraOn = () => Services.prefs.getBoolPref(ULTRA_PREF, true);
 
@@ -20014,9 +20059,94 @@
     );
   }
 
+  // The colour Zen draws round the open essential's inner card (its icon's, blurred:
+  // Zen's "essentials favicon background") slowly moving about: it turns, drifts
+  // and swells on cycles of their own lengths, so the colours wander round the edge
+  // without repeating for minutes. Still under reduced motion. Set going by Zia
+  // rather than in CSS, on the page's own clock: Zen draws the colour only while the
+  // essential is chosen, and as a CSS animation it started again from the beginning
+  // each time it came back (a glance on the essential closing, say), a jump. Set
+  // going again each time, it comes back where it would be had it run all along.
+  const ESSENTIAL_DRIFT = [
+    [[{ rotate: "0deg" }, { rotate: "360deg" }], { duration: 37000, direction: "normal" }],
+    [
+      [
+        { translate: "-6% -4%", easing: "ease-in-out" },
+        { translate: "5% -2%", offset: 0.3, easing: "ease-in-out" },
+        { translate: "-2% 6%", offset: 0.55, easing: "ease-in-out" },
+        { translate: "6% 3%", offset: 0.8, easing: "ease-in-out" },
+        { translate: "-4% 5%" },
+      ],
+      { duration: 23000, direction: "alternate" },
+    ],
+    [[{ scale: 1.1, easing: "ease-in-out" }, { scale: 1.35 }], { duration: 17000, direction: "alternate" }],
+  ];
+
+  function watchUltraEssentialDrift() {
+    const drifting = new Map();
+    const still = matchMedia("(prefers-reduced-motion: reduce)");
+    const wanted = () => ultraOn() && Services.prefs.getBoolPref("zen.theme.essentials-favicon-bg", false) && !still.matches;
+    const stop = () => {
+      for (const animations of drifting.values()) {
+        for (const animation of animations) {
+          animation.cancel();
+        }
+      }
+      drifting.clear();
+    };
+    const start = (tab) => {
+      const background = tab.querySelector(":scope > .tab-stack > .tab-background");
+      if (!background) {
+        return;
+      }
+      for (const animation of drifting.get(background) || []) {
+        animation.cancel();
+      }
+      drifting.set(
+        background,
+        ESSENTIAL_DRIFT.map(([keyframes, timing]) => {
+          const animation = background.animate(keyframes, { ...timing, iterations: Infinity, pseudoElement: "::after" });
+          // (the page's clock: wherever it's started, it's where the others are)
+          animation.startTime = 0;
+          return animation;
+        })
+      );
+    };
+    const sync = () => {
+      stop();
+      if (!wanted()) {
+        return;
+      }
+      for (const tab of document.querySelectorAll(".tabbrowser-tab[zen-essential][visuallyselected]")) {
+        start(tab);
+      }
+    };
+    // (an essential chosen again: its colour is drawn anew, so its drift too)
+    new MutationObserver((records) => {
+      if (!wanted()) {
+        return;
+      }
+      for (const { target } of records) {
+        if (target.hasAttribute("zen-essential") && target.hasAttribute("visuallyselected")) {
+          start(target);
+        }
+      }
+      for (const [background, animations] of drifting) {
+        if (!background.isConnected) {
+          animations.forEach((animation) => animation.cancel());
+          drifting.delete(background);
+        }
+      }
+    }).observe(gNavToolbox, { subtree: true, attributes: true, attributeFilter: ["visuallyselected"] });
+    watchPrefs([ULTRA_PREF, "zen.theme.essentials-favicon-bg"], sync);
+    still.addEventListener("change", sync);
+    sync();
+  }
+
   function watchUltra() {
     safely("watchUltraOrbs", watchUltraOrbs);
     safely("watchUltraGlow", watchUltraGlow);
+    safely("watchUltraEssentialDrift", watchUltraEssentialDrift);
   }
 // Zia glow: a colourful glow along the bottom edge of a card that rises and
 // blooms while media plays. A framework-free port of the "glow" look of
