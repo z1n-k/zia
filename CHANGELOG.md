@@ -4,6 +4,21 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.102.16] — 2026-10-20
+
+### Fixed
+
+- Dragging several selected tabs, they land where they're let go: dragged a
+  few rows down, they could go to the end of the list. The others fold into
+  the dragged tab with the rows closing up smoothly, it shows as a small
+  stack with their count, and on the drop they grow out under it where they
+  land, rather than jumping across from where they'd been (#396, thanks
+  Y4k3d0).
+- With the page edge to edge, compact mode's sidebar keeps a small gap from
+  the window's edges, so its corners match (the window's own corner cut into
+  it), and the opened address bar pop-up stays inside the window rather than
+  being cut off at its edge (#418, thanks OneGunBullet).
+
 ## [2.102.15] — 2026-10-20
 
 ### Fixed
