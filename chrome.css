@@ -3337,7 +3337,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
    floating on its own. Marked on the space while it's collapsed and until
    it has finished opening again (zia.uc.js): Zen leaves the name at no
    height, which showed for a moment as it opened. */
-zen-workspace[zia-keep-folder-names] :is(zen-folder, tab-group:not([split-view-group])):has(.tabbrowser-tab[selected]) > .tab-group-label-container {
+zen-workspace[zia-keep-folder-names] .zen-workspace-pinned-tabs-section :is(zen-folder, tab-group:not([split-view-group])):has(.tabbrowser-tab[selected]) > .tab-group-label-container {
   /* (Zen's own height for it, which its collapse animates to nothing) */
   height: calc(var(--tab-margin-block) * 2 + var(--tab-min-height)) !important;
   opacity: 1 !important;
@@ -3346,7 +3346,7 @@ zen-workspace[zia-keep-folder-names] :is(zen-folder, tab-group:not([split-view-g
 
 /* ...and the tab keeps its place under it: Zen pulls it out to the edge
    when the space collapses, as it would be with its folder hidden */
-zen-workspace[zia-keep-folder-names] .tab-group-container > :is(.tabbrowser-tab[selected], tab-group[split-view-group]:has(.tabbrowser-tab[selected])) {
+zen-workspace[zia-keep-folder-names] .zen-workspace-pinned-tabs-section .tab-group-container > :is(.tabbrowser-tab[selected], tab-group[split-view-group]:has(.tabbrowser-tab[selected])) {
   --zen-folder-indent: 14px !important;
 }
 
@@ -3411,9 +3411,11 @@ zen-folder[collapsed][zia-was-active] > .tab-group-container > .zen-tab-group-st
 
 /* ...and the folders it hides go entirely: Zen shrinks their contents to
    nothing, but their colour and outline stayed, squashed into a thin
-   bright line above the kept folder */
-zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-group])):not(:has(.tabbrowser-tab[selected]))::before,
-zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-group])):not(:has(.tabbrowser-tab[selected]))::after {
+   bright line above the kept folder. (Only the pinned ones it hides: a group
+   among the space's other tabs, Advanced Tab Groups', stays, and lost its
+   colour until a tab in it was chosen.) */
+zen-workspace[collapsedpinnedtabs] .zen-workspace-pinned-tabs-section :is(zen-folder, tab-group:not([split-view-group])):not(:has(.tabbrowser-tab[selected]))::before,
+zen-workspace[collapsedpinnedtabs] .zen-workspace-pinned-tabs-section :is(zen-folder, tab-group:not([split-view-group])):not(:has(.tabbrowser-tab[selected]))::after {
   opacity: 0 !important;
 }
 
