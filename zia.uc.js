@@ -9583,8 +9583,11 @@
 
   // A tab group made from a tab's menu ("Add Tab to Group", "New Group") is named
   // where it is, as a new folder is: its name field opens in the sidebar, ready to
-  // type in. Firefox's own naming box for it didn't show in Zen, so the group was
-  // left nameless (a bare checkbox) until renamed from its menu.
+  // type in, once the menu has gone. Firefox's own naming box for it didn't show in
+  // Zen, so the group was left nameless (a bare checkbox) until renamed from its menu.
+  // Advanced Tab Groups names a new group in a field of its own, so with it, its field
+  // is the one opened: two at once, tidying its own away it took Zen's, which left
+  // the sidebar out for good and no name taking.
   function nameNewGroupsInPlace() {
     window.addEventListener(
       "TabGroupCreateByUser",
@@ -9603,42 +9606,44 @@
         label.onRenameFinished ??= (name) => {
           group.label = name || "";
         };
-        requestAnimationFrame(() => {
+        let named = false;
+        const name = () => {
+          // (already being named, in Advanced Tab Groups' field or Zen's)
+          if (named || !group.isConnected || document.getElementById("tab-label-input") || root.hasAttribute("zen-renaming-tab")) {
+            named = true;
+            return;
+          }
+          named = true;
           try {
-            renamer.start({ target: label, explicit: true });
+            if (typeof group._renameGroupFromContextMenu === "function") {
+              group._renameGroupFromContextMenu();
+            } else {
+              renamer.start({ target: label, explicit: true });
+            }
           } catch (err) {
             noteError("new group: name", err);
           }
-        });
+        };
+        // (the menu, closing, took the typing from a field opened under it)
+        const menu = document.getElementById("tabContextMenu");
+        if (menu && menu.state !== "closed") {
+          const hidden = (e) => {
+            if (e.target === menu) {
+              menu.removeEventListener("popuphidden", hidden);
+              setTimeout(name, 0);
+            }
+          };
+          menu.addEventListener("popuphidden", hidden);
+          setTimeout(() => {
+            menu.removeEventListener("popuphidden", hidden);
+            name();
+          }, 1000);
+        } else {
+          requestAnimationFrame(name);
+        }
       },
       true
     );
-  }
-
-  // In compact mode the sidebar stays out while a name in it is being typed (a tab's,
-  // a folder's, a group's): it slid away as the pointer left it, the name half typed.
-  function keepSidebarWhileRenaming() {
-    const toolbox = document.getElementById("navigator-toolbox");
-    if (!toolbox) {
-      return;
-    }
-    const ACTIVE = "zen-compact-mode-active";
-    let held = false;
-    const sync = () => {
-      const renaming = root.hasAttribute("zen-renaming-tab") && root.getAttribute("zen-compact-mode") === "true";
-      if (renaming && !toolbox.hasAttribute(ACTIVE)) {
-        toolbox.setAttribute(ACTIVE, "true");
-        held = true;
-      } else if (!renaming && held) {
-        held = false;
-        // (only if nothing else in it, a menu or the address pop-up, still holds it out)
-        if (!toolbox.querySelector(":where([panelopen], [open], [breakout-extend]):not(tab)")) {
-          toolbox.removeAttribute(ACTIVE);
-        }
-      }
-    };
-    new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ["zen-renaming-tab", "zen-compact-mode"] });
-    new MutationObserver(sync).observe(toolbox, { attributes: true, attributeFilter: [ACTIVE] });
   }
   // Optional: the last essential stretches across whatever's left of its row.
   // The grid can't span "to the end of the row" by itself, so Zia counts the
@@ -21713,7 +21718,6 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     safely("keepTabsHiddenAfterActiveLeaves", keepTabsHiddenAfterActiveLeaves);
     safely("openKeptFolderNames", openKeptFolderNames);
     safely("nameNewGroupsInPlace", nameNewGroupsInPlace);
-    safely("keepSidebarWhileRenaming", keepSidebarWhileRenaming);
     safely("allowEmojiFolderIcons", allowEmojiFolderIcons);
     safely("hideWwwInUrlbar", hideWwwInUrlbar);
     safely("watchRightEdges", watchRightEdges);

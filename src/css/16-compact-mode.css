@@ -401,6 +401,22 @@
   }
 }
 
+/* A group being named in Advanced Tab Groups' own field (zen-renaming-group, where
+   Zen's naming is zen-renaming-tab): the flyout sidebar stays out while the name is
+   typed, as Zen keeps it out for its own, rather than sliding away mid-name. Only
+   while the field is there: a group deleted mid-name leaves the flag up. */
+@media -moz-pref("zen.view.compact.hide-tabbar") or -moz-pref("zen.view.use-single-toolbar") {
+  :root[zen-compact-mode="true"][zen-renaming-group="true"]:not([customizing], [inDOMFullscreen="true"], [supress-primary-adjustment="true"])
+    #navigator-toolbox:not([animate="true"]):has(#tab-label-input) {
+    translate: none !important;
+
+    & #titlebar {
+      transition: none !important;
+      visibility: visible !important;
+    }
+  }
+}
+
 @media (-moz-platform: windows) {
   /* no window-button box in compact's top row: the real ones stay top right
      (zia.uc.js), and a box left in the row pushed the space's name out */
