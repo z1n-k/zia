@@ -2,8 +2,8 @@
   // Effects ported from Libraries.dev (https://libraries.dev, MIT, by Jakub
   // Antalik), each where its author places it: a thinking orb for loading, a
   // glow under what's playing, and the Library's chosen section springing
-  // to the next (the address bar's loading line in border-beam's ocean
-  // colours is 28-ultra.css).
+  // to the next (the address bar's loading line in holographic colours is
+  // 28-ultra.css).
   const ULTRA_PREF = "zia.ultra";
   const ultraOn = () => Services.prefs.getBoolPref(ULTRA_PREF, true);
 

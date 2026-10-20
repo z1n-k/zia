@@ -32,49 +32,55 @@
 }
 
 /* The address bar's loading line, as wide, as thick and moving as it always
-   does, in border-beam's "ocean" colours (Libraries.dev): the line through
-   its blues and violets to a pale head, the glows round the head in them, and
-   the colours drifting and brightening as its beam's do. Not with the loading
-   line in the space's own colour (an option). */
+   does, in holographic colours: the line through pastel lavender, pink,
+   peach, yellow, mint and blue, the glows round its head in them, and the
+   whole of it turning slowly through the rainbow as foil does, brightening as
+   it goes. Not with the loading line in the space's own colour (an option). */
 @media -moz-pref("zia.ultra") {
   @media not -moz-pref("zia.loading-bar.accent-color") {
     :is(#urlbar:not([breakout-extend]), .zia-pane-address)::after {
       --zia-load-line: linear-gradient(
         to right,
-        rgba(100, 80, 220, 0.7),
-        rgb(60, 120, 255) 40%,
-        rgb(130, 70, 255) 70%,
-        rgb(100, 120, 255) 88%,
-        rgb(205, 210, 255) 100%
+        rgba(190, 165, 255, 0.8),
+        rgb(255, 160, 215) 18%,
+        rgb(255, 200, 160) 34%,
+        rgb(240, 235, 150) 50%,
+        rgb(150, 240, 190) 66%,
+        rgb(140, 225, 240) 82%,
+        rgb(215, 205, 255) 100%
       );
-      --zia-load-tint: rgba(100, 80, 220, 0.3), rgba(60, 120, 255, 0.14) 50%, transparent 100%;
-      --zia-load-glow: rgba(100, 120, 255, 0.42), rgba(130, 100, 220, 0.18) 35%, rgba(60, 120, 255, 0.06) 70%, transparent 100%;
+      --zia-load-tint: rgba(190, 165, 255, 0.28), rgba(140, 225, 240, 0.14) 50%, transparent 100%;
+      --zia-load-glow: rgba(255, 160, 215, 0.4), rgba(150, 240, 190, 0.2) 35%, rgba(160, 185, 255, 0.07) 70%, transparent 100%;
     }
 
-    /* (on a light space, the palette's deeper light-theme shades) */
+    /* (on a light space, the same foil deeper, as pastels vanish on white) */
     :root[zia-light] :is(#urlbar:not([breakout-extend]), .zia-pane-address)::after {
       --zia-load-line: linear-gradient(
         to right,
-        rgba(80, 60, 200, 0.7),
-        rgb(50, 100, 220) 40%,
-        rgb(110, 60, 220) 70%,
-        rgb(60, 60, 180) 88%,
-        rgb(120, 90, 245) 100%
+        rgba(150, 120, 230, 0.75),
+        rgb(225, 110, 180) 18%,
+        rgb(230, 150, 90) 34%,
+        rgb(190, 180, 50) 50%,
+        rgb(70, 190, 130) 66%,
+        rgb(60, 170, 200) 82%,
+        rgb(110, 120, 235) 100%
       );
-      --zia-load-tint: rgba(80, 60, 200, 0.24), rgba(50, 100, 220, 0.1) 50%, transparent 100%;
-      --zia-load-glow: rgba(60, 60, 180, 0.32), rgba(80, 100, 200, 0.14) 35%, rgba(50, 100, 220, 0.04) 70%, transparent 100%;
+      --zia-load-tint: rgba(150, 120, 230, 0.2), rgba(60, 170, 200, 0.08) 50%, transparent 100%;
+      --zia-load-glow: rgba(225, 110, 180, 0.28), rgba(70, 190, 130, 0.12) 35%, rgba(110, 120, 235, 0.04) 70%, transparent 100%;
     }
 
     :root[zia-loading="true"] #urlbar:not([breakout-extend])::after,
     :root .zia-pane-address[zia-loading]:not(#zia-none)::after {
-      animation: zia-loading-ocean 2.8s ease-in-out infinite;
+      animation: zia-loading-holo 6s linear infinite;
     }
   }
 }
 
-/* (the beam's hue drift and brightening, twice the shimmer's beat) */
-@keyframes zia-loading-ocean {
-  0%, 100% { filter: hue-rotate(-12deg) brightness(1.1) saturate(1.2); }
-  25%, 75% { filter: hue-rotate(0deg) brightness(1.35) saturate(1.2); }
-  50% { filter: hue-rotate(12deg) brightness(1.1) saturate(1.2); }
+/* (once round the rainbow, brightening twice on the way) */
+@keyframes zia-loading-holo {
+  0% { filter: hue-rotate(0deg) brightness(1) saturate(1.2); }
+  25% { filter: hue-rotate(90deg) brightness(1.15) saturate(1.2); }
+  50% { filter: hue-rotate(180deg) brightness(1) saturate(1.2); }
+  75% { filter: hue-rotate(270deg) brightness(1.15) saturate(1.2); }
+  100% { filter: hue-rotate(360deg) brightness(1) saturate(1.2); }
 }
