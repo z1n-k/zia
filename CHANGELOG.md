@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.102.12] — 2026-10-20
+
+### Fixed
+
+- Opening a folder holding the selected tab, its other tabs grow back to
+  their height, rather than fading in squashed onto one row and popping to
+  their height once done (thanks Bxthesda).
+- With "Zen's own Library look" on, no empty box sits under the Library's
+  sections: Zia's sliding tile was still put in there, unstyled.
+
 ## [2.102.11] — 2026-10-20
 
 ### Fixed
