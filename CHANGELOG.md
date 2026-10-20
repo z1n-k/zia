@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.103.6] — 2026-10-20
+
+### Fixed
+
+- Ultra: an essential you've opened and left keeps the fine edge round its
+  tile. The open essential's drifting colour kept drifting after it was left,
+  on the layer that is then the tile's edge, which went out of the tile: two
+  lines sweeping across it (what 2.103.5 meant to fix), then no edge at all.
+  The colour of the open one turns again, as before 2.103.5 (thanks Bxthesda
+  and Poumpky).
+
 ## [2.103.5] — 2026-10-20
 
 ### Changed
