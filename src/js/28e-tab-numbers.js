@@ -120,6 +120,12 @@
             return;
           }
           const digit = /^(?:Digit|Numpad)([0-9])$/.exec(event.code)?.[1];
+          // A 0 names no tab on its own (they're counted from 1): it's Firefox's own
+          // Cmd/Ctrl+0, the page back to its own size, unless it carries on a number
+          // being typed (10, 20…). Held back, the zoom couldn't be reset.
+          if (digit === "0" && modHeld(event) && !(typed && startsANumber(`${typed}0`))) {
+            return;
+          }
           if (digit !== undefined && modHeld(event)) {
             event.preventDefault();
             event.stopPropagation();
