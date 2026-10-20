@@ -4,6 +4,29 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.103.0] — 2026-10-20
+
+### Added
+
+- With the address bar's text centred, an option to keep the opened pop-up's
+  text from the left, in line with the rows under it (#446, thanks
+  OneGunBullet).
+
+### Fixed
+
+- Centred address bar text stays where it is as the bar is clicked, rather
+  than jumping aside (#443, thanks OneGunBullet).
+- On Settings, scrolling with the address bar pop-up open no longer gives the
+  toolbar the pop-up's colour (#444, thanks OneGunBullet).
+- The screenshot buttons (Save visible, Save full page) are no longer cut off
+  at the top, and take the toolbar's colour; the preview of a page's shot has
+  Zia's buttons, Download in Zia's blue (#445, thanks OneGunBullet).
+- The address bar pop-up's last row no longer hangs out below its bottom
+  edge (#450, thanks PowerFactory384).
+- A new tab with an extension's or Zen's own new tab page no longer opens the
+  floating search box over the page, leaving the toolbar's address empty,
+  unless "New tabs start in the address bar" is on (thanks Briski).
+
 ## [2.102.16] — 2026-10-20
 
 ### Fixed
