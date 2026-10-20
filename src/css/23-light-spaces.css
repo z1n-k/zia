@@ -52,10 +52,14 @@
     color: color-mix(in srgb, var(--zia-sidebar-ink) 90%, transparent) !important;
   }
 
+  /* the selected tab's glow, as a light space has it: light can't glow on
+     white, so a soft shadow lifts the white card off the sidebar instead
+     (gone with the glow, zia.tabs.no-glow) */
   & .tabbrowser-tab:not([zen-essential])[visuallyselected] > .tab-stack > .tab-background {
     box-shadow:
       0 0 0 0.5px rgba(0, 0, 0, 0.06),
-      0 1px 3px rgba(0, 0, 0, 0.08) !important;
+      0 1px 3px rgba(0, 0, 0, 0.08),
+      0 4px 14px var(--zia-light-tab-lift, rgba(0, 0, 0, 0.08)) !important;
   }
 
   & .tabbrowser-tab:not([zen-essential], [visuallyselected]):hover > .tab-stack > .tab-background {

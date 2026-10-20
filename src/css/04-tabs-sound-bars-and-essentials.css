@@ -247,6 +247,8 @@
 @media -moz-pref("zia.tabs.no-glow") {
   :root:not(#zia-none) {
     --zia-active-glow-color: transparent;
+    /* (and a light space's soft shadow in its place, 23-light-spaces.css) */
+    --zia-light-tab-lift: transparent;
     & .tabbrowser-tab:not([zen-essential])[visuallyselected] > .tab-stack > .tab-background,
     & tab-group[split-view-group] > .tab-group-container {
       box-shadow: none !important;
