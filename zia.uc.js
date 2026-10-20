@@ -2635,7 +2635,11 @@
     if (
       !motion ||
       !isSlide(keyframes, options) ||
-      !(motion.closing ? motion.group.hasAttribute("has-active") : motion.hadActive)
+      !(motion.closing ? motion.group.hasAttribute("has-active") : motion.hadActive) ||
+      // (a folder opened where it is inside a closed one: Zen's own grow and shrink.
+      // Held at no height till the end, as here, its tabs popped in once done, as
+      // there's no shrinking rule round them to carry the motion)
+      motion.group.hasAttribute("zia-open-in-closed")
     ) {
       return null;
     }
@@ -2982,15 +2986,21 @@
         if (!inShowingClosedFolder(folder)) {
           return;
         }
+        const box = folder.groupContainer;
+        const before = box?.getBoundingClientRect().height ?? 0;
         folder.setAttribute(OPEN_IN_CLOSED, "true");
         // (open already, hidden with the rest as the folder round it closed: shown as
-        // it is, rather than Zen closing it)
+        // it is, rather than Zen closing it, growing to its height)
         if (!folder.hasAttribute("collapsed")) {
           event.stopPropagation();
           event.preventDefault();
           const hidden = (folder.allItems || []).filter((item) => item.style.height === "0px" || item.style.opacity === "0");
           if (hidden.length) {
             window.gZenFolders?.styleCleanup?.(hidden);
+          }
+          const after = box?.getBoundingClientRect().height ?? 0;
+          if (Math.abs(after - before) > 0.5) {
+            animateFolderHeight(box, before, after, { duration: 220, easing: "cubic-bezier(0.42, 0, 0.58, 1)" });
           }
         }
       },
@@ -3002,10 +3012,29 @@
     window.addEventListener(
       "TabGroupCollapse",
       (event) => {
-        if (isFolder(event.target)) {
-          event.target.removeAttribute(OPEN_IN_CLOSED);
-          unmarkWithin(event.target);
+        const folder = event.target;
+        if (!isFolder(folder)) {
+          return;
         }
+        unmarkWithin(folder);
+        if (!folder.hasAttribute(OPEN_IN_CLOSED)) {
+          return;
+        }
+        // (once Zen has shrunk its tabs away: dropped at once, the closed folder's
+        // rules hid them before Zen's shrink could show, so it shut in a blink)
+        let timer = 0;
+        const done = (doneEvent) => {
+          if (doneEvent && doneEvent.target !== folder) {
+            return;
+          }
+          clearTimeout(timer);
+          folder.removeEventListener("TabGroupAnimationComplete", done);
+          if (folder.hasAttribute("collapsed")) {
+            folder.removeAttribute(OPEN_IN_CLOSED);
+          }
+        };
+        folder.addEventListener("TabGroupAnimationComplete", done);
+        timer = setTimeout(done, 600);
       },
       true
     );
