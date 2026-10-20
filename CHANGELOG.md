@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.102.4] — 2026-10-20
+
+### Changed
+
+- In compact mode with Zen's toolbar hidden, the toolbar grows in and pushes
+  the page down as it shows, as Zen's does, on Zen's own timing (Zia's colour
+  fade had taken the place of its grow, so it came and went at once). Zia's
+  toolbar over the page, the page staying put, is now a setting in its place
+  (thanks Briski).
+
 ## [2.102.3] — 2026-10-20
 
 ### Added
