@@ -1,7 +1,8 @@
   // ---------- Ultra (zia.ultra, on by default)
   // Effects ported from Libraries.dev (https://libraries.dev, MIT, by Jakub
   // Antalik), each where its author places it: a thinking orb for loading, a
-  // glow under what's playing, a border beam while a page loads.
+  // glow under what's playing, a border beam while a page loads, a liquid
+  // highlight moving between tabs.
   const ULTRA_PREF = "zia.ultra";
   const ultraOn = () => Services.prefs.getBoolPref(ULTRA_PREF, true);
 
@@ -259,8 +260,120 @@
     sync();
   }
 
+  // The selected tab's highlight travels to the tab you pick as liquid,
+  // stretching and settling (28v-ultra-goo-engine.js, liquid-gooey's "move").
+  // Only between plain tabs of one space, both on screen and not far apart;
+  // anything else switches as before.
+  function watchUltraGoo() {
+    const BG = ":scope > .tab-stack > .tab-background";
+    // (px: a longer jump just switches)
+    const MAX_TRAVEL = 12 * 38;
+    const spaces = new WeakMap();
+    // the one moving now, if any
+    let current = null;
+
+    const bgOf = (tab) => tab?.querySelector?.(BG);
+    const boxOf = (tab) => tab?.closest?.("zen-workspace arrowscrollbox.workspace-arrowscrollbox");
+    const scrollportOf = (box) =>
+      (box.scrollbox || box.shadowRoot?.querySelector('[part~="scrollbox"]'))?.getBoundingClientRect();
+    const plain = (tab) =>
+      tab?.isConnected &&
+      !tab.closing &&
+      !tab.hidden &&
+      !tab.hasAttribute("zen-essential") &&
+      !tab.closest("tab-group[split-view-group], :is(zen-folder, tab-group)[collapsed]");
+    const light = () => root.hasAttribute("zia-light");
+
+    const gooFor = (box) => {
+      const known = spaces.get(box);
+      if (known?.layer.isConnected) {
+        return known.goo;
+      }
+      known?.goo.destroy();
+      const layer = document.createElementNS(XHTML_NS, "div");
+      layer.className = "zia-goo-layer";
+      layer.setAttribute("aria-hidden", "true");
+      box.prepend(layer);
+      const goo = ziaGoo(layer, {
+        radius: parseFloat(getComputedStyle(root).getPropertyValue("--zia-tab-radius")) || 9.5,
+        background: "var(--zia-active-tab-bg)",
+        bounds: () => scrollportOf(box),
+        onStart: () => root.setAttribute("zia-goo-travel", "true"),
+        onSettle: () => {
+          root.removeAttribute("zia-goo-travel");
+          current = null;
+        },
+      });
+      spaces.set(box, { goo, layer });
+      return goo;
+    };
+
+    // The highlight's look, from the tab now showing it: its own glow (plain,
+    // in its favicon's colours, the light card's shadow, or none), and its
+    // shine as a fine ring
+    let lastShadow = null;
+    const shadowOf = (bg) => {
+      const own = getComputedStyle(bg).boxShadow;
+      const ring = light() ? "inset 0 0 0 0.5px rgba(0,0,0,.07)" : "inset 0 0 0 0.5px rgba(255,255,255,.17)";
+      return own && own !== "none" ? `${own}, ${ring}` : ring;
+    };
+    // (a folder's open tab is its own shade)
+    const colourOf = (bg) => getComputedStyle(bg).getPropertyValue("--zia-active-tab-bg").trim();
+
+    gBrowser.tabContainer.addEventListener("TabSelect", (event) => {
+      const tab = event.target;
+      const prev = event.detail?.previousTab;
+      const box = boxOf(tab);
+      const expanded = root.getAttribute("zen-sidebar-expanded") === "true";
+      if (!ultraOn() || document.hidden || !expanded || !plain(tab) || !box) {
+        current?.stop();
+        return;
+      }
+      const to = bgOf(tab).getBoundingClientRect();
+      if (current) {
+        // mid-move: on to the new tab, in the same space
+        if (spaces.get(box)?.goo === current) {
+          current.moveTo(null, to);
+        } else {
+          current.stop();
+        }
+        return;
+      }
+      if (!plain(prev) || boxOf(prev) !== box) {
+        return;
+      }
+      const from = bgOf(prev).getBoundingClientRect();
+      const port = scrollportOf(box);
+      const onScreen = (r) => r.height > 4 && port && r.bottom > port.top && r.top < port.bottom;
+      if (!onScreen(from) || Math.abs(to.top - from.top) > MAX_TRAVEL || Math.abs(to.height - from.height) > 1) {
+        return;
+      }
+      const goo = gooFor(box);
+      const shadow = shadowOf(bgOf(tab));
+      if (shadow !== lastShadow) {
+        goo.restyle({ shadow });
+        lastShadow = shadow;
+      }
+      current = goo;
+      goo.moveTo(from, to, { fromBackground: colourOf(bgOf(prev)), background: colourOf(bgOf(tab)) });
+    });
+
+    // The tabs moving under it: straight over to the real highlight
+    for (const type of ["TabClose", "TabMove", "TabGroupCollapse", "TabGroupExpand", "dragstart"]) {
+      gBrowser.tabContainer.addEventListener(type, () => current?.stop(), true);
+    }
+    // (a space switch, as 04-space-label.js listens)
+    window.addEventListener("ZenWorkspacesUIUpdate", () => current?.stop());
+    watchPrefs(ULTRA_PREF, () => {
+      if (!ultraOn()) {
+        current?.stop();
+      }
+    });
+  }
+
   function watchUltra() {
     safely("watchUltraOrbs", watchUltraOrbs);
     safely("watchUltraGlow", watchUltraGlow);
     safely("watchUltraLoadingBeam", watchUltraLoadingBeam);
+    safely("watchUltraGoo", watchUltraGoo);
   }
