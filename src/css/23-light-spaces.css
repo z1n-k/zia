@@ -121,6 +121,24 @@
     background-color: rgba(255, 255, 255, 0.72);
   }
 
+  /* the sound badge on a tab's icon (an essential's, a pinned one's): a white
+     disc for the dark bars, as the selected tab is a white card (the dark disc
+     sat heavy on the pale tiles, with the bars dark on it) */
+  & .tab-icon-overlay:not([crashed]):is([soundplaying], [muted], [activemedia-blocked]) {
+    fill: var(--zia-sidebar-ink) !important;
+    background-color: rgba(255, 255, 255, 0.94) !important;
+    outline-color: rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16) !important;
+
+    &[muted] {
+      fill: color-mix(in srgb, var(--zia-sidebar-ink) 80%, transparent) !important;
+    }
+
+    &:hover {
+      background-color: rgb(255, 255, 255) !important;
+    }
+  }
+
   /* the line above the tabs, the space dots, the sound bars' hover */
   & .pinned-tabs-container-separator toolbarseparator {
     background: rgba(0, 0, 0, 0.12) !important;
