@@ -3024,6 +3024,12 @@
           if (!height) {
             continue;
           }
+          // (opening, from under whatever hid them shut, below)
+          if (opening) {
+            for (const prop of ["height", "min-height", "opacity"]) {
+              item.style.removeProperty(prop);
+            }
+          }
           const open = { height: `${height}px`, minHeight: `${height}px`, opacity: 1 };
           const shut = { height: "0px", minHeight: "0px", opacity: 0 };
           moving.push(item.animate(opening ? [shut, open] : [open, shut], { duration: IN_CLOSED_MS, easing: "ease-in-out", fill: opening ? "none" : "forwards" }));
@@ -3092,7 +3098,13 @@
           if (folder.hasAttribute("collapsed")) {
             folder.removeAttribute(OPEN_IN_CLOSED);
           }
+          // shut as Zen leaves the tabs it hides, held so in their own style: left to
+          // the closed folder's rules alone, they sprang back to full height for a
+          // moment as the folder round it next opened, the tab shown dropping down
           for (const animation of moving) {
+            try {
+              animation.commitStyles();
+            } catch (err) {}
             animation.cancel();
           }
         }, IN_CLOSED_MS + 40);
