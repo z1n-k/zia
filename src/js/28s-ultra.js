@@ -258,8 +258,9 @@
   // The pictures in the Library's Media (Zen loads each as its tile comes into
   // view): img-fx's pixel mosaic churns where the picture will be, takes the
   // picture's own shape once it's loaded, and dissolves into it
-  // (28y-ultra-image-engine.js). Videos and file icons as they were.
-  // 28k-library.js hands each Library over as it's made.
+  // (28y-ultra-image-engine.js), and again for the ones in view each time
+  // Media is opened (Zen keeps the pictures it's loaded). Videos and file
+  // icons as they were. 28k-library.js hands each Library over as it's made.
   function ultraWatchMedia(library) {
     const THUMB = "img.zen-library-media-thumb:not(.zen-library-media-file)";
     const live = new Map();
@@ -327,8 +328,30 @@
       }
     };
 
+    // the pictures already loaded and in view, once Media shows again
+    const replay = () => {
+      if (!ultraOn() || libraryZenLook()) {
+        return;
+      }
+      const view = library.getBoundingClientRect();
+      for (const img of library.querySelectorAll(THUMB)) {
+        const box = img.getBoundingClientRect();
+        if (img.complete && img.naturalWidth && box.width && box.bottom > view.top && box.top < view.bottom) {
+          start(img);
+        }
+      }
+    };
+    const mediaOpen = () => !!library.querySelector('.zen-library-tab[data-section="media"][active]');
+
     new MutationObserver((records) => {
+      let shown = false;
       for (const record of records) {
+        if (record.type === "attributes") {
+          const tab = record.target.matches?.('.zen-library-tab[data-section="media"]') && record.target.hasAttribute("active");
+          const opened = record.target === library && library.hasAttribute("open") && mediaOpen();
+          shown ||= tab || opened;
+          continue;
+        }
         for (const node of record.addedNodes) {
           if (node.nodeType === 1 && node.matches(THUMB)) {
             start(node);
@@ -340,7 +363,11 @@
           finish(img);
         }
       }
-    }).observe(library, { childList: true, subtree: true });
+      if (shown) {
+        // (once it's laid out)
+        requestAnimationFrame(replay);
+      }
+    }).observe(library, { childList: true, subtree: true, attributes: true, attributeFilter: ["active", "open"] });
   }
 
   function watchUltra() {
