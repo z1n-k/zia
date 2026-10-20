@@ -399,6 +399,7 @@ In **Settings → Sine Mods → Zia → Rename downloads with AI**, turn it on, 
 | The pop-up takes the toolbar's colour as it opens | off |
 | Show only the page's title, in the domain's colour, until clicked | off |
 | Centre the address bar's text | off |
+| Keep the opened pop-up's text from the left (with the text centred) | off |
 | Address bar position | Top |
 | Zia's find in page bar | on |
 | Cmd/Ctrl+T and + New Tab open a real tab (off: Zen's floating address bar) | on |

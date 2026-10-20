@@ -759,6 +759,15 @@
       padding-left: max(0px, 2 * var(--zia-center-shift, 0px)) !important;
       padding-right: max(0px, -2 * var(--zia-center-shift, 0px)) !important;
     }
+
+    /* Optionally only while it's closed: opened, the typing starts from the left,
+       in line with the rows under it (#446) */
+    @media -moz-pref("zia.urlbar.center-text.pop-up-left") {
+      #urlbar[breakout-extend]:not([zen-floating-urlbar="true"]) :is(.urlbar-input, #zia-url-title, #zia-url-plain) {
+        text-align: start !important;
+        justify-content: flex-start !important;
+      }
+    }
   }
 }
 

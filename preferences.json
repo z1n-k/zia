@@ -431,6 +431,28 @@
     ]
   },
   {
+    "type": "checkbox",
+    "label": "Keep the opened pop-up's text from the left",
+    "property": "zia.urlbar.center-text.pop-up-left",
+    "defaultValue": false,
+    "conditions": [
+      {
+        "if": {
+          "property": "zia.urlbar.zia-look",
+          "value": true
+        }
+      },
+      {
+        "if": {
+          "property": "zia.urlbar.center-text",
+          "value": true
+        }
+      }
+    ]
+,
+    "operator": "AND"
+  },
+  {
     "type": "dropdown",
     "label": "Address bar position",
     "property": "zia.urlbar.position",
