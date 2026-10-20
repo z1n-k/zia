@@ -9964,57 +9964,84 @@ zen-workspace-creation {
 }
 
 /* The address bar's loading line, as wide, as thick and moving as it always
-   does, in holographic colours: the line through pastel lavender, pink,
-   peach, yellow, mint and blue, the glows round its head in them, and the
-   whole of it turning slowly through the rainbow as foil does, brightening as
-   it goes. Not with the loading line in the space's own colour (an option). */
+   does, in metal-fx's silver liquid metal (28s-ultra.js draws the metal along
+   it, 28x-ultra-metal-engine.js): the line itself a silver one, with the
+   moving metal laid over it and shown as far as the page has loaded, and the
+   glows round its head a cool white. Not with the loading line in the
+   space's own colour (an option). */
 @media -moz-pref("zia.ultra") {
   @media not -moz-pref("zia.loading-bar.accent-color") {
     :is(#urlbar:not([breakout-extend]), .zia-pane-address)::after {
-      --zia-load-line: linear-gradient(
-        to right,
-        rgba(190, 165, 255, 0.8),
-        rgb(255, 160, 215) 18%,
-        rgb(255, 200, 160) 34%,
-        rgb(240, 235, 150) 50%,
-        rgb(150, 240, 190) 66%,
-        rgb(140, 225, 240) 82%,
-        rgb(215, 205, 255) 100%
-      );
-      --zia-load-tint: rgba(190, 165, 255, 0.28), rgba(140, 225, 240, 0.14) 50%, transparent 100%;
-      --zia-load-glow: rgba(255, 160, 215, 0.4), rgba(150, 240, 190, 0.2) 35%, rgba(160, 185, 255, 0.07) 70%, transparent 100%;
+      --zia-load-line: linear-gradient(to right, rgba(170, 176, 190, 0.7), rgb(205, 210, 222) 70%, rgb(240, 242, 248) 100%);
+      --zia-load-tint: rgba(210, 222, 240, 0.22), rgba(170, 200, 240, 0.1) 50%, transparent 100%;
+      --zia-load-glow: rgba(230, 236, 250, 0.38), rgba(170, 200, 240, 0.15) 35%, rgba(200, 205, 220, 0.05) 70%, transparent 100%;
     }
 
-    /* (on a light space, the same foil deeper, as pastels vanish on white) */
+    /* (on a light space, graphite, as silver vanishes on white) */
     :root[zia-light] :is(#urlbar:not([breakout-extend]), .zia-pane-address)::after {
-      --zia-load-line: linear-gradient(
-        to right,
-        rgba(150, 120, 230, 0.75),
-        rgb(225, 110, 180) 18%,
-        rgb(230, 150, 90) 34%,
-        rgb(190, 180, 50) 50%,
-        rgb(70, 190, 130) 66%,
-        rgb(60, 170, 200) 82%,
-        rgb(110, 120, 235) 100%
-      );
-      --zia-load-tint: rgba(150, 120, 230, 0.2), rgba(60, 170, 200, 0.08) 50%, transparent 100%;
-      --zia-load-glow: rgba(225, 110, 180, 0.28), rgba(70, 190, 130, 0.12) 35%, rgba(110, 120, 235, 0.04) 70%, transparent 100%;
+      --zia-load-line: linear-gradient(to right, rgba(90, 95, 110, 0.7), rgb(70, 75, 88) 70%, rgb(40, 44, 52) 100%);
+      --zia-load-tint: rgba(60, 66, 80, 0.14), rgba(60, 66, 80, 0.06) 50%, transparent 100%;
+      --zia-load-glow: rgba(50, 55, 68, 0.24), rgba(60, 66, 80, 0.1) 35%, rgba(60, 66, 80, 0.03) 70%, transparent 100%;
     }
 
-    :root[zia-loading="true"] #urlbar:not([breakout-extend])::after,
-    :root .zia-pane-address[zia-loading]:not(#zia-none)::after {
-      animation: zia-loading-holo 6s linear infinite;
+    /* the metal: lightening the silver line where it shines, over it */
+    #urlbar > .zia-metal-line {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      border-radius: var(--zia-urlbar-radius);
+      overflow: hidden;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+
+      & > canvas {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 1.5px;
+        clip-path: inset(0 calc((1 - var(--zia-load-progress, 0)) * 100%) 0 0);
+      }
+    }
+
+    :root[zia-loading="true"] #urlbar:not([breakout-extend]) > .zia-metal-line {
+      opacity: 1;
+    }
+
+    /* (on a light space, darkening the graphite line where it shines) */
+    :root[zia-light] #urlbar > .zia-metal-line {
+      mix-blend-mode: multiply;
+
+      & > canvas {
+        filter: invert(0.85);
+      }
     }
   }
 }
 
-/* (once round the rainbow, brightening twice on the way) */
-@keyframes zia-loading-holo {
-  0% { filter: hue-rotate(0deg) brightness(1) saturate(1.2); }
-  25% { filter: hue-rotate(90deg) brightness(1.15) saturate(1.2); }
-  50% { filter: hue-rotate(180deg) brightness(1) saturate(1.2); }
-  75% { filter: hue-rotate(270deg) brightness(1.15) saturate(1.2); }
-  100% { filter: hue-rotate(360deg) brightness(1) saturate(1.2); }
+/* The colour Zen draws behind the open essential (its icon's, blurred: Zen's
+   "essentials favicon background") with silver liquid metal through it, very
+   slowly moving (28s-ultra.js), over the colour and under the essential's
+   own lighter inner card */
+@media -moz-pref("zia.ultra") and -moz-pref("zen.theme.essentials-favicon-bg") {
+  .tabbrowser-tab[zen-essential][visuallyselected] > .tab-stack > .tab-background > canvas.zia-metal-sheen {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    mix-blend-mode: soft-light;
+    opacity: 0.9;
+    pointer-events: none;
+  }
+
+  /* (Zen's colour is under everything, at -1; its inner card goes over the
+     metal) */
+  .tabbrowser-tab[zen-essential][visuallyselected] > .tab-stack > .tab-background:has(> canvas.zia-metal-sheen)::before {
+    z-index: 1 !important;
+  }
 }
 /* Zia glow: the bottom-edge glow of voice-glow 0.3.0 (VoiceBeam), ported without React.
    voice-glow is MIT licensed, Copyright (c) 2026 Jakub Antalik. See NOTES.md.

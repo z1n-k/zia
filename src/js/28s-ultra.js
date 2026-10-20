@@ -1,9 +1,9 @@
   // ---------- Ultra (zia.ultra, on by default)
   // Effects ported from Libraries.dev (https://libraries.dev, MIT, by Jakub
   // Antalik), each where its author places it: a thinking orb for loading, a
-  // glow under what's playing, and the Library's chosen section springing
-  // to the next (the address bar's loading line in holographic colours is
-  // 28-ultra.css).
+  // glow under what's playing, the Library's chosen section springing to the
+  // next, and liquid metal along the loading line and through the colour
+  // behind the open essential.
   const ULTRA_PREF = "zia.ultra";
   const ultraOn = () => Services.prefs.getBoolPref(ULTRA_PREF, true);
 
@@ -310,7 +310,83 @@
     }
   }
 
+  // The address bar's loading line in silver liquid metal: the metal drawn
+  // along it (28x-ultra-metal-engine.js) while a page loads, shown as far as
+  // it has loaded (28-ultra.css)
+  function watchUltraMetalLine() {
+    const urlbar = gURLBar.textbox || document.getElementById("urlbar");
+    if (!urlbar) {
+      return;
+    }
+    const wrap = document.createElementNS(XHTML_NS, "div");
+    wrap.className = "zia-metal-line";
+    wrap.setAttribute("aria-hidden", "true");
+    const canvas = document.createElementNS(XHTML_NS, "canvas");
+    wrap.append(canvas);
+    let metal = null;
+    let timer = 0;
+    const sync = () => {
+      clearTimeout(timer);
+      const on =
+        ultraOn() &&
+        !Services.prefs.getBoolPref("zia.loading-bar.accent-color", false) &&
+        root.getAttribute("zia-loading") === "true";
+      if (on) {
+        if (!wrap.isConnected) {
+          urlbar.append(wrap);
+        }
+        const ratio = Math.min(2, window.devicePixelRatio || 1);
+        canvas.width = Math.min(2048, Math.round(urlbar.getBoundingClientRect().width * ratio)) || 600;
+        canvas.height = Math.max(2, Math.round(1.5 * ratio));
+        metal ||= ziaMetalSurface(canvas, { band: true });
+        return;
+      }
+      // (once the line has faded)
+      timer = setTimeout(() => {
+        metal?.destroy();
+        metal = null;
+        wrap.remove();
+      }, 400);
+    };
+    new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ["zia-loading"] });
+    watchPrefs([ULTRA_PREF, "zia.loading-bar.accent-color"], sync);
+    sync();
+  }
+
+  // The colour Zen draws behind the open essential (its icon's, blurred) with
+  // silver liquid metal through it, moving very slowly (28-ultra.css lays it)
+  function watchUltraEssentialMetal() {
+    const FAVICON_BG = "zen.theme.essentials-favicon-bg";
+    const canvas = document.createElementNS(XHTML_NS, "canvas");
+    canvas.className = "zia-metal-sheen";
+    canvas.setAttribute("aria-hidden", "true");
+    let metal = null;
+    const sync = () => {
+      const tab = gBrowser.selectedTab;
+      const bg = tab?.hasAttribute("zen-essential") && tab.querySelector(":scope > .tab-stack > .tab-background");
+      if (!ultraOn() || !Services.prefs.getBoolPref(FAVICON_BG, false) || !bg) {
+        metal?.destroy();
+        metal = null;
+        canvas.remove();
+        return;
+      }
+      if (canvas.parentNode !== bg) {
+        bg.append(canvas);
+      }
+      const box = bg.getBoundingClientRect();
+      const ratio = Math.min(2, window.devicePixelRatio || 1);
+      canvas.width = Math.max(8, Math.round(box.width * ratio));
+      canvas.height = Math.max(8, Math.round(box.height * ratio));
+      metal ||= ziaMetalSurface(canvas, { speed: 0.08, every: 120 });
+    };
+    gBrowser.tabContainer.addEventListener("TabSelect", sync);
+    watchPrefs([ULTRA_PREF, FAVICON_BG], sync);
+    sync();
+  }
+
   function watchUltra() {
     safely("watchUltraOrbs", watchUltraOrbs);
     safely("watchUltraGlow", watchUltraGlow);
+    safely("watchUltraMetalLine", watchUltraMetalLine);
+    safely("watchUltraEssentialMetal", watchUltraEssentialMetal);
   }
