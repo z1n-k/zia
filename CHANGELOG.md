@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.102.14] — 2026-10-20
+
+### Fixed
+
+- With Ultra on, a loading tab's orb is centred on the tab's own icon, in
+  line with the site icons above and below: 2.102.8 had it a few pixels to
+  their left.
+
 ## [2.102.13] — 2026-10-20
 
 ### Fixed
