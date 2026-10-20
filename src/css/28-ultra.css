@@ -2,9 +2,7 @@
    (https://libraries.dev, MIT, by Jakub Antalik). zia.uc.js puts each in. */
 
 /* A loading tab's thinking orb, in its icon's place: the spinner goes while
-   it shows (28s-ultra.js). At the icon box's start, where the site icon sits:
-   the box is wider than the icon (the sound button over it), and centred in
-   it the orb sat a few pixels right of the icons above and below. */
+   it shows (28s-ultra.js, which centres it on the icon) */
 .tab-icon-stack > canvas.zia-orb {
   grid-area: 1 / 1;
   place-self: center start;

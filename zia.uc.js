@@ -19844,6 +19844,16 @@
       // (the tab's own name says what's loading)
       canvas.setAttribute("aria-hidden", "true");
       stack.append(canvas);
+      // centred on the tab's own icon (its spinner, while loading), which sits in a
+      // wider box with uneven margins: centred in the box, or at its start, the orb
+      // sat a few pixels right, then left, of the icons in the other tabs
+      const icon = [...stack.querySelectorAll(":scope > :is(.tab-icon-image, .tab-throbber, .tab-icon-pending)")]
+        .map((el) => el.getBoundingClientRect())
+        .find((box) => box.width > 0 && box.height > 0);
+      if (icon) {
+        const own = canvas.getBoundingClientRect();
+        canvas.style.translate = `${icon.left + icon.width / 2 - (own.left + own.width / 2)}px ${icon.top + icon.height / 2 - (own.top + own.height / 2)}px`;
+      }
       entry.orb = ziaOrb(canvas, { state: stateFor(tab), size: 16, dark: dark() });
       tab.setAttribute("zia-orb", "true");
     };
