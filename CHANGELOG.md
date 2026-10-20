@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.102.11] — 2026-10-20
+
+### Fixed
+
+- A folder opened where it is inside a closed folder grows and shrinks every
+  time it's clicked, rather than only the first time and snapping after
+  that (thanks Bxthesda).
+- The welcome tour's liquid-metal wordmark shows its letters whole: the last
+  letter was sliced off flat at its right edge.
+
 ## [2.102.10] — 2026-10-20
 
 ### Changed
