@@ -391,7 +391,7 @@ In **Settings → Sine Mods → Zia → Rename downloads with AI**, turn it on, 
 | Zen's own Library look (off: Zia's) | off |
 | Compact mode: the sidebar is see-through, the page blurred behind | on |
 | Compact mode: the top toolbar hides while the sidebar is out | off |
-| Compact mode: the hidden top toolbar pushes the page down as it shows, as Zen's does (off: it fades in over the page) | off |
+| Compact mode: the hidden top toolbar fades in over the page, which stays put (off: it grows in and pushes the page down, as Zen's does) | off |
 | **Address bar and new tabs** | |
 | Zia's address bar (off: Zen's own, as it looks without Zia) | on |
 | Zia's address bar pop-up (off: Zen's) | on |

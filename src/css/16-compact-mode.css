@@ -88,14 +88,27 @@
   }
 }
 
-/* Zen's hidden toolbar (compact mode, "hide the toolbar"): it shows over the top of
-   the page as the pointer goes up, rather than growing into the layout and pushing
-   the page down (the page bounced, and moving under the pointer, the hover flickered).
-   Hidden, it's a clear strip where the pointer finds it, and the page, with nothing
-   above it, has all four corners round (its top ones were square). With
-   zia.compact.zen-toolbar-reveal on, Zen's own: it pushes the page down. */
+/* Zen's hidden toolbar (compact mode, "hide the toolbar") grows in as the pointer
+   goes up and pushes the page down, as Zen has it, on Zen's timing: Zia's colour fade
+   on the toolbar (01-page-card-and-toolbar.css) took the place of its height's, so it
+   came and went at once. */
 @media -moz-pref("zen.view.compact.hide-toolbar") {
-  @media not -moz-pref("zia.compact.zen-toolbar-reveal") {
+  @media not -moz-pref("zia.compact.toolbar-over-page") {
+    :root[zen-compact-mode="true"]:not([zen-single-toolbar="true"], [inDOMFullscreen="true"], [zia-urlbar-position="bottom"]):not(#zia-none) #zen-appcontent-navbar-wrapper {
+      transition:
+        height var(--zen-hidden-toolbar-transition),
+        background-color var(--zia-color-fade) ease,
+        border-color var(--zia-color-fade) ease !important;
+    }
+  }
+}
+
+/* Optionally (zia.compact.toolbar-over-page), it shows over the top of the page
+   instead, rather than growing into the layout and pushing the page down (the page
+   moves under the pointer). Hidden, it's a clear strip where the pointer finds it,
+   and the page, with nothing above it, has all four corners round. */
+@media -moz-pref("zen.view.compact.hide-toolbar") {
+  @media -moz-pref("zia.compact.toolbar-over-page") {
     :root[zen-compact-mode="true"]:not([zen-single-toolbar="true"], [inDOMFullscreen="true"], [zia-urlbar-position="bottom"]):not(#zia-none) {
       & #zen-appcontent-navbar-wrapper {
         position: absolute !important;
