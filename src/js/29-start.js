@@ -256,6 +256,8 @@
     safely("keepTabsHiddenAfterActiveLeaves", keepTabsHiddenAfterActiveLeaves);
     safely("openKeptFolderNames", openKeptFolderNames);
     safely("nameNewGroupsInPlace", nameNewGroupsInPlace);
+    safely("hintNameFields", hintNameFields);
+    safely("holdSidebarAfterNaming", holdSidebarAfterNaming);
     safely("allowEmojiFolderIcons", allowEmojiFolderIcons);
     safely("hideWwwInUrlbar", hideWwwInUrlbar);
     safely("watchRightEdges", watchRightEdges);

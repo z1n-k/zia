@@ -4538,6 +4538,12 @@ zen-workspace arrowscrollbox::part(scrollbox) {
 #tab-label-input {
   font-size: var(--zia-text-size) !important;
 }
+
+/* ...and empty, it says it's waiting for one (zia.uc.js), in the name's own ink, dimmed */
+#tab-label-input::placeholder {
+  color: currentColor !important;
+  opacity: 0.45 !important;
+}
 @media -moz-pref("zia.features.media-player") {
 #zen-media-controls-toolbar {
   --zia-media-ease: var(--zen-media-stack-easing, cubic-bezier(0.25, 1, 0.5, 1));
