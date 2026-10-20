@@ -120,22 +120,6 @@
   to { scale: 1.35; }
 }
 
-/* The Library's Media pictures dissolving in from a pixel mosaic
-   (28s-ultra.js, 28e-ultra-image.css): the mosaic over where the picture
-   goes, at its corners, the picture itself hidden till it's dissolved in */
-@media -moz-pref("zia.ultra") {
-  zen-library .zen-library-media-frame > .zia-media-load {
-    position: absolute;
-    inset: 0;
-    border-radius: 6px;
-    pointer-events: none;
-  }
-
-  zen-library .zen-library-media-thumb[zia-media-loading] {
-    opacity: 0 !important;
-  }
-}
-
 /* The Library's chosen-section tile on a gentler spring than Zia's own, as
    it stretches and squashes on the way too (28s-ultra.js) */
 @media -moz-pref("zia.ultra") {

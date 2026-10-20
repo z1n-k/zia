@@ -218,7 +218,7 @@ Turn on **Glass** (under Look, off by default) for macOS Tahoe's glass edge on t
 
 ### Ultra
 
-On by default, under **Look**: a set of extra effects. A loading tab's spinner becomes a small dotted orb; the address bar's loading line is liquid metal; the music player glows along its bottom edge in its artwork's colours as it plays; the colour round the open essential drifts slowly about; the Library's Media pictures dissolve in from a pixel mosaic, and its chosen section springs to the next with a stretch and a squash; and the welcome tour's wordmark is liquid metal. Switch it off for a calmer Zia. Under your system's reduced motion setting they stand still.
+On by default, under **Look**: a set of extra effects. A loading tab's spinner becomes a small dotted orb; the address bar's loading line is liquid metal; the music player glows along its bottom edge in its artwork's colours as it plays; the colour round the open essential drifts slowly about; the Library's chosen section springs to the next with a stretch and a squash; and the welcome tour's wordmark is liquid metal. Switch it off for a calmer Zia. Under your system's reduced motion setting they stand still.
 
 ### Split view
 
@@ -362,7 +362,7 @@ In **Settings → Sine Mods → Zia → Rename downloads with AI**, turn it on, 
 | Glass: essentials, cards and the Library's buttons edged as macOS Tahoe's glass, lighting up where pressed (off: Zia's fine shine) | off |
 | Zia's rounded page corners (off: Zen's) | on |
 | Page fills its space edge to edge, with no gap or shadow | off |
-| Ultra: extra effects (a thinking orb while a tab loads, the address bar's loading line in liquid metal, the colour round the open essential slowly moving, the Library's pictures dissolving in from a pixel mosaic, the music player glowing in its artwork's colours, the Library's chosen section springing to the next, the welcome tour's Zia in liquid metal) | on |
+| Ultra: extra effects (a thinking orb while a tab loads, the address bar's loading line in liquid metal, the colour round the open essential slowly moving, the music player glowing in its artwork's colours, the Library's chosen section springing to the next, the welcome tour's Zia in liquid metal) | on |
 | **Tabs and essentials** | |
 | Hover cards for tabs and folders | on |
 | Hover cards are see-through, with what's behind blurred | on |

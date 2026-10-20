@@ -10206,22 +10206,6 @@ zen-workspace-creation {
   to { scale: 1.35; }
 }
 
-/* The Library's Media pictures dissolving in from a pixel mosaic
-   (28s-ultra.js, 28e-ultra-image.css): the mosaic over where the picture
-   goes, at its corners, the picture itself hidden till it's dissolved in */
-@media -moz-pref("zia.ultra") {
-  zen-library .zen-library-media-frame > .zia-media-load {
-    position: absolute;
-    inset: 0;
-    border-radius: 6px;
-    pointer-events: none;
-  }
-
-  zen-library .zen-library-media-thumb[zia-media-loading] {
-    opacity: 0 !important;
-  }
-}
-
 /* The Library's chosen-section tile on a gentler spring than Zia's own, as
    it stretches and squashes on the way too (28s-ultra.js) */
 @media -moz-pref("zia.ultra") {
@@ -10391,43 +10375,4 @@ zen-workspace-creation {
   position: absolute;
   inset: 0;
   clip-path: var(--zg-clip-below, none);
-}
-/* Ultra's pixel-mosaic loader (imgfx.js, ziaImgFx): the img-fx package's
-   wrapper styles (.image-gen-root and its two canvases), on Zia's layer.
-   The layer's colour (the preset's card colour) and radius are set inline;
-   over a replaced host (a <canvas>, an <img>) so are its left, top, width
-   and height, from the host's box. */
-.zia-imgfx {
-  position: absolute;
-  inset: 0;
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  isolation: isolate;
-  line-height: 0;
-  pointer-events: none;
-}
-
-.zia-imgfx[zia-imgfx-over] {
-  inset: auto;
-}
-
-.zia-imgfx > canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  margin: 0;
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-.zia-imgfx > .zia-imgfx-shader {
-  z-index: 1;
-}
-
-.zia-imgfx > .zia-imgfx-overlay {
-  z-index: 2;
 }

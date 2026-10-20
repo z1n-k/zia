@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Removed
+
+- Ultra's pixel mosaic that the Library's Media pictures dissolved in from:
+  opening Media could crash the browser (thanks Bxthesda).
+
 ## [2.102.8] — 2026-10-20
 
 ### Fixed

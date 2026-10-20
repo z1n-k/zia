@@ -212,8 +212,6 @@
       sectionWatcher.observe(library, { childList: true, subtree: true, attributes: true, attributeFilter: ["open", "active"] });
       addButtons(library);
       safely("library: lift media", () => liftMediaUnderCursor(library));
-      // (with Ultra on, its pictures dissolve in from a pixel mosaic, 28s-ultra.js)
-      safely("library: media loader", () => ultraWatchMedia(library));
     };
     const toolbox = document.getElementById("navigator-toolbox");
     if (toolbox?.parentNode) {

@@ -54,7 +54,7 @@
   },
   {
     "type": "checkbox",
-    "label": "Ultra: extra effects (a thinking orb while a tab loads, the address bar's loading line in liquid metal, the colour round the open essential slowly moving, the Library's pictures dissolving in from a pixel mosaic, the music player glowing in its artwork's colours, the Library's chosen section springing to the next, the welcome tour's Zia in liquid metal)",
+    "label": "Ultra: extra effects (a thinking orb while a tab loads, the address bar's loading line in liquid metal, the colour round the open essential slowly moving, the music player glowing in its artwork's colours, the Library's chosen section springing to the next, the welcome tour's Zia in liquid metal)",
     "property": "zia.ultra",
     "defaultValue": true
   },
