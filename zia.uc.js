@@ -17263,6 +17263,12 @@
     if (!box.height) {
       return;
     }
+    // (with Ultra on, it's put there at once and springs there in the
+    // selected tab's way instead, 28s-ultra.js)
+    const from = !instantly && !rail.hidden && rail.hasAttribute("placed") && ultraOn() ? rail.getBoundingClientRect() : null;
+    if (from) {
+      instantly = true;
+    }
     rail.hidden = false;
     rail.toggleAttribute("instant", instantly);
     rail.style.height = `${box.height}px`;
@@ -17270,6 +17276,9 @@
     rail.setAttribute("placed", "true");
     if (instantly) {
       requestAnimationFrame(() => rail.removeAttribute("instant"));
+    }
+    if (from) {
+      ultraRailMove(column, rail, from);
     }
   }
 
@@ -19611,8 +19620,8 @@
   // ---------- Ultra (zia.ultra, on by default)
   // Effects ported from Libraries.dev (https://libraries.dev, MIT, by Jakub
   // Antalik), each where its author places it: a thinking orb for loading, a
-  // glow under what's playing, a border beam while a page loads, a liquid
-  // highlight moving between tabs.
+  // glow under what's playing, a border beam while a page loads, a springing
+  // highlight moving between tabs and the Library's sections.
   const ULTRA_PREF = "zia.ultra";
   const ultraOn = () => Services.prefs.getBoolPref(ULTRA_PREF, true);
 
@@ -19870,10 +19879,14 @@
     sync();
   }
 
-  // The selected tab's highlight travels to the tab you pick as liquid,
-  // stretching and settling (28v-ultra-goo-engine.js, liquid-gooey's "move").
-  // Only between plain tabs of one space, both on screen and not far apart;
-  // anything else switches as before.
+  // The spring without the liquid: no droplet trailing behind
+  const ULTRA_SPRING = { trail: 0, reach: 0 };
+
+  // The selected tab's highlight springs to the tab you pick, squashing as it
+  // goes and settling with a bounce (28v-ultra-goo-engine.js, liquid-gooey's
+  // "move" without its liquid: no droplet trailing it). Only between plain
+  // tabs of one space, both on screen and not far apart; anything else
+  // switches as before.
   function watchUltraGoo() {
     const BG = ":scope > .tab-stack > .tab-background";
     // (px: a longer jump just switches)
@@ -19907,6 +19920,7 @@
       const goo = ziaGoo(layer, {
         radius: parseFloat(getComputedStyle(root).getPropertyValue("--zia-tab-radius")) || 9.5,
         background: "var(--zia-active-tab-bg)",
+        ...ULTRA_SPRING,
         bounds: () => scrollportOf(box),
         onStart: () => root.setAttribute("zia-goo-travel", "true"),
         onSettle: () => {
@@ -19979,6 +19993,38 @@
         current?.stop();
       }
     });
+  }
+
+  // The Library's chosen-section tile (28k-library.js) springs to the section
+  // you pick as the selected tab does, rather than sliding
+  const ultraRails = new WeakMap();
+
+  function ultraRailMove(column, rail, from) {
+    const to = rail.getBoundingClientRect();
+    if (Math.abs(to.top - from.top) < 1 || !to.height) {
+      return;
+    }
+    let entry = ultraRails.get(column);
+    if (!entry?.layer.isConnected) {
+      entry?.goo.destroy();
+      const layer = document.createElementNS(XHTML_NS, "div");
+      layer.className = "zia-goo-layer zia-library-goo";
+      layer.setAttribute("aria-hidden", "true");
+      column.insertBefore(layer, rail);
+      const style = getComputedStyle(rail);
+      const goo = ziaGoo(layer, {
+        // (its squircle's round radius: the squircle grows it by half)
+        radius: parseFloat(getComputedStyle(root).getPropertyValue("--zia-essential-radius")) || 12,
+        background: style.backgroundColor,
+        shadow: style.boxShadow !== "none" ? style.boxShadow : "",
+        ...ULTRA_SPRING,
+        onStart: () => (rail.style.visibility = "hidden"),
+        onSettle: () => rail.style.removeProperty("visibility"),
+      });
+      entry = { goo, layer };
+      ultraRails.set(column, entry);
+    }
+    entry.goo.moveTo(from, to);
   }
 
   function watchUltra() {

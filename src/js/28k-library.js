@@ -93,6 +93,12 @@
     if (!box.height) {
       return;
     }
+    // (with Ultra on, it's put there at once and springs there in the
+    // selected tab's way instead, 28s-ultra.js)
+    const from = !instantly && !rail.hidden && rail.hasAttribute("placed") && ultraOn() ? rail.getBoundingClientRect() : null;
+    if (from) {
+      instantly = true;
+    }
     rail.hidden = false;
     rail.toggleAttribute("instant", instantly);
     rail.style.height = `${box.height}px`;
@@ -100,6 +106,9 @@
     rail.setAttribute("placed", "true");
     if (instantly) {
       requestAnimationFrame(() => rail.removeAttribute("instant"));
+    }
+    if (from) {
+      ultraRailMove(column, rail, from);
     }
   }
 

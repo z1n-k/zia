@@ -49,10 +49,10 @@
   stroke: none;
 }
 
-/* Ultra: the liquid tab highlight (28s-ultra.js, watchUltraGoo). One layer per
-   space, first in its tab list, scrolling with the tabs (the scroll box is its
-   containing block) and painting under every tab's icon and name. While the
-   liquid travels, the real highlight is off: its glow and shine go with it. */
+/* Ultra: the springing tab highlight (28s-ultra.js, watchUltraGoo). One layer
+   per space, first in its tab list, scrolling with the tabs (the scroll box is its
+   containing block) and painting under every tab's icon and name. While it
+   travels, the real highlight is off: its glow and shine go with it. */
 @media -moz-pref("zia.ultra") {
   zen-workspace arrowscrollbox.workspace-arrowscrollbox::part(scrollbox) {
     position: relative;
@@ -66,6 +66,12 @@
     /* (the liquid is drawn outside it, from its top-left) */
     height: 0;
     pointer-events: none;
+  }
+
+  /* (the Library's, for its chosen-section tile: under the section buttons,
+     as the tile is) */
+  .zia-library-goo {
+    z-index: 0;
   }
 
   :root[zia-goo-travel] .tabbrowser-tab:not([zen-essential])[visuallyselected] > .tab-stack > .tab-background {
