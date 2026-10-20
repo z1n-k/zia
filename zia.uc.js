@@ -6180,6 +6180,7 @@
       popBottomTrim = null;
       root.removeAttribute("zia-pop-scrolls");
       urlbar?.style.removeProperty("--zia-pop-bottom-trim");
+      urlbar?.style.removeProperty("--zia-pop-reach-bottom");
       return;
     }
     const view = urlbar.querySelector(".urlbarView");
@@ -6229,6 +6230,15 @@
       popBottomTrim += error * POP_STEP;
       urlbar.style.setProperty("--zia-pop-bottom-trim", `${popBottomTrim}px`);
       requestAnimationFrame(() => fitPopoverBottom(passesLeft - 1));
+      return;
+    }
+    // Still short of the last row once done, as on Windows (something there holds the
+    // pop-up's height, #450): its background reaches down past it to cover it, rather
+    // than the row hanging out below the pop-up's edge
+    const reach = parseFloat(urlbar.style.getPropertyValue("--zia-pop-reach-bottom")) || 0;
+    const want = Math.max(0, Math.round(reach - error));
+    if (Math.abs(want - reach) > 0.5) {
+      setStyle(urlbar, "--zia-pop-reach-bottom", want ? `${want}px` : null);
     }
   }
 
@@ -6262,6 +6272,13 @@
         attributes: true,
         attributeFilter: ["breakout-extend"],
       });
+      // (and as the list changes size without rows coming or going: its rows growing as
+      // their icons and text arrive, or the pop-up re-laid out)
+      new ResizeObserver(() => {
+        if (urlbar.hasAttribute("breakout-extend") && !urlbar.hasAttribute("zia-classic")) {
+          fitPopoverBottom();
+        }
+      }).observe(results);
     }
   }
 
