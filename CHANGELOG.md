@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.102.1] — 2026-10-20
+
+### Changed
+
+- In a light space, the selected tab has a soft shadow beneath it in place of
+  its glow (light can't glow on white), lifting it off the sidebar. It goes
+  with the glow when that's hidden.
+- With Ultra, the Library's chosen-section tile bounces much more gently: a
+  slight stretch and squash on a softer spring.
+
 ## [2.102.0] — 2026-10-20
 
 ### Added
