@@ -310,7 +310,7 @@
   },
   {
     "type": "checkbox",
-    "label": "Compact mode: the hidden top toolbar fades in over the page, which stays put (off: it grows in and pushes the page down, as Zen's does)",
+    "label": "Compact mode: the hidden top toolbar fades in over the page (off: it opens in the gap above the page, as Zen's does)",
     "property": "zia.compact.toolbar-over-page",
     "defaultValue": false,
     "conditions": [

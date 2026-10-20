@@ -88,17 +88,103 @@
   }
 }
 
-/* Zen's hidden toolbar (compact mode, "hide the toolbar") grows in as the pointer
-   goes up and pushes the page down, as Zen has it, on Zen's timing: Zia's colour fade
-   on the toolbar (01-page-card-and-toolbar.css) took the place of its height's, so it
-   came and went at once. */
+/* Zen's hidden toolbar (compact mode, "hide the toolbar") opens in the window's gap
+   above the page, as Zen has it: clear, on the space's own colour, and the page under
+   it the rounded card. It had been drawn inside the card, in the site's colour with a
+   line under it, so it came in as another bar below the gap. Hidden, it's the gap
+   itself, as tall as the sides'; it grows on Zen's timing, and the site stays where it
+   is (Zen pulls it up by as much as the toolbar takes), as the card's top comes down. */
 @media -moz-pref("zen.view.compact.hide-toolbar") {
   @media not -moz-pref("zia.compact.toolbar-over-page") {
-    :root[zen-compact-mode="true"]:not([zen-single-toolbar="true"], [inDOMFullscreen="true"], [zia-urlbar-position="bottom"]):not(#zia-none) #zen-appcontent-navbar-wrapper {
-      transition:
-        height var(--zen-hidden-toolbar-transition),
-        background-color var(--zia-color-fade) ease,
-        border-color var(--zia-color-fade) ease !important;
+    /* (not in a split, where each pane has its own toolbar and this one is hidden) */
+    :root[zen-compact-mode="true"]:not([zen-single-toolbar="true"], [inDOMFullscreen="true"], [zia-urlbar-position="bottom"], [zia-split="true"]):not(#zia-none) {
+      & #zen-appcontent-wrapper {
+        margin-top: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        /* (Zia's toolbar height, not Zen's: Zen's left it a few pixels taller or shorter
+           than the toolbar in it) */
+        --zen-toolbar-height-with-bookmarks: var(--zia-toolbar-height);
+      }
+
+      &[zen-has-bookmarks] #zen-appcontent-wrapper {
+        --zen-toolbar-height-with-bookmarks: calc(var(--zia-toolbar-height) + 30px);
+      }
+
+      & #zen-appcontent-navbar-wrapper {
+        --zia-gap-ink: rgb(251, 251, 254);
+        background: transparent !important;
+        border-bottom: none !important;
+        border-radius: 0 !important;
+        transition: height var(--zen-hidden-toolbar-transition) !important;
+        color-scheme: dark !important;
+        color: var(--zia-gap-ink) !important;
+        --toolbox-textcolor: var(--zia-gap-ink) !important;
+        --toolbar-color: var(--zia-gap-ink) !important;
+        --toolbar-field-color: var(--zia-gap-ink) !important;
+        --toolbarbutton-icon-fill: var(--zia-gap-ink) !important;
+        --zia-toolbar-ink: var(--zia-gap-ink);
+        --zia-urlbar-hover-bg: rgba(255, 255, 255, 0.09);
+        --zen-toolbar-element-bg: rgba(255, 255, 255, 0.06) !important;
+        --zen-toolbar-element-bg-hover: rgba(255, 255, 255, 0.1) !important;
+
+        /* (the window's own colour shows through: Zen's copy of it, laid over the toolbar,
+           came with an edge and a shadow) */
+        & .zen-toolbar-background {
+          display: none !important;
+        }
+
+        & toolbarbutton:not(.webextension-browser-action, [id$="-browser-action"], [id$="-BAP"]) {
+          color: var(--zia-gap-ink) !important;
+          fill: var(--zia-gap-ink) !important;
+          fill-opacity: 1 !important;
+        }
+
+        & :is(#zia-url-title, #zia-url-plain) .zia-url-title-rest {
+          opacity: 0.55;
+        }
+
+        @media -moz-pref("zia.urlbar.zia-look") {
+          & #urlbar:not([breakout-extend]) .urlbar-input {
+            color: var(--zia-gap-ink) !important;
+          }
+        }
+
+        &:not([zen-has-hover], [has-popup-menu], [zen-compact-mode-active]) {
+          height: var(--zia-card-top-gap) !important;
+        }
+      }
+
+      &[zia-light] #zen-appcontent-navbar-wrapper {
+        --zia-gap-ink: var(--zia-sidebar-ink);
+        --zia-urlbar-hover-bg: rgba(0, 0, 0, 0.06);
+        --zen-toolbar-element-bg: rgba(0, 0, 0, 0.06) !important;
+        --zen-toolbar-element-bg-hover: rgba(0, 0, 0, 0.1) !important;
+        color-scheme: light !important;
+      }
+
+      & #tabbrowser-tabbox {
+        border-radius: var(--zia-card-radius) !important;
+        box-shadow: var(--zia-card-shadow) !important;
+      }
+
+      & #tabbrowser-tabbox #tabbrowser-tabpanels .browserSidebarContainer {
+        border-radius: var(--zia-card-radius) !important;
+      }
+
+      & #tabbrowser-tabpanels :is(.browserSidebarContainer, .browserStack, browser) {
+        clip-path: inset(0 round var(--zia-card-radius));
+      }
+
+      /* (Zen's pull up, from the toolbar's height shown less the gap it had hidden: it
+         counts Zen's gap, wider than Zia's, so the site came down a step) */
+      @media not -moz-pref("zen.view.shift-down-site-on-hover") {
+        @media -moz-pref("zen.view.hide-window-controls") {
+          & #tabbrowser-tabpanels[has-toolbar-hovered] .browserSidebarContainer:is(.deck-selected, [zen-split="true"]) .browserContainer {
+            margin-top: calc(var(--zia-card-top-gap) - var(--zen-toolbar-height-with-bookmarks)) !important;
+          }
+        }
+      }
     }
   }
 }
