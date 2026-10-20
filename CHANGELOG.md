@@ -4,6 +4,18 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.102.13] — 2026-10-20
+
+### Fixed
+
+- A folder opened where it is inside a closed folder grows and shrinks
+  smoothly both ways: closing, its tabs dropped to nothing at once and faded
+  on top of the tab shown; opening again, they were there at once (thanks
+  Bxthesda).
+- With Ultra on, the drifting colour round the open essential carries on
+  where it was when a glance on it closes, rather than jumping back to the
+  start of its cycle.
+
 ## [2.102.12] — 2026-10-20
 
 ### Fixed
