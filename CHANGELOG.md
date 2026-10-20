@@ -4,6 +4,18 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.102.8] — 2026-10-20
+
+### Fixed
+
+- Tucking away a space's pinned tabs with the selected tab in a folder among
+  them, the selected tab and its folder's name stay in place while the rest
+  shrink away, and come back the same way. The whole list slid up out of
+  sight, the selected tab with it, and snapped back once done; opening, it
+  went blank and slid back down (thanks Bxthesda).
+- With Ultra on, a loading tab's orb sits in line with the site icons above
+  and below it, rather than a few pixels to their right.
+
 ## [2.102.7] — 2026-10-20
 
 ### Fixed
