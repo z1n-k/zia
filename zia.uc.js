@@ -1499,6 +1499,16 @@
     }
     const update = () => {
       let shift = 0;
+      // Opened, the text stays where it was, centred on the toolbar as it was closed: the
+      // last measure is kept (centred in the opened bar instead, it jumped aside as the bar
+      // was clicked, #443). Not with the opened pop-up's text from the left (an option).
+      if (
+        urlbar.hasAttribute("breakout-extend") &&
+        urlbar.getAttribute("zen-floating-urlbar") !== "true" &&
+        !Services.prefs.getBoolPref("zia.urlbar.center-text.pop-up-left", false)
+      ) {
+        return;
+      }
       if (
         Services.prefs.getBoolPref("zia.urlbar.center-text", false) &&
         root.getAttribute("zen-single-toolbar") !== "true" &&
@@ -1519,7 +1529,7 @@
     observer.observe(box, { box: "border-box" });
     observer.observe(toolbar, { box: "border-box" });
     new MutationObserver(update).observe(urlbar, { attributes: true, attributeFilter: ["breakout-extend", "zen-floating-urlbar"] });
-    watchPrefs("zia.urlbar.center-text", update);
+    watchPrefs(["zia.urlbar.center-text", "zia.urlbar.center-text.pop-up-left"], update);
     window.addEventListener("unload", () => observer.disconnect());
     update();
   }

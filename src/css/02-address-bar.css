@@ -755,7 +755,9 @@
 
     /* ...on the toolbar's middle rather than the bar's, padded on one side by
        twice the gap between them (zia.uc.js) */
-    #urlbar:not([zen-floating-urlbar="true"], [breakout-extend]) :is(.urlbar-input, #zia-url-title, #zia-url-plain) {
+    /* (opened as well, so the text stays where it was as the bar is clicked: centred in
+       the opened bar instead, it jumped aside, #443) */
+    #urlbar:not([zen-floating-urlbar="true"]) :is(.urlbar-input, #zia-url-title, #zia-url-plain) {
       padding-left: max(0px, 2 * var(--zia-center-shift, 0px)) !important;
       padding-right: max(0px, -2 * var(--zia-center-shift, 0px)) !important;
     }
@@ -766,6 +768,8 @@
       #urlbar[breakout-extend]:not([zen-floating-urlbar="true"]) :is(.urlbar-input, #zia-url-title, #zia-url-plain) {
         text-align: start !important;
         justify-content: flex-start !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
       }
     }
   }
