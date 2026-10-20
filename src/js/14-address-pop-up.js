@@ -242,7 +242,9 @@
     const view = urlbar.querySelector(".urlbarView");
     const background = urlbar.querySelector(".urlbar-background");
     const rows = urlbar.querySelectorAll(".urlbarView-row");
-    const last = rows[rows.length - 1];
+    // (the last row that shows: Firefox keeps rows it isn't using, hidden, at the end, and
+    // measured by one of those, at nowhere, the pop-up was shrunk up past the last rows)
+    const last = [...rows].reverse().find((row) => row.getBoundingClientRect().height > 0);
     if (!view || !background || !last) {
       return;
     }
