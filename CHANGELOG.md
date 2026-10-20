@@ -4,6 +4,24 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.103.2] — 2026-10-20
+
+### Changed
+
+- A tab group made from a tab's menu is named in place: its name field opens
+  in the sidebar as it's made, ready to type in, as a new folder's does. It
+  was left nameless, Firefox's own naming box not showing in Zen (thanks
+  Briski).
+- Zen's small loading pill no longer shows at the top of the page with the
+  toolbar hidden in compact mode; a loading page shows on its tab (thanks
+  Briski).
+
+### Fixed
+
+- In compact mode the sidebar stays out while a name in it is being typed (a
+  tab's, a folder's or a group's), rather than sliding away as the pointer
+  leaves it (thanks Briski).
+
 ## [2.103.1] — 2026-10-20
 
 ### Fixed
