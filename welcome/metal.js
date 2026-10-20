@@ -1652,9 +1652,12 @@ void main() {
   // The wrapper is MetalFx's root as MetalText leaves it ("bare": no fill, no
   // rims): inline-flex, isolated, hidden until the first metal frame. Every
   // part states its position, so page rules like `.stage * { position:
-  // absolute }` can't move it.
+  // absolute }` can't move it. The port gives it room round the text (padding,
+  // taken back by a negative margin, so nothing moves): the metal is drawn
+  // over the wrapper's box, and with the wordmark's tight letter-spacing the
+  // last letter's ink reached past the text's box and was sliced off.
   const ROOT_CSS = "position:relative;display:inline-flex;align-items:center;justify-content:center;isolation:isolate;" +
-    "overflow:visible;background:transparent;margin:0;padding:0;border:0;border-radius:4px;opacity:0;visibility:hidden;transition:none";
+    "overflow:visible;background:transparent;box-sizing:border-box;margin:-0.15em -0.2em;padding:0.15em 0.2em;border:0;border-radius:4px;opacity:0;visibility:hidden;transition:none";
   const CANVAS_CSS = "position:absolute;inset:0;left:0;top:0;width:100%;height:100%;display:block;z-index:6;pointer-events:none;" +
     "border-radius:inherit;margin:0;padding:0;border:0";
   const GLOW_HOST_CSS = "position:absolute;display:block;inset:0;left:0;top:0;pointer-events:none;z-index:7;border-radius:inherit";
