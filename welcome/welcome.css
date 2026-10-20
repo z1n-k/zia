@@ -545,7 +545,7 @@ kbd > span, .w-key > span { position: static; display: block; text-box: trim-bot
 .w-row, .w-page, .pv, .search { box-shadow: inset 0 .18cqw 0 rgba(255,255,255,.045); }
 
 /* Ultra: the essential's colours drifting, a thinking orb on a loading tab,
-   the music card's glow, the metal loading line, and the word in metal */
+   the music card's glow, and the word in metal */
 .ultra { background: #0f0f10; }
 .ultra .uside { left: 0; top: 0; bottom: 0; width: 30cqw; background: rgba(255,255,255,.025); }
 .ultra .uess { left: 2.4cqw; top: 4cqw; width: 12cqw; height: 8.4cqw; border-radius: 2.4cqw; corner-shape: superellipse(1.93); overflow: hidden; background: rgba(255,255,255,.06); }
@@ -576,20 +576,13 @@ kbd > span, .w-key > span { position: static; display: block; text-box: trim-bot
 .ultra .ut2 { left: 11cqw; top: 6cqw; width: 7cqw; height: 1.1cqw; border-radius: .6cqw; background: rgba(255,255,255,.35); }
 .ultra .ubar { left: 34cqw; right: 4cqw; top: 4cqw; height: 6cqw; border-radius: 1.8cqw; overflow: hidden; background: rgba(255,255,255,.06); }
 .ultra .uurl { left: 2.4cqw; top: 2.4cqw; width: 22cqw; height: 1.2cqw; border-radius: .6cqw; background: rgba(255,255,255,.4); }
-/* (silver, a light running along it as the metal's does) */
-.ultra .uload { left: 0; bottom: 0; height: .3cqw; width: 0;
-  background: linear-gradient(90deg, rgba(170,176,190,.7), #cdd2de 40%, #fff 50%, #cdd2de 60%, #f0f2f8) 0 0 / 200% 100%;
-  box-shadow: 0 0 1.4cqw .2cqw rgba(225,232,250,.35); animation: u-load 3.4s var(--ease) infinite, u-shine 1.2s linear infinite; }
 .ultra .upage { left: 34cqw; right: 4cqw; top: 13cqw; bottom: 4cqw; border-radius: 2cqw; background: rgba(255,255,255,.035); }
 .ultra .mark { left: 50%; top: 50%; translate: -50% -50%; font: 650 9cqw/1 -apple-system, "SF Pro Display", system-ui, sans-serif; letter-spacing: -.04em; color: #e9e9ec; white-space: nowrap; }
 @keyframes u-turn { to { rotate: 360deg; } }
 @keyframes u-drift { from { translate: -6% -4%; scale: 1.05; } to { translate: 6% 5%; scale: 1.25; } }
 @keyframes u-orb { to { background-position: 1.2cqw .6cqw; } }
 @keyframes u-glow { from { transform: scale(.85, .8); opacity: .65; } to { transform: scale(1.1, 1.15); opacity: 1; } }
-@keyframes u-load { 0% { width: 0; opacity: 1; } 70% { width: 100%; opacity: 1; } 85%, 100% { width: 100%; opacity: 0; } }
-@keyframes u-shine { to { background-position: -200% 0; } }
 @media (prefers-reduced-motion: reduce) {
   .ultra * { animation: none !important; }
-  .ultra .uload { width: 62%; }
 }
 

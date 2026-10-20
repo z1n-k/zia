@@ -1,10 +1,8 @@
   // ---------- Ultra (zia.ultra, on by default)
   // Effects ported from Libraries.dev (https://libraries.dev, MIT, by Jakub
   // Antalik), each where its author places it: a thinking orb for loading, a
-  // glow under what's playing, the Library's chosen section springing to the
-  // next, liquid metal along the loading line, and the Library's pictures
-  // dissolving in from a pixel mosaic (the colour round the open essential
-  // drifting is 28-ultra.css).
+  // glow under what's playing, and the Library's chosen section springing to
+  // the next (the colour round the open essential drifting is 28-ultra.css).
   const ULTRA_PREF = "zia.ultra";
   const ultraOn = () => Services.prefs.getBoolPref(ULTRA_PREF, true);
 
@@ -258,5 +256,4 @@
   function watchUltra() {
     safely("watchUltraOrbs", watchUltraOrbs);
     safely("watchUltraGlow", watchUltraGlow);
-    safely("watchUltraMetalLine", watchUltraMetalLine);
   }

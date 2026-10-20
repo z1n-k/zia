@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- The address bar's loading line is Zia's blue again with Ultra on, rather
+  than silver; Ultra's liquid-metal loading line is gone, and the welcome
+  tour's Ultra page no longer lists it.
+
 ## [2.102.9] — 2026-10-20
 
 ### Removed
