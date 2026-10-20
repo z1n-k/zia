@@ -9641,8 +9641,11 @@ zen-workspace-creation {
    a screenshot starts, as Zia's card: its colour, squircle, edge and lift,
    light in a light space; the buttons as Zia's tiles (zia.uc.js puts their
    look in, out of reach of these styles). The dimmed page and its region
-   picking are drawn in the page, out of reach of any theme. */
+   picking are drawn in the page, out of reach of any theme. Inside the page's
+   top rather than over the toolbar, where Firefox puts it: Zia's rounded page
+   cut its top off there (#445). */
 :root:not(#zia-none) screenshots-buttons {
+  top: 10px !important;
   padding: 6px !important;
   background-color: var(--zia-tab-card-bg) !important;
   color: rgb(255, 255, 255) !important;
@@ -9655,6 +9658,41 @@ zen-workspace-creation {
 :root[zia-light]:not(#zia-none) screenshots-buttons {
   color: rgb(28, 28, 32) !important;
   color-scheme: light;
+}
+
+/* ...in the toolbar's colour and ink, as the toolbar is (Zen's own colour with
+   "Toolbar in the site's colour" off: Zia's card, above) */
+:root:not([zia-theme-toolbar]):not(#zia-none) screenshots-buttons {
+  background-color: var(--zia-site-bg, var(--zia-tab-card-bg)) !important;
+}
+
+:root[zia-site-light="true"]:not([zia-theme-toolbar]):not(#zia-none) screenshots-buttons {
+  color: var(--zia-light-ink, rgb(28, 28, 32)) !important;
+  color-scheme: light;
+}
+
+:root:is([zia-site-dark="true"], [zia-site-mid="true"]):not([zia-theme-toolbar]):not(#zia-none) screenshots-buttons {
+  color: rgb(255, 255, 255) !important;
+  color-scheme: dark;
+}
+
+/* The preview of a whole or visible page's shot (its own window, which Zia's
+   styles reach too): its Retry, Close, Copy and Download as Zia's tiles, with
+   Download in Zia's blue, rather than Firefox's buttons */
+screenshots-preview {
+  --button-border-radius: var(--zia-glass-button-radius, 10px);
+  --button-border-color: transparent;
+  --button-border-color-hover: transparent;
+  --button-border-color-primary: transparent;
+  --button-background-color: color-mix(in srgb, currentColor 7%, transparent);
+  --button-background-color-hover: color-mix(in srgb, currentColor 12%, transparent);
+  --button-background-color-active: color-mix(in srgb, currentColor 20%, transparent);
+  --button-background-color-primary: var(--zia-loading-color, rgb(90, 185, 245));
+  --button-background-color-primary-hover: color-mix(in srgb, var(--zia-loading-color, rgb(90, 185, 245)) 88%, white);
+  --button-background-color-primary-active: color-mix(in srgb, var(--zia-loading-color, rgb(90, 185, 245)) 82%, black);
+  --button-text-color-primary: rgb(255, 255, 255);
+  --button-text-color-primary-hover: rgb(255, 255, 255);
+  --button-text-color-primary-active: rgb(255, 255, 255);
 }
 /* The rename card (tidy-downloads/tidy-downloads.js; Tidy Downloads, by
    Bxthesda and Zylaah, with their permission): a small copy of Zia's glass
