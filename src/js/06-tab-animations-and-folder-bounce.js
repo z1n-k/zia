@@ -154,8 +154,14 @@
       return null;
     }
     // With a tab selected inside, Zen shows just that tab and the other tabs' own
-    // animations carry the motion (springFolderItem), so Zen's slide is left as it was
-    if (!spaceStart && (folder.hasAttribute("has-active") || folder.contains(gBrowser.selectedTab))) {
+    // animations carry the motion (springFolderItem), so Zen's slide is left as it was.
+    // The same for a space's pinned tabs holding the selected tab (or one kept showing):
+    // Zen's slide goes nowhere then, and Zia's slid the whole section up out of sight,
+    // that tab with it, for it to snap back once done (and opening, down from nothing)
+    const holdsShown = spaceStart
+      ? folder.collapsiblePins?.hasAttribute("has-active") || element.parentElement.contains(gBrowser.selectedTab)
+      : folder.hasAttribute("has-active") || folder.contains(gBrowser.selectedTab);
+    if (holdsShown) {
       element.parentElement.ziaHold?.();
       return null;
     }
