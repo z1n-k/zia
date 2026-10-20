@@ -1610,6 +1610,9 @@
         openOffset += dy;
         root.style.setProperty("--zia-urlbar-open-offset", `${openOffset}px`);
       }
+      if (!urlbarAtBottom()) {
+        keepOpenedUrlbarInWindow(urlbar);
+      }
       reachWindowTop(urlbar);
       return;
     }
@@ -1621,6 +1624,26 @@
       root.style.setProperty("--zia-urlbar-open-offset", `${openOffset}px`);
     }
     reachWindowTop(urlbar);
+  }
+
+  // Moved to keep the text where it was, the pop-up stays inside the window: with the page
+  // edge to edge the bar sits against the window's edge, and the bigger pop-up round the
+  // same text went past it and was cut off
+  function keepOpenedUrlbarInWindow(urlbar) {
+    const box = urlbar.getBoundingClientRect();
+    if (!box.width) {
+      return;
+    }
+    const dy = box.top < 0 ? -box.top : 0;
+    const dx = box.left < 0 ? -box.left : box.right > window.innerWidth ? window.innerWidth - box.right : 0;
+    if (dy > 0.5) {
+      openOffset += dy;
+      root.style.setProperty("--zia-urlbar-open-offset", `${openOffset}px`);
+    }
+    if (Math.abs(dx) > 0.5) {
+      openOffsetX += dx;
+      root.style.setProperty("--zia-urlbar-open-offset-x", `${openOffsetX}px`);
+    }
   }
 
   // The pop-up at the top of the window reaches up to its top edge, as Dia's does: it stopped

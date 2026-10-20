@@ -25,28 +25,30 @@
 
 /* The flyout sidebar floats with half Zia's card gap all round (as Dia's) (top, side and
    bottom), whatever Zen's element gap is: Zen's own put it almost flush
-   with the window's edges. Its panel sits inside a padding of Zen's float,
+   with the window's edges. (At least the usual gap with the page edge to edge:
+   flush in the window's corner, the window's own rounder corner cut into the
+   sidebar's there, so its corners didn't match.) Its panel sits inside a padding of Zen's float,
    so the side offset takes that back off. The same with Zen's single toolbar,
    which it had been left out of: flush there, the window's own rounded corner
    cut into the sidebar's beside it. (Zen's extra top offset there, for
    Windows' border along the window's top, is kept.) */
 :root[zen-compact-mode="true"] #navigator-toolbox:not([animate="true"]) {
   margin-top: 0 !important;
-  top: calc(var(--zia-card-gap) / 2) !important;
-  bottom: calc(var(--zia-card-gap) / 2) !important;
+  top: calc(max(var(--zia-card-gap), 6px) / 2) !important;
+  bottom: calc(max(var(--zia-card-gap), 6px) / 2) !important;
   height: auto !important;
 }
 
 :root[zen-compact-mode="true"][zen-single-toolbar="true"] #navigator-toolbox:not([animate="true"]) {
-  top: calc(var(--zia-card-gap) / 2 + var(--zen-sidebar-compact-top-offset, 0px)) !important;
+  top: calc(max(var(--zia-card-gap), 6px) / 2 + var(--zen-sidebar-compact-top-offset, 0px)) !important;
 }
 
 :root[zen-compact-mode="true"]:not([zen-right-side="true"]) #navigator-toolbox:not([animate="true"]) {
-  left: calc(var(--zia-card-gap) / 2 - var(--zen-compact-float, 6px)) !important;
+  left: calc(max(var(--zia-card-gap), 6px) / 2 - var(--zen-compact-float, 6px)) !important;
 }
 
 :root[zen-compact-mode="true"][zen-right-side="true"] #navigator-toolbox:not([animate="true"]) {
-  right: calc(var(--zia-card-gap) / 2 - var(--zen-compact-float, 6px)) !important;
+  right: calc(max(var(--zia-card-gap), 6px) / 2 - var(--zen-compact-float, 6px)) !important;
 }
 
 /* With Zen's hidden toolbar, Zen pushes the flyout sidebar's panel down by the
