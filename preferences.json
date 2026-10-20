@@ -454,7 +454,7 @@
   },
   {
     "type": "checkbox",
-    "label": "Cmd/Ctrl+T and + New Tab open a real tab (off: Zen's floating address bar)",
+    "label": "Cmd/Ctrl+T and + New Tab open a real tab (off: Zen's floating address bar, as also in compact mode with the toolbar hidden)",
     "property": "zia.newtab.real-tab",
     "defaultValue": true
   },

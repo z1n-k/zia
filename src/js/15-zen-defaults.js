@@ -11,7 +11,7 @@
     // used any more; the Tabler ones have their own file.
     IOUtils.remove(PathUtils.join(PathUtils.profileDir, "zia-icon-vectors.json"), { ignoreAbsent: true }).catch(() => {});
     set("zen.widget.mac.mono-window-controls", false);
-    set("zen.urlbar.replace-newtab", !Services.prefs.getBoolPref("zia.newtab.real-tab", true));
+    set("zen.urlbar.replace-newtab", floatingNewTab());
     set("zen.splitView.enable-tab-drop", !Services.prefs.getBoolPref("zia.split.drop-cards", true));
     set("browser.urlbar.trimHttps", true);
     // answers in the address bar: maths, and units and time zones (Firefox's own)

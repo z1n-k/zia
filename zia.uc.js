@@ -6022,7 +6022,7 @@
     // used any more; the Tabler ones have their own file.
     IOUtils.remove(PathUtils.join(PathUtils.profileDir, "zia-icon-vectors.json"), { ignoreAbsent: true }).catch(() => {});
     set("zen.widget.mac.mono-window-controls", false);
-    set("zen.urlbar.replace-newtab", !Services.prefs.getBoolPref("zia.newtab.real-tab", true));
+    set("zen.urlbar.replace-newtab", floatingNewTab());
     set("zen.splitView.enable-tab-drop", !Services.prefs.getBoolPref("zia.split.drop-cards", true));
     set("browser.urlbar.trimHttps", true);
     // answers in the address bar: maths, and units and time zones (Firefox's own)
@@ -6507,6 +6507,22 @@
     "zia.split.drop-cards",
     "zia.page.rounding",
   ];
+  // A new tab is a real tab (Zia's option) unless the top toolbar is hidden in
+  // compact mode: there the address bar, focused as the tab opened, brought the
+  // hidden toolbar out and kept it till another tab was chosen, so Zen's floating
+  // address bar takes its place
+  function floatingNewTab() {
+    if (!Services.prefs.getBoolPref("zia.newtab.real-tab", true)) {
+      return true;
+    }
+    return (
+      root.getAttribute("zen-compact-mode") === "true" &&
+      root.getAttribute("zen-single-toolbar") !== "true" &&
+      root.getAttribute("zia-urlbar-position") !== "bottom" &&
+      Services.prefs.getBoolPref("zen.view.compact.hide-toolbar", false)
+    );
+  }
+
   const WATCHED_OPTIONS = ["zia.urlbar.zia-look", "zia.urlbar.dia-style", "zia.newtab.real-tab", "zia.toolbar.site-color", "zia.split.drop-cards"];
 
   function watchOptions() {
@@ -6521,7 +6537,7 @@
       // drops on the page back to Zen's own split.
       try {
         const defaults = Services.prefs.getDefaultBranch("");
-        defaults.setBoolPref("zen.urlbar.replace-newtab", !Services.prefs.getBoolPref("zia.newtab.real-tab", true));
+        defaults.setBoolPref("zen.urlbar.replace-newtab", floatingNewTab());
         defaults.setBoolPref("zen.splitView.enable-tab-drop", !Services.prefs.getBoolPref("zia.split.drop-cards", true));
       } catch (err) {
         noteError("options: apply (2)", err);
@@ -6534,6 +6550,13 @@
     };
     apply();
     watchPrefs(WATCHED_OPTIONS, onChange);
+    // (compact mode coming and going, and its toolbar hidden or not, change which
+    // a new tab is)
+    watchPrefs("zen.view.compact.hide-toolbar", apply);
+    new MutationObserver(apply).observe(root, {
+      attributes: true,
+      attributeFilter: ["zen-compact-mode", "zen-single-toolbar", "zia-urlbar-position"],
+    });
   }
 
   const FEATURES = ["media-player", "find-bar", "icon-picker", "undo-close", "folder-icon-suggest", "tab-hover-cards", "tab-numbers"];

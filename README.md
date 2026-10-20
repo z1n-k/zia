@@ -401,7 +401,7 @@ In **Settings → Sine Mods → Zia → Rename downloads with AI**, turn it on, 
 | Centre the address bar's text | off |
 | Address bar position | Top |
 | Zia's find in page bar | on |
-| Cmd/Ctrl+T and + New Tab open a real tab (off: Zen's floating address bar) | on |
+| Cmd/Ctrl+T and + New Tab open a real tab (off: Zen's floating address bar, as also in compact mode with the toolbar hidden) | on |
 | New tabs open your search engine's page (off: Zen's new tab page) | on |
 | New tabs start in the address bar, ready to type | off |
 | **Page** | |
@@ -437,7 +437,7 @@ In **Settings → Sine Mods → Zia → Rename downloads with AI**, turn it on, 
 Most only at the default level: if you've set one yourself in `about:config`, your choice is kept.
 
 - `zen.widget.mac.mono-window-controls` → off, for native macOS window buttons.
-- `zen.urlbar.replace-newtab` → off, so **+ New Tab** and Cmd+T open a real tab. Turn off **Cmd/Ctrl+T and + New Tab open a real tab** to get Zen's floating address bar back.
+- `zen.urlbar.replace-newtab` → off, so **+ New Tab** and Cmd+T open a real tab. Turn off **Cmd/Ctrl+T and + New Tab open a real tab** to get Zen's floating address bar back. In compact mode with the toolbar hidden it's Zen's floating address bar either way: a real tab's address bar, ready for typing, brought the hidden toolbar out until you chose another tab.
 - `zen.splitView.enable-tab-drop` → off, so dropping a tab on the page uses Zia's drop cards. Turn off **Split view drop cards** to get Zen's own back.
 - `zen.theme.acrylic-elements` → off, once, if you hadn't set it yourself: Zen 1.23 turned it on for everyone, which makes Zia's sidebar far too see-through. Set it back to `true` to turn it on again.
 - `media.videocontrols.picture-in-picture.improved-video-controls.enabled` → on, for picture-in-picture's skip buttons and progress line.
