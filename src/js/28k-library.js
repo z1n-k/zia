@@ -93,20 +93,17 @@
     if (!box.height) {
       return;
     }
-    // With Ultra on, it springs there instead (28s-ultra.js); any other
-    // placing ends that
-    const was = rail.hasAttribute("placed") && !rail.hidden ? new DOMMatrix(getComputedStyle(rail).transform).m42 : null;
+    const moved = rail.hasAttribute("placed") && rail.style.transform !== `translateY(${top}px)`;
     rail.hidden = false;
-    rail.style.height = `${box.height}px`;
-    if (!instantly && was !== null && Math.abs(was - top) > 0.5 && ultraOn() && ultraRailSpring(rail, was, top)) {
-      return;
-    }
-    ultraRailStop(rail);
     rail.toggleAttribute("instant", instantly);
+    rail.style.height = `${box.height}px`;
     rail.style.transform = `translateY(${top}px)`;
     rail.setAttribute("placed", "true");
     if (instantly) {
       requestAnimationFrame(() => rail.removeAttribute("instant"));
+    } else if (moved && ultraOn()) {
+      // (with Ultra on, it stretches and squashes on the way, 28s-ultra.js)
+      ultraRailSquash(rail);
     }
   }
 

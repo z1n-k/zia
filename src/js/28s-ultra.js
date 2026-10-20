@@ -233,129 +233,25 @@
     sync();
   }
 
-  // The Library's chosen-section tile (28k-library.js) springs to the section
-  // you pick: it chases a point easing there over 0.3s on liquid-gooey's
-  // "move" spring (stiffness 380, damping 18), squashing with its speed. The
-  // tile itself moves, glass edge and all. False under reduced motion.
-  const ultraRails = new WeakMap();
-
-  // CSS "ease", cubic-bezier(0.25, 0.1, 0.25, 1)
-  function ultraEase(p) {
-    const curve = (t, a, b) => 3 * t * (1 - t) * (1 - t) * a + 3 * t * t * (1 - t) * b + t * t * t;
-    let lo = 0;
-    let hi = 1;
-    let t = p;
-    for (let i = 0; i < 20; i++) {
-      t = (lo + hi) / 2;
-      if (curve(t, 0.25, 0.25) < p) {
-        lo = t;
-      } else {
-        hi = t;
-      }
-    }
-    return curve(t, 0.1, 1);
-  }
-
-  function ultraRailSpring(rail, from, to) {
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return false;
-    }
-    let m = ultraRails.get(rail);
-    const moving = !!m?.frame;
-    if (!m) {
-      m = { y: from, v: 0, frame: 0 };
-      ultraRails.set(rail, m);
-    }
-    // (mid-spring, on from where it's got to)
-    m.start = moving ? m.point : from;
-    if (!moving) {
-      m.y = from;
-      m.v = 0;
-    }
-    m.to = to;
-    m.t0 = performance.now();
-    m.last = m.t0;
-    rail.setAttribute("instant", "true");
-    rail.setAttribute("placed", "true");
-    const step = (now) => {
-      const dt = Math.min(0.032, Math.max(0, now - m.last) / 1000);
-      m.last = now;
-      const p = Math.min(1, (now - m.t0) / 300);
-      m.point = m.start + (m.to - m.start) * ultraEase(p);
-      m.v += (380 * (m.point - m.y) - 18 * m.v) * dt;
-      m.y += m.v * dt;
-      const speed = Math.abs(m.v);
-      if (p >= 1 && Math.abs(m.y - m.to) < 0.25 && speed < 4) {
-        m.frame = 0;
-        rail.style.transform = `translateY(${m.to}px)`;
-        requestAnimationFrame(() => !m.frame && rail.removeAttribute("instant"));
-        return;
-      }
-      const stretch = speed > 2 ? Math.min(0.3, speed * 0.0006) : 0;
-      rail.style.transform = `translateY(${m.y.toFixed(2)}px) scale(${(1 / (1 + stretch * 0.65)).toFixed(4)}, ${(1 + stretch).toFixed(4)})`;
-      m.frame = requestAnimationFrame(step);
-    };
-    if (!moving) {
-      m.frame = requestAnimationFrame(step);
-    }
-    return true;
-  }
-
-  // (any other placing of the tile ends its spring)
-  function ultraRailStop(rail) {
-    const m = ultraRails.get(rail);
-    if (m?.frame) {
-      cancelAnimationFrame(m.frame);
-      m.frame = 0;
-    }
-  }
-
-  // The address bar's loading line in silver liquid metal: the metal drawn
-  // along it (28x-ultra-metal-engine.js) while a page loads, shown as far as
-  // it has loaded (28-ultra.css)
-  function watchUltraMetalLine() {
-    const urlbar = gURLBar.textbox || document.getElementById("urlbar");
-    if (!urlbar) {
+  // The Library's chosen-section tile (28k-library.js), as it springs to the
+  // section you pick (its own slide, on Zia's spring), stretches as it goes
+  // and squashes as it lands, as liquid-gooey's "move" does, glass edge and
+  // all. Nothing under reduced motion.
+  function ultraRailSquash(rail) {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches || typeof rail.animate !== "function") {
       return;
     }
-    const wrap = document.createElementNS(XHTML_NS, "div");
-    wrap.className = "zia-metal-line";
-    wrap.setAttribute("aria-hidden", "true");
-    const canvas = document.createElementNS(XHTML_NS, "canvas");
-    wrap.append(canvas);
-    let metal = null;
-    let timer = 0;
-    const sync = () => {
-      clearTimeout(timer);
-      const on =
-        ultraOn() &&
-        !Services.prefs.getBoolPref("zia.loading-bar.accent-color", false) &&
-        root.getAttribute("zia-loading") === "true";
-      if (on) {
-        if (!wrap.isConnected) {
-          urlbar.append(wrap);
-        }
-        const ratio = Math.min(2, window.devicePixelRatio || 1);
-        canvas.width = Math.min(2048, Math.round(urlbar.getBoundingClientRect().width * ratio)) || 600;
-        canvas.height = Math.max(2, Math.round(1.5 * ratio));
-        metal ||= ziaMetalSurface(canvas, { band: true, light: root.hasAttribute("zia-light") });
-        return;
-      }
-      // (once the line has faded)
-      timer = setTimeout(() => {
-        metal?.destroy();
-        metal = null;
-        wrap.remove();
-      }, 400);
-    };
-    new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ["zia-loading"] });
-    // (the metal's light tuning on a light space)
-    new MutationObserver(() => metal?.setLight(root.hasAttribute("zia-light"))).observe(root, {
-      attributes: true,
-      attributeFilter: ["zia-light"],
-    });
-    watchPrefs([ULTRA_PREF, "zia.loading-bar.accent-color"], sync);
-    sync();
+    rail.ziaSquash?.cancel();
+    rail.ziaSquash = rail.animate(
+      [
+        { scale: "1 1" },
+        { scale: "0.88 1.16", offset: 0.3 },
+        { scale: "1.06 0.93", offset: 0.62 },
+        { scale: "0.98 1.02", offset: 0.82 },
+        { scale: "1 1" },
+      ],
+      { duration: 520, easing: "ease-out" }
+    );
   }
 
   function watchUltra() {
