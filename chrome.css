@@ -2488,8 +2488,21 @@ zen-split-fake-tab {
 }
 
 /* Several selected tabs dragged together (28-tab-dragging.js): the others are
-   folded into the dragged one, out of the list, and it shows how many */
+   folded into the dragged one, out of the list, and it shows how many, and
+   as a small stack (the edges of the tabs under it) */
 .tabbrowser-tab[zia-drag-companion] {
+  display: none !important;
+}
+
+.tabbrowser-tab[zia-drag-count] > .tab-stack > .tab-background {
+  box-shadow:
+    0 3px 0 -1px color-mix(in srgb, currentColor 16%, transparent),
+    0 6px 0 -2px color-mix(in srgb, currentColor 9%, transparent) !important;
+}
+
+/* (its close button out of the way, so the count has room: squeezed past it,
+   it showed as a dot) */
+.tabbrowser-tab[zia-drag-count] .tab-close-button {
   display: none !important;
 }
 

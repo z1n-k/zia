@@ -411,7 +411,9 @@
       // A split is always Zia's to place: Zen won't take one across the separator, dropped
       // it outside a closed or empty folder, and went by what's under the pointer (at the
       // top of the list, below the first folder or back where it came from)
-      const hand = !!(drag.folder || drag.split || folder || pf || (nf && isFolderStart(next, nf)) || crosses);
+      // (and several selected tabs: Firefox placed them by its measure of the list, which the
+      // drag had shifted, and two dragged a few rows down went to the end of it)
+      const hand = !!(drag.folder || drag.split || folder || pf || (nf && isFolderStart(next, nf)) || crosses || drag.companions);
       // a tap going into or out of a folder (Zen's own are muted during a drag), not for
       // the one it's in as it starts
       if (drag.target && folder !== drag.target.folder) {
@@ -1982,13 +1984,31 @@
       // rows closing up, a count on it), as macOS drags several things; Firefox moves them
       // all on the drop, and they show again there. (Only the dragged one moved, and the
       // rest jumped across on the drop.)
+      let companions = 0;
       if (!folder && !split && target.multiselected) {
         const others = gBrowser.selectedTabs.filter((tab) => tab !== target && !tab.hasAttribute("zen-essential") && tab.isConnected);
+        // (the rows round them close up smoothly as they fold away, rather than at once)
+        const before = new Map();
+        if (others.length) {
+          for (const item of gBrowser.tabContainer.ariaFocusableItems) {
+            const node = nodeToMove(item);
+            if (node && node !== target && !others.includes(item) && !before.has(node)) {
+              before.set(node, node.getBoundingClientRect().top);
+            }
+          }
+        }
         for (const tab of others) {
           tab.setAttribute("zia-drag-companion", "true");
         }
         if (others.length) {
           target.setAttribute("zia-drag-count", String(others.length + 1));
+          companions = others.length;
+          for (const [node, top] of before) {
+            const now = node.getBoundingClientRect().top;
+            if (Math.abs(top - now) > 0.5) {
+              node.animate([{ translate: `0 ${top - now}px` }, { translate: "0 0" }], { duration: 160, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
+            }
+          }
         }
       }
       const rows = measureRows(folder ? null : target);
@@ -2068,6 +2088,7 @@
         sepDelta: 0,
         clientY: event.clientY || pending?.clientY || 0,
         screenY: event.screenY || pending?.screenY || 0,
+        companions,
       };
       lastDy = 0;
       lendOut(split || (folder ? null : target));
@@ -3544,8 +3565,31 @@
       drag = null;
       pending = null;
       document.documentElement.removeAttribute("zia-dragging-tab");
-      for (const tab of document.querySelectorAll("[zia-drag-companion]")) {
-        tab.removeAttribute("zia-drag-companion");
+      // The tabs folded into the dragged one unfold where they've landed, growing out under
+      // it: shown again at once, they showed back where they'd been for a frame and then
+      // jumped across as the drop placed them a step later
+      const folded = [...document.querySelectorAll("[zia-drag-companion]")];
+      if (folded.length) {
+        setTimeout(() => {
+          for (const tab of folded) {
+            tab.removeAttribute("zia-drag-companion");
+          }
+          for (const tab of folded) {
+            if (!tab.isConnected) {
+              continue;
+            }
+            const height = tab.getBoundingClientRect().height;
+            if (height > 0) {
+              tab.animate(
+                [
+                  { height: "0px", minHeight: "0px", opacity: 0, overflow: "clip" },
+                  { height: `${height}px`, minHeight: `${height}px`, opacity: 1, overflow: "clip" },
+                ],
+                { duration: 180, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" }
+              );
+            }
+          }
+        }, 0);
       }
       for (const tab of document.querySelectorAll("[zia-drag-count]")) {
         tab.removeAttribute("zia-drag-count");
