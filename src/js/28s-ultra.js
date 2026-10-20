@@ -338,7 +338,7 @@
         const ratio = Math.min(2, window.devicePixelRatio || 1);
         canvas.width = Math.min(2048, Math.round(urlbar.getBoundingClientRect().width * ratio)) || 600;
         canvas.height = Math.max(2, Math.round(1.5 * ratio));
-        metal ||= ziaMetalSurface(canvas, { band: true });
+        metal ||= ziaMetalSurface(canvas, { band: true, light: root.hasAttribute("zia-light") });
         return;
       }
       // (once the line has faded)
@@ -349,6 +349,11 @@
       }, 400);
     };
     new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ["zia-loading"] });
+    // (the metal's light tuning on a light space)
+    new MutationObserver(() => metal?.setLight(root.hasAttribute("zia-light"))).observe(root, {
+      attributes: true,
+      attributeFilter: ["zia-light"],
+    });
     watchPrefs([ULTRA_PREF, "zia.loading-bar.accent-color"], sync);
     sync();
   }
@@ -377,9 +382,13 @@
       const ratio = Math.min(2, window.devicePixelRatio || 1);
       canvas.width = Math.max(8, Math.round(box.width * ratio));
       canvas.height = Math.max(8, Math.round(box.height * ratio));
-      metal ||= ziaMetalSurface(canvas, { speed: 0.08, every: 120 });
+      metal ||= ziaMetalSurface(canvas, { speed: 0.08, every: 120, light: root.hasAttribute("zia-light") });
     };
     gBrowser.tabContainer.addEventListener("TabSelect", sync);
+    new MutationObserver(() => metal?.setLight(root.hasAttribute("zia-light"))).observe(root, {
+      attributes: true,
+      attributeFilter: ["zia-light"],
+    });
     watchPrefs([ULTRA_PREF, FAVICON_BG], sync);
     sync();
   }

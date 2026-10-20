@@ -6,7 +6,8 @@
 // rather than into lettering: one hidden WebGL2 canvas draws each surface in
 // turn and it's copied over.
 //
-//   const metal = ziaMetalSurface(canvas, { speed: 0.1, every: 120 });
+//   const metal = ziaMetalSurface(canvas, { speed: 0.1, every: 120, light: false });
+//   metal.setLight(true);   // the preset's light tuning, for a light space
 //   metal.destroy();
 //
 // `speed` scales the shader's clock (1 is the package's), `every` is the ms
@@ -568,7 +569,8 @@ v_imageUV += .5;
 v_imageUV.y = 1. - v_imageUV.y;
 }`;
 
-// (Paper's defaults, then the silver preset's dark tuning)
+// (Paper's defaults, then the silver preset's dark tuning; its light one is
+// ZIA_METAL_LIGHT)
 const ZIA_METAL_PRESET = {
   colorBack: "#00000000",
   colorTint: "#ffffff66",
@@ -591,6 +593,7 @@ const ZIA_METAL_PRESET = {
   fit: 1,
   shaderOpacity: 0.88,
 };
+const ZIA_METAL_LIGHT = { colorTint: "#ffffff40", shaderOpacity: 1 };
 const ZIA_METAL_SIZE = 256;
 const ziaMetalSurfaces = new Set();
 let ziaMetalGL = null;
@@ -658,7 +661,7 @@ function ziaMetalSetup() {
       event.preventDefault();
       ziaMetalGL = null;
     });
-    ziaMetalGL = { canvas, gl, resolution: u("u_resolution"), time: u("u_time") };
+    ziaMetalGL = { canvas, gl, resolution: u("u_resolution"), time: u("u_time"), tint: u("u_colorTint") };
   } catch (err) {
     ziaMetalFailed = true;
     noteError("metal: set up", err);
@@ -681,13 +684,15 @@ function ziaMetalDraw(s, now) {
   gl.viewport(0, 0, vw, vh);
   gl.clearColor(0, 0, 0, 0);
   gl.clear(gl.COLOR_BUFFER_BIT);
+  const mode = s.light ? ZIA_METAL_LIGHT : ZIA_METAL_PRESET;
+  gl.uniform4fv(R.tint, ziaMetalHex(mode.colorTint));
   gl.uniform2f(R.resolution, vw, vh);
   gl.uniform1f(R.time, ((now - s.t0) / 1000) * s.speed);
   gl.drawArrays(gl.TRIANGLES, 0, 6);
   const sh = s.band ? Math.max(1, Math.round(vh / 12)) : vh;
   const sy = R.canvas.height - vh + Math.round((vh - sh) / 2);
   s.ctx.clearRect(0, 0, w, h);
-  s.ctx.globalAlpha = ZIA_METAL_PRESET.shaderOpacity;
+  s.ctx.globalAlpha = mode.shaderOpacity;
   s.ctx.drawImage(R.canvas, 0, sy, vw, sh, 0, 0, w, h);
 }
 
@@ -716,14 +721,20 @@ function ziaMetalWake() {
   }
 }
 
-function ziaMetalSurface(canvas, { speed = 1, every = 66, band = false } = {}) {
+function ziaMetalSurface(canvas, { speed = 1, every = 66, band = false, light = false } = {}) {
   const ctx = canvas.getContext("2d");
-  const s = { canvas, ctx, speed, every, band, t0: performance.now() - Math.random() * 60000, next: 0, drawn: false };
+  const s = { canvas, ctx, speed, every, band, light, t0: performance.now() - Math.random() * 60000, next: 0, drawn: false };
   if (ctx) {
     ziaMetalSurfaces.add(s);
     ziaMetalWake();
   }
   return {
+    setLight(on) {
+      s.light = !!on;
+      s.next = 0;
+      s.drawn = false;
+      ziaMetalWake();
+    },
     destroy() {
       ziaMetalSurfaces.delete(s);
     },

@@ -9977,9 +9977,10 @@ zen-workspace-creation {
       --zia-load-glow: rgba(230, 236, 250, 0.38), rgba(170, 200, 240, 0.15) 35%, rgba(200, 205, 220, 0.05) 70%, transparent 100%;
     }
 
-    /* (on a light space, graphite, as silver vanishes on white) */
+    /* (on a light space, a mid grey, as silver vanishes on white; the metal,
+       in the preset's light tuning, darkens it where it reflects) */
     :root[zia-light] :is(#urlbar:not([breakout-extend]), .zia-pane-address)::after {
-      --zia-load-line: linear-gradient(to right, rgba(90, 95, 110, 0.7), rgb(70, 75, 88) 70%, rgb(40, 44, 52) 100%);
+      --zia-load-line: linear-gradient(to right, rgba(130, 135, 148, 0.7), rgb(112, 117, 130) 70%, rgb(88, 93, 105) 100%);
       --zia-load-tint: rgba(60, 66, 80, 0.14), rgba(60, 66, 80, 0.06) 50%, transparent 100%;
       --zia-load-glow: rgba(50, 55, 68, 0.24), rgba(60, 66, 80, 0.1) 35%, rgba(60, 66, 80, 0.03) 70%, transparent 100%;
     }
@@ -10010,13 +10011,8 @@ zen-workspace-creation {
       opacity: 1;
     }
 
-    /* (on a light space, darkening the graphite line where it shines) */
     :root[zia-light] #urlbar > .zia-metal-line {
       mix-blend-mode: multiply;
-
-      & > canvas {
-        filter: invert(0.85);
-      }
     }
   }
 }
