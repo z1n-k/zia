@@ -8364,6 +8364,18 @@ zen-folder .tab-reset-button {
    tab a white card, hovers and edges a faint shade of black. A window
    with no space colour in light mode is drawn the same way (zia-light,
    25-sidebar-paint-and-window-buttons.js). */
+/* On Windows with its see-through window (Mica or Acrylic), Zen leaves the window
+   clear under the space's colour, so a light space showed whatever was behind it:
+   white over a white app, dark (its dark text on it) over the desktop, and the light
+   look only seemed to work some of the time. A light space has a light base under
+   its colour there, so it's light whatever's behind, a touch of the material still
+   showing through. */
+@media (-moz-platform: windows) {
+  :root[zia-light]:not([privatebrowsingmode="temporary"]):not(#zia-none) #zen-main-app-wrapper {
+    background: rgba(246, 246, 248, 0.86) !important;
+  }
+}
+
 :root[zia-light]:not(#zia-none):not(#zia-none-2) {
   --zia-sidebar-ink: rgb(28, 28, 32);
   --zia-active-tab-bg: rgba(255, 255, 255, 0.78);
