@@ -559,7 +559,12 @@
         & .zen-library-download-progress {
           --thickness: 2px;
           --progress: var(--zia-loading-color);
-          --border-color: color-mix(in srgb, currentColor 18%, transparent);
+
+          /* (set here: Zen 1.23.4 draws the track in the badge's colour, now the
+             progress colour, where 1.23.3 went by --border-color) */
+          & .zen-library-download-progress-track {
+            stroke: color-mix(in srgb, var(--zia-sidebar-ink, rgb(255, 255, 255)) 18%, transparent) !important;
+          }
         }
       }
 
@@ -624,7 +629,10 @@
     & .zen-library-download-progress {
       --thickness: 2px;
       --progress: var(--zia-loading-color);
-      --border-color: color-mix(in srgb, currentColor 18%, transparent);
+
+      & .zen-library-download-progress-track {
+        stroke: color-mix(in srgb, var(--zia-sidebar-ink, rgb(255, 255, 255)) 18%, transparent) !important;
+      }
     }
   }
 

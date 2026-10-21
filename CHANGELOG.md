@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.103.12] — 2026-10-21
+
+### Fixed
+
+- Zen 1.23.4: a download's progress ring (in the Library and on its button)
+  keeps its faint track. Zen now draws the track in the ring's own colour,
+  which turned it the same blue as the progress.
+
 ## [2.103.11] — 2026-10-21
 
 ### Fixed
