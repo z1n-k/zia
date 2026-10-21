@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.103.11] — 2026-10-21
+
+### Fixed
+
+- A pop-up window (one a site opens) looks like one: no sidebar button (there's
+  no sidebar to show) or extensions menu (its extensions are hidden there), the
+  address row in the window's colour like the title row above it rather than a
+  strip of its own, and the read-only address no longer lights up under the
+  pointer as if it could be typed in
+  ([#482](https://github.com/z1n-k/zia/issues/482), thanks @OneGunBullet).
+
 ## [2.103.10] — 2026-10-21
 
 ### Fixed

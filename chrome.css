@@ -515,6 +515,31 @@
     }
   }
 }
+
+/* A pop-up window (a site's window.open): no sidebar or tabs, the address read-only.
+   Zen's sidebar button (it toggles a sidebar the pop-up hasn't got) and the
+   extensions menu (its buttons are hidden there) go; the address row takes the
+   window's colour, as the title row above it does, rather than a strip of its own;
+   and the address doesn't light up under the pointer as if it could be typed in
+   (#482) */
+:root[popup-window]:not(#zia-none) {
+  & :is(#zen-toggle-compact-mode, #unified-extensions-button) {
+    display: none !important;
+  }
+
+  & :is(#zen-appcontent-navbar-wrapper, #nav-bar) {
+    background: transparent !important;
+  }
+
+  & #urlbar > .urlbar-background {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  & #urlbar :is(.urlbar-input, #zia-url-title, #zia-url-plain) {
+    cursor: default !important;
+  }
+}
 /* Zia's address bar, all of it (the bar, its loading line, the page's
    title in it, the copy-link and site buttons, the pop-up), with "Zia's
    address bar" on, zia.urlbar.zia-look; off leaves the bar as Zen draws
