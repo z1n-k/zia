@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.103.10] — 2026-10-21
+
+### Fixed
+
+- With the pop-up see-through and in the toolbar's colour, and the address bar
+  in the sidebar, a dark page's pop-up over a light space (or a light one over
+  a dark space) is solid. It was over the sidebar rather than the page, and came
+  out a grey its text barely showed on (thanks Briski).
+
 ## [2.103.9] — 2026-10-21
 
 ### Fixed

@@ -7270,6 +7270,15 @@ zen-folder .tab-reset-button {
     backdrop-filter: blur(24px) saturate(1.6) !important;
   }
 
+  /* ...but solid in the sidebar when it's in the toolbar's colour and that's dark over a
+     light sidebar, or light over a dark one: there it's over the sidebar, not the page,
+     and a dark page's pop-up over a light space came out a grey its white text barely
+     showed on (thanks Briski) */
+  :root[zen-single-toolbar="true"]:not(#zia-none):not(#zia-none-2) :is(:root[zia-light] #urlbar#urlbar[zia-pop-site="dark"], :root:not([zia-light]) #urlbar#urlbar[zia-pop-site="light"])[breakout-extend]:not([zia-classic]) > .urlbar-background {
+    background: var(--zia-urlbar-open-bg) !important;
+    backdrop-filter: none !important;
+  }
+
   /* On macOS a web page is handed to the system as a layer of its own,
      which a blur in Zen's window can't see through to, so the blur only
      worked over Zen's own pages. Drawn as a layer Firefox composites
