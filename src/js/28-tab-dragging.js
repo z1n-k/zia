@@ -1985,7 +1985,11 @@
       // all on the drop, and they show again there. (Only the dragged one moved, and the
       // rest jumped across on the drop.)
       let companions = 0;
+      // (how far the dragged tab rose as those above it folded away: the drag is measured
+      // from that much higher, or the tab hung below the pointer a row for each, #396)
+      let lift = 0;
       if (!folder && !split && target.multiselected) {
+        const startTop = target.getBoundingClientRect().top;
         const others = gBrowser.selectedTabs.filter((tab) => tab !== target && !tab.hasAttribute("zen-essential") && tab.isConnected);
         // (the rows round them close up smoothly as they fold away, rather than at once)
         const before = new Map();
@@ -2003,6 +2007,7 @@
         if (others.length) {
           target.setAttribute("zia-drag-count", String(others.length + 1));
           companions = others.length;
+          lift = startTop - target.getBoundingClientRect().top;
           for (const [node, top] of before) {
             const now = node.getBoundingClientRect().top;
             if (Math.abs(top - now) > 0.5) {
@@ -2086,8 +2091,8 @@
         shifted: new Set(),
         sepTop,
         sepDelta: 0,
-        clientY: event.clientY || pending?.clientY || 0,
-        screenY: event.screenY || pending?.screenY || 0,
+        clientY: (event.clientY || pending?.clientY || 0) - lift,
+        screenY: (event.screenY || pending?.screenY || 0) - lift,
         companions,
       };
       lastDy = 0;

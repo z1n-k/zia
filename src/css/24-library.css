@@ -729,3 +729,17 @@
     opacity: 1;
   }
 }
+
+/* In compact mode Zen moves the page aside by the Library's width less its own
+   gap (zen.theme.content-element-separation), as if the page sat that far in from
+   the window's edge; Zia's sits --zia-card-gap in, so the page covered the
+   Library's edge by the difference, and its padding with it (#476) */
+:root[zen-compact-mode="true"] zen-library {
+  --zia-lib-page-overlap: max(0px, var(--zen-element-separation, 0px) - var(--zia-card-gap));
+  padding-right: var(--zia-lib-page-overlap) !important;
+}
+
+:root[zen-compact-mode="true"][zen-right-side="true"] zen-library {
+  padding-right: 0 !important;
+  padding-left: var(--zia-lib-page-overlap) !important;
+}

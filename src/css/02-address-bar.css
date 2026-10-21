@@ -262,6 +262,9 @@
     /* (outside the list's scroll, as the box around it had it till Zen 1.23.3 took that box out) */
     & #urlbar-results {
       margin-block: var(--zia-pop-list-pad) !important;
+      /* Zen's 244px fit under 7 of Zia's taller rows, so most searches scrolled and
+         arrowing down hid the top row under the typing box; still scrolls on a short window */
+      max-height: 70vh !important;
     }
 
     & .urlbarView {

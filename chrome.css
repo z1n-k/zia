@@ -779,6 +779,9 @@
     /* (outside the list's scroll, as the box around it had it till Zen 1.23.3 took that box out) */
     & #urlbar-results {
       margin-block: var(--zia-pop-list-pad) !important;
+      /* Zen's 244px fit under 7 of Zia's taller rows, so most searches scrolled and
+         arrowing down hid the top row under the typing box; still scrolls on a short window */
+      max-height: 70vh !important;
     }
 
     & .urlbarView {
@@ -4924,7 +4927,9 @@ zen-workspace arrowscrollbox::part(scrollbox) {
         transition: none !important;
       }
 
-      background-color: var(--zia-media-bg) !important;
+      /* solid while open, as it then floats over the tabs (Zen keeps the
+         toolbar its closed height): the same shade, over the sidebar's colour */
+      background-color: var(--zia-media-solid, var(--zia-media-card-base)) !important;
     }
 
     .zen-media-progress-hbox {
@@ -9368,6 +9373,20 @@ zen-folder .tab-reset-button {
   #zen-sidebar-foot-buttons #zen-library-button:is(:hover, [open]) .zen-library-sprite {
     opacity: 1;
   }
+}
+
+/* In compact mode Zen moves the page aside by the Library's width less its own
+   gap (zen.theme.content-element-separation), as if the page sat that far in from
+   the window's edge; Zia's sits --zia-card-gap in, so the page covered the
+   Library's edge by the difference, and its padding with it (#476) */
+:root[zen-compact-mode="true"] zen-library {
+  --zia-lib-page-overlap: max(0px, var(--zen-element-separation, 0px) - var(--zia-card-gap));
+  padding-right: var(--zia-lib-page-overlap) !important;
+}
+
+:root[zen-compact-mode="true"][zen-right-side="true"] zen-library {
+  padding-right: 0 !important;
+  padding-left: var(--zia-lib-page-overlap) !important;
 }
 /* The site panel (the site icon at the start of the address bar), drawn as
    Zia draws the rest: Zia's squircle and edge, its buttons and extensions as

@@ -324,6 +324,23 @@
     if (!icons?.open || !okToCover(id)) {
       return;
     }
+    // An unpinned extension's menu item runs with the extensions panel still open,
+    // and the picker, opened over it, closed as the panel did (#478): it opens once
+    // the panel's gone
+    const panel = document.getElementById("unified-extensions-panel");
+    if (panel && ["open", "showing", "hiding"].includes(panel.state)) {
+      const onHidden = (event) => {
+        if (event.target === panel) {
+          panel.removeEventListener("popuphidden", onHidden);
+          pickExtIcon(id, anchor);
+        }
+      };
+      panel.addEventListener("popuphidden", onHidden);
+      if (panel.state !== "hiding") {
+        panel.hidePopup();
+      }
+      return;
+    }
     // Opened from the extensions menu, the picker hangs off its toolbar
     // button instead: the menu closes when the picker is clicked, and the
     // picker would close with it.

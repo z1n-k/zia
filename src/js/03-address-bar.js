@@ -354,18 +354,29 @@
     if (!urlbar || !box || !toolbar) {
       return;
     }
+    // (where the closed bar's text was centred, in the window)
+    let closedCentre = null;
     const update = () => {
       let shift = 0;
-      // Opened, the text stays where it was, centred on the toolbar as it was closed: the
-      // last measure is kept (centred in the opened bar instead, it jumped aside as the bar
-      // was clicked, #443). Not with the opened pop-up's text from the left (an option).
+      // Opened, the text stays where it was as the bar was clicked (centred in the opened
+      // bar instead, it jumped aside, #443): the opened bar is wider and elsewhere, so the
+      // shift is measured again from it, to the closed text's centre (kept, it moved the
+      // closed bar's shift into the opened bar, still a jump, #475). Not with the opened
+      // pop-up's text from the left (an option).
       if (
         urlbar.hasAttribute("breakout-extend") &&
         urlbar.getAttribute("zen-floating-urlbar") !== "true" &&
         !Services.prefs.getBoolPref("zia.urlbar.center-text.pop-up-left", false)
       ) {
+        const bar = box.getBoundingClientRect();
+        if (closedCentre !== null && bar.width) {
+          const most = bar.width / 5;
+          shift = Math.max(-most, Math.min(most, closedCentre - (bar.left + bar.width / 2)));
+          setStyle(urlbar, "--zia-center-shift", Math.abs(shift) >= 1 ? `${Math.round(shift)}px` : null);
+        }
         return;
       }
+      closedCentre = null;
       if (
         Services.prefs.getBoolPref("zia.urlbar.center-text", false) &&
         root.getAttribute("zen-single-toolbar") !== "true" &&
@@ -378,6 +389,7 @@
           // (a fifth of the bar at most either way: a long address keeps most of its room)
           const most = bar.width / 5;
           shift = Math.max(-most, Math.min(most, card.left + card.width / 2 - (bar.left + bar.width / 2)));
+          closedCentre = bar.left + bar.width / 2 + shift;
         }
       }
       setStyle(urlbar, "--zia-center-shift", Math.abs(shift) >= 1 ? `${Math.round(shift)}px` : null);
@@ -385,7 +397,12 @@
     const observer = new ResizeObserver(update);
     observer.observe(box, { box: "border-box" });
     observer.observe(toolbar, { box: "border-box" });
-    new MutationObserver(update).observe(urlbar, { attributes: true, attributeFilter: ["breakout-extend", "zen-floating-urlbar"] });
+    // (and a frame on, once the opened bar's in place: moved without a change of size,
+    // nothing else measures it)
+    new MutationObserver(() => {
+      update();
+      requestAnimationFrame(update);
+    }).observe(urlbar, { attributes: true, attributeFilter: ["breakout-extend", "zen-floating-urlbar"] });
     watchPrefs(["zia.urlbar.center-text", "zia.urlbar.center-text.pop-up-left"], update);
     window.addEventListener("unload", () => observer.disconnect());
     update();

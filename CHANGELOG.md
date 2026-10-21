@@ -4,6 +4,34 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.103.9] — 2026-10-21
+
+### Fixed
+
+- Tabs no longer show through the music player while it's open. Since it went
+  see-through in 2.102.0 it stayed see-through open too, as it grows over the
+  tabs; open, it's a solid version of the same shade again (thanks EVIL Mist).
+- The address pop-up shows all its results rather than scrolling after about
+  six: arrowing down to the last one hid the first half under the typing box
+  (thanks ocerlisss).
+- Pick from Zia's icons works for an extension that isn't pinned to the
+  toolbar. The picker opened over the extensions panel and closed with it
+  ([#478](https://github.com/z1n-k/zia/issues/478), thanks @OneGunBullet).
+- The toolbar darkens with the page as a screenshot starts, and comes back
+  as it ends, rather than keeping the page's colour until you scroll
+  ([#477](https://github.com/z1n-k/zia/issues/477), thanks @OneGunBullet).
+- In compact mode, the Library keeps its padding along the page's side. Zen
+  moved the page aside by its own gap rather than Zia's, so the page covered
+  the Library's edge
+  ([#476](https://github.com/z1n-k/zia/issues/476), thanks @OneGunBullet).
+- The centred address stays where it is as the bar is clicked. Opened, the
+  bar is wider and elsewhere, and the text jumped across it
+  ([#475](https://github.com/z1n-k/zia/issues/475), thanks @OneGunBullet).
+- Several selected tabs dragged together stay under the pointer. The others
+  folding away moved the dragged one up a row for each above it, and it
+  hung that far below the pointer
+  ([#396](https://github.com/z1n-k/zia/issues/396), thanks @Y4k3d0).
+
 ## [2.103.8] — 2026-10-20
 
 ### Changed

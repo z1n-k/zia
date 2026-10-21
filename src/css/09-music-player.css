@@ -376,7 +376,9 @@
         transition: none !important;
       }
 
-      background-color: var(--zia-media-bg) !important;
+      /* solid while open, as it then floats over the tabs (Zen keeps the
+         toolbar its closed height): the same shade, over the sidebar's colour */
+      background-color: var(--zia-media-solid, var(--zia-media-card-base)) !important;
     }
 
     .zen-media-progress-hbox {

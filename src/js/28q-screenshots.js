@@ -70,15 +70,22 @@
         node.querySelectorAll("screenshots-buttons").forEach(style);
       }
     };
+    // The toolbar's colour read again as a screenshot starts and ends, as on a scroll:
+    // its overlay darkens the page, and the toolbar kept the page's colour (#477).
+    // (Firefox shows and hides the buttons' panel, and the overlay with it)
     const observer = new MutationObserver((records) => {
       for (const record of records) {
         record.addedNodes.forEach(find);
+        const panels = record.type === "childList" ? [...record.addedNodes] : [record.target];
+        if (panels.some((node) => node.classList?.contains("screenshotsPagePanel"))) {
+          setTimeout(requestScrollSample, 100);
+        }
       }
     });
     for (const id of ["tabbrowser-tabpanels", "mainPopupSet"]) {
       const where = document.getElementById(id);
       if (where) {
-        observer.observe(where, { childList: true, subtree: true });
+        observer.observe(where, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden"] });
       }
     }
     window.addEventListener("unload", () => observer.disconnect());
