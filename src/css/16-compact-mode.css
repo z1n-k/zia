@@ -319,6 +319,11 @@
 
       & .zen-toolbar-background {
         display: flex !important;
+        /* (solid, as Zen draws it, even with compact mode's see-through sidebar on: over
+           the site's own top bar, its bookmarks and window buttons were drawn on top of
+           the site's, where the blur behind didn't take) */
+        background: light-dark(#e9e9e9, #131313) !important;
+        backdrop-filter: none !important;
       }
     }
 
