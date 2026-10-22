@@ -1876,8 +1876,10 @@
     }
     workspaceSlot = document.createElementNS(XHTML_NS, "div");
     workspaceSlot.id = "zia-workspace-slot";
-    const buttonBox = topButtons.querySelector(".titlebar-buttonbox-container");
-    if (buttonBox) {
+    // (beside the window buttons only where they start the row: where they're elsewhere
+    // in it, the name went in after the ⋯ menu and reload rather than first, #489)
+    const buttonBox = topButtons.querySelector(":scope > .titlebar-buttonbox-container");
+    if (buttonBox && buttonBox === topButtons.firstElementChild) {
       buttonBox.after(workspaceSlot);
     } else {
       topButtons.prepend(workspaceSlot);

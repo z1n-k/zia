@@ -4,6 +4,21 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.103.14] — 2026-10-22
+
+### Changed
+
+- **Zia leaves Little Zen's windows alone,** for the Little Zen mod: it doesn't
+  start in them, and their page and toolbar keep that mod's look
+  ([#490](https://github.com/z1n-k/zia/pull/490), by @Zylaah).
+
+### Fixed
+
+- The space's name starts the sidebar's top row where the window buttons
+  aren't at its start (Windows and Linux layouts), rather than coming after the
+  ⋯ menu and reload ([#489](https://github.com/z1n-k/zia/issues/489), thanks
+  @conqazht).
+
 ## [2.103.13] — 2026-10-22
 
 ### Fixed
