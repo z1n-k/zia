@@ -262,6 +262,7 @@
     safely("hintNameFields", hintNameFields);
     safely("holdSidebarAfterNaming", holdSidebarAfterNaming);
     safely("allowEmojiFolderIcons", allowEmojiFolderIcons);
+    safely("addFolderBookmarkItem", addFolderBookmarkItem);
     safely("hideWwwInUrlbar", hideWwwInUrlbar);
     safely("watchRightEdges", watchRightEdges);
     ifOn("media-player", "watchMediaGlow", watchMediaGlow);

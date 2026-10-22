@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.108.0] — 2026-10-22
+
+### Added
+
+- **Bookmark Folder**, in a folder's right-click menu: bookmarks the folder
+  whole, as a bookmark folder of the same name with one for each of its
+  subfolders, in the order they're in, where new bookmarks go (Firefox's
+  setting). Selecting its tabs and choosing Bookmark Tabs made one flat folder,
+  the subfolders' tabs loose in it (thanks no15).
+
 ## [2.107.1] — 2026-10-22
 
 ### Fixed
