@@ -60,6 +60,21 @@
     } catch (err) {
       noteError("zen defaults: acrylic", err);
     }
+    // Optional: the sidebar see-through as Liquid Glass (Zen's acrylic sidebar), and the
+    // desktop's colour showing through it on macOS (Zen's vibrancy, #486). Zia's two
+    // settings start as Zen's are and pass on a change made in Zia's settings, so one made
+    // in Zen's own stays. Zen reads both as it starts.
+    // (each with Zen's own default, for a Zen without the setting)
+    const ZEN_FOR_ZIA = {
+      "zia.sidebar.liquid-glass": ["zen.theme.acrylic-sidebar", false],
+      "zia.sidebar.wallpaper-tint": ["zen.widget.macos.window-vibrancy", true],
+    };
+    for (const [zia, [zen, fallback]] of Object.entries(ZEN_FOR_ZIA)) {
+      set(zia, Services.prefs.getBoolPref(zen, fallback));
+    }
+    watchPrefs(Object.keys(ZEN_FOR_ZIA), (_subject, _topic, zia) => {
+      Services.prefs.setBoolPref(ZEN_FOR_ZIA[zia][0], Services.prefs.getBoolPref(zia));
+    });
     set("zia.urlbar.zia-look", true);
     set("zia.glass", false);
     // 2.95.11's "Zen's own address bar" is now "Zia's address bar", the other

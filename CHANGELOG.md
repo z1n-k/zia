@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.104.0] — 2026-10-22
+
+### Added
+
+- **The sidebar see-through, as Liquid Glass** (Look, off by default): the
+  sidebar lets the desktop show through it, through Zen's own acrylic sidebar,
+  with a second option for whether the desktop's colour shows through it on
+  macOS. Both take effect after a restart, and set the same as Zen's own
+  settings for them ([#486](https://github.com/z1n-k/zia/issues/486), thanks
+  @OneGunBullet).
+
 ## [2.103.14] — 2026-10-22
 
 ### Changed

@@ -42,6 +42,26 @@
   },
   {
     "type": "checkbox",
+    "label": "Sidebar see-through, as Liquid Glass (Zen's acrylic sidebar; after a restart)",
+    "property": "zia.sidebar.liquid-glass",
+    "defaultValue": false
+  },
+  {
+    "type": "checkbox",
+    "label": "The desktop's colour shows through the sidebar (macOS; after a restart)",
+    "property": "zia.sidebar.wallpaper-tint",
+    "defaultValue": true,
+    "conditions": [
+      {
+        "if": {
+          "property": "zia.sidebar.liquid-glass",
+          "value": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "checkbox",
     "label": "Zia's rounded page corners (off: Zen's)",
     "property": "zia.page.rounding",
     "defaultValue": true
