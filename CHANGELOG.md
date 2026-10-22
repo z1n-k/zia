@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.107.0] — 2026-10-22
+
+### Removed
+
+- The Liquid Glass sidebar settings (the see-through sidebar, the desktop's
+  colour through it, and its material), added in 2.104.0 and 2.106.0. They only
+  switched Zen's own settings for the same thing, which stay as you set them.
+
 ## [2.106.1] — 2026-10-22
 
 ### Fixed

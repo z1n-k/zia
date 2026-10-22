@@ -42,49 +42,6 @@
   },
   {
     "type": "checkbox",
-    "label": "Sidebar see-through, as Liquid Glass (Zen's acrylic sidebar; after a restart)",
-    "property": "zia.sidebar.liquid-glass",
-    "defaultValue": false
-  },
-  {
-    "type": "dropdown",
-    "label": "Liquid Glass material (macOS)",
-    "property": "zia.sidebar.material",
-    "defaultValue": "1",
-    "options": [
-      { "label": "Heads-up display (Zen's)", "value": "1" },
-      { "label": "Pop-up: the wallpaper's colour glows through", "value": "3" },
-      { "label": "Menu", "value": "4" },
-      { "label": "Full-screen", "value": "2" },
-      { "label": "Header", "value": "6" },
-      { "label": "Tooltip", "value": "5" },
-      { "label": "Under the window", "value": "7" }
-    ],
-    "conditions": [
-      {
-        "if": {
-          "property": "zia.sidebar.liquid-glass",
-          "value": true
-        }
-      }
-    ]
-  },
-  {
-    "type": "checkbox",
-    "label": "The desktop's colour shows through the sidebar (macOS; after a restart)",
-    "property": "zia.sidebar.wallpaper-tint",
-    "defaultValue": true,
-    "conditions": [
-      {
-        "if": {
-          "property": "zia.sidebar.liquid-glass",
-          "value": true
-        }
-      }
-    ]
-  },
-  {
-    "type": "checkbox",
     "label": "Zia's rounded page corners (off: Zen's)",
     "property": "zia.page.rounding",
     "defaultValue": true

@@ -6419,36 +6419,17 @@
     } catch (err) {
       noteError("zen defaults: acrylic", err);
     }
-    // Optional: the sidebar see-through as Liquid Glass (Zen's acrylic sidebar), and the
-    // desktop's colour showing through it on macOS (Zen's vibrancy, #486), both read as
-    // Zen starts; and a playing video going picture-in-picture as its tab is left
-    // (Firefox's own). Zia's settings start as Zen's or Firefox's are and pass on a change
-    // made in Zia's settings, so one made in Zen's own stays.
-    // (each with Zen's own default, for a Zen without the setting)
-    const ZEN_FOR_ZIA = {
-      "zia.sidebar.liquid-glass": ["zen.theme.acrylic-sidebar", false],
-      "zia.sidebar.wallpaper-tint": ["zen.widget.macos.window-vibrancy", true],
+    // Optional: a playing video goes picture-in-picture as its tab is left (Firefox's own).
+    // Zia's setting starts as Firefox's is and passes on a change made in Zia's settings,
+    // so one made in Firefox's own stays.
+    const FIREFOX_FOR_ZIA = {
       "zia.pip.auto-on-tab-switch": ["media.videocontrols.picture-in-picture.enable-when-switching-tabs.enabled", false],
     };
-    for (const [zia, [zen, fallback]] of Object.entries(ZEN_FOR_ZIA)) {
-      set(zia, Services.prefs.getBoolPref(zen, fallback));
+    for (const [zia, [firefox, fallback]] of Object.entries(FIREFOX_FOR_ZIA)) {
+      set(zia, Services.prefs.getBoolPref(firefox, fallback));
     }
-    watchPrefs(Object.keys(ZEN_FOR_ZIA), (_subject, _topic, zia) => {
-      Services.prefs.setBoolPref(ZEN_FOR_ZIA[zia][0], Services.prefs.getBoolPref(zia));
-    });
-    // ...and the glass's macOS material behind the window, Zen's own choice of seven
-    // (zen.widget.macos.window-material, 1 to 7; Zen takes a change at once, #495)
-    const MATERIAL = "zen.widget.macos.window-material";
-    try {
-      defaults.setStringPref("zia.sidebar.material", String(Services.prefs.getIntPref(MATERIAL, 1)));
-    } catch (err) {
-      noteError("zen defaults: material", err);
-    }
-    watchPrefs("zia.sidebar.material", () => {
-      const value = parseInt(Services.prefs.getStringPref("zia.sidebar.material", ""), 10);
-      if (value >= 1 && value <= 7) {
-        Services.prefs.setIntPref(MATERIAL, value);
-      }
+    watchPrefs(Object.keys(FIREFOX_FOR_ZIA), (_subject, _topic, zia) => {
+      Services.prefs.setBoolPref(FIREFOX_FOR_ZIA[zia][0], Services.prefs.getBoolPref(zia));
     });
     set("zia.urlbar.zia-look", true);
     set("zia.glass", false);
