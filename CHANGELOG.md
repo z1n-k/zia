@@ -4,6 +4,18 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.103.13] — 2026-10-22
+
+### Fixed
+
+- The Library's spaces each show their own text colour: in a dark space, a
+  light space's card had white text on its light colour, and the other way
+  round ([#487](https://github.com/z1n-k/zia/issues/487), thanks
+  @OneGunBullet).
+- With more spaces than fit in the Library, the card cut off at its edge is cut
+  a little inside it, rather than looking to run on under the page
+  ([#485](https://github.com/z1n-k/zia/issues/485), thanks @OneGunBullet).
+
 ## [2.103.12] — 2026-10-21
 
 ### Fixed

@@ -9158,11 +9158,27 @@ zen-folder .tab-reset-button {
       border-radius: var(--zia-card-radius-base) !important;
     }
 
+    /* each space's card in its own space's text colour, as Zen gives it, not the
+       open space's: light spaces' cards were white on white in a dark space (#487) */
+    & .zen-library-space {
+      --zia-lib-ink: var(--toolbox-textcolor) !important;
+      --zia-sidebar-ink: var(--toolbox-textcolor) !important;
+      color: var(--zia-lib-ink) !important;
+    }
+
     /* the row of spaces scrolls without a bar: Zen hides it while the Library
        opens and shows it after, and where scroll bars always show, it took its
        height from the cards as the opening ended, a jump */
     & .zen-library-spaces {
       scrollbar-width: none !important;
+      /* (cut a little short of the Library's edge, which meets the page: with more
+         spaces than fit, the card cut there looked to run on under the page, #485;
+         with them all in, Zen's padding at the end is wider than this) */
+      clip-path: inset(0 var(--zia-lib-pad) 0 0);
+    }
+
+    :root[zen-right-side="true"] & .zen-library-spaces {
+      clip-path: inset(0 0 0 var(--zia-lib-pad));
     }
 
     & .zen-library-space-header {
