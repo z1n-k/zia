@@ -1985,9 +1985,9 @@
       // all on the drop, and they show again there. (Only the dragged one moved, and the
       // rest jumped across on the drop.)
       let companions = 0;
-      // (how far the dragged tab rose as those above it folded away: the drag is measured
-      // from that much higher, or the tab hung below the pointer a row for each, #396)
-      let lift = 0;
+      // (where the dragged tab was before those above it folded away, for the first move to
+      // measure how far it rose, #396)
+      let foldedFrom = null;
       if (!folder && !split && target.multiselected) {
         const startTop = target.getBoundingClientRect().top;
         const others = gBrowser.selectedTabs.filter((tab) => tab !== target && !tab.hasAttribute("zen-essential") && tab.isConnected);
@@ -2007,7 +2007,7 @@
         if (others.length) {
           target.setAttribute("zia-drag-count", String(others.length + 1));
           companions = others.length;
-          lift = startTop - target.getBoundingClientRect().top;
+          foldedFrom = startTop;
           for (const [node, top] of before) {
             const now = node.getBoundingClientRect().top;
             if (Math.abs(top - now) > 0.5) {
@@ -2091,9 +2091,10 @@
         shifted: new Set(),
         sepTop,
         sepDelta: 0,
-        clientY: (event.clientY || pending?.clientY || 0) - lift,
-        screenY: (event.screenY || pending?.screenY || 0) - lift,
+        clientY: event.clientY || pending?.clientY || 0,
+        screenY: event.screenY || pending?.screenY || 0,
         companions,
+        foldedFrom,
         space: window.gZenWorkspaces?.activeWorkspace,
       };
       lastDy = 0;
@@ -2229,6 +2230,19 @@
     const onOver = (event) => {
       if (!drag?.moving?.isConnected) {
         return;
+      }
+      // The other selected tabs folded away above the dragged one moved it up a row each,
+      // and the drag is measured from that much higher, or it hung below the pointer. Read
+      // on the first move, not as they fold: in a scrolled list (compact mode's, often) the
+      // list scrolls back a moment later to keep the tab in view, and it hadn't really moved
+      // (#396). (Less any move already on the tab itself, Firefox's or Zia's.)
+      if (drag.foldedFrom != null) {
+        const style = getComputedStyle(drag.moving);
+        const shifted = new DOMMatrix(style.transform === "none" ? undefined : style.transform).m42 + (parseFloat(style.translate.split(" ")[1]) || 0);
+        const lift = drag.foldedFrom - (drag.moving.getBoundingClientRect().top - shifted);
+        drag.foldedFrom = null;
+        drag.clientY &&= drag.clientY - lift;
+        drag.screenY &&= drag.screenY - lift;
       }
       let dy = null;
       if (event.clientY) {

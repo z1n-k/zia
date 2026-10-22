@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.106.1] — 2026-10-22
+
+### Fixed
+
+- Several selected tabs dragged together stay under the pointer in a scrolled
+  list too (compact mode's, often). The list scrolled back a moment after the
+  others folded away, and the dragged one hung a row below the pointer for each
+  ([#396](https://github.com/z1n-k/zia/issues/396), thanks @Y4k3d0).
+
 ## [2.106.0] — 2026-10-22
 
 ### Changed
