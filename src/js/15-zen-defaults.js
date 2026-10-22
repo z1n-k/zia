@@ -61,13 +61,15 @@
       noteError("zen defaults: acrylic", err);
     }
     // Optional: the sidebar see-through as Liquid Glass (Zen's acrylic sidebar), and the
-    // desktop's colour showing through it on macOS (Zen's vibrancy, #486). Zia's two
-    // settings start as Zen's are and pass on a change made in Zia's settings, so one made
-    // in Zen's own stays. Zen reads both as it starts.
+    // desktop's colour showing through it on macOS (Zen's vibrancy, #486), both read as
+    // Zen starts; and a playing video going picture-in-picture as its tab is left
+    // (Firefox's own). Zia's settings start as Zen's or Firefox's are and pass on a change
+    // made in Zia's settings, so one made in Zen's own stays.
     // (each with Zen's own default, for a Zen without the setting)
     const ZEN_FOR_ZIA = {
       "zia.sidebar.liquid-glass": ["zen.theme.acrylic-sidebar", false],
       "zia.sidebar.wallpaper-tint": ["zen.widget.macos.window-vibrancy", true],
+      "zia.pip.auto-on-tab-switch": ["media.videocontrols.picture-in-picture.enable-when-switching-tabs.enabled", false],
     };
     for (const [zia, [zen, fallback]] of Object.entries(ZEN_FOR_ZIA)) {
       set(zia, Services.prefs.getBoolPref(zen, fallback));

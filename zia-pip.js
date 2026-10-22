@@ -557,6 +557,7 @@
     state = "tucked";
     setSpot(name);
     root.removeAttribute("zia-nudged");
+    root.removeAttribute("zia-peeking");
     root.removeAttribute("zia-emerging");
     closePicker();
     updateButton();
@@ -568,6 +569,33 @@
     }
     root.toggleAttribute("zia-nudged", out);
     glide(...tuckedPos(spot, out ? NUDGE : 0), 160);
+  };
+  // Optionally (zia.pip.tuck-peek) pointing at the strip shows the whole video, clear,
+  // where it would be out, and it tucks again once the pointer leaves the window (from
+  // PiP Tuck Away, by Apostol Apostolov, MIT)
+  const peek = (out) => {
+    if (state !== "tucked" || root.hasAttribute("zia-peeking") === out) {
+      return;
+    }
+    root.removeAttribute("zia-nudged");
+    root.toggleAttribute("zia-peeking", out);
+    glide(...(out ? peekPos() : tuckedPos(spot)), 200);
+  };
+  // (flush with the side it's tucked into, not out by the margin: the pointer at the very
+  // edge of the screen would be off the window, and it would tuck and peek over and over)
+  const peekPos = () => {
+    const b = screenBox();
+    let [x, y] = outPos();
+    if (spot.endsWith("left")) {
+      x = b.left;
+    }
+    if (spot.endsWith("right")) {
+      x = b.right - W();
+    }
+    if (spot.startsWith("bottom")) {
+      y = b.bottom - H();
+    }
+    return [x, y];
   };
   // The strip stays over the window's edge and fades as the window slides
   // in, so no slice of video flashes at the side of the screen first. Once
@@ -582,6 +610,7 @@
     spot = null;
     root.removeAttribute("zia-tucked");
     root.removeAttribute("zia-nudged");
+    root.removeAttribute("zia-peeking");
     root.removeAttribute("zia-emerging");
     updateButton();
   };
@@ -666,6 +695,19 @@
     event.stopPropagation();
     if (state === "free") {
       tuck(defaultSpot());
+    }
+  });
+  // Right-click anywhere else on the player tucks it into the default spot, or brings it
+  // back out (the tuck button's own right-click picks a spot)
+  document.addEventListener("contextmenu", (event) => {
+    if (!pref("zia.pip.tuck", true) || event.target === tuckButton || picker.contains(event.target)) {
+      return;
+    }
+    event.preventDefault();
+    if (state === "free") {
+      tuck(defaultSpot());
+    } else {
+      slideOut();
     }
   });
   updateButton();
@@ -816,10 +858,17 @@
     veil(past);
   };
 
-  sliver.addEventListener("mouseenter", () => nudge(true));
+  sliver.addEventListener("mouseenter", () => (pref("zia.pip.tuck-peek", false) ? peek(true) : nudge(true)));
   sliver.addEventListener("mouseleave", () => {
-    if (!dragFrom) {
+    if (!dragFrom && !root.hasAttribute("zia-peeking")) {
       nudge(false);
+    }
+  });
+  // (a peek ends as the pointer leaves the window, not the strip: the strip moves off
+  // from under it as the window comes out)
+  window.addEventListener("mouseout", (event) => {
+    if (!event.relatedTarget) {
+      peek(false);
     }
   });
   sliver.addEventListener("pointerdown", (event) => {

@@ -932,3 +932,18 @@
 :root[zia-tucked] #controls {
   visibility: hidden;
 }
+
+/* Peeking (zia.pip.tuck-peek): the whole video out, clear, with its controls; the strip
+ * goes until it tucks again */
+:root[zia-tucked][zia-peeking]:not([zia-emerging]) .player-holder {
+  filter: none;
+}
+
+:root[zia-peeking] .zia-pip-sliver {
+  opacity: 0;
+  pointer-events: none;
+}
+
+:root[zia-peeking] #controls {
+  visibility: visible;
+}

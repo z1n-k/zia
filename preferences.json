@@ -629,7 +629,7 @@
   },
   {
     "type": "checkbox",
-    "label": "Push picture-in-picture against a screen edge to tuck it away",
+    "label": "Push picture-in-picture against a screen edge, or right-click it, to tuck it away",
     "property": "zia.pip.tuck",
     "defaultValue": true
   },
@@ -672,6 +672,26 @@
         }
       }
     ]
+  },
+  {
+    "type": "checkbox",
+    "label": "Pointing at tucked picture-in-picture shows all of it until the pointer leaves (off: it nudges out a little)",
+    "property": "zia.pip.tuck-peek",
+    "defaultValue": false,
+    "conditions": [
+      {
+        "if": {
+          "property": "zia.pip.tuck",
+          "value": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "checkbox",
+    "label": "A playing video goes picture-in-picture as you leave its tab (Firefox's own)",
+    "property": "zia.pip.auto-on-tab-switch",
+    "defaultValue": false
   },
   {
     "type": "checkbox",

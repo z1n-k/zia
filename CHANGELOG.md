@@ -4,6 +4,20 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.105.0] — 2026-10-22
+
+### Added
+
+- Right-click picture-in-picture to tuck it into your default spot, and again
+  to bring it back out. Right-clicking the tuck button still picks a spot.
+- **A full peek at tucked picture-in-picture** (off by default): pointing at the
+  strip shows the whole video, clear and with its controls, until the pointer
+  leaves the window, rather than nudging it out a little. From
+  [PiP Tuck Away](https://github.com/apoapostolov/Zen-PiP-Tuck-Away) by Apostol
+  Apostolov.
+- **A playing video goes picture-in-picture as you leave its tab** (off by
+  default): Firefox's own setting for it, in Zia's.
+
 ## [2.104.0] — 2026-10-22
 
 ### Added
