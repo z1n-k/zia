@@ -1,4 +1,4 @@
-:root:not([inDOMFullscreen="true"]):not([popup-window]) {
+:root:not([zen-little-window="true"]):not([inDOMFullscreen="true"]):not([popup-window]) {
   & #zen-appcontent-wrapper {
     margin: var(--zia-card-top-gap) var(--zia-card-gap) var(--zia-card-gap) 0 !important;
     border-radius: var(--zia-card-radius) !important;
@@ -86,7 +86,7 @@
    sits in the window's corner, as in Windows itself (the gap stays with the
    buttons hidden, or dimming instead) */
 @media (-moz-platform: windows) {
-  :root:not(#zia-none):not([inDOMFullscreen="true"]):not([popup-window]) #nav-bar:has(.titlebar-buttonbox-container) {
+  :root:not(#zia-none):not([zen-little-window="true"]):not([inDOMFullscreen="true"]):not([popup-window]) #nav-bar:has(.titlebar-buttonbox-container) {
     padding-inline-end: 0 !important;
   }
 
@@ -120,7 +120,7 @@
   }
 
   @media -moz-pref("zia.window-buttons.hide"), -moz-pref("zia.window-buttons.dim") {
-    :root:not(#zia-none):not(#zia-none-2):not([inDOMFullscreen="true"]):not([popup-window]) #nav-bar {
+    :root:not(#zia-none):not(#zia-none-2):not([zen-little-window="true"]):not([inDOMFullscreen="true"]):not([popup-window]) #nav-bar {
       padding-inline-end: var(--zia-toolbar-end-gap) !important;
     }
   }

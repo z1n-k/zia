@@ -234,6 +234,9 @@
   }
 
   function start() {
+    if (isLittleZenWindow()) {
+      return;
+    }
     const urlbar = gURLBar.textbox || document.getElementById("urlbar");
 
     safely("applyZenDefaults", applyZenDefaults);

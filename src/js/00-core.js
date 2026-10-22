@@ -3,6 +3,15 @@
   if (window.__ziaLoaded) {
     return;
   }
+
+  const isLittleZenWindow = () =>
+    document.documentElement?.getAttribute("zen-little-window") === "true" ||
+    !!window._zenStartupLittleWindow;
+
+  // Little Zen is another browser window. Leave it entirely to that mod.
+  if (isLittleZenWindow()) {
+    return;
+  }
   window.__ziaLoaded = true;
 
   const root = document.documentElement;

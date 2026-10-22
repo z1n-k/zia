@@ -531,6 +531,14 @@
   margin-inline: 0 !important;
 }
 
+:root[zen-little-window="true"] #zen-toggle-compact-mode {
+  visibility: collapse !important;
+  display: none !important;
+  min-width: 0 !important;
+  width: 0 !important;
+  max-width: 0 !important;
+}
+
 /* The ⋯ menu (Firefox's app menu) shows at the end of the toolbar; it can be
    hidden in Zia's settings, as Dia and Arc have none. Hidden, it's kept in its
    place at no width rather than taken out: Firefox's notices (an update ready,
