@@ -4,6 +4,30 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.106.0] — 2026-10-22
+
+### Changed
+
+- On Windows, with Zen's single toolbar and the window controls hidden, the top
+  right corner of the page is the page's again: 2.101.3 made it bring out the
+  window buttons, which got in the way of whatever the site had there. They
+  come out from the window's top edge, as before (thanks Gin The Cerberus).
+
+### Added
+
+- **Liquid Glass material** (macOS, with the see-through sidebar on): Zen's own
+  choice of the glass behind the window, from its heads-up display look to the
+  pop-up one, where the wallpaper's colour glows through as in Zen's menus.
+  It changes at once ([#495](https://github.com/z1n-k/zia/issues/495), thanks
+  @OneGunBullet).
+
+### Fixed
+
+- A tab dragged onto a space's icon, so the drag carries on in that space, no
+  longer vanishes there or lands in the wrong place back in its own: Zia hands
+  the drag on to Zen as the space changes
+  ([#488](https://github.com/z1n-k/zia/issues/488), thanks @OneGunBullet).
+
 ## [2.105.0] — 2026-10-22
 
 ### Added

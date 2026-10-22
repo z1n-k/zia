@@ -2094,6 +2094,7 @@
         clientY: (event.clientY || pending?.clientY || 0) - lift,
         screenY: (event.screenY || pending?.screenY || 0) - lift,
         companions,
+        space: window.gZenWorkspaces?.activeWorkspace,
       };
       lastDy = 0;
       lendOut(split || (folder ? null : target));
@@ -3541,6 +3542,15 @@
     let releaseHeld = null;
     window.addEventListener("drop", () => (isRealDrop = true), true);
     window.addEventListener("dragstart", () => (isRealDrop = false), true);
+    // Held over a space's icon, Zen switches to that space mid-drag, and the rest of the drag
+    // is Zen's: Zia's moved the tab's row in the space it left, hidden now, so the tab
+    // vanished, and placed it by that space's rows, in the wrong spot when it came back (#488).
+    // Its drag ends there, as if let go nowhere, and Zen takes the tab on from there.
+    window.addEventListener("ZenWorkspacesUIUpdate", () => {
+      if (drag && drag.space !== window.gZenWorkspaces?.activeWorkspace) {
+        settle();
+      }
+    });
 
     const settle = () => {
       const droppedTab = drag?.tab || essentialDropped || null;

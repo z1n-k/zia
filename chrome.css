@@ -6861,27 +6861,6 @@ findbar {
   }
 }
 
-/* ...and on Windows, where the window buttons show at the top right, the corner
-   they show in opens the bar too: pointing straight at where close would be did
-   nothing, only the window's very edge above it. It sits under the buttons once
-   they're there, so they take the clicks. */
-@media -moz-pref("zen.view.hide-window-controls") and (-moz-platform: windows) {
-  :root[zen-single-toolbar="true"]:not([customizing], [inDOMFullscreen="true"]):not(#zia-none):not(#zia-none-2) #zen-appcontent-navbar-wrapper {
-    /* (shut, the bar is a sliver: the corner reaches below it) */
-    overflow-clip-margin: var(--zen-toolbar-height, 34px) !important;
-
-    &::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      inset-inline-end: 0;
-      width: calc(3 * 46px);
-      height: var(--zen-toolbar-height, 34px);
-      z-index: -1;
-    }
-  }
-}
-
 #zen-dragover-background {
   display: none !important;
 }

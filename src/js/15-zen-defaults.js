@@ -77,6 +77,20 @@
     watchPrefs(Object.keys(ZEN_FOR_ZIA), (_subject, _topic, zia) => {
       Services.prefs.setBoolPref(ZEN_FOR_ZIA[zia][0], Services.prefs.getBoolPref(zia));
     });
+    // ...and the glass's macOS material behind the window, Zen's own choice of seven
+    // (zen.widget.macos.window-material, 1 to 7; Zen takes a change at once, #495)
+    const MATERIAL = "zen.widget.macos.window-material";
+    try {
+      defaults.setStringPref("zia.sidebar.material", String(Services.prefs.getIntPref(MATERIAL, 1)));
+    } catch (err) {
+      noteError("zen defaults: material", err);
+    }
+    watchPrefs("zia.sidebar.material", () => {
+      const value = parseInt(Services.prefs.getStringPref("zia.sidebar.material", ""), 10);
+      if (value >= 1 && value <= 7) {
+        Services.prefs.setIntPref(MATERIAL, value);
+      }
+    });
     set("zia.urlbar.zia-look", true);
     set("zia.glass", false);
     // 2.95.11's "Zen's own address bar" is now "Zia's address bar", the other
