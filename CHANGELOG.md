@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.110.1] — 2026-10-24
+
+### Fixed
+
+- Zia Settings lists the models each AI service actually offers for renaming
+  downloads, as Sine's settings do, and keeps the one you'd chosen. It showed only
+  the three built-in ones, and a model chosen in Sine's settings showed as empty
+  (thanks Bxthesda).
+
 ## [2.110.0] — 2026-10-24
 
 ### Changed

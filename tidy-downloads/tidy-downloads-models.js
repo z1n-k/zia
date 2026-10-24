@@ -725,5 +725,15 @@
     scanOpenPreferencesDocuments();
   }
 
+  // Zia Settings (28u-settings-page.js) fills its model dropdowns from the same lists:
+  // the models for a model setting, read live and cached as for Sine's page
+  window.ziaTidyModels = {
+    handles: (modelPref) => Object.values(PROVIDER_MODEL_PREFS).includes(modelPref),
+    modelsFor: (modelPref) => {
+      const providerKey = Object.keys(PROVIDER_MODEL_PREFS).find((key) => PROVIDER_MODEL_PREFS[key] === modelPref);
+      return providerKey ? getProviderModels(providerKey) : Promise.resolve([]);
+    },
+  };
+
   setupModelListSync();
 })();

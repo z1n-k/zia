@@ -21774,7 +21774,13 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     }
     if (entry.type === "checkbox" && typeof value === "boolean") {
       Services.prefs.setBoolPref(property, value);
-    } else if (entry.type === "dropdown" && entry.options?.some((option) => option.value === value)) {
+    } else if (
+      entry.type === "dropdown" &&
+      typeof value === "string" &&
+      (entry.options?.some((option) => option.value === value) ||
+        // (an AI service's model: its list is fetched live, beyond the few in preferences.json)
+        (window.ziaTidyModels?.handles(property) && /^[\w.:/@+-]{1,200}$/.test(value)))
+    ) {
       Services.prefs.setStringPref(property, value);
     } else if (entry.type === "string" && typeof value === "string" && value.length <= 4096) {
       Services.prefs.setStringPref(property, value);
@@ -21905,6 +21911,12 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
       parent?.append(el);
       return el;
     };
+    const setOptions = (select, options) => {
+      select.replaceChildren();
+      for (const option of options) {
+        make("option", null, select, option.label).value = option.value;
+      }
+    };
     const icon = (parent, d) => {
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       svg.setAttribute("viewBox", "0 0 24 24");
@@ -21998,9 +22010,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
         row.addEventListener("click", () => control.click());
       } else if (entry.type === "dropdown") {
         control = make("select", "zia-set-select", row);
-        for (const option of entry.options || []) {
-          make("option", null, control, option.label).value = option.value;
-        }
+        setOptions(control, entry.options || []);
         control.addEventListener("change", () => writeSetting(list, entry.property, control.value));
       } else if (entry.type === "string") {
         control = make("input", "zia-set-field", row);
@@ -22047,11 +22057,44 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
         const value = values[one.entry.property];
         if (one.entry.type === "checkbox") {
           one.control.setAttribute("aria-checked", String(!!value));
-        } else if (document.activeElement !== one.control) {
+          continue;
+        }
+        // (a saved choice that isn't in the list, a model fetched in Sine's page say, is added
+        // to it: the dropdown showed empty)
+        if (one.entry.type === "dropdown" && value && ![...one.control.options].some((option) => option.value === value)) {
+          make("option", null, one.control, value).value = value;
+        }
+        if (document.activeElement !== one.control) {
           one.control.value = value ?? "";
         }
       }
       show();
+      fillModels();
+    };
+    // The AI services' model dropdowns with the models each service actually offers, as
+    // Sine's page has them (tidy-downloads-models.js, read live, cached a few minutes):
+    // the list in preferences.json is only a fallback
+    const fillModels = () => {
+      const lists = window.ziaTidyModels;
+      for (const one of rows) {
+        if (one.entry.type !== "dropdown" || one.row.hidden || !lists?.handles(one.entry.property)) {
+          continue;
+        }
+        lists
+          .modelsFor(one.entry.property)
+          .then((models) => {
+            if (!models?.length || !one.control.isConnected || document.activeElement === one.control) {
+              return;
+            }
+            const value = values[one.entry.property];
+            setOptions(one.control, models);
+            if (value && !models.some((model) => model.value === value)) {
+              make("option", null, one.control, value).value = value;
+            }
+            one.control.value = value ?? "";
+          })
+          .catch((err) => noteError("settings page: models", err));
+      }
     };
     fill();
     search.addEventListener("input", () => {
