@@ -1,0 +1,120 @@
+/* Zia's settings page (index.html), in the welcome tour's glass (../welcome/welcome.css) */
+:root {
+  --text: rgba(255, 255, 255, 0.92);
+  --dim: rgba(255, 255, 255, 0.52);
+  --faint: rgba(255, 255, 255, 0.07);
+  --blue: #0a84ff;
+  --edge: linear-gradient(to bottom right, rgba(255,255,255,.28), rgba(255,255,255,.12) 30%, rgba(255,255,255,.08) 50%, rgba(255,255,255,.12) 70%, rgba(255,255,255,.24));
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --spring: cubic-bezier(0.22, 1.12, 0.36, 1);
+  color-scheme: normal !important;
+}
+* { box-sizing: border-box; }
+/* see-through: only the card is painted, the dimmed window shows round it */
+html, body { height: 100%; margin: 0; overflow: hidden; background: transparent !important; }
+body {
+  color: var(--text);
+  font: 13px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+[hidden] { display: none !important; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid color-mix(in srgb, var(--blue) 70%, transparent); outline-offset: 2px; }
+
+.scrim { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; }
+
+/* ---------- the card ---------- */
+.card {
+  position: relative; display: flex; flex-direction: column;
+  width: min(860px, 100%); height: min(620px, 100%);
+  border-radius: 18px; background: #121213; color-scheme: dark;
+  box-shadow: 0 24px 60px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.25);
+  animation: in .5s var(--ease) both;
+}
+.card::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: .5px; pointer-events: none;
+  background: var(--edge); mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+@keyframes in { from { opacity: 0; transform: translateY(12px) scale(.97); } }
+
+/* ---------- head: title, search, close ---------- */
+.head { display: flex; align-items: center; gap: 12px; padding: 14px 14px 12px 20px; border-bottom: 1px solid var(--faint); }
+h1 { margin: 0; font-size: 17px; font-weight: 650; letter-spacing: -.01em; width: 166px; flex: none; }
+.search {
+  flex: 1; display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 10px;
+  border-radius: 9px; background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 .5px rgba(255,255,255,.06);
+}
+.search:focus-within { background: rgba(255,255,255,.09); }
+.search svg { width: 14px; height: 14px; flex: none; fill: none; stroke: var(--dim); stroke-width: 2; stroke-linecap: round; }
+.search input { flex: 1; min-width: 0; border: 0; background: none; outline: none; }
+.search input::placeholder { color: var(--dim); }
+.close {
+  appearance: none; border: 0; flex: none; width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center;
+  background: transparent; cursor: pointer;
+}
+.close:hover { background: rgba(255,255,255,.08); }
+.close svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; opacity: .7; }
+
+/* ---------- body: sections down the side, the list beside them ---------- */
+.body { flex: 1; min-height: 0; display: flex; }
+.nav { width: 186px; flex: none; padding: 10px 8px; display: flex; flex-direction: column; gap: 1px; overflow-y: auto; scrollbar-width: none; }
+.nav-item {
+  appearance: none; border: 0; text-align: start; padding: 7px 12px; border-radius: 8px; background: transparent;
+  color: var(--dim); font-weight: 500; cursor: pointer; transition: background-color .15s, color .15s;
+}
+.nav-item:hover { background: rgba(255,255,255,.05); color: var(--text); }
+.nav-item.cur { background: rgba(255,255,255,.09); color: var(--text); }
+
+.list { flex: 1; min-width: 0; overflow-y: auto; padding: 4px 20px 24px 12px; scroll-behavior: smooth; scrollbar-width: thin; }
+.section { padding-top: 14px; }
+.section-title { margin: 0 0 8px 4px; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--dim); }
+.group { border-radius: 12px; background: rgba(255,255,255,.035); box-shadow: inset 0 0 0 .5px rgba(255,255,255,.05); overflow: hidden; }
+
+.row { display: flex; align-items: center; gap: 16px; padding: 11px 14px; min-height: 46px; cursor: default; }
+.row + .row { box-shadow: inset 0 .5px 0 var(--faint); }
+.row:has(.switch) { cursor: pointer; }
+.row:has(.switch):hover { background: rgba(255,255,255,.025); }
+/* a setting that belongs to the one above it */
+.row.sub .text { padding-inline-start: 14px; position: relative; }
+.row.sub .text::before { content: ""; position: absolute; inset-inline-start: 2px; top: 3px; bottom: 3px; width: 2px; border-radius: 1px; background: rgba(255,255,255,.1); }
+/* found by search, though what it belongs to is off */
+.row.off { opacity: .5; }
+.text { flex: 1; min-width: 0; }
+.label { color: var(--text); }
+.desc { color: var(--dim); font-size: 12px; margin-top: 2px; }
+
+/* ---------- controls ---------- */
+.switch {
+  appearance: none; border: 0; flex: none; position: relative; width: 34px; height: 20px; border-radius: 10px; cursor: pointer;
+  background: rgba(255,255,255,.16); transition: background-color .2s var(--ease);
+}
+.switch::after {
+  content: ""; position: absolute; top: 2px; inset-inline-start: 2px; width: 16px; height: 16px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.35); transition: translate .32s var(--spring);
+}
+.switch[aria-checked="true"] { background: var(--blue); }
+.switch[aria-checked="true"]::after { translate: 14px 0; }
+:dir(rtl) .switch[aria-checked="true"]::after { translate: -14px 0; }
+
+.select, .field {
+  flex: none; height: 28px; border: 0; border-radius: 7px; padding: 0 10px;
+  background: rgba(255,255,255,.08); box-shadow: inset 0 0 0 .5px rgba(255,255,255,.06); outline: none;
+}
+.select { max-width: 220px; cursor: pointer; }
+.select option { background: #1c1c1e; color: #fff; }
+.field { width: 220px; }
+.field:focus { background: rgba(255,255,255,.11); }
+.field::placeholder { color: var(--dim); }
+
+.none { display: none; padding: 48px 0; text-align: center; color: var(--dim); }
+.list.empty .none { display: block; }
+
+@media (max-width: 640px) {
+  .nav, h1 { display: none; }
+  .row { flex-wrap: wrap; }
+  .field, .select { width: 100%; max-width: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card { animation: none; }
+  .list { scroll-behavior: auto; }
+}

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zia settings</title>
+<!-- Zia's settings page, shown over the browser as the welcome tour is (zia.uc.js).
+     Built from ../preferences.json, the list Sine shows too; Zia reads and writes
+     the settings for it. Script and styles are files of their own: Firefox doesn't
+     run a script written into a chrome:// page. -->
+<link rel="stylesheet" href="settings.css">
+<script src="settings.js" defer></script>
+</head>
+<body>
+<div class="scrim">
+  <div class="card" role="dialog" aria-labelledby="title">
+    <header class="head">
+      <h1 id="title">Zia</h1>
+      <label class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4a6 6 0 1 0 0 12a6 6 0 0 0 0-12zM20 20l-5.5-5.5"/></svg>
+        <input id="search" type="search" placeholder="Search settings" autocomplete="off" spellcheck="false">
+      </label>
+      <button class="close" id="close" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </header>
+    <div class="body">
+      <nav class="nav" id="nav" aria-label="Sections"></nav>
+      <main class="list" id="list"></main>
+    </div>
+  </div>
+</div>
+</body>
+</html>

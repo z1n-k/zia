@@ -4,6 +4,18 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.109.0] — 2026-10-24
+
+### Added
+
+- **Zia Settings**, in the ⋯ menu: Zia's settings on a page of their own, in
+  the welcome tour's glass over the dimmed window, rather than only as Sine's
+  long list. Its sections down the side, a search across every setting, and
+  switches, menus and fields; a setting that belongs to another shows only with
+  it, as in Sine, and API keys are hidden as they're typed. Esc, the ✕ or a
+  click outside closes it. Sine's list is still there, and both show the same
+  settings (thanks Bxthesda).
+
 ## [2.108.0] — 2026-10-22
 
 ### Added
