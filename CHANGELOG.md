@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.109.1] — 2026-10-24
+
+### Fixed
+
+- Zia Settings opens in the middle of the window, at a size that fits it. It
+  grew as tall as every setting and opened mostly out of view at the bottom.
+- Zia Settings has an icon in the ⋯ menu, as the items round it have.
+
 ## [2.109.0] — 2026-10-24
 
 ### Added

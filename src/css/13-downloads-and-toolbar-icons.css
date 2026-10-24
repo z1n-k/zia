@@ -432,3 +432,9 @@
     box-shadow: var(--zia-glass-edge), 0 8px 24px rgba(0, 0, 0, 0.16);
   }
 }
+
+/* Zia Settings in the ⋯ menu (zia.uc.js), with an icon as its neighbours have: Zen's
+   sliders, so it isn't taken for Firefox's own Settings above it */
+#zia-settings-menu-button {
+  list-style-image: url("chrome://browser/skin/zen-icons/sliders.svg") !important;
+}

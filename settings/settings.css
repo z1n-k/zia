@@ -21,12 +21,14 @@ body {
 button, input, select { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid color-mix(in srgb, var(--blue) 70%, transparent); outline-offset: 2px; }
 
-.scrim { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; }
+.scrim { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
 
 /* ---------- the card ---------- */
 .card {
   position: relative; display: flex; flex-direction: column;
-  width: min(860px, 100%); height: min(620px, 100%);
+  /* (against the window: a percentage here didn't hold, and the card grew to every
+     setting's height, pushed out of view) */
+  flex: none; width: min(860px, 100vw - 48px); height: min(620px, 100vh - 48px);
   border-radius: 18px; background: #121213; color-scheme: dark;
   box-shadow: 0 24px 60px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.25);
   animation: in .5s var(--ease) both;
