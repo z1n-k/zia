@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.109.3] — 2026-10-24
+
+### Fixed
+
+- Zia Settings works: it shows how each setting is set, its switches change
+  them, and the ✕, Esc and a click outside close it. It was a page of its own
+  in a frame, and inside Zen nothing passed between it and Zia: every switch
+  showed off and it couldn't be closed, short of restarting Zen. It's drawn in
+  the window itself now, as Zia's other panels are.
+
 ## [2.109.2] — 2026-10-24
 
 ### Fixed

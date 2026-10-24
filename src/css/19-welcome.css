@@ -1,7 +1,7 @@
 /* The welcome tour (zia.uc.js, welcome/index.html): the window behind it
    dims (a plain shade: a blur over the whole window drew the sidebar
    unevenly), and the tour's card sits in the middle */
-/* (and Zia's settings page, the same way: zia.uc.js, settings/index.html) */
+/* (and Zia Settings, the same way: 28u-settings-page.js, 29-settings-page.css) */
 :is(#zia-welcome, #zia-settings) {
   position: fixed;
   inset: 0;
