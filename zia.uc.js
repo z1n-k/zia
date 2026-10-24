@@ -21781,6 +21781,108 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     }
   }
 
+  // Short names for the panel, each with its detail in grey under it (Sine's list keeps the
+  // full labels). A setting not named here splits its own label: what's in brackets goes
+  // grey.
+  const SETTING_NAMES = {
+    "zia.toolbar.site-color": ["Site-coloured toolbar", "Off: the theme's colour."],
+    "zia.loading-bar.accent-color": ["Accent-coloured loading bar", "Uses Zen's accent colour. Off: Zia blue."],
+    "zia.tabs.no-glow": ["Hide selected-tab glow", ""],
+    "zia.tabs.favicon-glow": ["Site-tinted glow", "The selected tab's glow and sound bars take the site's colours."],
+    "zia.tabs.dim-asleep": ["Dim asleep tabs", "Also essentials and folders."],
+    "zia.glass": ["Glass edges", "Essentials, cards and Library buttons edged like macOS Tahoe's glass, lighting up where pressed. Off: Zia's fine shine."],
+    "zia.page.rounding": ["Zia page corners", "Off: Zen's."],
+    "zia.page.edge-to-edge": ["Edge-to-edge page", "No gap or shadow around the page."],
+    "zia.ultra": ["Ultra effects", "A loading orb, the open essential's colour drifting, the music player glowing in its artwork's colours, a springy Library and a metal welcome logo."],
+    "zia.features.tab-hover-cards": ["Hover cards", "For tabs and folders."],
+    "zia.cards.blur": ["See-through hover cards", "What's behind is blurred."],
+    "zia.folders.tint-card": ["Folder-coloured cards", "A coloured folder's hover card takes its colour."],
+    "zia.tabs.sound-bars": ["Sound bars", "On playing tabs. Off: Zen's speaker."],
+    "zia.sound-bars.always-move": ["Always animate sound bars", "Even when your system asks for less motion."],
+    "zia.features.tab-numbers": ["Tab numbers", "Hold Cmd/Ctrl to number your tabs, then type one to go to it."],
+    "zia.tab-numbers.always": ["Always show tab numbers", ""],
+    "zia.tab-numbers.color": ["Typed number colour", ""],
+    "zia.features.undo-close": ["Cmd/Ctrl+Z reopens tabs", "Brings back the last closed tab."],
+    "zia.glance.thumbnail": ["Glance thumbnails", "A glance shows on its tab as a small picture of the page."],
+    "zia.essentials.zia-width": ["Narrower essentials", "Off: Zen's widths."],
+    "zia.essentials.two-per-row": ["Two essentials per row", "For a narrower sidebar."],
+    "zia.essentials.fill-row": ["Stretch the last essential", "It fills the rest of its row."],
+    "zia.essentials.split": ["Split essentials", "Drag a two-site split onto the essentials. Experimental."],
+    "zia.sidebar.text-size": ["Sidebar text size", ""],
+    "zia.folders.bounce": ["Springy folders", "Folders open and close with a spring."],
+    "zia.folders.tint-when-open": ["Folder colour on hover only", "Coloured folders show their colour when hovered or open."],
+    "zia.features.icon-picker": ["Icon picker", "For folders and spaces, with 5,166 icons."],
+    "zia.features.folder-icon-suggest": ["Smart folder names", "Names new folders and picks their icons with a local model. A one-time ~25 MB download."],
+    "zia.sidebar.space-name-in-list": ["Space name above tabs", "Where Zen shows it."],
+    "zia.sidebar.hide-space-name": ["Hide space name", "Keeps the space's icon at the top of the sidebar."],
+    "zia.sidebar-panels.style": ["Zia-style panels", "Bookmarks, History and Synced Tabs."],
+    "zia.sidebar-panels.beside": ["Panels beside the page", "Full height, as a second sidebar."],
+    "zia.library.zen-look": ["Zen's Library look", "Off: Zia's."],
+    "zia.compact.sidebar-blur": ["See-through compact sidebar", "The page is blurred behind it."],
+    "zia.compact.hide-toolbar": ["Hide toolbar with sidebar out", "In compact mode, while the sidebar is showing."],
+    "zia.compact.toolbar-over-page": ["Toolbar over the page", "The hidden toolbar fades in over the page. Off: it opens in the gap above, as Zen's does."],
+    "zia.urlbar.zia-look": ["Zia address bar", "Off: Zen's own."],
+    "zia.urlbar.dia-style": ["Zia address pop-up", "Off: Zen's."],
+    "zia.urlbar.pop-up-blur": ["See-through pop-up", "The page is blurred behind it."],
+    "zia.urlbar.site-color": ["Site-coloured pop-up", "Takes the toolbar's colour as it opens."],
+    "zia.urlbar.title-only": ["Title only", "Shows the page's title in the domain's colour until clicked."],
+    "zia.urlbar.full-url": ["Full address", "Rather than the domain and title."],
+    "zia.urlbar.center-text": ["Centred address", ""],
+    "zia.urlbar.center-text.pop-up-left": ["Pop-up text from the left", "When the address bar is opened."],
+    "zia.urlbar.position": ["Address bar position", ""],
+    "zia.features.find-bar": ["Zia find bar", "For finding in the page."],
+    "zia.newtab.real-tab": ["Real new tabs", "Cmd/Ctrl+T and + New Tab open a tab. Off: Zen's floating address bar."],
+    "zia.newtab.search-engine": ["Search page in new tabs", "Your search engine's page. Off: Zen's new tab page."],
+    "zia.newtab.focus-address-bar": ["New tabs start in the address bar", "Ready to type."],
+    "zia.swipe.dia-arrow": ["Swipe arrow", "Dia's round arrow when swiping back or forward. Hold it to list the pages."],
+    "zia.split.drop-cards": ["Split drop cards", "When dragging a tab onto the page to split it. Off: Zen's."],
+    "zia.pdf.dia-style": ["Zia PDF viewer", "Reopen a PDF to see it."],
+    "zia.status-bar": ["Link previews", "Shows where a link goes, at the foot of the page, as you hover it."],
+    "zia.window-buttons.hide": ["Hide window buttons", "For keyboard users."],
+    "zia.window-buttons.dim": ["Dimmed window buttons", "They just dim on hover. Off: Windows' own."],
+    "zia.toolbar.menu-button": ["⋯ menu", "At the end of the toolbar."],
+    "zia.features.media-player": ["Music player card", ""],
+    "zia.media.keep-with-pip": ["Keep player with picture-in-picture", "The music player stays when its video pops out."],
+    "zia.media.youtube-channel-art": ["YouTube channel art", "The player shows the channel's picture, not the video's."],
+    "zia.pip.dia-style": ["Zia picture-in-picture controls", "Off: Firefox's."],
+    "zia.pip.tuck": ["Tuck picture-in-picture", "Push it against a screen edge, or right-click it."],
+    "zia.pip.tuck-spot": ["Tuck into", ""],
+    "zia.pip.tuck-peek": ["Full peek", "Pointing at tucked picture-in-picture shows all of it until the pointer leaves. Off: it nudges out."],
+    "zia.pip.auto-on-tab-switch": ["Auto picture-in-picture", "A playing video pops out as you leave its tab. Firefox's own."],
+    "zia.multiview": ["Multiview", "\"Add to Multiview\" on videos and tabs: one tab that grids up videos and streams."],
+    "zia.multiview.icon-color": ["Multiview icon colour", ""],
+    "zia.features.tidy-downloads": ["Rename downloads with AI", "Finished downloads get clear names, with an undo. Restart after turning on."],
+    "extensions.downloads.ai_provider": ["AI service", ""],
+    "extensions.downloads.mistral_api_key": ["Mistral API key", ""],
+    "extensions.downloads.mistral_model": ["Mistral model", ""],
+    "extensions.downloads.openai_api_key": ["OpenAI API key", ""],
+    "extensions.downloads.openai_model": ["OpenAI model", ""],
+    "extensions.downloads.anthropic_api_key": ["Anthropic API key", ""],
+    "extensions.downloads.anthropic_model": ["Anthropic model", ""],
+    "extensions.downloads.google_api_key": ["Google AI API key", ""],
+    "extensions.downloads.google_model": ["Gemini model", ""],
+    "extensions.downloads.ollama_base_url": ["Ollama address", ""],
+    "extensions.downloads.ollama_model": ["Ollama model", ""],
+    "extensions.downloads.openrouter_api_key": ["OpenRouter API key", ""],
+    "extensions.downloads.openrouter_model": ["OpenRouter model", ""],
+    "extensions.downloads.openai_compat_api_key": ["Endpoint API key", ""],
+    "extensions.downloads.openai_compat_base_url": ["Endpoint address", ""],
+    "extensions.downloads.openai_compat_model": ["Endpoint model", ""],
+    "extensions.downloads.enable_debug": ["Renaming log", ""],
+    "zia.welcome.show": ["Tour after updates", "Shows the welcome tour when an update brings something new."],
+    "zia.welcome.again": ["Show the welcome tour", "Turns itself back off."],
+    "zia.welcome.whats-new-again": ["Show what's new", "For this version. Turns itself back off."],
+  };
+  function settingName(entry) {
+    const [name, detail] = SETTING_NAMES[entry.property] || [];
+    if (name) {
+      return [name, detail || entry.description || ""];
+    }
+    const bracket = entry.label.match(/^(.*?)\s*\((.*)\)\s*$/);
+    const rest = bracket ? bracket[2].charAt(0).toUpperCase() + bracket[2].slice(1) : "";
+    return [bracket ? bracket[1] : entry.label, [rest, entry.description].filter(Boolean).join(". ")];
+  }
+
   async function showZiaSettings() {
     const open = document.getElementById("zia-settings");
     if (open && !open.hasAttribute("closing")) {
@@ -21879,9 +21981,10 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
       const row = make("div", "zia-set-row", section.group);
       row.classList.toggle("sub", !!entry.conditions);
       const text = make("div", "zia-set-text", row);
-      make("div", "zia-set-label", text, entry.label);
-      if (entry.description) {
-        make("div", "zia-set-desc", text, entry.description);
+      const [name, detail] = settingName(entry);
+      make("div", "zia-set-label", text, name);
+      if (detail) {
+        make("div", "zia-set-desc", text, detail);
       }
       let control;
       if (entry.type === "checkbox") {
@@ -21911,8 +22014,9 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
         row.remove();
         continue;
       }
-      control.setAttribute("aria-label", entry.label);
-      const words = `${entry.label} ${entry.description || ""} ${section.el.firstChild.textContent}`.toLowerCase();
+      control.setAttribute("aria-label", name);
+      // (found by its short name and detail, and by its full label too)
+      const words = `${name} ${detail} ${entry.label} ${entry.description || ""} ${section.el.firstChild.textContent}`.toLowerCase();
       const one = { entry, row, control, words };
       rows.push(one);
       section.rows.push(one);

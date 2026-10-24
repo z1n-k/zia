@@ -10456,18 +10456,24 @@ screenshots-preview {
   inset: 0;
   clip-path: var(--zg-clip-below, none);
 }
-/* Zia Settings (zia.uc.js, 28u-settings-page.js): the window dims behind it as for the
-   welcome tour (19-welcome.css), and the card is in the tour's glass */
+/* Zia Settings (zia.uc.js, 28u-settings-page.js), drawn as Zia draws the sidebar and its
+   cards: the card as a hover card (its colour, squircle and glass edge), the sections down
+   the side as tabs (the one in view lit as the selected tab), the settings as tab rows,
+   the search and fields as the Library's, and the switches as the Library's. Light spaces
+   follow, from the same tokens (23-light-spaces.css). The window dims behind it as for
+   the welcome tour (19-welcome.css). */
 #zia-settings {
-  --zia-set-text: rgba(255, 255, 255, 0.92);
-  --zia-set-dim: rgba(255, 255, 255, 0.52);
-  --zia-set-faint: rgba(255, 255, 255, 0.07);
-  --zia-set-blue: #0a84ff;
-  --zia-set-ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --zia-set-spring: cubic-bezier(0.22, 1.12, 0.36, 1);
-  color: var(--zia-set-text);
-  font: 13px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
+  --zia-set-ink: var(--zia-sidebar-ink, rgb(255, 255, 255));
+  --zia-set-dim: color-mix(in srgb, var(--zia-set-ink) 55%, transparent);
+  --zia-set-field: rgba(0, 0, 0, 0.16);
+  --zia-set-blue: rgb(10, 132, 255);
+  color: var(--zia-set-ink);
+  font-size: var(--zia-text-size);
+  font-weight: var(--zia-tab-weight);
+
+  :root[zia-light] & {
+    --zia-set-field: rgba(0, 0, 0, 0.05);
+  }
 
   & * {
     box-sizing: border-box;
@@ -10484,7 +10490,7 @@ screenshots-preview {
 
   & :focus-visible {
     outline: 2px solid color-mix(in srgb, var(--zia-set-blue) 70%, transparent);
-    outline-offset: 2px;
+    outline-offset: 1px;
   }
 
   & .zia-set-scrim {
@@ -10495,52 +10501,40 @@ screenshots-preview {
     justify-content: center;
   }
 
-  /* ---------- the card ---------- */
+  /* ---------- the card: a hover card ---------- */
   & .zia-set-card {
     position: relative;
     display: flex;
     flex-direction: column;
     flex: none;
-    width: min(860px, 100vw - 48px);
-    height: min(620px, 100vh - 48px);
-    border-radius: 18px;
-    background: #121213;
-    color-scheme: dark;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.25);
-    transition: translate 0.5s var(--zia-set-ease), scale 0.5s var(--zia-set-ease);
-
-    &::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      padding: 0.5px;
-      pointer-events: none;
-      background: linear-gradient(to bottom right, rgba(255,255,255,.28), rgba(255,255,255,.12) 30%, rgba(255,255,255,.08) 50%, rgba(255,255,255,.12) 70%, rgba(255,255,255,.24));
-      mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-    }
+    width: min(820px, 100vw - 48px);
+    height: min(600px, 100vh - 48px);
+    border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow));
+    corner-shape: var(--zia-squircle);
+    background: var(--zia-tab-card-bg);
+    box-shadow: var(--zia-glass-edge), 0 24px 60px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+    transition: translate 0.32s var(--zia-spring, ease), scale 0.32s var(--zia-spring, ease);
   }
 
   &:not([shown]) .zia-set-card {
-    translate: 0 12px;
-    scale: 0.97;
+    translate: 0 10px;
+    scale: 0.98;
   }
 
   /* ---------- head: title, search, close ---------- */
   & .zia-set-head {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 14px 14px 12px 20px;
-    border-bottom: 1px solid var(--zia-set-faint);
+    gap: 10px;
+    padding: 12px 12px 12px 18px;
+    border-bottom: 1px solid var(--zia-separator);
   }
 
   & .zia-set-title {
-    width: 166px;
+    width: 158px;
     flex: none;
-    font-size: 17px;
-    font-weight: 650;
-    letter-spacing: -0.01em;
+    font-weight: 600;
   }
 
   & .zia-set-search {
@@ -10548,15 +10542,11 @@ screenshots-preview {
     display: flex;
     align-items: center;
     gap: 8px;
-    height: 32px;
-    padding: 0 10px;
-    border-radius: 9px;
-    background: rgba(255, 255, 255, 0.06);
-    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.06);
-
-    &:focus-within {
-      background: rgba(255, 255, 255, 0.09);
-    }
+    height: var(--zia-tab-height);
+    padding: 0 11px;
+    border-radius: calc(var(--zia-tab-radius) * var(--zia-squircle-grow));
+    corner-shape: var(--zia-squircle);
+    background: var(--zia-set-field);
 
     & svg {
       width: 14px;
@@ -10568,13 +10558,20 @@ screenshots-preview {
       stroke-linecap: round;
     }
 
+    /* (Zen gives the window's text fields a border, fill and inset of their own, which drew a
+       second box inside the search: taken off here) */
     & input {
       flex: 1;
       min-width: 0;
-      border: 0;
-      background: none;
-      outline: none;
-      appearance: none;
+      height: 100%;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      background: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+      appearance: none !important;
 
       &::placeholder {
         color: var(--zia-set-dim);
@@ -10586,16 +10583,18 @@ screenshots-preview {
     appearance: none;
     border: 0;
     flex: none;
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: calc(var(--zia-close-radius) * var(--zia-squircle-grow));
+    corner-shape: var(--zia-squircle);
     display: grid;
     place-items: center;
     background: transparent;
     cursor: pointer;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: var(--zia-tab-hover-bg);
     }
 
     & svg {
@@ -10605,11 +10604,11 @@ screenshots-preview {
       stroke: currentColor;
       stroke-width: 2;
       stroke-linecap: round;
-      opacity: 0.7;
+      opacity: 0.75;
     }
   }
 
-  /* ---------- body: sections down the side, the list beside them ---------- */
+  /* ---------- body: sections down the side as tabs, the settings beside them ---------- */
   & .zia-set-body {
     flex: 1;
     min-height: 0;
@@ -10617,36 +10616,40 @@ screenshots-preview {
   }
 
   & .zia-set-nav {
-    width: 186px;
+    width: 176px;
     flex: none;
-    padding: 10px 8px;
+    padding: 8px 6px;
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
     overflow-y: auto;
     scrollbar-width: none;
+    border-inline-end: 1px solid var(--zia-separator);
   }
 
   & .zia-set-nav-item {
     appearance: none;
     border: 0;
+    flex: none;
+    height: var(--zia-tab-height);
+    padding: 0 12px;
     text-align: start;
-    padding: 7px 12px;
-    border-radius: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-radius: calc(var(--zia-tab-radius) * var(--zia-squircle-grow));
+    corner-shape: var(--zia-squircle);
     background: transparent;
-    color: var(--zia-set-dim);
-    font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.15s, color 0.15s;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--zia-set-text);
+      background: var(--zia-tab-hover-bg);
     }
 
+    /* the section in view, as the selected tab */
     &.cur {
-      background: rgba(255, 255, 255, 0.09);
-      color: var(--zia-set-text);
+      background: var(--zia-active-tab-bg);
+      box-shadow: var(--zia-glass-edge);
     }
   }
 
@@ -10654,7 +10657,7 @@ screenshots-preview {
     flex: 1;
     min-width: 0;
     overflow-y: auto;
-    padding: 4px 20px 24px 12px;
+    padding: 2px 10px 20px;
     scroll-behavior: smooth;
     scrollbar-width: thin;
   }
@@ -10664,55 +10667,32 @@ screenshots-preview {
   }
 
   & .zia-set-section-title {
-    margin: 0 0 8px 4px;
-    font-size: 11px;
+    padding: 0 12px 6px;
     font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
     color: var(--zia-set-dim);
   }
 
-  & .zia-set-group {
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.035);
-    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.05);
-    overflow: hidden;
-  }
-
+  /* each setting a tab row: its hover, its corners */
   & .zia-set-row {
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 11px 14px;
-    min-height: 46px;
-
-    & + .zia-set-row {
-      box-shadow: inset 0 0.5px 0 var(--zia-set-faint);
-    }
+    min-height: var(--zia-tab-height);
+    padding: 8px 12px;
+    border-radius: calc(var(--zia-tab-radius) * var(--zia-squircle-grow));
+    corner-shape: var(--zia-squircle);
 
     &:has(.zia-set-switch) {
       cursor: pointer;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.025);
-      }
     }
 
-    /* a setting that belongs to the one above it */
-    &.sub .zia-set-text {
-      position: relative;
-      padding-inline-start: 14px;
+    &:hover {
+      background: var(--zia-tab-hover-bg);
+    }
 
-      &::before {
-        content: "";
-        position: absolute;
-        inset-inline-start: 2px;
-        top: 3px;
-        bottom: 3px;
-        width: 2px;
-        border-radius: 1px;
-        background: rgba(255, 255, 255, 0.1);
-      }
+    /* a setting that belongs to the one above it, set in a step */
+    &.sub {
+      margin-inline-start: 14px;
     }
 
     /* found by search, though what it belongs to is off */
@@ -10727,12 +10707,14 @@ screenshots-preview {
   }
 
   & .zia-set-desc {
+    margin-top: 1px;
+    font-size: 0.88em;
+    line-height: 1.35;
     color: var(--zia-set-dim);
-    font-size: 12px;
-    margin-top: 2px;
   }
 
   /* ---------- controls ---------- */
+  /* the Library's switch: faint off, Dia blue with a white dot on */
   & .zia-set-switch {
     appearance: none;
     border: 0;
@@ -10743,8 +10725,8 @@ screenshots-preview {
     padding: 0;
     border-radius: 10px;
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.16);
-    transition: background-color 0.2s var(--zia-set-ease);
+    background: color-mix(in srgb, var(--zia-set-ink) 14%, transparent);
+    transition: background-color 0.2s ease;
 
     &::after {
       content: "";
@@ -10754,30 +10736,38 @@ screenshots-preview {
       width: 16px;
       height: 16px;
       border-radius: 50%;
-      background: #fff;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-      transition: translate 0.32s var(--zia-set-spring);
+      background: color-mix(in srgb, var(--zia-set-ink) 75%, transparent);
+      transition: translate 0.3s var(--zia-spring, ease), background-color 0.2s ease;
+    }
+
+    &:hover {
+      background: color-mix(in srgb, var(--zia-set-ink) 20%, transparent);
     }
 
     &[aria-checked="true"] {
       background: var(--zia-set-blue);
 
       &::after {
+        background: rgb(255, 255, 255);
         translate: 14px 0;
       }
     }
   }
 
+  /* the Library's field (Zen's own field look taken off, as for the search) */
   & :is(.zia-set-select, .zia-set-field) {
     flex: none;
     height: 28px;
-    border: 0;
-    border-radius: 7px;
-    padding: 0 10px;
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.06);
-    outline: none;
-    appearance: none;
+    min-height: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: calc(var(--zia-close-radius) * var(--zia-squircle-grow)) !important;
+    corner-shape: var(--zia-squircle);
+    padding: 0 10px !important;
+    background: var(--zia-set-field) !important;
+    box-shadow: none !important;
+    outline: none !important;
+    appearance: none !important;
   }
 
   & .zia-set-select {
@@ -10787,10 +10777,6 @@ screenshots-preview {
 
   & .zia-set-field {
     width: 220px;
-
-    &:focus {
-      background: rgba(255, 255, 255, 0.11);
-    }
 
     &::placeholder {
       color: var(--zia-set-dim);

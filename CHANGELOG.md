@@ -4,6 +4,23 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.110.0] — 2026-10-24
+
+### Changed
+
+- Zia Settings is easier to read: each setting has a short name, with what it
+  does in smaller grey text under it (Sine's list keeps the full wording, and
+  the search finds either).
+- Zia Settings looks like the rest of Zia: the card as a hover card, the
+  sections down the side as tabs with the one in view lit as the selected tab,
+  each setting as a tab row, and the Library's search, fields and switches. It
+  follows light spaces too.
+
+### Fixed
+
+- Zia Settings' search box is a single field: Zen's own field look drew a second
+  box inside it.
+
 ## [2.109.3] — 2026-10-24
 
 ### Fixed
