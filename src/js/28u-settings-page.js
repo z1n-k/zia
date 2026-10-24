@@ -57,9 +57,12 @@
   }
 
   async function showZiaSettings() {
-    if (document.getElementById("zia-settings")) {
+    const open = document.getElementById("zia-settings");
+    if (open && !open.hasAttribute("closing")) {
       return;
     }
+    // (one still fading out goes at once: opened again then, nothing opened)
+    open?.remove();
     const list = await loadSettingsList();
     const overlay = document.createElementNS(XHTML_NS, "div");
     overlay.id = "zia-settings";
@@ -69,13 +72,13 @@
     frame.setAttribute("title", "Zia settings");
     overlay.append(frame);
 
-    // (values go to the page as a mark on it and an event to read it by: a plain
-    // string crosses to it where an object handed over doesn't)
+    // (values go to the page as a mark on it, which it watches: a plain string crosses
+    // to it where an object, or an event made for it here, doesn't)
     const sendValues = () => {
-      const doc = frame.contentDocument;
-      if (doc?.documentElement) {
-        doc.documentElement.setAttribute("data-zia-values", JSON.stringify(settingValues(list)));
-        doc.dispatchEvent(new frame.contentWindow.Event("ZiaSettingsValues"));
+      try {
+        frame.contentDocument?.documentElement?.setAttribute("data-zia-values", JSON.stringify(settingValues(list)));
+      } catch (err) {
+        noteError("settings page: values", err);
       }
     };
     const close = () => {
@@ -89,6 +92,7 @@
         } catch (err) {}
         overlay.remove();
       }, 260);
+      overlay.ziaStopListening?.();
       gBrowser.selectedBrowser?.focus();
     };
     const act = (text) => {
@@ -111,6 +115,27 @@
         sendValues();
       }
     };
+    const onMessage = (event) => {
+      if (event.source === frame.contentWindow && typeof event.data?.ziaSettings === "string") {
+        act(event.data.ziaSettings);
+      }
+    };
+    window.addEventListener("message", onMessage);
+    // A setting changed anywhere while the page is open (Sine's list, another window, one
+    // that turns itself back off, one Zia passes on to Zen's) shows there at once: it
+    // showed what it had last sent
+    const watched = Object.keys(settingValues(list));
+    for (const property of watched) {
+      Services.prefs.addObserver(property, sendValues);
+    }
+    overlay.ziaStopListening = () => {
+      overlay.ziaStopListening = null;
+      window.removeEventListener("message", onMessage);
+      for (const property of watched) {
+        Services.prefs.removeObserver(property, sendValues);
+      }
+    };
+    window.addEventListener("unload", () => overlay.ziaStopListening?.(), { once: true });
     frame.addEventListener("load", () => {
       try {
         frame.contentDocument?.addEventListener("ZiaSettings", (event) => act(event.detail));

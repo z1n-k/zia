@@ -1,13 +1,20 @@
 // Zia's settings page (index.html): built from ../preferences.json, the list Sine
 // shows too, its sections down the side. Zia (zia.uc.js) sends the settings' values
-// as a mark on the page with an event to read it by, and takes changes and "close" as
-// an event on this page, so the page itself never touches a setting.
+// as a mark on the page, read whenever it changes, and takes changes and "close" as an
+// event on this page, so the page itself never touches a setting.
 (async () => {
   const list = document.getElementById("list");
   const nav = document.getElementById("nav");
   const search = document.getElementById("search");
-  const tell = (action, data = {}) =>
-    document.dispatchEvent(new CustomEvent("ZiaSettings", { detail: JSON.stringify({ action, ...data }) }));
+  // (two ways, as the welcome tour tells Zia, so it gets through however Zen keeps the
+  // page apart: an event on this page and a message to the window; each is harmless twice)
+  const tell = (action, data = {}) => {
+    const message = JSON.stringify({ action, ...data });
+    document.dispatchEvent(new CustomEvent("ZiaSettings", { detail: message }));
+    try {
+      window.parent.postMessage({ ziaSettings: message }, "*");
+    } catch (err) {}
+  };
 
   const platform = /Mac/.test(navigator.platform) ? "macos" : /Win/.test(navigator.platform) ? "windows" : "linux";
   const entries = await (await fetch("../preferences.json")).json();
@@ -142,7 +149,9 @@
     }
     fill();
   };
-  document.addEventListener("ZiaSettingsValues", read);
+  // (the mark watched rather than an event from Zia: an event made for the page from the
+  // window didn't arrive, and every switch showed off)
+  new MutationObserver(read).observe(document.documentElement, { attributes: true, attributeFilter: ["data-zia-values"] });
   make("div", "none", list, "No settings match");
 
   // ---------- the section in view lit in the side list

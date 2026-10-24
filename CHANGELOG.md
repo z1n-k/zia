@@ -4,6 +4,18 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.109.2] — 2026-10-24
+
+### Fixed
+
+- Zia Settings shows how each setting is actually set. Every switch showed off:
+  the settings were handed to the page in a way that didn't reach it inside Zen.
+  Changes made on the page reach Zia two ways now too, as the welcome tour's do.
+- Zia Settings keeps up with a setting changed while it's open (in Sine's list,
+  another window, or one that turns itself back off, as "Show the welcome tour
+  again" does): it showed what it had first.
+- Zia Settings opens again if asked to just as it's closing; nothing opened.
+
 ## [2.109.1] — 2026-10-24
 
 ### Fixed
