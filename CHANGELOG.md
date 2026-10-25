@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.111.1] — 2026-10-25
+
+### Fixed
+
+- The opened address bar stays in place when a dialog opens over the window
+  (Cmd+Q's "Quit Zen or close current tab?", say). The dialog takes the opened
+  bar down while it stays marked opened, and Zia measured it there and moved it
+  further out of place each time, as the address and its pop-up showed after.
+
 ## [2.111.0] — 2026-10-25
 
 ### Added

@@ -466,6 +466,12 @@
     if (!urlbar?.hasAttribute("breakout-extend")) {
       return;
     }
+    // Only while it's shown over the window: a modal dialog (Cmd+Q's quit or close, say)
+    // takes every pop-up down, the opened bar too, while it stays marked opened, and measured
+    // there, back in the toolbar, it was moved further out of place each time
+    if (urlbar.matches?.("[popover]") && !urlbar.matches(":popover-open")) {
+      return;
+    }
     if (root.getAttribute("zia-split") === "true") {
       return;
     }
