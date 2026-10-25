@@ -4,6 +4,23 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.111.0] — 2026-10-25
+
+### Added
+
+- **Sidebar see-through** (Look, off by default): how much of the desktop shows
+  through the sidebar and the gaps round the page, a little, some or half; the
+  page itself stays as it is. Zen's own see-through is one fixed amount, and its
+  space colour's slider sets how strong the colour is rather than this. On
+  macOS, and on Windows and Linux where Zen's window can be see-through.
+
+### Fixed
+
+- A screenshot's preview (its Retry, Close, Copy and Download) is in Zia's look:
+  Zia's tiles, Download in Zia's blue, on Zia's card colour. Its styles never
+  reached it, as it's a page of its own in a dialog, so it kept Firefox's
+  buttons; Zia now puts them into the preview as it opens.
+
 ## [2.110.1] — 2026-10-24
 
 ### Fixed

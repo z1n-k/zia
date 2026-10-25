@@ -3475,6 +3475,16 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
     background-position: 0 0;
   }
 }
+
+/* Optional: the sidebar see-through, the desktop showing through it, by as much as chosen
+   (zia.sidebar.see-through, set by zia.uc.js): the layer Zen paints the sidebar and the gaps
+   round the page on fades, the page itself stays as it is. Only where Zen's window can be
+   see-through, as Zen has it: elsewhere it would show black. */
+@media (-moz-windows-mica) or (-moz-platform: macos) or ((-moz-platform: linux) and -moz-pref("zen.widget.linux.transparency")) {
+  :root[style*="--zia-sidebar-see-through"] #zen-browser-background {
+    opacity: calc(1 - var(--zia-sidebar-see-through)) !important;
+  }
+}
 /* Folders: a glass folder in the folder's
    colour (or the space's), holding a sheet for each thing in it, up to
    three (zia.uc.js counts them). An empty folder is just the folder. The
@@ -9779,24 +9789,8 @@ zen-workspace-creation {
   color-scheme: dark;
 }
 
-/* The preview of a whole or visible page's shot (its own window, which Zia's
-   styles reach too): its Retry, Close, Copy and Download as Zia's tiles, with
-   Download in Zia's blue, rather than Firefox's buttons */
-screenshots-preview {
-  --button-border-radius: var(--zia-glass-button-radius, 10px);
-  --button-border-color: transparent;
-  --button-border-color-hover: transparent;
-  --button-border-color-primary: transparent;
-  --button-background-color: color-mix(in srgb, currentColor 7%, transparent);
-  --button-background-color-hover: color-mix(in srgb, currentColor 12%, transparent);
-  --button-background-color-active: color-mix(in srgb, currentColor 20%, transparent);
-  --button-background-color-primary: var(--zia-loading-color, rgb(90, 185, 245));
-  --button-background-color-primary-hover: color-mix(in srgb, var(--zia-loading-color, rgb(90, 185, 245)) 88%, white);
-  --button-background-color-primary-active: color-mix(in srgb, var(--zia-loading-color, rgb(90, 185, 245)) 82%, black);
-  --button-text-color-primary: rgb(255, 255, 255);
-  --button-text-color-primary-hover: rgb(255, 255, 255);
-  --button-text-color-primary-active: rgb(255, 255, 255);
-}
+/* (the preview of a shot is a page of its own, which these styles don't reach:
+   zia-screenshots.css, put in by zia.uc.js) */
 /* The rename card (tidy-downloads/tidy-downloads.js; Tidy Downloads, by
    Bxthesda and Zylaah, with their permission): a small copy of Zia's glass
    address pop-up, floating just above the sidebar's foot as Zen's own

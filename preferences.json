@@ -53,6 +53,18 @@
     "defaultValue": false
   },
   {
+    "type": "dropdown",
+    "label": "Sidebar see-through, the desktop showing through it (macOS, and Windows and Linux where the window can be see-through)",
+    "property": "zia.sidebar.see-through",
+    "defaultValue": "0",
+    "options": [
+      { "label": "Off", "value": "0" },
+      { "label": "A little", "value": "15" },
+      { "label": "Some", "value": "30" },
+      { "label": "Half", "value": "50" }
+    ]
+  },
+  {
     "type": "checkbox",
     "label": "Ultra: extra effects (a thinking orb while a tab loads, the colour round the open essential slowly moving, the music player glowing in its artwork's colours, the Library's chosen section springing to the next, the welcome tour's Zia in liquid metal)",
     "property": "zia.ultra",

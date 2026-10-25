@@ -1,0 +1,25 @@
+/* Zia: the preview of a screenshot (Firefox's screenshots-preview.html, in a dialog over
+   the tab), loaded into it by zia.uc.js (28q-screenshots.js): it's a page of its own,
+   which chrome.css doesn't reach. Its Retry, Close, Copy and Download as Zia's tiles,
+   Download in Zia's blue, on Zia's card colour, light or dark as the page is. (Zia's
+   colours written in: its variables aren't in this page.) */
+:root {
+  background-color: light-dark(rgb(250, 250, 251), rgb(38, 38, 38)) !important;
+}
+
+screenshots-preview {
+  --button-border-radius: 10px;
+  --button-border-color: transparent;
+  --button-border-color-hover: transparent;
+  --button-border-color-active: transparent;
+  --button-border-color-primary: transparent;
+  --button-background-color: color-mix(in srgb, currentColor 7%, transparent);
+  --button-background-color-hover: color-mix(in srgb, currentColor 12%, transparent);
+  --button-background-color-active: color-mix(in srgb, currentColor 20%, transparent);
+  --button-background-color-primary: rgb(10, 132, 255);
+  --button-background-color-primary-hover: color-mix(in srgb, rgb(10, 132, 255) 88%, white);
+  --button-background-color-primary-active: color-mix(in srgb, rgb(10, 132, 255) 82%, black);
+  --button-text-color-primary: rgb(255, 255, 255);
+  --button-text-color-primary-hover: rgb(255, 255, 255);
+  --button-text-color-primary-active: rgb(255, 255, 255);
+}

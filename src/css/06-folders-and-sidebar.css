@@ -892,3 +892,13 @@ zen-workspace[collapsedpinnedtabs] :is(zen-folder, tab-group:not([split-view-gro
     background-position: 0 0;
   }
 }
+
+/* Optional: the sidebar see-through, the desktop showing through it, by as much as chosen
+   (zia.sidebar.see-through, set by zia.uc.js): the layer Zen paints the sidebar and the gaps
+   round the page on fades, the page itself stays as it is. Only where Zen's window can be
+   see-through, as Zen has it: elsewhere it would show black. */
+@media (-moz-windows-mica) or (-moz-platform: macos) or ((-moz-platform: linux) and -moz-pref("zen.widget.linux.transparency")) {
+  :root[style*="--zia-sidebar-see-through"] #zen-browser-background {
+    opacity: calc(1 - var(--zia-sidebar-see-through)) !important;
+  }
+}

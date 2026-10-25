@@ -90,4 +90,22 @@
     }
     window.addEventListener("unload", () => observer.disconnect());
     document.querySelectorAll("screenshots-buttons").forEach(style);
+
+    // The preview of a shot, with its Retry, Close, Copy and Download, is a page of its own
+    // in a dialog over the tab, which chrome.css doesn't reach: Zia's look is put in as it's
+    // made (zia-screenshots.css; a sheet put in this way isn't held back by the page's rules)
+    const PREVIEW_URL = "chrome://browser/content/screenshots/screenshots-preview.html";
+    const onDocument = (doc) => {
+      const win = doc?.defaultView;
+      if (!doc?.documentURI?.startsWith(PREVIEW_URL) || win?.browsingContext?.topChromeWindow !== window) {
+        return;
+      }
+      try {
+        win.windowUtils.loadSheetUsingURIString("chrome://sine/content/zia/zia-screenshots.css", win.windowUtils.AUTHOR_SHEET);
+      } catch (err) {
+        noteError("screenshots: preview", err);
+      }
+    };
+    Services.obs.addObserver(onDocument, "document-element-inserted");
+    window.addEventListener("unload", () => Services.obs.removeObserver(onDocument, "document-element-inserted"), { once: true });
   }

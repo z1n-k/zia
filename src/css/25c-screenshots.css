@@ -37,21 +37,5 @@
   color-scheme: dark;
 }
 
-/* The preview of a whole or visible page's shot (its own window, which Zia's
-   styles reach too): its Retry, Close, Copy and Download as Zia's tiles, with
-   Download in Zia's blue, rather than Firefox's buttons */
-screenshots-preview {
-  --button-border-radius: var(--zia-glass-button-radius, 10px);
-  --button-border-color: transparent;
-  --button-border-color-hover: transparent;
-  --button-border-color-primary: transparent;
-  --button-background-color: color-mix(in srgb, currentColor 7%, transparent);
-  --button-background-color-hover: color-mix(in srgb, currentColor 12%, transparent);
-  --button-background-color-active: color-mix(in srgb, currentColor 20%, transparent);
-  --button-background-color-primary: var(--zia-loading-color, rgb(90, 185, 245));
-  --button-background-color-primary-hover: color-mix(in srgb, var(--zia-loading-color, rgb(90, 185, 245)) 88%, white);
-  --button-background-color-primary-active: color-mix(in srgb, var(--zia-loading-color, rgb(90, 185, 245)) 82%, black);
-  --button-text-color-primary: rgb(255, 255, 255);
-  --button-text-color-primary-hover: rgb(255, 255, 255);
-  --button-text-color-primary-active: rgb(255, 255, 255);
-}
+/* (the preview of a shot is a page of its own, which these styles don't reach:
+   zia-screenshots.css, put in by zia.uc.js) */

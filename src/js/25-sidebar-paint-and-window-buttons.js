@@ -75,7 +75,17 @@
     window.addEventListener("unload", () => Services.obs.removeObserver(update, "zen-theme-change"), { once: true });
   }
 
+  // Optional: the sidebar see-through, by as much as chosen (zia.sidebar.see-through, a
+  // percentage): Zen's own see-through is one fixed amount (06-folders-and-sidebar.css)
+  const SEE_THROUGH_PREF = "zia.sidebar.see-through";
+  function applySidebarSeeThrough() {
+    const amount = Math.min(90, Math.max(0, parseInt(Services.prefs.getStringPref(SEE_THROUGH_PREF, "0"), 10) || 0));
+    setStyle(root, "--zia-sidebar-see-through", amount ? String(amount / 100) : null);
+  }
+
   function watchSidebarPaint() {
+    applySidebarSeeThrough();
+    watchPrefs(SEE_THROUGH_PREF, applySidebarSeeThrough);
     syncSidebarPaint();
     const watcher = new MutationObserver(syncSidebarPaint);
     for (const id of ["zen-browser-background", "zen-toolbar-background"]) {
