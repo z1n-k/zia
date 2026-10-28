@@ -2001,6 +2001,9 @@
             }
           }
         }
+        // (the list let out of its box before they fold: the rows closing up overflow it a
+        // moment, it looked scrollable, stayed clipped, and cut the dragged tab off, #396)
+        unclipAround(target);
         for (const tab of others) {
           tab.setAttribute("zia-drag-companion", "true");
         }

@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.112.2] — 2026-10-28
+
+### Fixed
+
+- Several selected tabs dragged together aren't cut off below the end of the
+  tab list: the list closing up round them kept its edge for the drag, while a
+  single tab could go anywhere in the sidebar
+  ([#396](https://github.com/z1n-k/zia/issues/396), thanks @Y4k3d0).
+
 ## [2.112.1] — 2026-10-28
 
 ### Changed
