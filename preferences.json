@@ -240,6 +240,12 @@
   },
   {
     "type": "checkbox",
+    "label": "Space icons at the foot of the sidebar collapse to dots, the open one shown (Zen's look when they don't fit)",
+    "property": "zia.spaces.collapse-icons",
+    "defaultValue": false
+  },
+  {
+    "type": "checkbox",
     "label": "Folders open and close with a spring",
     "property": "zia.folders.bounce",
     "defaultValue": true
@@ -463,6 +469,12 @@
     ]
 ,
     "operator": "AND"
+  },
+  {
+    "type": "checkbox",
+    "label": "Centre the address bar itself, with as much room before it as after (the buttons either side balanced)",
+    "property": "zia.urlbar.center-bar",
+    "defaultValue": false
   },
   {
     "type": "dropdown",

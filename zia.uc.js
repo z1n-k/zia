@@ -1249,7 +1249,17 @@
   }
 
   function watchTitleOnly() {
-    watchPrefs([TITLE_ONLY_PREF, FULL_URL_PREF], () => updateTitle());
+    watchPrefs([TITLE_ONLY_PREF, FULL_URL_PREF], () => {
+      updateTitle();
+      // (the address written out again, with or without its scheme, rather than at the next page)
+      try {
+        if (!gURLBar.focused) {
+          gURLBar.setURI();
+        }
+      } catch (err) {
+        noteError("address bar: full address", err);
+      }
+    });
   }
 
   // (an option: the page's whole address, as Firefox shows it, rather than the domain and title)
@@ -1313,9 +1323,12 @@
   const BARE_SLASH = /^([^/?#\s]+)\/$/;
 
   function plainAddress(value) {
-    return typeof value === "string"
-      ? value.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(BARE_SLASH, "$1")
-      : value;
+    // (with "Full address" on, the address as it is: Firefox's own trimming, browser.urlbar.
+    // trimHttps, decides on its scheme, #519)
+    if (typeof value !== "string" || Services.prefs.getBoolPref(FULL_URL_PREF, false)) {
+      return value;
+    }
+    return value.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(BARE_SLASH, "$1");
   }
 
   function neverShowScheme() {
@@ -1558,6 +1571,62 @@
   // bar's own buttons show and hide on hover (re-centred in what was left, it slid aside
   // each time). Measured as either changes size, before it's drawn. Only the toolbar's
   // bar, closed: in the sidebar (Zen's single toolbar) or open, it's as it was.
+  // Optional (zia.urlbar.center-bar): the address bar itself in the middle of the toolbar, as
+  // much room before it as after, made up on the side with fewer buttons, rather than with
+  // flexible spaces added by hand (#515). Measured again as the toolbar changes.
+  const CENTER_BAR_PREF = "zia.urlbar.center-bar";
+  function watchCenteredBar() {
+    const container = document.getElementById("urlbar-container");
+    const navBar = document.getElementById("nav-bar");
+    if (!container || !navBar) {
+      return;
+    }
+    const update = () => {
+      let before = 0;
+      let after = 0;
+      if (Services.prefs.getBoolPref(CENTER_BAR_PREF, false) && root.getAttribute("zen-single-toolbar") !== "true") {
+        const style = getComputedStyle(container);
+        const own = [parseFloat(container.style.marginInlineStart) || 0, parseFloat(container.style.marginInlineEnd) || 0];
+        const bar = container.getBoundingClientRect();
+        const row = navBar.getBoundingClientRect();
+        // (the room each side takes now, less what was added for it)
+        const left = bar.left - row.left - (style.direction === "rtl" ? own[1] : own[0]);
+        const right = row.right - bar.right - (style.direction === "rtl" ? own[0] : own[1]);
+        const gap = Math.round(left - right);
+        if (bar.width && Math.abs(gap) >= 1 && Math.abs(gap) < bar.width / 2) {
+          [before, after] = gap > 0 ? [0, gap] : [-gap, 0];
+          if (style.direction === "rtl") {
+            [before, after] = [after, before];
+          }
+        }
+      }
+      const set = (name, px) =>
+        px ? container.style.setProperty(name, `${px}px`, "important") : container.style.removeProperty(name);
+      if ((parseFloat(container.style.marginInlineStart) || 0) !== before) {
+        set("margin-inline-start", before);
+      }
+      if ((parseFloat(container.style.marginInlineEnd) || 0) !== after) {
+        set("margin-inline-end", after);
+      }
+    };
+    let pending = 0;
+    const soon = () => {
+      pending ||= requestAnimationFrame(() => {
+        pending = 0;
+        update();
+      });
+    };
+    const observer = new ResizeObserver(soon);
+    observer.observe(navBar);
+    for (const item of navBar.querySelectorAll(":scope > *, #nav-bar-customization-target > *")) {
+      observer.observe(item);
+    }
+    new MutationObserver(soon).observe(navBar, { childList: true, subtree: true });
+    watchPrefs(CENTER_BAR_PREF, soon);
+    window.addEventListener("unload", () => observer.disconnect());
+    soon();
+  }
+
   function watchCenteredAddress() {
     const urlbar = gURLBar.textbox || document.getElementById("urlbar");
     const box = gURLBar.inputField?.parentNode;
@@ -1696,12 +1765,17 @@
     // spot sent the pop-up up and to the left)
     const fresh = !!closedTextRect && (urlbarAtBottom() || clickedUrlbarAt - closedTextRect.at < 100);
     const openedByClick = (urlbarAtBottom() || Date.now() - clickedUrlbarAt < 1500) && fresh;
+    // (with the text centred, it's kept where it was by its centring, watchCenteredAddress:
+    // lined up by the left of its box as well, the opened pop-up went off to the left, #515)
+    const centred =
+      Services.prefs.getBoolPref("zia.urlbar.center-text", false) &&
+      !Services.prefs.getBoolPref("zia.urlbar.center-text.pop-up-left", false);
     if (!openedByClick && openOffsetX) {
       openOffsetX = 0;
       root.style.setProperty("--zia-urlbar-open-offset-x", "0px");
     }
     if (openedByClick && inputRect?.width) {
-      const dx = closedTextRect.left - inputRect.left;
+      const dx = centred ? -openOffsetX : closedTextRect.left - inputRect.left;
       const dy = closedTextRect.centerY - (inputRect.top + inputRect.height / 2);
       if (Math.abs(dx) > 0.5) {
         openOffsetX += dx;
@@ -2245,9 +2319,10 @@
       if (gBrowser.selectedTab !== tab || tab.ziaTypedInPage || !tab.ziaBlankAddress) {
         return;
       }
-      // (what's in the bar is still the page's own address, not typing)
-      const shown = gURLBar.value || "";
-      if (shown && (gURLBar.valueIsTyped || !uri.spec.includes(shown.replace(/^https?:\/\//, "").replace(/\/$/, "")))) {
+      // (what's in the bar is the page's own address unless it was typed, as Firefox marks
+      // it: guessed instead by whether it was part of the page's address, the bar read
+      // mid-load, still another tab's, passed for typing, and it was never cleared again, #518)
+      if (gURLBar.valueIsTyped && gURLBar.value) {
         tab.ziaBlankAddress = false;
         return;
       }
@@ -2347,7 +2422,9 @@
     gURLBar?.inputField?.addEventListener("input", touch, { once: true });
     const letGo = () => {
       try {
-        if (touched || !gURLBar?.focused || gBrowser.selectedTab !== tab || gURLBar.value) {
+        // (typed in, it stays; the search page's own address, written in as it loads, doesn't
+        // keep it: it held on to the cursor then, with the setting off too, #518)
+        if (touched || gURLBar?.valueIsTyped || !gURLBar?.focused || gBrowser.selectedTab !== tab) {
           return;
         }
         gURLBar.view?.close();
@@ -6378,7 +6455,11 @@
     set("zen.widget.mac.mono-window-controls", false);
     set("zen.urlbar.replace-newtab", !Services.prefs.getBoolPref("zia.newtab.real-tab", true));
     set("zen.splitView.enable-tab-drop", !Services.prefs.getBoolPref("zia.split.drop-cards", true));
-    set("browser.urlbar.trimHttps", true);
+    // (not with "Full address" on, which shows the address as it is, #519; a choice of your own
+    // in about:config stays)
+    const trimHttps = () => set("browser.urlbar.trimHttps", !Services.prefs.getBoolPref("zia.urlbar.full-url", false));
+    trimHttps();
+    watchPrefs("zia.urlbar.full-url", trimHttps);
     // answers in the address bar: maths, and units and time zones (Firefox's own)
     set("browser.urlbar.suggest.calculator", true);
     set("browser.urlbar.unitConversion.enabled", true);
@@ -17880,6 +17961,43 @@
   // One lit tile behind the section buttons, moved to the chosen one, so
   // choosing another slides it there along the column, with Zia's spring,
   // rather than one going out and the other coming on (24-library.css).
+  // Each space's card in the Library light or dark as that space makes the window (Zen's own
+  // call for it, from its colour), whatever the space now open: a light space's card had white
+  // text in a dark one, and the other way round, its tabs too (24-library.css, #514)
+  function inkLibrarySpaces(library) {
+    for (const card of library.querySelectorAll(".zen-library-space[data-uuid]")) {
+      const space = window.gZenWorkspaces?.getWorkspaceFromId?.(card.dataset.uuid);
+      const dark = space ? window.gZenThemePicker?.getGradientForWorkspace?.(space, { getGradient: false })?.isDarkMode : undefined;
+      if (typeof dark === "boolean" && card.getAttribute("zia-card-dark") !== String(dark)) {
+        card.setAttribute("zia-card-dark", String(dark));
+      }
+    }
+  }
+
+  // How far the page beside the open Library covers its edge, measured as it is (24-library.css
+  // keeps the Library clear of it by that much): Zen moves the page aside by its own reckoning
+  // of the gaps round it, not Zia's, so it fell short or over by a few pixels, more or less
+  // with the sidebar pinned or hidden (#476, #512)
+  function fitLibraryToPage(library) {
+    const measure = () => {
+      if (!library.hasAttribute("open")) {
+        return;
+      }
+      const page = document.getElementById("zen-appcontent-wrapper")?.getBoundingClientRect();
+      const box = library.getBoundingClientRect();
+      if (!page?.width || !box.width) {
+        return;
+      }
+      const onRight = root.getAttribute("zen-right-side") === "true";
+      const overlap = Math.max(0, Math.ceil(onRight ? page.right - box.left : box.right - page.left));
+      setStyle(library, "--zia-lib-page-overlap", overlap ? `${overlap}px` : null);
+    };
+    // (once Zen's opening slide has settled, the page with it)
+    for (const ms of [0, 350, 700]) {
+      setTimeout(measure, ms);
+    }
+  }
+
   function railLibrarySections(library) {
     const column = library.querySelector("#zen-library-sidebar-tabs");
     if (!column) {
@@ -18014,11 +18132,13 @@
     let watched = null;
     const sectionWatcher = new MutationObserver((records) => {
       addButtons(watched);
+      safely("library: space inks", () => inkLibrarySpaces(watched));
       if (!records.every((record) => record.target.classList?.contains("zia-library-rail"))) {
         safely("library: rail", () => railLibrarySections(watched));
       }
       if (records.some((record) => record.target === watched && record.attributeName === "open") && watched.hasAttribute("open")) {
         safely("library: rows", matchLibraryRowsToTabs);
+        safely("library: page overlap", () => fitLibraryToPage(watched));
       }
     });
     const watchLibrary = () => {
@@ -18037,6 +18157,7 @@
       new MutationObserver(watchLibrary).observe(toolbox.parentNode, { childList: true });
     }
     watchLibrary();
+    window.addEventListener("resize", () => watched && safely("library: page overlap", () => fitLibraryToPage(watched)));
     // (and before the downloads fan out above the Library button)
     document.getElementById("zen-library-button")?.addEventListener("mouseenter", () => safely("library: rows", matchLibraryRowsToTabs));
     safely("library: rows", matchLibraryRowsToTabs);
@@ -21850,6 +21971,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     "zia.essentials.fill-row": ["Stretch the last essential", "It fills the rest of its row."],
     "zia.essentials.split": ["Split essentials", "Drag a two-site split onto the essentials. Experimental."],
     "zia.sidebar.text-size": ["Sidebar text size", ""],
+    "zia.spaces.collapse-icons": ["Collapsed space icons", "The spaces at the foot of the sidebar as dots, the open one shown, each icon showing as you point at it."],
     "zia.folders.bounce": ["Springy folders", "Folders open and close with a spring."],
     "zia.folders.tint-when-open": ["Folder colour on hover only", "Coloured folders show their colour when hovered or open."],
     "zia.features.icon-picker": ["Icon picker", "For folders and spaces, with 5,166 icons."],
@@ -21869,6 +21991,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     "zia.urlbar.title-only": ["Title only", "Shows the page's title in the domain's colour until clicked."],
     "zia.urlbar.full-url": ["Full address", "Rather than the domain and title."],
     "zia.urlbar.center-text": ["Centred address", ""],
+    "zia.urlbar.center-bar": ["Centred address bar", "As much room before it as after: the buttons either side balanced."],
     "zia.urlbar.center-text.pop-up-left": ["Pop-up text from the left", "When the address bar is opened."],
     "zia.urlbar.position": ["Address bar position", ""],
     "zia.features.find-bar": ["Zia find bar", "For finding in the page."],
@@ -22538,6 +22661,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     safely("createTitleElement", createTitleElement);
     safely("watchTitleOnly", watchTitleOnly);
     safely("watchCenteredAddress", watchCenteredAddress);
+    safely("watchCenteredBar", watchCenteredBar);
     safely("watchScreenshotButtons", watchScreenshotButtons);
     safely("watchUltra", watchUltra);
     safely("addDownloadProgress", addDownloadProgress);

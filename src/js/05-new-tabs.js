@@ -155,9 +155,10 @@
       if (gBrowser.selectedTab !== tab || tab.ziaTypedInPage || !tab.ziaBlankAddress) {
         return;
       }
-      // (what's in the bar is still the page's own address, not typing)
-      const shown = gURLBar.value || "";
-      if (shown && (gURLBar.valueIsTyped || !uri.spec.includes(shown.replace(/^https?:\/\//, "").replace(/\/$/, "")))) {
+      // (what's in the bar is the page's own address unless it was typed, as Firefox marks
+      // it: guessed instead by whether it was part of the page's address, the bar read
+      // mid-load, still another tab's, passed for typing, and it was never cleared again, #518)
+      if (gURLBar.valueIsTyped && gURLBar.value) {
         tab.ziaBlankAddress = false;
         return;
       }
@@ -257,7 +258,9 @@
     gURLBar?.inputField?.addEventListener("input", touch, { once: true });
     const letGo = () => {
       try {
-        if (touched || !gURLBar?.focused || gBrowser.selectedTab !== tab || gURLBar.value) {
+        // (typed in, it stays; the search page's own address, written in as it loads, doesn't
+        // keep it: it held on to the cursor then, with the setting off too, #518)
+        if (touched || gURLBar?.valueIsTyped || !gURLBar?.focused || gBrowser.selectedTab !== tab) {
           return;
         }
         gURLBar.view?.close();

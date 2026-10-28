@@ -4,6 +4,55 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.112.0] — 2026-10-28
+
+### Added
+
+- **Centred address bar** (Address bar, off by default): the bar itself in the
+  middle of the toolbar, with as much room before it as after, made up on the
+  side with fewer buttons rather than with flexible spaces added by hand
+  ([#515](https://github.com/z1n-k/zia/issues/515), thanks @OneGunBullet).
+- **Collapsed space icons** (Sidebar, off by default): the spaces at the foot of
+  the sidebar as dots, the open one shown, each icon showing as you point at it,
+  as Zen draws them when they don't fit
+  ([#513](https://github.com/z1n-k/zia/issues/513), thanks @OneGunBullet).
+
+### Changed
+
+- The screenshot buttons' card is see-through, the page blurred behind it, as
+  the address pop-up can be, rather than solid in the toolbar's colour
+  ([#516](https://github.com/z1n-k/zia/issues/516), thanks @OneGunBullet).
+- A live stream in the music player (a Kick, Twitch or YouTube live, its
+  channel's picture) has its ring whole, in the picture's colours. With no
+  progress to show it had only the grey track.
+
+### Fixed
+
+- "New tabs start in the address bar" works both ways. On, the search page's
+  address is cleared as it loads: read mid-load, another tab's address passed
+  for something typed and the clearing stopped for good. Off, the address bar
+  lets go of the cursor: the search page's address written into it as it loaded
+  kept it there ([#518](https://github.com/z1n-k/zia/issues/518),
+  [#433](https://github.com/z1n-k/zia/issues/433), thanks @thoroughmas).
+- "Full address" shows the address as it is, `https://` and `www.` and all;
+  Firefox's own `browser.urlbar.trimHttps` decides on the scheme, and a choice of
+  your own there is kept ([#519](https://github.com/z1n-k/zia/issues/519),
+  thanks @Mineros04).
+- The Library's spaces each show in their own light or dark, their tabs and
+  folders too: a light space's card had white text in a dark space, and the
+  other way round ([#514](https://github.com/z1n-k/zia/issues/514), thanks
+  @OneGunBullet).
+- The Library's spaces stop at the Library's edge with the sidebar pinned or
+  hidden alike: how far the page covers the Library is measured now, rather than
+  guessed, which cut them short one way and ran them under the page the other
+  ([#512](https://github.com/z1n-k/zia/issues/512), thanks @OneGunBullet).
+- With the address pop-up's text centred, the opened pop-up opens over the bar
+  rather than off to its left ([#515](https://github.com/z1n-k/zia/issues/515)).
+- With the space's name in the sidebar's top row, the row's buttons stay
+  together at its end, the ⋯ menu with back and reload, rather than the ⋯ menu
+  in the middle (Windows and Linux layouts, and the sidebar on the right,
+  [#507](https://github.com/z1n-k/zia/issues/507), thanks @conqazht).
+
 ## [2.111.1] — 2026-10-25
 
 ### Fixed

@@ -1606,6 +1606,21 @@
 #zen-sidebar-top-buttons:not(:has(> .titlebar-buttonbox-container)) #zia-workspace-slot > .zen-current-workspace-indicator {
   translate: none !important;
 }
+
+/* With the space's name in the top row, it takes the room there: Zen's spacer among the
+   row's buttons took half of it, and its ⋯ menu sat in the middle, apart from its back and
+   reload (Windows and Linux layouts, and the sidebar on the right, #507) */
+:root:not([zia-space-name-in-list]) #zen-sidebar-top-buttons:has(> #zia-workspace-slot) {
+  & #zen-sidebar-top-buttons-customization-target {
+    flex: 0 1 auto !important;
+  }
+
+  & #zen-sidebar-top-buttons-separator {
+    width: 0 !important;
+    min-width: 0 !important;
+    flex: 0 !important;
+  }
+}
 @media -moz-pref("zen.theme.essentials-favicon-bg") {
   .tabbrowser-tab[zen-essential][visuallyselected] > .tab-stack > .tab-background {
     --zen-essential-bg-margin: 3px !important;
@@ -4592,6 +4607,50 @@ zen-workspace arrowscrollbox::part(scrollbox) {
   color: currentColor !important;
   opacity: 0.45 !important;
 }
+
+/* Optional (zia.spaces.collapse-icons): the spaces at the foot of the sidebar always as Zen
+   draws them when they don't fit, each but the open one a dot, its icon shown as it's
+   pointed at; narrow either way, so the row doesn't shift (#513) */
+@media -moz-pref("zia.spaces.collapse-icons") {
+  #zen-workspaces-button toolbarbutton:not([active="true"], [dragged="true"]):not(:has(> .zen-workspace-icon[no-icon="true"])) {
+    min-width: 0 !important;
+    width: 16px !important;
+    max-width: 16px !important;
+    background: transparent !important;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 4px;
+      height: 4px;
+      border-radius: 99px;
+      translate: -50% -50%;
+      background: color-mix(in srgb, var(--zen-primary-color) 10%, light-dark(rgba(0, 0, 0, 0.4), rgba(255, 255, 255, 0.4)) 90%);
+      opacity: 1;
+      pointer-events: none;
+      transition: opacity 150ms ease-in-out;
+    }
+
+    & .zen-workspace-icon {
+      opacity: 0;
+      transform: scale(0);
+      transition: opacity 150ms ease-in-out, transform 150ms ease-in-out;
+    }
+
+    &:hover {
+      &::after {
+        opacity: 0;
+      }
+
+      & .zen-workspace-icon {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  }
+}
 @media -moz-pref("zia.features.media-player") {
 #zen-media-controls-toolbar {
   --zia-media-ease: var(--zen-media-stack-easing, cubic-bezier(0.25, 1, 0.5, 1));
@@ -4762,8 +4821,12 @@ zen-workspace arrowscrollbox::part(scrollbox) {
     }
   }
 
+  /* Live (or with no position to show): the ring whole, in the picture's colours, rather than
+     none: with no progress, a channel's picture (Kick, Twitch, a YouTube live) had only the
+     grey track round it */
   .zen-media-card:is([media-position-hidden], [zia-live]) .zia-ring-fill {
-    opacity: 0;
+    stroke-dasharray: 100 100 !important;
+    stroke-opacity: 1 !important;
   }
 
   .zen-media-card:not(.playing) .zen-media-focus-button :is(image, .toolbarbutton-icon) {
@@ -9167,14 +9230,6 @@ zen-folder .tab-reset-button {
       border-radius: var(--zia-card-radius-base) !important;
     }
 
-    /* each space's card in its own space's text colour, as Zen gives it, not the
-       open space's: light spaces' cards were white on white in a dark space (#487) */
-    & .zen-library-space {
-      --zia-lib-ink: var(--toolbox-textcolor) !important;
-      --zia-sidebar-ink: var(--toolbox-textcolor) !important;
-      color: var(--zia-lib-ink) !important;
-    }
-
     /* the row of spaces scrolls without a bar: Zen hides it while the Library
        opens and shows it after, and where scroll bars always show, it took its
        height from the cards as the opening ended, a jump */
@@ -9442,18 +9497,45 @@ zen-folder .tab-reset-button {
   }
 }
 
-/* In compact mode Zen moves the page aside by the Library's width less its own
-   gap (zen.theme.content-element-separation), as if the page sat that far in from
-   the window's edge; Zia's sits --zia-card-gap in, so the page covered the
-   Library's edge by the difference, and its padding with it (#476) */
-:root[zen-compact-mode="true"] zen-library {
-  --zia-lib-page-overlap: max(0px, var(--zen-element-separation, 0px) - var(--zia-card-gap));
-  padding-right: var(--zia-lib-page-overlap) !important;
+/* The Library kept clear of the page beside it, by as much as the page covers its edge, as
+   measured once it's open (--zia-lib-page-overlap, 28k-library.js): Zen moves the page aside
+   by its own reckoning of the gaps, which isn't Zia's, and a guess at the difference cut the
+   spaces short with the sidebar pinned or let them run under the page with it hidden
+   (#476, #512) */
+zen-library {
+  padding-right: var(--zia-lib-page-overlap, 0px) !important;
 }
 
-:root[zen-compact-mode="true"][zen-right-side="true"] zen-library {
+:root[zen-right-side="true"] zen-library {
   padding-right: 0 !important;
-  padding-left: var(--zia-lib-page-overlap) !important;
+  padding-left: var(--zia-lib-page-overlap, 0px) !important;
+}
+
+/* Each space's card in the Library in its own light or dark, as that space makes the window
+   (zia-card-dark, from Zen's own call for the space: 28k-library.js), with everything in it,
+   its tabs and folders too, in that one ink: in a dark space a light space's card had white
+   text, as its tabs take the open space's look (#487, #514). In Zen's Library look too. */
+:root:not(#zia-none):not(#zia-none-2):not(#zia-none-3) zen-library .zen-library-space[zia-card-dark] {
+  --zia-card-ink: rgb(255, 255, 255);
+  --zia-lib-ink: var(--zia-card-ink) !important;
+  --zia-sidebar-ink: var(--zia-card-ink) !important;
+  --toolbox-textcolor: var(--zia-card-ink) !important;
+  color-scheme: dark;
+  color: var(--zia-card-ink) !important;
+
+  &[zia-card-dark="false"] {
+    --zia-card-ink: rgb(28, 28, 32);
+    color-scheme: light;
+  }
+
+  & * {
+    color: inherit !important;
+  }
+
+  /* (a tab not open a touch softer, as in the sidebar) */
+  & .tabbrowser-tab:not([visuallyselected]) .tab-label-container {
+    color: color-mix(in srgb, var(--zia-card-ink) 80%, transparent) !important;
+  }
 }
 /* The site panel (the site icon at the start of the address bar), drawn as
    Zia draws the rest: Zia's squircle and edge, its buttons and extensions as
@@ -9760,7 +9842,9 @@ zen-workspace-creation {
 :root:not(#zia-none) screenshots-buttons {
   top: 10px !important;
   padding: 6px !important;
-  background-color: var(--zia-tab-card-bg) !important;
+  /* see-through, the page blurred behind it, as the address pop-up can be (#516) */
+  background-color: color-mix(in srgb, var(--zia-shot-card, var(--zia-tab-card-bg)) 78%, transparent) !important;
+  backdrop-filter: blur(24px) saturate(1.6) !important;
   color: rgb(255, 255, 255) !important;
   color-scheme: dark;
   border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow)) !important;
@@ -9776,7 +9860,7 @@ zen-workspace-creation {
 /* ...in the toolbar's colour and ink, as the toolbar is (Zen's own colour with
    "Toolbar in the site's colour" off: Zia's card, above) */
 :root:not([zia-theme-toolbar]):not(#zia-none) screenshots-buttons {
-  background-color: var(--zia-site-bg, var(--zia-tab-card-bg)) !important;
+  --zia-shot-card: var(--zia-site-bg, var(--zia-tab-card-bg));
 }
 
 :root[zia-site-light="true"]:not([zia-theme-toolbar]):not(#zia-none) screenshots-buttons {

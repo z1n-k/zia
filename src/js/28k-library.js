@@ -67,6 +67,43 @@
   // One lit tile behind the section buttons, moved to the chosen one, so
   // choosing another slides it there along the column, with Zia's spring,
   // rather than one going out and the other coming on (24-library.css).
+  // Each space's card in the Library light or dark as that space makes the window (Zen's own
+  // call for it, from its colour), whatever the space now open: a light space's card had white
+  // text in a dark one, and the other way round, its tabs too (24-library.css, #514)
+  function inkLibrarySpaces(library) {
+    for (const card of library.querySelectorAll(".zen-library-space[data-uuid]")) {
+      const space = window.gZenWorkspaces?.getWorkspaceFromId?.(card.dataset.uuid);
+      const dark = space ? window.gZenThemePicker?.getGradientForWorkspace?.(space, { getGradient: false })?.isDarkMode : undefined;
+      if (typeof dark === "boolean" && card.getAttribute("zia-card-dark") !== String(dark)) {
+        card.setAttribute("zia-card-dark", String(dark));
+      }
+    }
+  }
+
+  // How far the page beside the open Library covers its edge, measured as it is (24-library.css
+  // keeps the Library clear of it by that much): Zen moves the page aside by its own reckoning
+  // of the gaps round it, not Zia's, so it fell short or over by a few pixels, more or less
+  // with the sidebar pinned or hidden (#476, #512)
+  function fitLibraryToPage(library) {
+    const measure = () => {
+      if (!library.hasAttribute("open")) {
+        return;
+      }
+      const page = document.getElementById("zen-appcontent-wrapper")?.getBoundingClientRect();
+      const box = library.getBoundingClientRect();
+      if (!page?.width || !box.width) {
+        return;
+      }
+      const onRight = root.getAttribute("zen-right-side") === "true";
+      const overlap = Math.max(0, Math.ceil(onRight ? page.right - box.left : box.right - page.left));
+      setStyle(library, "--zia-lib-page-overlap", overlap ? `${overlap}px` : null);
+    };
+    // (once Zen's opening slide has settled, the page with it)
+    for (const ms of [0, 350, 700]) {
+      setTimeout(measure, ms);
+    }
+  }
+
   function railLibrarySections(library) {
     const column = library.querySelector("#zen-library-sidebar-tabs");
     if (!column) {
@@ -201,11 +238,13 @@
     let watched = null;
     const sectionWatcher = new MutationObserver((records) => {
       addButtons(watched);
+      safely("library: space inks", () => inkLibrarySpaces(watched));
       if (!records.every((record) => record.target.classList?.contains("zia-library-rail"))) {
         safely("library: rail", () => railLibrarySections(watched));
       }
       if (records.some((record) => record.target === watched && record.attributeName === "open") && watched.hasAttribute("open")) {
         safely("library: rows", matchLibraryRowsToTabs);
+        safely("library: page overlap", () => fitLibraryToPage(watched));
       }
     });
     const watchLibrary = () => {
@@ -224,6 +263,7 @@
       new MutationObserver(watchLibrary).observe(toolbox.parentNode, { childList: true });
     }
     watchLibrary();
+    window.addEventListener("resize", () => watched && safely("library: page overlap", () => fitLibraryToPage(watched)));
     // (and before the downloads fan out above the Library button)
     document.getElementById("zen-library-button")?.addEventListener("mouseenter", () => safely("library: rows", matchLibraryRowsToTabs));
     safely("library: rows", matchLibraryRowsToTabs);

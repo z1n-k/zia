@@ -121,3 +121,18 @@
 #zen-sidebar-top-buttons:not(:has(> .titlebar-buttonbox-container)) #zia-workspace-slot > .zen-current-workspace-indicator {
   translate: none !important;
 }
+
+/* With the space's name in the top row, it takes the room there: Zen's spacer among the
+   row's buttons took half of it, and its ⋯ menu sat in the middle, apart from its back and
+   reload (Windows and Linux layouts, and the sidebar on the right, #507) */
+:root:not([zia-space-name-in-list]) #zen-sidebar-top-buttons:has(> #zia-workspace-slot) {
+  & #zen-sidebar-top-buttons-customization-target {
+    flex: 0 1 auto !important;
+  }
+
+  & #zen-sidebar-top-buttons-separator {
+    width: 0 !important;
+    min-width: 0 !important;
+    flex: 0 !important;
+  }
+}

@@ -168,8 +168,12 @@
     }
   }
 
+  /* Live (or with no position to show): the ring whole, in the picture's colours, rather than
+     none: with no progress, a channel's picture (Kick, Twitch, a YouTube live) had only the
+     grey track round it */
   .zen-media-card:is([media-position-hidden], [zia-live]) .zia-ring-fill {
-    opacity: 0;
+    stroke-dasharray: 100 100 !important;
+    stroke-opacity: 1 !important;
   }
 
   .zen-media-card:not(.playing) .zen-media-focus-button :is(image, .toolbarbutton-icon) {
