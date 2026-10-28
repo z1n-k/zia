@@ -479,14 +479,6 @@
       border-radius: var(--zia-card-radius-base) !important;
     }
 
-    /* each space's card in its own space's text colour, as Zen gives it, not the
-       open space's: light spaces' cards were white on white in a dark space (#487) */
-    & .zen-library-space {
-      --zia-lib-ink: var(--toolbox-textcolor) !important;
-      --zia-sidebar-ink: var(--toolbox-textcolor) !important;
-      color: var(--zia-lib-ink) !important;
-    }
-
     /* the row of spaces scrolls without a bar: Zen hides it while the Library
        opens and shows it after, and where scroll bars always show, it took its
        height from the cards as the opening ended, a jump */
@@ -754,16 +746,43 @@
   }
 }
 
-/* In compact mode Zen moves the page aside by the Library's width less its own
-   gap (zen.theme.content-element-separation), as if the page sat that far in from
-   the window's edge; Zia's sits --zia-card-gap in, so the page covered the
-   Library's edge by the difference, and its padding with it (#476) */
-:root[zen-compact-mode="true"] zen-library {
-  --zia-lib-page-overlap: max(0px, var(--zen-element-separation, 0px) - var(--zia-card-gap));
-  padding-right: var(--zia-lib-page-overlap) !important;
+/* The Library kept clear of the page beside it, by as much as the page covers its edge, as
+   measured once it's open (--zia-lib-page-overlap, 28k-library.js): Zen moves the page aside
+   by its own reckoning of the gaps, which isn't Zia's, and a guess at the difference cut the
+   spaces short with the sidebar pinned or let them run under the page with it hidden
+   (#476, #512) */
+zen-library {
+  padding-right: var(--zia-lib-page-overlap, 0px) !important;
 }
 
-:root[zen-compact-mode="true"][zen-right-side="true"] zen-library {
+:root[zen-right-side="true"] zen-library {
   padding-right: 0 !important;
-  padding-left: var(--zia-lib-page-overlap) !important;
+  padding-left: var(--zia-lib-page-overlap, 0px) !important;
+}
+
+/* Each space's card in the Library in its own light or dark, as that space makes the window
+   (zia-card-dark, from Zen's own call for the space: 28k-library.js), with everything in it,
+   its tabs and folders too, in that one ink: in a dark space a light space's card had white
+   text, as its tabs take the open space's look (#487, #514). In Zen's Library look too. */
+:root:not(#zia-none):not(#zia-none-2):not(#zia-none-3) zen-library .zen-library-space[zia-card-dark] {
+  --zia-card-ink: rgb(255, 255, 255);
+  --zia-lib-ink: var(--zia-card-ink) !important;
+  --zia-sidebar-ink: var(--zia-card-ink) !important;
+  --toolbox-textcolor: var(--zia-card-ink) !important;
+  color-scheme: dark;
+  color: var(--zia-card-ink) !important;
+
+  &[zia-card-dark="false"] {
+    --zia-card-ink: rgb(28, 28, 32);
+    color-scheme: light;
+  }
+
+  & * {
+    color: inherit !important;
+  }
+
+  /* (a tab not open a touch softer, as in the sidebar) */
+  & .tabbrowser-tab:not([visuallyselected]) .tab-label-container {
+    color: color-mix(in srgb, var(--zia-card-ink) 80%, transparent) !important;
+  }
 }

@@ -38,7 +38,17 @@
   }
 
   function watchTitleOnly() {
-    watchPrefs([TITLE_ONLY_PREF, FULL_URL_PREF], () => updateTitle());
+    watchPrefs([TITLE_ONLY_PREF, FULL_URL_PREF], () => {
+      updateTitle();
+      // (the address written out again, with or without its scheme, rather than at the next page)
+      try {
+        if (!gURLBar.focused) {
+          gURLBar.setURI();
+        }
+      } catch (err) {
+        noteError("address bar: full address", err);
+      }
+    });
   }
 
   // (an option: the page's whole address, as Firefox shows it, rather than the domain and title)
@@ -102,9 +112,12 @@
   const BARE_SLASH = /^([^/?#\s]+)\/$/;
 
   function plainAddress(value) {
-    return typeof value === "string"
-      ? value.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(BARE_SLASH, "$1")
-      : value;
+    // (with "Full address" on, the address as it is: Firefox's own trimming, browser.urlbar.
+    // trimHttps, decides on its scheme, #519)
+    if (typeof value !== "string" || Services.prefs.getBoolPref(FULL_URL_PREF, false)) {
+      return value;
+    }
+    return value.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(BARE_SLASH, "$1");
   }
 
   function neverShowScheme() {
@@ -347,6 +360,62 @@
   // bar's own buttons show and hide on hover (re-centred in what was left, it slid aside
   // each time). Measured as either changes size, before it's drawn. Only the toolbar's
   // bar, closed: in the sidebar (Zen's single toolbar) or open, it's as it was.
+  // Optional (zia.urlbar.center-bar): the address bar itself in the middle of the toolbar, as
+  // much room before it as after, made up on the side with fewer buttons, rather than with
+  // flexible spaces added by hand (#515). Measured again as the toolbar changes.
+  const CENTER_BAR_PREF = "zia.urlbar.center-bar";
+  function watchCenteredBar() {
+    const container = document.getElementById("urlbar-container");
+    const navBar = document.getElementById("nav-bar");
+    if (!container || !navBar) {
+      return;
+    }
+    const update = () => {
+      let before = 0;
+      let after = 0;
+      if (Services.prefs.getBoolPref(CENTER_BAR_PREF, false) && root.getAttribute("zen-single-toolbar") !== "true") {
+        const style = getComputedStyle(container);
+        const own = [parseFloat(container.style.marginInlineStart) || 0, parseFloat(container.style.marginInlineEnd) || 0];
+        const bar = container.getBoundingClientRect();
+        const row = navBar.getBoundingClientRect();
+        // (the room each side takes now, less what was added for it)
+        const left = bar.left - row.left - (style.direction === "rtl" ? own[1] : own[0]);
+        const right = row.right - bar.right - (style.direction === "rtl" ? own[0] : own[1]);
+        const gap = Math.round(left - right);
+        if (bar.width && Math.abs(gap) >= 1 && Math.abs(gap) < bar.width / 2) {
+          [before, after] = gap > 0 ? [0, gap] : [-gap, 0];
+          if (style.direction === "rtl") {
+            [before, after] = [after, before];
+          }
+        }
+      }
+      const set = (name, px) =>
+        px ? container.style.setProperty(name, `${px}px`, "important") : container.style.removeProperty(name);
+      if ((parseFloat(container.style.marginInlineStart) || 0) !== before) {
+        set("margin-inline-start", before);
+      }
+      if ((parseFloat(container.style.marginInlineEnd) || 0) !== after) {
+        set("margin-inline-end", after);
+      }
+    };
+    let pending = 0;
+    const soon = () => {
+      pending ||= requestAnimationFrame(() => {
+        pending = 0;
+        update();
+      });
+    };
+    const observer = new ResizeObserver(soon);
+    observer.observe(navBar);
+    for (const item of navBar.querySelectorAll(":scope > *, #nav-bar-customization-target > *")) {
+      observer.observe(item);
+    }
+    new MutationObserver(soon).observe(navBar, { childList: true, subtree: true });
+    watchPrefs(CENTER_BAR_PREF, soon);
+    window.addEventListener("unload", () => observer.disconnect());
+    soon();
+  }
+
   function watchCenteredAddress() {
     const urlbar = gURLBar.textbox || document.getElementById("urlbar");
     const box = gURLBar.inputField?.parentNode;
@@ -485,12 +554,17 @@
     // spot sent the pop-up up and to the left)
     const fresh = !!closedTextRect && (urlbarAtBottom() || clickedUrlbarAt - closedTextRect.at < 100);
     const openedByClick = (urlbarAtBottom() || Date.now() - clickedUrlbarAt < 1500) && fresh;
+    // (with the text centred, it's kept where it was by its centring, watchCenteredAddress:
+    // lined up by the left of its box as well, the opened pop-up went off to the left, #515)
+    const centred =
+      Services.prefs.getBoolPref("zia.urlbar.center-text", false) &&
+      !Services.prefs.getBoolPref("zia.urlbar.center-text.pop-up-left", false);
     if (!openedByClick && openOffsetX) {
       openOffsetX = 0;
       root.style.setProperty("--zia-urlbar-open-offset-x", "0px");
     }
     if (openedByClick && inputRect?.width) {
-      const dx = closedTextRect.left - inputRect.left;
+      const dx = centred ? -openOffsetX : closedTextRect.left - inputRect.left;
       const dy = closedTextRect.centerY - (inputRect.top + inputRect.height / 2);
       if (Math.abs(dx) > 0.5) {
         openOffsetX += dx;

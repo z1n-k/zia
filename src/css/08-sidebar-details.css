@@ -169,3 +169,47 @@ zen-workspace arrowscrollbox::part(scrollbox) {
   color: currentColor !important;
   opacity: 0.45 !important;
 }
+
+/* Optional (zia.spaces.collapse-icons): the spaces at the foot of the sidebar always as Zen
+   draws them when they don't fit, each but the open one a dot, its icon shown as it's
+   pointed at; narrow either way, so the row doesn't shift (#513) */
+@media -moz-pref("zia.spaces.collapse-icons") {
+  #zen-workspaces-button toolbarbutton:not([active="true"], [dragged="true"]):not(:has(> .zen-workspace-icon[no-icon="true"])) {
+    min-width: 0 !important;
+    width: 16px !important;
+    max-width: 16px !important;
+    background: transparent !important;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 4px;
+      height: 4px;
+      border-radius: 99px;
+      translate: -50% -50%;
+      background: color-mix(in srgb, var(--zen-primary-color) 10%, light-dark(rgba(0, 0, 0, 0.4), rgba(255, 255, 255, 0.4)) 90%);
+      opacity: 1;
+      pointer-events: none;
+      transition: opacity 150ms ease-in-out;
+    }
+
+    & .zen-workspace-icon {
+      opacity: 0;
+      transform: scale(0);
+      transition: opacity 150ms ease-in-out, transform 150ms ease-in-out;
+    }
+
+    &:hover {
+      &::after {
+        opacity: 0;
+      }
+
+      & .zen-workspace-icon {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  }
+}

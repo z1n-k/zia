@@ -13,7 +13,11 @@
     set("zen.widget.mac.mono-window-controls", false);
     set("zen.urlbar.replace-newtab", !Services.prefs.getBoolPref("zia.newtab.real-tab", true));
     set("zen.splitView.enable-tab-drop", !Services.prefs.getBoolPref("zia.split.drop-cards", true));
-    set("browser.urlbar.trimHttps", true);
+    // (not with "Full address" on, which shows the address as it is, #519; a choice of your own
+    // in about:config stays)
+    const trimHttps = () => set("browser.urlbar.trimHttps", !Services.prefs.getBoolPref("zia.urlbar.full-url", false));
+    trimHttps();
+    watchPrefs("zia.urlbar.full-url", trimHttps);
     // answers in the address bar: maths, and units and time zones (Firefox's own)
     set("browser.urlbar.suggest.calculator", true);
     set("browser.urlbar.unitConversion.enabled", true);

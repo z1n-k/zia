@@ -291,6 +291,7 @@
     safely("createTitleElement", createTitleElement);
     safely("watchTitleOnly", watchTitleOnly);
     safely("watchCenteredAddress", watchCenteredAddress);
+    safely("watchCenteredBar", watchCenteredBar);
     safely("watchScreenshotButtons", watchScreenshotButtons);
     safely("watchUltra", watchUltra);
     safely("addDownloadProgress", addDownloadProgress);

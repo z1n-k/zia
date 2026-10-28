@@ -8,7 +8,9 @@
 :root:not(#zia-none) screenshots-buttons {
   top: 10px !important;
   padding: 6px !important;
-  background-color: var(--zia-tab-card-bg) !important;
+  /* see-through, the page blurred behind it, as the address pop-up can be (#516) */
+  background-color: color-mix(in srgb, var(--zia-shot-card, var(--zia-tab-card-bg)) 78%, transparent) !important;
+  backdrop-filter: blur(24px) saturate(1.6) !important;
   color: rgb(255, 255, 255) !important;
   color-scheme: dark;
   border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow)) !important;
@@ -24,7 +26,7 @@
 /* ...in the toolbar's colour and ink, as the toolbar is (Zen's own colour with
    "Toolbar in the site's colour" off: Zia's card, above) */
 :root:not([zia-theme-toolbar]):not(#zia-none) screenshots-buttons {
-  background-color: var(--zia-site-bg, var(--zia-tab-card-bg)) !important;
+  --zia-shot-card: var(--zia-site-bg, var(--zia-tab-card-bg));
 }
 
 :root[zia-site-light="true"]:not([zia-theme-toolbar]):not(#zia-none) screenshots-buttons {
