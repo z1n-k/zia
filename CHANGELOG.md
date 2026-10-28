@@ -4,6 +4,19 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.112.1] — 2026-10-28
+
+### Changed
+
+- The README is rewritten: shorter, up to date, and easier to scan.
+
+### Fixed
+
+- "Full address" shows `https://`: Zia wrote Firefox's `browser.urlbar.trimHttps`
+  as your own choice at every start, which outranked its own default for it, so
+  the scheme stayed hidden. It's put back once, and left to you from then on
+  ([#519](https://github.com/z1n-k/zia/issues/519)).
+
 ## [2.112.0] — 2026-10-28
 
 ### Added
