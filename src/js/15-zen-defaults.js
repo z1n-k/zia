@@ -24,7 +24,13 @@
     set("browser.urlbar.untrimOnUserInteraction.featureGate", false);
     try {
       Services.prefs.setBoolPref("browser.urlbar.untrimOnUserInteraction", false);
-      Services.prefs.setBoolPref("browser.urlbar.trimHttps", true);
+      // (trimHttps was written as your own choice at every start, which outranked the default
+      // above, "Full address" included, and any choice of yours: put back once, it's left to
+      // the default from then on, #519)
+      if (!Services.prefs.getBoolPref("zia.trim-https-reset", false)) {
+        Services.prefs.clearUserPref("browser.urlbar.trimHttps");
+        Services.prefs.setBoolPref("zia.trim-https-reset", true);
+      }
     } catch (err) {
       noteError("zen defaults: set", err);
     }
