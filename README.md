@@ -310,12 +310,3 @@ Zia follows your system's reduced motion setting. To let Zen animate anyway, add
 `zia.uc.js` and `chrome.css` are built from the parts in `src/js` and `src/css`, one file per feature. Edit the parts, then run `scripts/build.sh`. `scripts/build.sh --check` runs on every push.
 
 </details>
-
-## Credits
-
-- Icons: [Tabler Icons](https://tabler.io/icons) (MIT).
-- Ultra's effects: ported from [Libraries.dev](https://libraries.dev) by Jakub Antalik (MIT).
-- Picture-in-picture's full peek: from [PiP Tuck Away](https://github.com/apoapostolov/Zen-PiP-Tuck-Away) by Apostol Apostolov.
-- Download names: built from [Tidy Downloads](https://github.com/Vertex-Mods/Zen-Tidy-Downloads) by Bxthesda and Zylaah, with their permission.
-
-Zia is independent and unofficial, and not affiliated with any browser maker. [MIT licence](LICENSE).
