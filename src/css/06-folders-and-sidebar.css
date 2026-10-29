@@ -207,6 +207,13 @@
   transition: translate 0.1s ease-in-out;
 }
 
+/* (optional) without Zen's slash between that button and the name */
+@media -moz-pref("zia.tabs.no-pin-slash") {
+  .tabbrowser-tab:not([zen-essential]) .tab-reset-pin-button::after {
+    display: none !important;
+  }
+}
+
 .tabbrowser-tab:not([zen-essential]):is([zen-show-sublabel], [zen-pinned-changed="true"]:has(.tab-reset-pin-button:hover)) .tab-label-container {
   translate: 0 -2px;
 }

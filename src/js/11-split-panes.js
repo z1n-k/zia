@@ -281,6 +281,7 @@
     for (const container of containers) {
       container.querySelector(".zia-pane-bar")?.toggleAttribute("first", container === leftmost?.container);
     }
+    placeWindowButtons(containers);
     placeOpenedAddressBar(containers);
     placePaneExtensions(containers);
   }
@@ -333,6 +334,30 @@
     root.style.setProperty("--zia-pane-url-top", `${Math.round(rect.top + 4)}px`);
     root.style.setProperty("--zia-pane-url-width", `${Math.round(rect.width - 12)}px`);
     root.style.setProperty("--zia-pane-url-bottom", `${Math.round(window.innerHeight - rect.bottom + 4)}px`);
+  }
+
+  // The window's buttons (minimise, maximise, close) at the end of the top-right pane's
+  // toolbar: they're in the main toolbar, which a split hides (#524). Room is kept for them
+  // there, and they're drawn over it.
+  function placeWindowButtons(containers) {
+    let corner = null;
+    for (const container of containers) {
+      const bar = container.querySelector(".zia-pane-bar");
+      bar?.removeAttribute("window-buttons");
+      const rect = bar?.getBoundingClientRect();
+      if (rect && (!corner || rect.top < corner.rect.top - 1 || (Math.abs(rect.top - corner.rect.top) <= 1 && rect.right > corner.rect.right))) {
+        corner = { bar, rect };
+      }
+    }
+    const box = document.querySelector("#nav-bar .titlebar-buttonbox-container");
+    const width = box?.getBoundingClientRect().width || 0;
+    if (!corner || !width) {
+      return;
+    }
+    corner.bar.setAttribute("window-buttons", "true");
+    root.style.setProperty("--zia-split-buttons-top", `${Math.round(corner.rect.top)}px`);
+    root.style.setProperty("--zia-split-buttons-right", `${Math.round(window.innerWidth - corner.rect.right)}px`);
+    root.style.setProperty("--zia-split-buttons-width", `${Math.ceil(width)}px`);
   }
 
   function schedulePanes() {

@@ -36,9 +36,24 @@
     pointer-events: auto !important;
   }
 
-  & #nav-bar > :not(#nav-bar-customization-target),
+  & #nav-bar > :not(#nav-bar-customization-target, .titlebar-buttonbox-container),
   & #nav-bar-customization-target > :not(#urlbar-container) {
     visibility: hidden !important;
+  }
+
+  /* The window's buttons, over the end of the top-right pane's toolbar (11-split-panes.js,
+     #524) */
+  &:has(.zia-pane-bar[window-buttons]) #nav-bar > .titlebar-buttonbox-container {
+    position: fixed !important;
+    top: var(--zia-split-buttons-top) !important;
+    right: var(--zia-split-buttons-right) !important;
+    height: var(--zia-toolbar-height) !important;
+    z-index: 4 !important;
+    color: rgb(251, 251, 254);
+  }
+
+  &:has(.zia-pane-bar[window-buttons][light]) #nav-bar > .titlebar-buttonbox-container {
+    color: rgb(28, 28, 30);
   }
 
   & #urlbar:not([breakout-extend]) {
@@ -89,6 +104,10 @@
     --zia-pane-hover: rgba(0, 0, 0, 0.07);
     border-bottom-color: rgba(0, 0, 0, 0.12);
   }
+}
+
+.zia-pane-bar[window-buttons] {
+  padding-inline-end: var(--zia-split-buttons-width) !important;
 }
 
 .zia-pane-extensions {
