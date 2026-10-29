@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.112.6] — 2026-10-29
+
+### Fixed
+
+- **New tabs start in the address bar** works with **Search page in new tabs**:
+  the search page's address is cleared, ready to type. With the setting off, the
+  address bar now lets go of the cursor, so the page's own search box gets it
+  ([#518](https://github.com/z1n-k/zia/issues/518), thanks @thoroughmas).
+
 ## [2.112.5] — 2026-10-29
 
 ### Added
