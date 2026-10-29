@@ -72,6 +72,7 @@
     "zia.tabs.no-glow": ["Hide selected-tab glow", ""],
     "zia.tabs.favicon-glow": ["Site-tinted glow", "The selected tab's glow and sound bars take the site's colours."],
     "zia.tabs.dim-asleep": ["Dim asleep tabs", "Also essentials and folders."],
+    "zia.tabs.no-pin-slash": ["Hide pinned-tab slash", "In a pinned tab that's moved off its page. Its icon still takes it back."],
     "zia.glass": ["Glass edges", "Essentials, cards and Library buttons edged like macOS Tahoe's glass, lighting up where pressed. Off: Zia's fine shine."],
     "zia.page.rounding": ["Zia page corners", "Off: Zen's."],
     "zia.page.edge-to-edge": ["Edge-to-edge page", "No gap or shadow around the page."],

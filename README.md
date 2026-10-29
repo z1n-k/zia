@@ -184,6 +184,7 @@ Open **Zia Settings** from the **⋯** menu, or find them under Zia in Sine. Alm
 | Hide selected-tab glow | Off |
 | Site-tinted glow | Off |
 | Dim asleep tabs | Off |
+| Hide pinned-tab slash | Off |
 | Glass edges | Off |
 | Zia page corners | On |
 | Edge-to-edge page | Off |

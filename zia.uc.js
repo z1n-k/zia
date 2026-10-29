@@ -5677,6 +5677,7 @@
     for (const container of containers) {
       container.querySelector(".zia-pane-bar")?.toggleAttribute("first", container === leftmost?.container);
     }
+    placeWindowButtons(containers);
     placeOpenedAddressBar(containers);
     placePaneExtensions(containers);
   }
@@ -5729,6 +5730,30 @@
     root.style.setProperty("--zia-pane-url-top", `${Math.round(rect.top + 4)}px`);
     root.style.setProperty("--zia-pane-url-width", `${Math.round(rect.width - 12)}px`);
     root.style.setProperty("--zia-pane-url-bottom", `${Math.round(window.innerHeight - rect.bottom + 4)}px`);
+  }
+
+  // The window's buttons (minimise, maximise, close) at the end of the top-right pane's
+  // toolbar: they're in the main toolbar, which a split hides (#524). Room is kept for them
+  // there, and they're drawn over it.
+  function placeWindowButtons(containers) {
+    let corner = null;
+    for (const container of containers) {
+      const bar = container.querySelector(".zia-pane-bar");
+      bar?.removeAttribute("window-buttons");
+      const rect = bar?.getBoundingClientRect();
+      if (rect && (!corner || rect.top < corner.rect.top - 1 || (Math.abs(rect.top - corner.rect.top) <= 1 && rect.right > corner.rect.right))) {
+        corner = { bar, rect };
+      }
+    }
+    const box = document.querySelector("#nav-bar .titlebar-buttonbox-container");
+    const width = box?.getBoundingClientRect().width || 0;
+    if (!corner || !width) {
+      return;
+    }
+    corner.bar.setAttribute("window-buttons", "true");
+    root.style.setProperty("--zia-split-buttons-top", `${Math.round(corner.rect.top)}px`);
+    root.style.setProperty("--zia-split-buttons-right", `${Math.round(window.innerWidth - corner.rect.right)}px`);
+    root.style.setProperty("--zia-split-buttons-width", `${Math.ceil(width)}px`);
   }
 
   function schedulePanes() {
@@ -6488,6 +6513,7 @@
       set(name, true);
     }
     set("zia.tabs.favicon-glow", false);
+    set("zia.tabs.no-pin-slash", false);
     set("zia.swipe.dia-arrow", true);
     // Dimming asleep tabs was on by default for a few releases and is now
     // off: switched off once for anyone who had it from then.
@@ -21960,6 +21986,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     "zia.tabs.no-glow": ["Hide selected-tab glow", ""],
     "zia.tabs.favicon-glow": ["Site-tinted glow", "The selected tab's glow and sound bars take the site's colours."],
     "zia.tabs.dim-asleep": ["Dim asleep tabs", "Also essentials and folders."],
+    "zia.tabs.no-pin-slash": ["Hide pinned-tab slash", "In a pinned tab that's moved off its page. Its icon still takes it back."],
     "zia.glass": ["Glass edges", "Essentials, cards and Library buttons edged like macOS Tahoe's glass, lighting up where pressed. Off: Zia's fine shine."],
     "zia.page.rounding": ["Zia page corners", "Off: Zen's."],
     "zia.page.edge-to-edge": ["Edge-to-edge page", "No gap or shadow around the page."],

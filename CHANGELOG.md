@@ -4,6 +4,19 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.112.4] — 2026-10-29
+
+### Added
+
+- **Hide pinned-tab slash** (off by default): no slash between the icon and the
+  name of a pinned tab that's moved off its page. Its icon still takes it back.
+
+### Fixed
+
+- The window's buttons (minimise, maximise, close) show in split view, at the
+  end of the top-right pane's toolbar: they were in the main toolbar, which a
+  split hides ([#524](https://github.com/z1n-k/zia/issues/524), thanks @Arcrous).
+
 ## [2.112.3] — 2026-10-28
 
 ### Changed

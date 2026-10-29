@@ -46,6 +46,7 @@
       set(name, true);
     }
     set("zia.tabs.favicon-glow", false);
+    set("zia.tabs.no-pin-slash", false);
     set("zia.swipe.dia-arrow", true);
     // Dimming asleep tabs was on by default for a few releases and is now
     // off: switched off once for anyone who had it from then.
