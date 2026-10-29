@@ -150,15 +150,27 @@
     }
   }
 
+  // Typing in the address bar, told apart from the address a new tab opens: Firefox keeps that
+  // in the browser as if typed until the page arrives, so the bar marks it typed too, and it was
+  // taken for typing, the search page's address never cleared and the cursor never let go (#518)
+  function typedInUrlbar(browser) {
+    if (!gURLBar?.valueIsTyped || !gURLBar.value) {
+      return false;
+    }
+    try {
+      const uri = Services.io.newURI(browser?.userTypedValue);
+      return !isSearchHome(uri) && uri.spec !== currentNewTabUrl();
+    } catch (err) {
+      return true;
+    }
+  }
+
   function clearNewTabAddress(browser, tab, uri) {
     const clear = () => {
       if (gBrowser.selectedTab !== tab || tab.ziaTypedInPage || !tab.ziaBlankAddress) {
         return;
       }
-      // (what's in the bar is the page's own address unless it was typed, as Firefox marks
-      // it: guessed instead by whether it was part of the page's address, the bar read
-      // mid-load, still another tab's, passed for typing, and it was never cleared again, #518)
-      if (gURLBar.valueIsTyped && gURLBar.value) {
+      if (typedInUrlbar(browser)) {
         tab.ziaBlankAddress = false;
         return;
       }
@@ -258,9 +270,8 @@
     gURLBar?.inputField?.addEventListener("input", touch, { once: true });
     const letGo = () => {
       try {
-        // (typed in, it stays; the search page's own address, written in as it loads, doesn't
-        // keep it: it held on to the cursor then, with the setting off too, #518)
-        if (touched || gURLBar?.valueIsTyped || !gURLBar?.focused || gBrowser.selectedTab !== tab) {
+        // (typed in, it stays; the new tab page's own address, written in as it loads, doesn't keep it)
+        if (touched || typedInUrlbar(tab.linkedBrowser) || !gURLBar?.focused || gBrowser.selectedTab !== tab) {
           return;
         }
         gURLBar.view?.close();
