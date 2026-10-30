@@ -2715,8 +2715,9 @@ zen-split-fake-tab {
         opacity: var(--zia-folder-mark-opacity);
         /* (drawn in the text's colour as a stroke, not a filled square cut to shape by a
            mask: turned to point right, at a scale that makes it a part pixel wide, as on
-           Windows at 125%, the square's edge showed as a line over a closed folder's arrow) */
-        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='context-stroke' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+           Windows at 125%, the square's edge showed as a line over a closed folder's arrow.
+           A file, not an inline SVG: Zen 1.24's Firefox left an inline one's stroke blank) */
+        background: url("chrome://sine/content/zia/icons/folder-chevron.svg") center / contain no-repeat;
         -moz-context-properties: stroke;
         stroke: currentColor;
         transform-origin: center;
@@ -3284,7 +3285,7 @@ zen-folder > .tab-group-label-container > .zia-folder-close:hover {
    redrawn to size at every step of a sidebar resize
    (--zia-slot-dashes-live), so they never stretch. */
 :root {
-  --zia-slot-dashes-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Crect width='100%25' height='100%25' rx='9.5' fill='none' stroke='context-stroke' stroke-width='2' stroke-dasharray='3 3'/%3E%3C/svg%3E");
+  --zia-slot-dashes-image: url("chrome://sine/content/zia/icons/slot-dashes.svg");
 }
 
 :root[zen-sidebar-expanded="true"] zen-folder[zia-empty] {
