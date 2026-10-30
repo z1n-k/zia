@@ -3001,8 +3001,14 @@ zen-split-fake-tab {
 }
 
 #tabbrowser-arrowscrollbox-periphery > #tabs-newtab-button .zen-tab-sublabel {
-  inset-inline-start: 32px !important;
-  width: calc(100% - 34px) !important;
+  inset-inline-start: 33px !important;
+  width: calc(100% - 35px) !important;
+}
+
+/* (Zen lifts "Paste & Search" and the address under it by 6px both, which left the address
+   touching the name in Zia's shorter row: it's lifted 4px, so the pair sits centred, apart) */
+#tabbrowser-arrowscrollbox-periphery > #tabs-newtab-button[zen-paste-and-search] .zen-tab-sublabel {
+  transform: translateY(-4px) !important;
 }
 
 /* "New Tab" is the size and weight of the tabs' names (it kept Zen's own,

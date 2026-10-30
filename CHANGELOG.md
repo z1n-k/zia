@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.112.8] — 2026-10-30
+
+### Fixed
+
+- The new tab button's "Paste & Search" preview has room under the name, and the
+  address starts in line with it.
+
 ## [2.112.7] — 2026-10-30
 
 ### Changed
