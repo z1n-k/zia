@@ -3594,11 +3594,45 @@
       pending = null;
       document.documentElement.removeAttribute("zia-dragging-tab");
     };
+    // A tab (or a split) goes with the drag instead: moved into the space now showing, and
+    // dragged on there as before, under the pointer and inside the sidebar until pulled out to
+    // the page. Handed to Zen, its loose picture went anywhere, over the split's panes too.
+    // (A folder, a tab in one, or several at once: still handed to Zen.)
+    const followIntoSpace = (event) => {
+      const { tab, folder, companions } = drag;
+      const space = window.gZenWorkspaces?.activeWorkspace;
+      const group = tab?.group;
+      if (folder || companions || !tab?.isConnected || (group && !group.hasAttribute?.("split-view-group")) || !space) {
+        releaseToZen(event);
+        return;
+      }
+      hideThumb(true);
+      clearMoved();
+      easeOutWidth(drag.split || tab);
+      makeRoom(null);
+      dropProxy();
+      drag = null;
+      pending = null;
+      try {
+        window.gZenWorkspaces.moveTabsToWorkspace([tab], space);
+      } catch (err) {
+        noteError("tab dragging: follow into space", err);
+        document.documentElement.removeAttribute("zia-dragging-tab");
+        return;
+      }
+      begin(tab, event);
+      if (drag) {
+        // (measured from the tab's new place, at the end of the list: under the pointer now)
+        const box = (drag.moving || tab).getBoundingClientRect();
+        drag.clientY = box.top + box.height / 2;
+        drag.screenY = 0;
+      }
+    };
     window.addEventListener(
       "dragover",
       (event) => {
         if (drag && drag.space !== window.gZenWorkspaces?.activeWorkspace) {
-          releaseToZen(event);
+          followIntoSpace(event);
         }
       },
       true
