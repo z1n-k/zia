@@ -214,10 +214,6 @@
   }
 }
 
-.tabbrowser-tab:not([zen-essential]):is([zen-show-sublabel], [zen-pinned-changed="true"]:has(.tab-reset-pin-button:hover)) .tab-label-container {
-  translate: 0 -2px;
-}
-
 .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-background,
 .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-background::before,
 .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-background::after {
@@ -396,8 +392,19 @@
 
 /* The + and "New Tab" line up with the tabs' icons and names above (they
    sat a pixel and a half to the left) */
-:is(#tabs-newtab-button, #vertical-tabs-newtab-button) > :is(.toolbarbutton-icon, .toolbarbutton-text) {
+:is(#tabs-newtab-button, #vertical-tabs-newtab-button) > :is(.toolbarbutton-icon, .toolbarbutton-text, .zen-newtab-sublabel-anchor) {
   translate: 1.5px 0;
+}
+
+/* (Zen 1.24 moves the + over by 2px a side, and its "Paste & Search" preview with it: measured
+   above already, so without it, and the preview under "New Tab" as it was before) */
+:is(#tabs-newtab-button, #vertical-tabs-newtab-button) > .toolbarbutton-icon {
+  margin-inline: 0 !important;
+}
+
+#tabbrowser-arrowscrollbox-periphery > #tabs-newtab-button .zen-tab-sublabel {
+  inset-inline-start: 32px !important;
+  width: calc(100% - 34px) !important;
 }
 
 /* "New Tab" is the size and weight of the tabs' names (it kept Zen's own,
@@ -405,6 +412,28 @@
 :is(#tabs-newtab-button, #vertical-tabs-newtab-button) > .toolbarbutton-text {
   font-size: var(--zia-text-size) !important;
   font-weight: var(--zia-tab-weight) !important;
+}
+
+/* Zen 1.24's pill when the open tab is scrolled out of sight (it takes you back to it): one of
+   Zia's tiles, the essentials' colour with what's under it blurred so it reads over the tabs,
+   in place of Zen's pale capsule that grew on hover */
+.zen-workspace-scroll-to-tab {
+  background: var(--zia-essential-bg) !important;
+  backdrop-filter: blur(16px) !important;
+  color: var(--zia-sidebar-ink, rgb(255, 255, 255)) !important;
+  border-radius: var(--zia-tab-radius) !important;
+  corner-shape: round !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) !important;
+  transition: background-color 0.12s ease !important;
+
+  &:hover:not(:active) {
+    scale: 1 !important;
+    background-color: color-mix(in srgb, var(--zia-sidebar-ink, rgb(255, 255, 255)) 8%, var(--zia-essential-bg)) !important;
+  }
+
+  & .zen-workspace-scroll-to-tab-arrow {
+    opacity: 0.6;
+  }
 }
 
 :is(#tabs-newtab-button, #vertical-tabs-newtab-button):hover {

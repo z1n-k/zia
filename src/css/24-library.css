@@ -52,6 +52,19 @@
       padding-inline: var(--zia-lib-side-start) var(--zia-lib-side-end) !important;
     }
 
+    /* Editing the sections (Zen 1.24): each one's remove button sits 6px out over its top
+       corner, and the column scrolls now, so the top one's was cut off. Room above, taken
+       back so the sections stay put; the dashed edge on the sections' own rounding. */
+    &[customizing] #zen-library-sidebar-tabs {
+      padding-top: 7px !important;
+      margin-top: -7px !important;
+    }
+
+    &[customizing] .zen-library-tab {
+      border-radius: var(--zia-tab-radius) !important;
+      corner-shape: round !important;
+    }
+
     & .zen-library-tab {
       z-index: 1;
       /* (Zen's animated icons at the 18px of Zia's line icons) */
