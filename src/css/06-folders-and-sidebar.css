@@ -396,21 +396,45 @@
   translate: 1.5px 0;
 }
 
-/* (Zen 1.24 moves the + over by 2px a side, and its "Paste & Search" preview with it: measured
-   above already, so without it, and the preview under "New Tab" as it was before) */
+/* (Zen 1.24 moves the + over by 2px a side: measured above already, so without it) */
 :is(#tabs-newtab-button, #vertical-tabs-newtab-button) > .toolbarbutton-icon {
   margin-inline: 0 !important;
 }
 
-#tabbrowser-arrowscrollbox-periphery > #tabs-newtab-button .zen-tab-sublabel {
-  inset-inline-start: 33px !important;
-  width: calc(100% - 35px) !important;
-}
+/* Holding Cmd or Ctrl over it (Zen 1.24's Paste & Search): one line, "Paste" and then the
+   address, softer, where "New Tab" is. Zen's two lines, its name over the address, were cramped
+   in Zia's shorter row. ("Paste & Search" kept, unseen, so nothing moves.) */
+#tabbrowser-arrowscrollbox-periphery > #tabs-newtab-button[zen-paste-and-search] {
+  & > .toolbarbutton-text {
+    visibility: hidden !important;
+  }
 
-/* (Zen lifts "Paste & Search" and the address under it by 6px both, which left the address
-   touching the name in Zia's shorter row: it's lifted 4px, so the pair sits centred, apart) */
-#tabbrowser-arrowscrollbox-periphery > #tabs-newtab-button[zen-paste-and-search] .zen-tab-sublabel {
-  transform: translateY(-4px) !important;
+  & > .zen-newtab-sublabel-anchor {
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px;
+    box-sizing: border-box;
+    padding-inline: 33px 10px;
+    font-size: var(--zia-text-size) !important;
+    font-weight: var(--zia-tab-weight) !important;
+
+    &::before {
+      content: "Paste";
+      flex: none;
+    }
+  }
+
+  & .zen-tab-sublabel {
+    position: static !important;
+    transform: none !important;
+    width: auto !important;
+    flex: 1;
+    min-width: 0;
+    margin: 0 !important;
+    font-size: inherit !important;
+    line-height: normal !important;
+    opacity: 0.5 !important;
+  }
 }
 
 /* "New Tab" is the size and weight of the tabs' names (it kept Zen's own,

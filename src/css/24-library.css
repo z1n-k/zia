@@ -226,6 +226,65 @@
       margin: 12px 10px 4px !important;
     }
 
+    /* Space routing (Zen 1.24 moved it into the Library): its address field and space menus
+       as the search field, Cancel as the filters' Done, Add route the one button lit, as a
+       chosen filter is, and the heading for external links as the filters' are. (The form's
+       heading too, as the filters': Zen's bold read heavy.) */
+    & .zen-library-filter-header h2 {
+      font-size: 14px !important;
+      font-weight: 600 !important;
+    }
+
+    & :is(.zen-library-routing-reference, .zen-library-routing-select) {
+      height: 34px !important;
+      font-size: var(--zia-text-size) !important;
+      background: var(--zia-lib-field) !important;
+      border-radius: var(--zia-tab-radius) !important;
+      corner-shape: round !important;
+    }
+
+    & .zen-library-routing-select:is(:hover, [menu-open]) {
+      background: color-mix(in srgb, var(--zia-lib-ink) 5%, var(--zia-lib-field)) !important;
+    }
+
+    & .zen-library-routing-form-buttons button {
+      padding: 7px 14px !important;
+      font-size: var(--zia-text-size) !important;
+      font-weight: 500 !important;
+      border-radius: calc(var(--zia-glass-button-radius) * var(--zia-squircle-grow)) !important;
+      corner-shape: var(--zia-squircle) !important;
+      box-shadow: var(--zia-glass-edge) !important;
+      background: var(--zia-lib-tile) !important;
+
+      &:hover {
+        background: var(--zia-lib-tile-hover) !important;
+      }
+
+      &.zen-library-routing-save {
+        background: var(--zia-lib-ink) !important;
+        color: rgb(28, 28, 32) !important;
+
+        &:hover {
+          background: color-mix(in srgb, var(--zia-lib-ink) 88%, transparent) !important;
+        }
+      }
+    }
+
+    & .zen-library-routing-match {
+      font-weight: 600 !important;
+    }
+
+    & .zen-library-routing-footer {
+      margin-inline: var(--zia-lib-pad) !important;
+      border-top-color: color-mix(in srgb, var(--zia-lib-ink) 7%, transparent) !important;
+
+      & h3 {
+        font-size: 11.5px !important;
+        font-weight: 500 !important;
+        opacity: 0.55 !important;
+      }
+    }
+
     & .zen-library-search-results {
       padding: 0 var(--zia-lib-pad) 8px !important;
       /* (scrolls without a bar, as the row of spaces: Zen hides it while the
@@ -525,7 +584,7 @@
   :root[zia-light]:not(#zia-none) zen-library {
     --zia-lib-field: rgba(0, 0, 0, 0.05);
 
-    & .zen-library-filter-chip[active] {
+    & :is(.zen-library-filter-chip[active], .zen-library-routing-save) {
       color: rgb(255, 255, 255) !important;
     }
 

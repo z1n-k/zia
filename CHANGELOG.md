@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.112.9] — 2026-10-30
+
+### Changed
+
+- Holding Cmd or Ctrl over the new tab button shows "Paste" and the copied address
+  on one line, the address softer, in place of Zen's two cramped lines.
+- Space routing, now in Zen's Library, is drawn the Zia way: its address field
+  and space menus as the search field, Cancel as Zia's buttons, Add route the one
+  lit button, and calmer headings.
+
 ## [2.112.8] — 2026-10-30
 
 ### Fixed
