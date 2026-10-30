@@ -600,6 +600,13 @@
         }
         if (item.bounce) {
           animate.call(item.bounce.container, item.bounce.keyframes, { duration: FOLDER_SPRING_MS });
+          // (a space's pinned section: its line is inside it, so the margin moved only the tabs
+          // below, and the line stood still as they bounced past it; it moves with them)
+          const line = item.bounce.container.querySelector(":scope > .pinned-tabs-container-separator");
+          if (line) {
+            const frames = item.bounce.keyframes.map(({ marginBottom, ...frame }) => ({ ...frame, translate: `0 ${marginBottom}` }));
+            animate.call(line, frames, { duration: FOLDER_SPRING_MS });
+          }
         }
         return animate.call(this, item.keyframes, item.options);
       }

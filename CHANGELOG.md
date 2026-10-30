@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.113.2] — 2026-10-30
+
+### Fixed
+
+- A tab dragged to another space moves into it as the space changes and is dragged
+  on there as before: under the pointer and inside the sidebar until pulled out to
+  the page. It had floated free as Zen's picture, over a split's panes too.
+- Clicking a space's name with the open tab in a closed folder: the line under the
+  pinned tabs bounces with the tabs below it.
+
 ## [2.113.1] — 2026-10-30
 
 ### Fixed
