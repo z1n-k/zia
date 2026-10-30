@@ -1234,6 +1234,17 @@
   },
   {
     "type": "separator",
+    "label": "Install count",
+    "id": "zia-section-install-count"
+  },
+  {
+    "type": "checkbox",
+    "label": "Count this install (once a day, with nothing about you or your browsing)",
+    "property": "zia.install-count",
+    "defaultValue": true
+  },
+  {
+    "type": "separator",
     "label": "Welcome tour",
     "id": "zia-section-welcome"
   },

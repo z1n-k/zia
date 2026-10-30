@@ -3562,12 +3562,18 @@
     // Held over a space's icon, Zen switches to that space mid-drag, and the rest of the drag
     // is Zen's: Zia's moved the tab's row in the space it left, hidden now, so the tab
     // vanished, and placed it by that space's rows, in the wrong spot when it came back (#488).
-    // Its drag ends there, as if let go nowhere, and Zen takes the tab on from there.
-    window.addEventListener("ZenWorkspacesUIUpdate", () => {
-      if (drag && drag.space !== window.gZenWorkspaces?.activeWorkspace) {
-        settle();
-      }
-    });
+    // Its drag ends there, as if let go nowhere, and Zen takes the tab on from there. (Seen
+    // as the drag goes on: Zen's ZenWorkspacesUIUpdate, listened for before, only comes at
+    // start-up, never on a switch.)
+    window.addEventListener(
+      "dragover",
+      () => {
+        if (drag && drag.space !== window.gZenWorkspaces?.activeWorkspace) {
+          settle();
+        }
+      },
+      true
+    );
 
     const settle = () => {
       const droppedTab = drag?.tab || essentialDropped || null;
