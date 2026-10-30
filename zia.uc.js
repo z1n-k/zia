@@ -2843,7 +2843,9 @@
 
   function noteFolderMotion(event) {
     const group = event.target;
-    if (!isFolder(group)) {
+    // (a space's pinned tabs, hidden or shown by clicking its name, too: holding the open tab,
+    // in a folder there or not, they shut without a bounce, as Zen's slide is skipped then)
+    if (!isFolder(group) && group?.localName !== "zen-workspace-collapsible-pins") {
       return;
     }
     const motion = {
@@ -6512,6 +6514,7 @@
     } catch (err) {
       noteError("zen defaults: set", err);
     }
+    set("zia.install-count", true);
     for (const feature of FEATURES) {
       set(`zia.features.${feature}`, true);
     }
@@ -15295,12 +15298,18 @@
     // Held over a space's icon, Zen switches to that space mid-drag, and the rest of the drag
     // is Zen's: Zia's moved the tab's row in the space it left, hidden now, so the tab
     // vanished, and placed it by that space's rows, in the wrong spot when it came back (#488).
-    // Its drag ends there, as if let go nowhere, and Zen takes the tab on from there.
-    window.addEventListener("ZenWorkspacesUIUpdate", () => {
-      if (drag && drag.space !== window.gZenWorkspaces?.activeWorkspace) {
-        settle();
-      }
-    });
+    // Its drag ends there, as if let go nowhere, and Zen takes the tab on from there. (Seen
+    // as the drag goes on: Zen's ZenWorkspacesUIUpdate, listened for before, only comes at
+    // start-up, never on a switch.)
+    window.addEventListener(
+      "dragover",
+      () => {
+        if (drag && drag.space !== window.gZenWorkspaces?.activeWorkspace) {
+          settle();
+        }
+      },
+      true
+    );
 
     const settle = () => {
       const droppedTab = drag?.tab || essentialDropped || null;
@@ -22081,6 +22090,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     "extensions.downloads.openai_compat_base_url": ["Endpoint address", ""],
     "extensions.downloads.openai_compat_model": ["Endpoint model", ""],
     "extensions.downloads.enable_debug": ["Renaming log", ""],
+    "zia.install-count": ["Count this install", "Once a day, with nothing about you or your browsing. Helps show how many use Zia."],
     "zia.welcome.show": ["Tour after updates", "Shows the welcome tour when an update brings something new."],
     "zia.welcome.again": ["Show the welcome tour", "Turns itself back off."],
     "zia.welcome.whats-new-again": ["Show what's new", "For this version. Turns itself back off."],
@@ -22416,6 +22426,40 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     });
   }
 
+  // How many use Zia (on unless switched off, zia.install-count): once a day a tiny file is
+  // downloaded from the repository's "install-count" release, and GitHub counts its downloads.
+  // Nothing is sent, no ID and no settings; all that's kept is the day it last counted, here.
+  // A daily Action (install-count.yml) writes the total down, so a day's rise is about how many
+  // installs were in use that day.
+  const INSTALL_COUNT_URL = "https://github.com/z1n-k/zia/releases/download/install-count/ping.txt";
+  const INSTALL_COUNT_DAY = "zia.install-count.day";
+
+  function countInstallToday() {
+    if (!Services.prefs.getBoolPref("zia.install-count", true) || window.PrivateBrowsingUtils?.isWindowPrivate(window)) {
+      return;
+    }
+    const today = new Date().toISOString().slice(0, 10);
+    const last = Services.prefs.getStringPref(INSTALL_COUNT_DAY, "");
+    if (last === today) {
+      return;
+    }
+    // (marked before it's sent: every window checks, and only the first may count; put back
+    // if it didn't get through, so a later check tries again)
+    Services.prefs.setStringPref(INSTALL_COUNT_DAY, today);
+    fetch(INSTALL_COUNT_URL, { cache: "no-store", credentials: "omit", referrerPolicy: "no-referrer" })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+      })
+      .catch(() => Services.prefs.setStringPref(INSTALL_COUNT_DAY, last));
+  }
+
+  // a minute after the window opens, and every few hours for a window left open for days
+  function watchInstallCount() {
+    setTimeout(countInstallToday, 60 * 1000);
+    setInterval(countInstallToday, 4 * 60 * 60 * 1000);
+  }
   function safely(name, fn) {
     try {
       fn();
@@ -22871,6 +22915,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     safely("loadTidyDownloads", loadTidyDownloads);
     safely("watchLiquidGlass", watchLiquidGlass);
     safely("fixSettingsConditions", fixSettingsConditions);
+    safely("watchInstallCount", watchInstallCount);
 
     updateColor();
     updateTitle();

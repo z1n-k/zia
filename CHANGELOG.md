@@ -4,6 +4,22 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.113.0] — 2026-10-30
+
+### Added
+
+- **Count this install** (on, in Zia Settings): once a day Zia downloads a tiny
+  file from its GitHub release so GitHub can count how many use Zia. Nothing about
+  you or your browsing is sent, and there's no ID. Switch it off any time.
+
+### Fixed
+
+- A tab dragged to another space (held over its icon) stays in sight as the space
+  changes, and lands where you let go; it had vanished for the rest of the drag.
+- Clicking a space's name bounces its pinned tabs shut and open again when the open
+  tab is in a closed folder there; only that tab stayed, and it moved without the
+  bounce.
+
 ## [2.112.9] — 2026-10-30
 
 ### Changed

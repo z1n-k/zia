@@ -155,6 +155,7 @@
     "extensions.downloads.openai_compat_base_url": ["Endpoint address", ""],
     "extensions.downloads.openai_compat_model": ["Endpoint model", ""],
     "extensions.downloads.enable_debug": ["Renaming log", ""],
+    "zia.install-count": ["Count this install", "Once a day, with nothing about you or your browsing. Helps show how many use Zia."],
     "zia.welcome.show": ["Tour after updates", "Shows the welcome tour when an update brings something new."],
     "zia.welcome.again": ["Show the welcome tour", "Turns itself back off."],
     "zia.welcome.whats-new-again": ["Show what's new", "For this version. Turns itself back off."],

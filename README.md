@@ -259,6 +259,8 @@ Open **Zia Settings** from the **⋯** menu, or find them under Zia in Sine. Alm
 | AI service | Mistral AI |
 | The service's key, model and address | Per service |
 | Renaming log | Off |
+| **Install count** | — |
+| Count this install | On |
 | **Welcome tour** | — |
 | Tour after updates | On |
 | Show the welcome tour | Off |
@@ -296,6 +298,7 @@ Mostly as defaults, so a value you set yourself in `about:config` is kept. The e
 
 - Zia is in beta. It's tested on macOS, Windows and Linux, and looks its best in dark mode.
 - **Collapsed Sidebar** isn't supported yet.
+- **Install count:** once a day, Zia downloads a tiny file from this repository so GitHub can count how many use it. Nothing about you or your browsing is sent, and there's no ID. Turn it off with **Count this install** in Zia Settings.
 - Other mods may conflict. If something looks off, turn them off and add them back one at a time, or [open an issue](https://github.com/z1n-k/zia/issues).
 
 <details>

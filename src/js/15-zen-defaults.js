@@ -34,6 +34,7 @@
     } catch (err) {
       noteError("zen defaults: set", err);
     }
+    set("zia.install-count", true);
     for (const feature of FEATURES) {
       set(`zia.features.${feature}`, true);
     }

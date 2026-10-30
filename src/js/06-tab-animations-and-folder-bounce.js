@@ -377,7 +377,9 @@
 
   function noteFolderMotion(event) {
     const group = event.target;
-    if (!isFolder(group)) {
+    // (a space's pinned tabs, hidden or shown by clicking its name, too: holding the open tab,
+    // in a folder there or not, they shut without a bounce, as Zen's slide is skipped then)
+    if (!isFolder(group) && group?.localName !== "zen-workspace-collapsible-pins") {
       return;
     }
     const motion = {

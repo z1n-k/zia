@@ -453,6 +453,7 @@
     safely("loadTidyDownloads", loadTidyDownloads);
     safely("watchLiquidGlass", watchLiquidGlass);
     safely("fixSettingsConditions", fixSettingsConditions);
+    safely("watchInstallCount", watchInstallCount);
 
     updateColor();
     updateTitle();
