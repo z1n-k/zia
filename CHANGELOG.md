@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.113.3] — 2026-10-30
+
+### Fixed
+
+- Folders' arrows are back on Zen 1.24, as is the dashed outline where a tab dropped
+  into an empty folder will go. Both had gone blank.
+
 ## [2.113.2] — 2026-10-30
 
 ### Fixed
