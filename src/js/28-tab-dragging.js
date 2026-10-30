@@ -43,8 +43,13 @@
     window.addEventListener("dragstart", (event) => (libraryDragging = !!inLibrary(event)), true);
     window.addEventListener("dragend", () => (libraryDragging = false), true);
 
+    // (handed to Zen mid-drag, by a switch of space: Zen's own picture of the tab, as Zia's
+    // rows stay in the space it left, releaseToZen)
+    let zenDragImage = false;
+    window.addEventListener("dragstart", () => (zenDragImage = false), true);
     const isTabGhost = (node) =>
       !libraryDragging &&
+      !zenDragImage &&
       (!!(node?.querySelector?.("[drag-image]") || node?.hasAttribute?.("drag-image")) ||
       !!essentialDragging ||
       !!node?.closest?.("#zen-essentials, .zen-essentials-container") ||
@@ -3560,16 +3565,40 @@
     window.addEventListener("drop", () => (isRealDrop = true), true);
     window.addEventListener("dragstart", () => (isRealDrop = false), true);
     // Held over a space's icon, Zen switches to that space mid-drag, and the rest of the drag
-    // is Zen's: Zia's moved the tab's row in the space it left, hidden now, so the tab
-    // vanished, and placed it by that space's rows, in the wrong spot when it came back (#488).
-    // Its drag ends there, as if let go nowhere, and Zen takes the tab on from there. (Seen
-    // as the drag goes on: Zen's ZenWorkspacesUIUpdate, listened for before, only comes at
-    // start-up, never on a switch.)
+    // is Zen's: Zia's moved rows were the space it left, hidden now, and it went on steering the
+    // drop by them (fixDrop), so the tab landed back in that space, pinned there (#488). Zen
+    // announces no switch (ZenWorkspacesUIUpdate only comes at start-up), so it's seen as the
+    // drag goes on, and Zia lets go: its rows put back and its steering stopped, Zen's drop
+    // left as it is. (Not settle(): that turns Zen's drop off, and in 2.113.0 the tab went
+    // back where it was.)
+    const releaseToZen = (event) => {
+      const tab = drag.split || drag.tab;
+      zenDragImage = true;
+      try {
+        const image = gBrowser.tabContainer.tabDragAndDrop?.originalDragImageArgs;
+        if (image?.length) {
+          event.dataTransfer?.updateDragImage(...image);
+        }
+      } catch (err) {
+        noteError("tab dragging: Zen's picture back", err);
+      }
+      hideThumb(true);
+      clearMoved();
+      if (drag.folder) {
+        unmorphFolder(drag.folder);
+      }
+      easeOutWidth(tab);
+      makeRoom(null);
+      dropProxy();
+      drag = null;
+      pending = null;
+      document.documentElement.removeAttribute("zia-dragging-tab");
+    };
     window.addEventListener(
       "dragover",
-      () => {
+      (event) => {
         if (drag && drag.space !== window.gZenWorkspaces?.activeWorkspace) {
-          settle();
+          releaseToZen(event);
         }
       },
       true
