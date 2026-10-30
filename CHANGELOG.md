@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.114.0] — 2026-10-30
+
+### Added
+
+- Zia Settings marks the settings added in recent updates with a small blue "New",
+  and the sections holding them with a dot. Each one's mark goes once you've seen
+  it, and searching "new" lists them all.
+
 ## [2.113.5] — 2026-10-30
 
 ### Fixed

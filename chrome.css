@@ -10904,6 +10904,18 @@ zen-workspace-creation {
       background: var(--zia-active-tab-bg);
       box-shadow: var(--zia-glass-edge);
     }
+
+    /* a section with a setting that's new: a small blue dot after its name */
+    &.new::after {
+      content: "";
+      display: inline-block;
+      width: 5px;
+      height: 5px;
+      margin-inline-start: 6px;
+      border-radius: 50%;
+      vertical-align: middle;
+      background: var(--zia-set-blue);
+    }
   }
 
   & .zia-set-list {
@@ -10957,6 +10969,20 @@ zen-workspace-creation {
   & .zia-set-text {
     flex: 1;
     min-width: 0;
+  }
+
+  /* "New" after a setting added lately: a small blue pill */
+  & .zia-set-new {
+    display: inline-block;
+    margin-inline-start: 6px;
+    padding: 0 6px;
+    border-radius: 999px;
+    font-size: 0.75em;
+    font-weight: 600;
+    line-height: 1.5;
+    vertical-align: 1px;
+    color: var(--zia-set-blue);
+    background: color-mix(in srgb, var(--zia-set-blue) 16%, transparent);
   }
 
   & .zia-set-desc {
