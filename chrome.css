@@ -2812,10 +2812,6 @@ zen-split-fake-tab {
   }
 }
 
-.tabbrowser-tab:not([zen-essential]):is([zen-show-sublabel], [zen-pinned-changed="true"]:has(.tab-reset-pin-button:hover)) .tab-label-container {
-  translate: 0 -2px;
-}
-
 .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-background,
 .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-background::before,
 .tabbrowser-tab:not([zen-essential]) > .tab-stack > .tab-background::after {
@@ -2994,8 +2990,19 @@ zen-split-fake-tab {
 
 /* The + and "New Tab" line up with the tabs' icons and names above (they
    sat a pixel and a half to the left) */
-:is(#tabs-newtab-button, #vertical-tabs-newtab-button) > :is(.toolbarbutton-icon, .toolbarbutton-text) {
+:is(#tabs-newtab-button, #vertical-tabs-newtab-button) > :is(.toolbarbutton-icon, .toolbarbutton-text, .zen-newtab-sublabel-anchor) {
   translate: 1.5px 0;
+}
+
+/* (Zen 1.24 moves the + over by 2px a side, and its "Paste & Search" preview with it: measured
+   above already, so without it, and the preview under "New Tab" as it was before) */
+:is(#tabs-newtab-button, #vertical-tabs-newtab-button) > .toolbarbutton-icon {
+  margin-inline: 0 !important;
+}
+
+#tabbrowser-arrowscrollbox-periphery > #tabs-newtab-button .zen-tab-sublabel {
+  inset-inline-start: 32px !important;
+  width: calc(100% - 34px) !important;
 }
 
 /* "New Tab" is the size and weight of the tabs' names (it kept Zen's own,
@@ -3003,6 +3010,28 @@ zen-split-fake-tab {
 :is(#tabs-newtab-button, #vertical-tabs-newtab-button) > .toolbarbutton-text {
   font-size: var(--zia-text-size) !important;
   font-weight: var(--zia-tab-weight) !important;
+}
+
+/* Zen 1.24's pill when the open tab is scrolled out of sight (it takes you back to it): one of
+   Zia's tiles, the essentials' colour with what's under it blurred so it reads over the tabs,
+   in place of Zen's pale capsule that grew on hover */
+.zen-workspace-scroll-to-tab {
+  background: var(--zia-essential-bg) !important;
+  backdrop-filter: blur(16px) !important;
+  color: var(--zia-sidebar-ink, rgb(255, 255, 255)) !important;
+  border-radius: var(--zia-tab-radius) !important;
+  corner-shape: round !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) !important;
+  transition: background-color 0.12s ease !important;
+
+  &:hover:not(:active) {
+    scale: 1 !important;
+    background-color: color-mix(in srgb, var(--zia-sidebar-ink, rgb(255, 255, 255)) 8%, var(--zia-essential-bg)) !important;
+  }
+
+  & .zen-workspace-scroll-to-tab-arrow {
+    opacity: 0.6;
+  }
 }
 
 :is(#tabs-newtab-button, #vertical-tabs-newtab-button):hover {
@@ -5722,6 +5751,9 @@ findbar {
     border-bottom: none !important;
     background: transparent !important;
     overflow: visible !important;
+    /* (compact mode's hidden toolbar sets contain, which pinned the window buttons, below,
+       to this empty strip and clipped them away, #526) */
+    contain: none !important;
   }
 
   & #nav-bar {
@@ -5753,6 +5785,13 @@ findbar {
     height: var(--zia-toolbar-height) !important;
     z-index: 4 !important;
     color: rgb(251, 251, 254);
+    /* (compact mode's hidden toolbar squeezes them to nothing, and fades the toolbar, #526) */
+    max-height: none !important;
+    transition: none !important;
+  }
+
+  &:has(.zia-pane-bar[window-buttons]) #zen-appcontent-navbar-container {
+    opacity: 1 !important;
   }
 
   &:has(.zia-pane-bar[window-buttons][light]) #nav-bar > .titlebar-buttonbox-container {
@@ -8829,6 +8868,19 @@ zen-folder .tab-reset-button {
       padding-inline: var(--zia-lib-side-start) var(--zia-lib-side-end) !important;
     }
 
+    /* Editing the sections (Zen 1.24): each one's remove button sits 6px out over its top
+       corner, and the column scrolls now, so the top one's was cut off. Room above, taken
+       back so the sections stay put; the dashed edge on the sections' own rounding. */
+    &[customizing] #zen-library-sidebar-tabs {
+      padding-top: 7px !important;
+      margin-top: -7px !important;
+    }
+
+    &[customizing] .zen-library-tab {
+      border-radius: var(--zia-tab-radius) !important;
+      corner-shape: round !important;
+    }
+
     & .zen-library-tab {
       z-index: 1;
       /* (Zen's animated icons at the 18px of Zia's line icons) */
@@ -9602,7 +9654,7 @@ zen-library {
   corner-shape: var(--zia-squircle) !important;
 }
 
-/* the four buttons along the top: share, reader view, screenshot, bookmark */
+/* the four buttons along the top: share, screenshot, boost, bookmark */
 #zen-site-data-header toolbarbutton {
   color: color-mix(in srgb, currentColor 85%, transparent) !important;
 
@@ -9624,7 +9676,7 @@ zen-library {
     transform: scale(0.97) !important;
   }
 
-  /* (on: reader view open, the page bookmarked) */
+  /* (on: the page bookmarked) */
   &.active {
     color: inherit !important;
 
@@ -9714,7 +9766,7 @@ zen-library {
   }
 }
 
-/* the foot: how secure the site is, a new boost, and more; no line above */
+/* the foot: how secure the site is, reader view, and more; no line above */
 #zen-site-data-footer {
   border-top: none !important;
   padding-top: 2px !important;
@@ -9733,6 +9785,13 @@ zen-library {
     &:active:hover {
       transform: scale(0.97) !important;
     }
+  }
+
+  /* (reader view open, as the top's buttons are on: Zen 1.24 moved it here and colours it
+     in the space's colour) */
+  & #zen-site-data-reader-mode.active {
+    fill: currentColor !important;
+    background: var(--zia-site-tile-on) !important;
   }
 }
 /* Creating a space: the form in the sidebar, drawn as Zia draws the rest.

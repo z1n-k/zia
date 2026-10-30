@@ -18834,7 +18834,8 @@
   const ZIA_ACTIONS = [
     // Settings, straight to the page
     ziaAction("Zia Settings", "settings", openSineMods),
-    ziaAction("Keyboard Shortcuts", "settings", openPane("paneZenCKS")),
+    // (Zen 1.24 moved its shortcuts out of Settings, to Firefox's own page)
+    ziaAction("Keyboard Shortcuts", "settings", openPage("about:keyboard")),
     ziaAction("Look and Feel Settings", "palette", openPane("paneZenLooks")),
     ziaAction("Spaces and Tabs Settings", "tab", openPane("paneZenTabManagement")),
     ziaAction("Search Engine Settings", "search-glass", openPane("paneSearch")),

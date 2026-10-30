@@ -39,11 +39,16 @@ body {
 :is(#search-box, .tabsFilter) {
   margin: 0 !important;
   font-size: var(--zia-font-size) !important;
+  /* (each by its Firefox 159 name too: the --input-text- ones were renamed then) */
   --input-text-background-color: rgba(255, 255, 255, 0.06);
+  --input-background-color: rgba(255, 255, 255, 0.06);
   --input-text-border: 1px solid transparent;
+  --input-border: 1px solid transparent;
   --input-text-border-radius: var(--zia-radius);
+  --input-border-radius: var(--zia-radius);
   --input-search-border-radius: var(--zia-radius);
   --input-text-min-height: var(--zia-row);
+  --input-min-height: var(--zia-row);
   --input-text-color: rgba(255, 255, 255, 0.92);
   --icon-color: var(--zia-quiet);
   --focus-outline: none;
@@ -53,10 +58,12 @@ body {
    zia.uc.js) */
 :is(#search-box, .tabsFilter):focus-within {
   --input-text-background-color: rgba(255, 255, 255, 0.08);
+  --input-background-color: rgba(255, 255, 255, 0.08);
 }
 
 :is(#search-box, .tabsFilter):hover {
   --input-text-background-color: rgba(255, 255, 255, 0.08);
+  --input-background-color: rgba(255, 255, 255, 0.08);
 }
 
 /* History's "View" sort button: a quiet text button */

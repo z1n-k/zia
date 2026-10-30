@@ -37,7 +37,7 @@
   corner-shape: var(--zia-squircle) !important;
 }
 
-/* the four buttons along the top: share, reader view, screenshot, bookmark */
+/* the four buttons along the top: share, screenshot, boost, bookmark */
 #zen-site-data-header toolbarbutton {
   color: color-mix(in srgb, currentColor 85%, transparent) !important;
 
@@ -59,7 +59,7 @@
     transform: scale(0.97) !important;
   }
 
-  /* (on: reader view open, the page bookmarked) */
+  /* (on: the page bookmarked) */
   &.active {
     color: inherit !important;
 
@@ -149,7 +149,7 @@
   }
 }
 
-/* the foot: how secure the site is, a new boost, and more; no line above */
+/* the foot: how secure the site is, reader view, and more; no line above */
 #zen-site-data-footer {
   border-top: none !important;
   padding-top: 2px !important;
@@ -168,5 +168,12 @@
     &:active:hover {
       transform: scale(0.97) !important;
     }
+  }
+
+  /* (reader view open, as the top's buttons are on: Zen 1.24 moved it here and colours it
+     in the space's colour) */
+  & #zen-site-data-reader-mode.active {
+    fill: currentColor !important;
+    background: var(--zia-site-tile-on) !important;
   }
 }

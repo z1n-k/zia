@@ -19,6 +19,9 @@
     border-bottom: none !important;
     background: transparent !important;
     overflow: visible !important;
+    /* (compact mode's hidden toolbar sets contain, which pinned the window buttons, below,
+       to this empty strip and clipped them away, #526) */
+    contain: none !important;
   }
 
   & #nav-bar {
@@ -50,6 +53,13 @@
     height: var(--zia-toolbar-height) !important;
     z-index: 4 !important;
     color: rgb(251, 251, 254);
+    /* (compact mode's hidden toolbar squeezes them to nothing, and fades the toolbar, #526) */
+    max-height: none !important;
+    transition: none !important;
+  }
+
+  &:has(.zia-pane-bar[window-buttons]) #zen-appcontent-navbar-container {
+    opacity: 1 !important;
   }
 
   &:has(.zia-pane-bar[window-buttons][light]) #nav-bar > .titlebar-buttonbox-container {

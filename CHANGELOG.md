@@ -4,6 +4,34 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.112.7] — 2026-10-30
+
+### Changed
+
+- Ready for Zen 1.24:
+  - The new pill that takes you back to the open tab, once it's scrolled out of
+    sight, is drawn as one of Zia's tiles.
+  - The new tab button's "Paste & Search" preview (hold Cmd or Ctrl over it)
+    sits under "New Tab".
+  - Reader view's new spot at the foot of the site panel lights up like the
+    buttons along its top.
+
+### Fixed
+
+- Zen 1.24: the remove button on the top section was cut off while editing the
+  Library's sections.
+- Zen 1.24: "Keyboard Shortcuts" in the address bar's commands opens Zen's new
+  shortcuts page (`about:keyboard`), not an empty Settings page.
+- Zen 1.24: the + on the new tab button sits in line with the tabs' icons again,
+  and a pinned tab's address under its name isn't pushed up too far.
+- Zen 1.24: the search fields in the history and bookmarks sidebars keep Zia's
+  soft look; Firefox 159 renamed what they're drawn with.
+
+- The window buttons (minimise, maximise, close) show at the end of the top-right
+  pane's toolbar in split view with compact mode too. Its hidden top toolbar had
+  hidden them along with it ([#526](https://github.com/z1n-k/zia/issues/526),
+  thanks @Arcrous).
+
 ## [2.112.6] — 2026-10-29
 
 ### Fixed
