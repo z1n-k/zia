@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.113.1] — 2026-10-30
+
+### Fixed
+
+- A tab dragged to another space (held over its icon) lands there when let go. It
+  had landed back in the space it came from, pinned, or (in 2.113.0) gone back where
+  it was. Once the space changes, Zen's own picture of the tab follows the pointer.
+
 ## [2.113.0] — 2026-10-30
 
 ### Added
