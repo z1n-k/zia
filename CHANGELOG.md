@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.113.5] — 2026-10-30
+
+### Fixed
+
+- Clicking a space's name with the open tab in a closed folder: the line under the
+  pinned tabs now really bounces with the tabs below it (2.113.2's left it still).
+
 ## [2.113.4] — 2026-10-30
 
 ### Fixed
