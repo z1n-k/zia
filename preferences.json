@@ -38,6 +38,7 @@
     "type": "checkbox",
     "label": "Hide the slash in a pinned tab that's moved off its page (its icon still takes it back)",
     "property": "zia.tabs.no-pin-slash",
+    "since": "2.112.4",
     "defaultValue": false
   },
   {
@@ -62,6 +63,7 @@
     "type": "dropdown",
     "label": "Sidebar see-through, the desktop showing through it (macOS, and Windows and Linux where the window can be see-through)",
     "property": "zia.sidebar.see-through",
+    "since": "2.111.0",
     "defaultValue": "0",
     "options": [
       { "label": "Off", "value": "0" },
@@ -248,6 +250,7 @@
     "type": "checkbox",
     "label": "Space icons at the foot of the sidebar collapse to dots, the open one shown (Zen's look when they don't fit)",
     "property": "zia.spaces.collapse-icons",
+    "since": "2.112.0",
     "defaultValue": false
   },
   {
@@ -480,6 +483,7 @@
     "type": "checkbox",
     "label": "Centre the address bar itself, with as much room before it as after (the buttons either side balanced)",
     "property": "zia.urlbar.center-bar",
+    "since": "2.112.0",
     "defaultValue": false
   },
   {
@@ -1241,6 +1245,7 @@
     "type": "checkbox",
     "label": "Count this install (once a day, with nothing about you or your browsing)",
     "property": "zia.install-count",
+    "since": "2.113.0",
     "defaultValue": true
   },
   {

@@ -170,6 +170,25 @@
     return [bracket ? bracket[1] : entry.label, [rest, entry.description].filter(Boolean).join(". ")];
   }
 
+  // A setting added lately carries "since" in preferences.json, the release that brought it:
+  // those from the newest three feature releases show "New" till they've been on screen here
+  // once. ponytail: "newest" is the newest stamp, not the running version; stamps on old
+  // settings can be dropped at release time.
+  const NEW_SEEN_PREF = "zia.settings.seen-new";
+  function newSettings(list) {
+    const minor = (version) => Number(version.split(".")[1]);
+    const stamped = list.filter((entry) => entry.since && entry.type !== "separator");
+    const newest = Math.max(0, ...stamped.map((entry) => minor(entry.since)));
+    const seen = Services.prefs.getStringPref(NEW_SEEN_PREF, "").split(",");
+    const fresh = new Set();
+    for (const entry of stamped) {
+      if (newest - minor(entry.since) < 3 && !seen.includes(entry.property)) {
+        fresh.add(entry.property);
+      }
+    }
+    return { fresh, seen, stamped };
+  }
+
   async function showZiaSettings() {
     const open = document.getElementById("zia-settings");
     if (open && !open.hasAttribute("closing")) {
@@ -180,6 +199,7 @@
     const list = await loadSettingsList();
     const platform = { macosx: "macos", win: "windows" }[AppConstants.platform] || "linux";
     let values = settingValues(list);
+    const news = newSettings(list);
 
     const make = (tag, className, parent, text) => {
       const el = document.createElementNS(XHTML_NS, tag);
@@ -275,7 +295,13 @@
       row.classList.toggle("sub", !!entry.conditions);
       const text = make("div", "zia-set-text", row);
       const [name, detail] = settingName(entry);
-      make("div", "zia-set-label", text, name);
+      const label = make("div", "zia-set-label", text, name);
+      const isNew = news.fresh.has(entry.property);
+      if (isNew) {
+        make("span", "zia-set-new", label, "New");
+        row.dataset.property = entry.property;
+        section.link.classList.add("new");
+      }
       if (detail) {
         make("div", "zia-set-desc", text, detail);
       }
@@ -307,7 +333,8 @@
       }
       control.setAttribute("aria-label", name);
       // (found by its short name and detail, and by its full label too)
-      const words = `${name} ${detail} ${entry.label} ${entry.description || ""} ${section.el.firstChild.textContent}`.toLowerCase();
+      // (and the new ones by "new")
+      const words = `${name} ${detail} ${entry.label} ${entry.description || ""} ${section.el.firstChild.textContent}${isNew ? " new" : ""}`.toLowerCase();
       const one = { entry, row, control, words };
       rows.push(one);
       section.rows.push(one);
@@ -400,6 +427,24 @@
       lit.observe(part.el);
     }
 
+    // a "New" row once on screen counts as seen, from the next opening
+    const seenNow = new Set();
+    const spotted = new IntersectionObserver(
+      (seen) => {
+        for (const item of seen) {
+          if (item.isIntersecting) {
+            seenNow.add(item.target.dataset.property);
+          }
+        }
+      },
+      { root: listEl }
+    );
+    for (const one of rows) {
+      if (one.row.dataset.property) {
+        spotted.observe(one.row);
+      }
+    }
+
     // ---------- a change anywhere shows at once (this panel, Sine's list, another window, one
     // that turns itself back off), till it's closed
     let refresh = 0;
@@ -438,6 +483,14 @@
       overlay.setAttribute("closing", "");
       window.removeEventListener("keydown", onKey, true);
       lit.disconnect();
+      spotted.disconnect();
+      if (seenNow.size) {
+        // (kept to the stamped settings, so the list never outgrows them)
+        const seen = news.stamped
+          .map((entry) => entry.property)
+          .filter((property) => seenNow.has(property) || news.seen.includes(property));
+        Services.prefs.setStringPref(NEW_SEEN_PREF, seen.join(","));
+      }
       for (const property of watched) {
         Services.prefs.removeObserver(property, onPref);
       }
