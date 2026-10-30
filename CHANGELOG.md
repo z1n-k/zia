@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.113.4] — 2026-10-30
+
+### Fixed
+
+- Zia's picture in the Sine store: the address it pointed to had gone, so the store
+  showed none.
+
 ## [2.113.3] — 2026-10-30
 
 ### Fixed
