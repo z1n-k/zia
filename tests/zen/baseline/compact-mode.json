@@ -1,0 +1,180 @@
+{
+ "before": {
+  "clips": {
+   "urlbar": "",
+   "zen-appcontent-navbar-container": ""
+  },
+  "compact": null,
+  "marks": [
+   "zia-panels-beside",
+   "zia-site-dark",
+   "zia-swipe-arrow",
+   "zia-urlbar-position",
+   "zia-workspace-slot"
+  ],
+  "titlebar": [
+   "#zen-toolbar-background",
+   "#zen-overflow-extensions-list",
+   "#TabsToolbar"
+  ],
+  "topRow": [
+   "hbox.titlebar-buttonbox-container",
+   "#zia-workspace-slot",
+   "#zen-sidebar-top-buttons-customization-target",
+   "#nav-bar-overflow-button"
+  ],
+  "topRowBox": [
+   6,
+   4,
+   218,
+   38
+  ],
+  "topRowIn": "#navigator-toolbox",
+  "windowButtonsIn": "#zen-sidebar-top-buttons"
+ },
+ "checks": {
+  "compact mode turns on and off": true,
+  "the panel's marked open while shown": true,
+  "the top row moves into the title bar": true
+ },
+ "hidden": {
+  "clips": {
+   "urlbar": "",
+   "zen-appcontent-navbar-container": ""
+  },
+  "compact": "true",
+  "marks": [
+   "zia-panels-beside",
+   "zia-site-dark",
+   "zia-swipe-arrow",
+   "zia-urlbar-position",
+   "zia-workspace-slot"
+  ],
+  "titlebar": [
+   "#zen-sidebar-top-buttons",
+   "#nav-bar",
+   "#zen-toolbar-background",
+   "#zen-overflow-extensions-list",
+   "#TabsToolbar"
+  ],
+  "topRow": [
+   "hbox.titlebar-buttonbox-container",
+   "#zia-workspace-slot",
+   "#zen-sidebar-top-buttons-customization-target",
+   "#nav-bar-overflow-button"
+  ],
+  "topRowBox": [
+   -228,
+   7.5,
+   218,
+   38
+  ],
+  "topRowIn": "#titlebar",
+  "windowButtonsIn": "#zen-sidebar-top-buttons"
+ },
+ "off": {
+  "clips": {
+   "urlbar": "",
+   "zen-appcontent-navbar-container": ""
+  },
+  "compact": "false",
+  "marks": [
+   "zia-panels-beside",
+   "zia-site-dark",
+   "zia-swipe-arrow",
+   "zia-urlbar-position",
+   "zia-workspace-slot"
+  ],
+  "titlebar": [
+   "#zen-toolbar-background",
+   "#zen-overflow-extensions-list",
+   "#TabsToolbar"
+  ],
+  "topRow": [
+   "hbox.titlebar-buttonbox-container",
+   "#zia-workspace-slot",
+   "#zen-sidebar-top-buttons-customization-target",
+   "#nav-bar-overflow-button"
+  ],
+  "topRowBox": [
+   6,
+   4,
+   218,
+   38
+  ],
+  "topRowIn": "#navigator-toolbox",
+  "windowButtonsIn": "#zen-sidebar-top-buttons"
+ },
+ "on": {
+  "clips": {
+   "urlbar": "",
+   "zen-appcontent-navbar-container": ""
+  },
+  "compact": "true",
+  "marks": [
+   "zia-panels-beside",
+   "zia-site-dark",
+   "zia-swipe-arrow",
+   "zia-urlbar-position",
+   "zia-workspace-slot"
+  ],
+  "titlebar": [
+   "#zen-sidebar-top-buttons",
+   "#nav-bar",
+   "#zen-toolbar-background",
+   "#zen-overflow-extensions-list",
+   "#TabsToolbar"
+  ],
+  "topRow": [
+   "hbox.titlebar-buttonbox-container",
+   "#zia-workspace-slot",
+   "#zen-sidebar-top-buttons-customization-target",
+   "#nav-bar-overflow-button"
+  ],
+  "topRowBox": [
+   -228,
+   7.5,
+   218,
+   38
+  ],
+  "topRowIn": "#titlebar",
+  "windowButtonsIn": "#zen-sidebar-top-buttons"
+ },
+ "shown": {
+  "clips": {
+   "urlbar": "",
+   "zen-appcontent-navbar-container": "inset(0px 0px 0px 227px)"
+  },
+  "compact": "true",
+  "marks": [
+   "zia-panel-open",
+   "zia-panels-beside",
+   "zia-site-dark",
+   "zia-swipe-arrow",
+   "zia-urlbar-position",
+   "zia-workspace-slot"
+  ],
+  "titlebar": [
+   "#zen-sidebar-top-buttons",
+   "#nav-bar",
+   "#zen-toolbar-background",
+   "#zen-overflow-extensions-list",
+   "#TabsToolbar"
+  ],
+  "topRow": [
+   "hbox.titlebar-buttonbox-container",
+   "#zia-workspace-slot",
+   "#zen-sidebar-top-buttons-customization-target",
+   "#nav-bar-overflow-button"
+  ],
+  "topRowBox": [
+   9,
+   7.5,
+   218,
+   38
+  ],
+  "topRowIn": "#titlebar",
+  "windowButtonsIn": "#zen-sidebar-top-buttons"
+ },
+ "ziaErrors": []
+}
