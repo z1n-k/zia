@@ -32,11 +32,13 @@ ctx.fillRect(0, 0, 16, 32);
 ctx.fillStyle = "rgb(30, 80, 230)";
 ctx.fillRect(16, 0, 16, 32);
 navigator.mediaSession.metadata = new MediaMetadata({ title: "Zia Song", artist: "Zia Test", artwork: [{ src: art.toDataURL(), sizes: "32x32", type: "image/png" }] });
-// (played once it knows its length: already, if that came before this ran, as it can on a busy Mac)
+// (played once it knows its length: already, if that came before this ran, as it can on a busy
+// Mac; and asked again if the first ask is turned down, till it plays)
+const play = () => a.play().catch(() => setTimeout(play, 250));
 if (a.readyState >= 1) {
-  a.play();
+  play();
 } else {
-  a.onloadedmetadata = () => a.play();
+  a.onloadedmetadata = play;
 }
 </script>`;
 const file = PathUtils.join(PathUtils.profileDir, "music.html");
