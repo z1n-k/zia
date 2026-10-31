@@ -1,0 +1,48 @@
+{
+ "checks": {
+  "left again is as before": true,
+  "the sidebar changes side": true,
+  "the tab and folder edges are measured": true
+ },
+ "innerInOuter": true,
+ "left": {
+  "folders": {
+   "F": "1px",
+   "G": null
+  },
+  "side": "left",
+  "sidebarLeft": 0,
+  "window": {
+   "--zia-folder-left-fix": "2px",
+   "--zia-folder-right-fix": "2px",
+   "--zia-tab-right-fix": "2px"
+  }
+ },
+ "leftAgain": {
+  "folders": {
+   "F": "1px",
+   "G": null
+  },
+  "side": "left",
+  "sidebarLeft": 0,
+  "window": {
+   "--zia-folder-left-fix": "2px",
+   "--zia-folder-right-fix": "2px",
+   "--zia-tab-right-fix": "2px"
+  }
+ },
+ "right": {
+  "folders": {
+   "F": "1px",
+   "G": null
+  },
+  "side": "right",
+  "sidebarLeft": 1136,
+  "window": {
+   "--zia-folder-left-fix": "2px",
+   "--zia-folder-right-fix": "2px",
+   "--zia-tab-right-fix": "2px"
+  }
+ },
+ "ziaErrors": []
+}
