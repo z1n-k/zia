@@ -2,17 +2,19 @@
 // the page keeps the colour under it, a typed hex is kept with Enter, and Reset goes back to
 // the colour read from the page
 const base = serve({ "/page": "<title>Page</title><body style='margin:0;background:#e0a020'><div style='height:120px;background:#1e50c8'></div>Page" });
+const first = toolbarColour().props["--zia-site-bg"];
 gBrowser.selectedTab = gBrowser.addTab(`${base}/page`, { triggeringPrincipal: SYSTEM });
-await wait(3000);
-const read = toolbarColour().props["--zia-site-bg"];
+// (loaded, and its colour read and held: Zia looks again a few times after a load)
+await until(() => gBrowser.selectedBrowser.currentURI.spec === `${base}/page` && !gBrowser.selectedBrowser.webProgress.isLoadingDocument);
+await until(() => toolbarColour().props["--zia-site-bg"] !== first);
+const read = (await steady(toolbarColour, { quiet: 1000 })).props["--zia-site-bg"];
 const saved = () => Services.prefs.getStringPref("zia.toolbar.manual-colors", "");
 
 // The address's own menu, and Zia's items on it
 async function openMenu() {
   const input = gURLBar.inputField;
   EU.synthesizeMouseAtCenter(input, { type: "contextmenu", button: 2 }, window);
-  await wait(600);
-  const menu = [...document.querySelectorAll("menupopup")].find((popup) => popup.state === "open");
+  const menu = await until(() => [...document.querySelectorAll("menupopup")].find((popup) => popup.state === "open"));
   const item = (label) => [...(menu?.querySelectorAll("menuitem") || [])].find((el) => el.getAttribute("label") === label);
   return { menu, pick: item("Toolbar Color for This Site…"), reset: item("Reset Toolbar Color") };
 }
@@ -21,8 +23,8 @@ let menu = await openMenu();
 const items = { pick: !!menu.pick && !menu.pick.hidden, reset: !!menu.reset && !menu.reset.hidden };
 menu.menu?.hidePopup();
 menu.pick?.doCommand();
-await wait(1000);
-const overlay = document.getElementById("zia-color-pick");
+// (it opens once it has a picture of the page to pick from)
+const overlay = await until(() => document.getElementById("zia-color-pick"));
 const picker = {
   open: !!overlay,
   hint: overlay?.querySelector(".zia-color-pick-hint")?.textContent,
@@ -33,44 +35,44 @@ const picker = {
 const box = overlay?.getBoundingClientRect();
 if (overlay) {
   EU.synthesizeMouse(overlay, 200, 60, { type: "mousemove" }, window);
-  await wait(200);
+  await until(() => overlay.querySelector(".zia-color-pick-hex")?.textContent);
 }
-const hover = {
+const hover = await steady(() => ({
   loupe: overlay?.querySelector(".zia-color-pick-hex")?.textContent,
   toolbar: toolbarColour().props["--zia-site-bg"],
-};
+}));
 if (overlay) {
   EU.synthesizeMouse(overlay, 200, 300, { type: "mousemove" }, window);
   EU.synthesizeMouse(overlay, 200, 300, { type: "mousedown" }, window);
   EU.synthesizeMouse(overlay, 200, 300, { type: "mouseup" }, window);
 }
-await wait(500);
-const clicked = { closed: !document.getElementById("zia-color-pick"), saved: saved(), toolbar: toolbarColour().props["--zia-site-bg"] };
+await until(() => !document.getElementById("zia-color-pick"));
+const clicked = await steady(() => ({ closed: !document.getElementById("zia-color-pick"), saved: saved(), toolbar: toolbarColour().props["--zia-site-bg"] }));
 
 // Again, a hex typed in
 menu = await openMenu();
 const resetOffered = !!menu.reset && !menu.reset.hidden;
 menu.menu?.hidePopup();
 menu.pick?.doCommand();
-await wait(1000);
-const input = document.querySelector("#zia-color-pick .zia-color-pick-input");
+const input = await until(() => document.querySelector("#zia-color-pick .zia-color-pick-input"));
 const prefilled = input?.value;
 if (input) {
   input.focus();
   input.select();
   EU.sendString("#336699", window);
-  await wait(200);
+  await until(() => input.value === "#336699");
   EU.synthesizeKey("KEY_Enter", {}, window);
 }
-await wait(500);
-const typed = { prefilled, closed: !document.getElementById("zia-color-pick"), saved: saved(), toolbar: toolbarColour().props["--zia-site-bg"] };
+await until(() => !document.getElementById("zia-color-pick"));
+const typed = await steady(() => ({ prefilled, closed: !document.getElementById("zia-color-pick"), saved: saved(), toolbar: toolbarColour().props["--zia-site-bg"] }));
 
 // And reset
 menu = await openMenu();
 menu.menu?.hidePopup();
 menu.reset?.doCommand();
-await wait(2000);
-const reset = { saved: saved(), toolbar: toolbarColour().props["--zia-site-bg"] };
+// (the page's colour read again, and held)
+await until(() => toolbarColour().props["--zia-site-bg"] !== typed.toolbar);
+const reset = await steady(() => ({ saved: saved(), toolbar: toolbarColour().props["--zia-site-bg"] }), { quiet: 1000 });
 done({
   read,
   items,

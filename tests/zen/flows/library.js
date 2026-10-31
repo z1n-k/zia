@@ -2,8 +2,7 @@
 // chosen section, and measures its rows off the tabs
 await addTabs(["A"]);
 document.getElementById("cmd_zenToggleLibrary").doCommand();
-await wait(2000);
-const library = document.querySelector("zen-library");
+const library = await until(() => document.querySelector("zen-library[open]"));
 const root = document.documentElement;
 const look = () => {
   const rail = library.querySelector(".zia-library-rail");
@@ -15,20 +14,23 @@ const look = () => {
     cards: [...library.querySelectorAll(".zen-library-space[data-uuid]")].map((card) => card.getAttribute("zia-card-dark")),
   };
 };
-const opened = look();
+// (each read with its section shown, its tile placed and everything at rest, held a while:
+// Zia measures the rows again a moment after it opens)
+const shown = async (section, test = (seen) => seen.rail?.placed) => {
+  await until(() => look().section === section && test(look()));
+  await atRest();
+  return steady(look, { quiet: 800 });
+};
+const opened = await shown("history");
 const rows = [root.style.getPropertyValue("--zia-lib-row-pad"), root.style.getPropertyValue("--zia-lib-icon-gap")].map((v) => `${Math.round(parseFloat(v))}px`);
 library.querySelector(".zen-library-tab[data-section='downloads']")?.click();
-await wait(1200);
-const downloads = look();
+const downloads = await shown("downloads");
 library.querySelector(".zen-library-tab[data-section='spaces']")?.click();
-await wait(1200);
-const spaces = look();
+const spaces = await shown("spaces");
 Services.prefs.setBoolPref("zia.library.zen-look", true);
-await wait(500);
-const zenLook = look();
+const zenLook = await shown("spaces", (seen) => !seen.rail);
 Services.prefs.clearUserPref("zia.library.zen-look");
-await wait(500);
-const back = look();
+const back = await shown("spaces");
 done({
   opened,
   rows,

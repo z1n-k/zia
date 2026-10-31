@@ -4,7 +4,7 @@ await addTabs(["A", "B", "C", "D"]);
 const before = listOrder();
 const from = centre(named("A"));
 const to = named("D").getBoundingClientRect();
-const seen = await drag(named("A"), path(from, { x: from.x, y: Math.round(to.top + to.height * 0.75) }));
+const seen = await drag(named("A"), path(from, { x: from.x, y: Math.round(to.top + to.height * 0.75) }), { landed: () => listOrder().indexOf("A") > listOrder().indexOf("D") });
 const after = listOrder();
 done({
   before,

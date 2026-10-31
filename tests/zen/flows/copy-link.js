@@ -1,8 +1,10 @@
 // The address bar's paperclip copies the page's link and turns into a tick for a moment
 const base = serve({ "/page": "<title>Page</title><body>Page" });
 gBrowser.selectedTab = gBrowser.addTab(`${base}/page?q=1`, { triggeringPrincipal: SYSTEM });
-await wait(2000);
 const button = document.getElementById("zia-copy-link-button");
+// (loaded, and the paperclip shown for a website)
+await until(() => gBrowser.selectedBrowser.currentURI.spec === `${base}/page?q=1` && !gBrowser.selectedBrowser.webProgress.isLoadingDocument && !button?.hidden);
+await atRest();
 const clipboard = () => {
   try {
     const transfer = Cc["@mozilla.org/widget/transferable;1"].createInstance(Ci.nsITransferable);
@@ -21,14 +23,15 @@ const shownOnPage = !!button && !button.hidden;
 if (button) {
   EU.synthesizeMouseAtCenter(button, {}, window);
 }
-await wait(300);
+// (the tick comes once the paperclip has popped out, and stays a second or so)
+await until(() => button?.hasAttribute("zia-copied"));
 const copied = unported(clipboard());
 const tick = !!button?.hasAttribute("zia-copied");
-await wait(1500);
+await until(() => !button?.hasAttribute("zia-copied"));
 const back = !button?.hasAttribute("zia-copied");
 // (and hidden on a page that isn't a website)
 gBrowser.selectedTab = gBrowser.addTab("data:text/html,<title>Data</title>Data", { triggeringPrincipal: SYSTEM });
-await wait(1000);
+await until(() => gBrowser.selectedBrowser.currentURI.schemeIs("data") && button?.hidden);
 done({
   shownOnPage,
   copied,

@@ -2,7 +2,6 @@
 // from the window's edge), styles its page to match the tabs, and draws the tree's row
 // highlights itself; closing slides it out first. With "beside" off, it goes back where Zen had it.
 await addTabs(["A"]);
-await wait(300);
 const root = document.documentElement;
 const box = document.getElementById("sidebar-box");
 const card = document.getElementById("zen-appcontent-wrapper");
@@ -22,14 +21,19 @@ const vars = (el) => Object.fromEntries([...el.style].filter((name) => name.star
 
 const closed = place();
 SidebarController.show("viewBookmarksSidebar");
-await wait(1500);
-const doc = document.getElementById("sidebar").contentDocument;
-const open = place();
-const page = {
+// (its page loaded and styled, the tree's highlights in, and slid in, with the slide's mark gone)
+const doc = await until(() => {
+  const loaded = document.getElementById("sidebar").contentDocument;
+  return loaded?.readyState === "complete" && loaded.getElementById("zia-row-pills") && loaded.documentElement.style.getPropertyValue("--zia-row-h") && loaded;
+});
+await until(() => !box.hidden && !root.hasAttribute("zia-panel-sliding"));
+await atRest();
+const open = await steady(place);
+const page = await steady(() => ({
   url: doc.documentURI,
   rowVars: vars(doc.documentElement),
   windowVars: Object.fromEntries(Object.entries(vars(root)).filter(([name]) => name.startsWith("--zia-panel"))),
-};
+}));
 const pills = () =>
   [...doc.querySelectorAll("#zia-row-pills > .zia-row-pill")].map((pill) => ({
     kind: pill.hasAttribute("hover") ? "hover" : "selected",
@@ -40,22 +44,23 @@ const tree = doc.querySelector(".sidebar-placesTree");
 const body = tree.treeBody || tree.querySelector("treechildren");
 const unhovered = pills();
 EU.synthesizeMouse(body, 20, tree.rowHeight / 2, { type: "mousemove" }, doc.defaultView);
-await wait(300);
+// (placed on the next frame)
+await until(() => pills().some((pill) => pill.kind === "hover" && !pill.hidden));
 const hovered = pills();
 const boxNow = box.getBoundingClientRect();
 const size = [boxNow.left, boxNow.width].map(Math.round);
 SidebarController.hide();
-await wait(100);
+// (as it starts sliding out: read at once, as the slide is only a tenth of a second)
 const hiding = place();
-await wait(800);
-const shut = place();
+await until(() => box.hidden && !root.hasAttribute("zia-panel-sliding"));
+const shut = await steady(place);
 
 Services.prefs.setBoolPref("zia.sidebar-panels.beside", false);
-await wait(300);
-const home = place();
+await until(() => box.parentNode !== card.parentNode);
+const home = await steady(place);
 Services.prefs.clearUserPref("zia.sidebar-panels.beside");
-await wait(300);
-const back = place();
+await until(() => box.parentNode === card.parentNode);
+const back = await steady(place);
 
 done({
   closed,

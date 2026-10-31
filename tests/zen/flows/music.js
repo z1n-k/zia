@@ -6,6 +6,9 @@
 Services.prefs.setIntPref("media.autoplay.default", 0);
 Services.prefs.setBoolPref("media.block-autoplay-until-in-foreground", false);
 Services.prefs.setStringPref("media.volume_scale", "0.0");
+// (Firefox keeps a tab's sound mark a few seconds after it stops: kept for good, so the paused
+// tab reads the same however long the pause takes to land)
+Services.prefs.setIntPref("browser.tabs.delayHidingAudioPlayingIconMS", 600000);
 const rate = 8000;
 const samples = rate * 6;
 const wav = new Uint8Array(44 + samples);
@@ -29,7 +32,14 @@ ctx.fillRect(0, 0, 16, 32);
 ctx.fillStyle = "rgb(30, 80, 230)";
 ctx.fillRect(16, 0, 16, 32);
 navigator.mediaSession.metadata = new MediaMetadata({ title: "Zia Song", artist: "Zia Test", artwork: [{ src: art.toDataURL(), sizes: "32x32", type: "image/png" }] });
-a.onloadedmetadata = () => a.play();
+// (played once it knows its length: already, if that came before this ran, as it can on a busy
+// Mac; and asked again if the first ask is turned down, till it plays)
+const play = () => a.play().catch(() => setTimeout(play, 250));
+if (a.readyState >= 1) {
+  play();
+} else {
+  a.onloadedmetadata = play;
+}
 </script>`;
 const file = PathUtils.join(PathUtils.profileDir, "music.html");
 await IOUtils.writeUTF8(file, page);
@@ -38,10 +48,9 @@ music.setAttribute("zia-test", "Music");
 const [other] = await addTabs(["Other"]);
 gBrowser.selectedTab = other;
 const controller = () => music.linkedBrowser.browsingContext?.mediaController;
-for (let i = 0; i < 40 && !controller()?.isPlaying; i++) {
-  await wait(250);
-}
-await wait(2500);
+// (saying, if it never does, how the tab stood)
+const tabState = () => `the tone to play (the tab: ${music.linkedBrowser.currentURI.spec.split("/").pop()}, ${["busy", "pending", "activemedia-blocked", "soundplaying", "muted"].filter((name) => music.hasAttribute(name)).join(" ") || "no marks"}, ${controller() ? "a" : "no"} media controller)`;
+await until(() => controller()?.isPlaying, { what: tabState, timeout: 30000 });
 
 const card = () => document.querySelector("#zen-media-controls-toolbar .zen-media-card");
 // (the bars' images are numbered as they're made, so a fresh one restarts its animation)
@@ -90,16 +99,19 @@ const bars = (tab) => {
   };
 };
 
-const playing = { card: cardState(), tab: bars(music), otherTab: bars(other) };
+// (Zen's card up and Zia's dressing done: the artwork on it, its colours read and painted into
+// the bars, the ring, and the playing tab's own bars; then as it stays)
+await until(() => card()?.hasAttribute("zia-glow-ready") && card().querySelector(".zen-media-focus-button[zia-art]") && card().querySelector(".zia-ring") && card().style.getPropertyValue("--zia-sound-still") && music.querySelector(".zia-tab-sound") && music.style.getPropertyValue("--zia-sound-wave"), { what: "the music card, dressed", timeout: 20000 });
+const playing = await steady(() => ({ card: cardState(), tab: bars(music), otherTab: bars(other) }), { quiet: 500 });
 EU.synthesizeMouseAtCenter(music.querySelector(".zia-tab-sound"), {}, window);
-await wait(1200);
-const muted = { card: cardState(), tab: bars(music) };
+await until(() => music.hasAttribute("muted"));
+const muted = await steady(() => ({ card: cardState(), tab: bars(music) }), { quiet: 500 });
 EU.synthesizeMouseAtCenter(music.querySelector(".zia-tab-sound"), {}, window);
-await wait(1200);
-const unmuted = { tab: bars(music) };
+await until(() => !music.hasAttribute("muted"));
+const unmuted = await steady(() => ({ tab: bars(music) }), { quiet: 500 });
 card().querySelector(".zen-media-playpause-button").doCommand();
-await wait(1500);
-const paused = { card: cardState(), tab: bars(music) };
+await until(() => !card().classList.contains("playing"));
+const paused = await steady(() => ({ card: cardState(), tab: bars(music) }), { quiet: 500 });
 done({
   playing,
   muted,

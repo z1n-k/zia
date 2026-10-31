@@ -1,15 +1,17 @@
 // Zia Settings from the ⋯ menu: it opens, lists its sections, and closes with Escape
 PanelUI.show();
-await wait(1000);
-const item = document.getElementById("zia-settings-menu-button");
+// (the menu is built as it first opens)
+const item = await until(() => PanelUI.panel.state === "open" && document.getElementById("zia-settings-menu-button"));
 item?.doCommand();
-await wait(1200);
-const page = document.getElementById("zia-settings");
-const sections = page ? [...page.querySelectorAll(".zia-set-section-title")].map((el) => el.textContent.trim()) : [];
-const rows = page ? page.querySelectorAll(".zia-set-row").length : 0;
-const markedNew = page ? [...page.querySelectorAll(".zia-set-nav-item.new")].map((el) => el.textContent.trim()) : [];
+// (the page is built once its list of settings has loaded)
+const page = await until(() => document.getElementById("zia-settings")?.querySelector(".zia-set-row") && document.getElementById("zia-settings"));
+const { sections, rows, markedNew } = await steady(() => ({
+  sections: [...page.querySelectorAll(".zia-set-section-title")].map((el) => el.textContent.trim()),
+  rows: page.querySelectorAll(".zia-set-row").length,
+  markedNew: [...page.querySelectorAll(".zia-set-nav-item.new")].map((el) => el.textContent.trim()),
+}));
 EU.synthesizeKey("KEY_Escape", {}, window);
-await wait(800);
+await until(() => !document.getElementById("zia-settings"));
 done({
   menuItem: !!item,
   opened: !!page,

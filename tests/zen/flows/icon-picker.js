@@ -3,13 +3,12 @@
 // clicking an icon sets it on the folder.
 const [x, y] = await addTabs(["X", "Y"]);
 const folder = gZenFolders.createFolder([x, y], { label: "F", renameFolder: false });
-await wait(800);
+await until(() => folder.tabs.includes(x) && folder.tabs.includes(y));
+await atRest();
 const panel = document.getElementById("PanelUI-zen-emojis-picker");
 gZenFolders.changeFolderUserIcon(folder);
-await wait(800);
-const zia = document.getElementById("zia-icons-tab");
+const zia = await until(() => panel.state === "open" && document.getElementById("zia-icons-tab"));
 EU.synthesizeMouseAtCenter(zia, {}, window);
-await wait(500);
 const search = document.getElementById("zia-icons-search");
 const grid = document.getElementById("zia-icons-grid");
 const state = () => {
@@ -21,34 +20,40 @@ const state = () => {
     style: [...document.querySelectorAll(".zia-icons-style-option")].filter((button) => button.hasAttribute("selected")).map((button) => button.textContent),
   };
 };
-const tabs = [...document.getElementById("PanelUI-zen-emojis-buttons-wrapper").children].map((tab) => `${tab.getAttribute("label")}${tab.classList.contains("selected") ? " (selected)" : ""}`);
-const shown = { open: panel.state, tabs, focused: document.activeElement === search, placeholder: search.placeholder, ...state() };
+const tabs = () => [...document.getElementById("PanelUI-zen-emojis-buttons-wrapper").children].map((tab) => `${tab.getAttribute("label")}${tab.classList.contains("selected") ? " (selected)" : ""}`);
+// (Zia's tab chosen, its icons in and its search focused, and held; then each step read
+// once the icons have changed, and held)
+await until(() => tabs().includes("Zia (selected)") && grid.querySelector(".zia-icon-item") && document.activeElement === search);
+const shown = await steady(() => ({ open: panel.state, tabs: tabs(), focused: document.activeElement === search, placeholder: search.placeholder, ...state() }));
+const changed = async (from, test = () => true) => {
+  await until(() => JSON.stringify(state()) !== JSON.stringify(from) && test());
+  return steady(state);
+};
 
 search.focus();
 EU.sendString("heart", window);
-await wait(300);
-const searched = state();
+const searched = await changed(shown);
 const [outline, solid] = document.querySelectorAll(".zia-icons-style-option");
 EU.synthesizeMouseAtCenter(solid, {}, window);
-await wait(300);
-const filled = { pref: Services.prefs.getStringPref("zia.icons.style", ""), ...state() };
+const solidIcons = await changed(searched, () => Services.prefs.getStringPref("zia.icons.style", "") === "filled");
+const filled = { pref: Services.prefs.getStringPref("zia.icons.style", ""), ...solidIcons };
 EU.synthesizeMouseAtCenter(outline, {}, window);
-await wait(300);
+const outlined = await changed(filled, () => Services.prefs.getStringPref("zia.icons.style", "") !== "filled");
 search.select();
 EU.sendString("qqqzzzq", window);
-await wait(300);
-const nothing = state();
+const nothing = await changed(outlined);
 search.select();
 EU.sendString("wallet", window);
-await wait(300);
+await changed(nothing);
 const item = grid.querySelector(".zia-icon-item");
 const want = item.style.listStyleImage;
+const iconBefore = folder.iconURL;
 EU.synthesizeMouseAtCenter(item, {}, window);
-await wait(500);
+await until(() => folder.iconURL !== iconBefore);
 const icon = folder.iconURL;
 const stillOpen = panel.state;
 panel.hidePopup();
-await wait(500);
+await until(() => panel.state === "closed");
 
 done({
   shown,

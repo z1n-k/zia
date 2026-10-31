@@ -3,7 +3,8 @@
 // them away with nothing chosen.
 await addTabs(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"]);
 gBrowser.selectedTab = named("A");
-await wait(500);
+await until(() => named("A").linkedBrowser.docShellIsActive);
+await atRest();
 const root = document.documentElement;
 const keys = () =>
   gBrowser.visibleTabs
@@ -22,32 +23,42 @@ const keys = () =>
 const flags = () => ["zia-tab-numbers", "zia-tab-numbers-leaving"].filter((name) => root.hasAttribute(name));
 
 EU.synthesizeKey("KEY_Meta", { type: "keydown" }, window);
-await wait(300);
+// (the keys in, and come to rest)
+await until(() => flags().includes("zia-tab-numbers") && keys().length);
+await atRest();
 const held = { flags: flags(), keys: keys() };
+const targets = () => keys().filter((key) => key.target).map((key) => key.text);
 EU.synthesizeKey("1", { type: "keydown", metaKey: true }, window);
 EU.synthesizeKey("1", { type: "keyup", metaKey: true }, window);
-await wait(50);
-const first = keys().filter((key) => key.target).map((key) => key.text);
+await until(() => targets().length);
+const first = targets();
 EU.synthesizeKey("0", { type: "keydown", metaKey: true }, window);
-await wait(100);
+await until(() => targets().join() !== first.join());
+await atRest();
 const typed = { flags: flags(), keys: keys() };
 EU.synthesizeKey("0", { type: "keyup", metaKey: true }, window);
 EU.synthesizeKey("KEY_Meta", { type: "keyup" }, window);
+// (a moment after letting go, while the keys slide away: the flag for it goes on a timer of
+// Zia's due later, so always after this)
 await wait(30);
 const lettingGo = flags();
-await wait(400);
+await until(() => !flags().length);
+await atRest();
 const chosen = nameOf(gBrowser.selectedTab);
 const after = flags();
 
 EU.synthesizeKey("KEY_Meta", { type: "keydown" }, window);
-await wait(300);
+await until(() => flags().includes("zia-tab-numbers"));
+await atRest();
 const heldAgain = flags();
+// (again a moment in, as they slide away)
 EU.synthesizeKey("x", { type: "keydown", metaKey: true }, window);
 await wait(50);
 const otherKey = flags();
 EU.synthesizeKey("x", { type: "keyup", metaKey: true }, window);
 EU.synthesizeKey("KEY_Meta", { type: "keyup" }, window);
-await wait(400);
+await until(() => !flags().length);
+await atRest();
 
 done({
   held,

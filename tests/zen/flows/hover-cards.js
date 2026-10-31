@@ -4,9 +4,11 @@
 const [a, b, x, y] = await addTabs(["A", "B", "X", "Y"]);
 const folder = gZenFolders.createFolder([x, y], { label: "F", renameFolder: false });
 gBrowser.selectedTab = a;
-await wait(800);
+await until(() => a.linkedBrowser.docShellIsActive);
+await atRest();
 folder.collapsed = true;
-await wait(1000);
+await until(() => folder.hasAttribute("collapsed"));
+await atRest();
 const describe = (el) => {
   if (!el) {
     return null;
@@ -47,25 +49,32 @@ const folderCard = () => {
 const hover = (el) => EU.synthesizeMouseAtCenter(el, { type: "mousemove" }, window);
 const away = () => EU.synthesizeMouse(document.documentElement, window.innerWidth - 4, window.innerHeight - 4, { type: "mousemove" }, window);
 
+// (a moment in, well before the beat: Zia's timer for it is due later, so always after this)
 hover(b);
 await wait(300);
 const beforeBeat = tabCard();
-await wait(700);
-const tab = tabCard();
+// (each card read once it's shown and has come to rest, and held)
+await until(() => tabCard()?.marks.includes("zia-open=true"));
+await atRest();
+const tab = await steady(tabCard);
 hover(a);
-await wait(100);
-const nextTab = tabCard();
+await until(() => tabCard()?.title === "A");
+await atRest();
+const nextTab = await steady(tabCard);
 away();
-await wait(600);
-const tabLeft = tabCard();
+await until(() => tabCard()?.hidden);
+const tabLeft = await steady(tabCard);
 
 const label = folder.querySelector(".tab-group-label-container");
 hover(label);
-await wait(1000);
-const folderOpen = folderCard();
+// (its rows filled, which Zia does again a few times in its first second)
+await until(() => folderCard()?.marks.includes("zia-open=true") && folderCard().rows.length);
+await atRest();
+const folderOpen = await steady(folderCard, { quiet: 1000 });
 const row = [...document.querySelectorAll("#zia-folder-card .zia-folder-card-row")].find((el) => el.querySelector(".zia-folder-card-label")?.textContent === "Y");
 EU.synthesizeMouseAtCenter(row.querySelector(".zia-folder-card-label"), {}, window);
-await wait(600);
+await until(() => gBrowser.selectedTab !== a && folderCard()?.hidden);
+await atRest();
 const picked = nameOf(gBrowser.selectedTab);
 const folderAfter = folderCard();
 
