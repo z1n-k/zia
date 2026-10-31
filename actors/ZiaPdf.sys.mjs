@@ -16,29 +16,10 @@
 const SHEET_URL = "chrome://sine/content/zia/zia-pdf.css" + new URL(import.meta.url).search;
 const UPDATE_MS = 300;
 
-export function diaPdf(win) {
+// The few tools every step builds with, for one viewer page
+function pdfKit(win) {
   const doc = win.document;
-  if (doc.documentElement.classList.contains("ziaPdf")) {
-    return;
-  }
-  try {
-    win.windowUtils.loadSheetUsingURIString(SHEET_URL, win.windowUtils.AUTHOR_SHEET);
-  } catch (err) {
-    console.error("[Zia] PDF view: stylesheet", err);
-    return;
-  }
-
   const $ = (id) => doc.getElementById(id);
-  const toolbar = $("toolbarViewer");
-  const left = $("toolbarViewerLeft");
-  const middle = $("toolbarViewerMiddle");
-  const right = $("toolbarViewerRight");
-  const editorButtons = $("editorModeButtons");
-  if (!toolbar || !left || !middle || !right) {
-    return;
-  }
-  doc.documentElement.classList.add("ziaPdf");
-
   const app = () => {
     try {
       return win.wrappedJSObject?.PDFViewerApplication || null;
@@ -61,16 +42,55 @@ export function diaPdf(win) {
     return el;
   };
   const separator = (parent) => make("span", "ziaPdfSep", parent);
+  return { win, doc, $, app, make, button, separator };
+}
 
-  // Left: the document's name after the sidebar button.
+export function diaPdf(win) {
+  const doc = win.document;
+  if (doc.documentElement.classList.contains("ziaPdf")) {
+    return;
+  }
+  try {
+    win.windowUtils.loadSheetUsingURIString(SHEET_URL, win.windowUtils.AUTHOR_SHEET);
+  } catch (err) {
+    console.error("[Zia] PDF view: stylesheet", err);
+    return;
+  }
+
+  const kit = pdfKit(win);
+  const { $ } = kit;
+  const toolbar = $("toolbarViewer");
+  const left = $("toolbarViewerLeft");
+  const middle = $("toolbarViewerMiddle");
+  const right = $("toolbarViewerRight");
+  const editorButtons = $("editorModeButtons");
+  if (!toolbar || !left || !middle || !right) {
+    return;
+  }
+  doc.documentElement.classList.add("ziaPdf");
+
+  const title = addPdfTitle(kit);
+  const centre = kit.make("div", "ziaPdfCentre");
+  middle.prepend(centre);
+  const { pageInput, count, zoom } = addPageAndZoom(kit, centre);
+  addFitAndRotate(kit, centre);
+  addPen(kit, centre, toolbar, editorButtons);
+  addUndoRedo(kit, centre);
+  downloadBeforePrint(kit);
+  followPdfJs(kit, { title, pageInput, count, zoom });
+}
+
+// Left: the document's name after the sidebar button.
+function addPdfTitle({ $, make }) {
   const title = make("span", "ziaPdfTitle");
   const sidebar = $("viewsManager");
   const toggle = $("viewsManagerToggleButton");
   (sidebar || toggle)?.after(title);
+  return title;
+}
 
-  // Middle, in Dia's order.
-  const centre = make("div", "ziaPdfCentre");
-  middle.prepend(centre);
+// Middle, in Dia's order: the page, "/ 2", zoom out, the percentage, zoom in...
+function addPageAndZoom({ $, make, separator }, centre) {
   const pageInput = $("pageNumber");
   if (pageInput) {
     centre.append(pageInput.closest(".loadingInput") || pageInput);
@@ -87,6 +107,11 @@ export function diaPdf(win) {
     centre.append(zoomIn);
   }
   separator(centre);
+  return { pageInput, count, zoom };
+}
+
+// ...fit to page and rotate...
+function addFitAndRotate({ $, app, button, separator }, centre) {
   button("ziaPdfFit", "Fit to page", centre, () => {
     const viewer = app()?.pdfViewer;
     if (viewer) {
@@ -95,8 +120,10 @@ export function diaPdf(win) {
   });
   button("ziaPdfRotate", "Rotate counterclockwise", centre, () => $("pageRotateCcw")?.click());
   separator(centre);
+}
 
-  // The pen opens the tools row; closing it leaves whichever tool was on.
+// ...the pen, which opens the tools row; closing it leaves whichever tool was on...
+function addPen({ doc, $, make, button, separator }, centre, toolbar, editorButtons) {
   const tools = make("div", "ziaPdfTools");
   if (editorButtons) {
     tools.append(editorButtons);
@@ -118,19 +145,27 @@ export function diaPdf(win) {
     pen.hidden = true;
   }
   separator(centre);
+}
+
+// ...and undo and redo.
+function addUndoRedo({ win, button }, centre) {
   const edit = (name) => () =>
     win.dispatchEvent(new win.CustomEvent("editingaction", { detail: win.JSON.parse(`{"name":"${name}"}`) }));
   button("ziaPdfUndo", "Undo", centre, edit("undo"));
   button("ziaPdfRedo", "Redo", centre, edit("redo"));
+}
 
-  // Right: download before print, like Dia.
+// Right: download before print, like Dia.
+function downloadBeforePrint({ $ }) {
   const print = $("printButton");
   const download = $("downloadButton");
   if (print && download && print.parentNode === download.parentNode) {
     print.before(download);
   }
+}
 
-  // Title, page count and zoom follow PDF.js as it changes them.
+// Title, page count and zoom follow PDF.js as it changes them.
+function followPdfJs({ win, doc, app }, { title, pageInput, count, zoom }) {
   const update = () => {
     const name = (doc.title || "").replace(/\.pdf$/i, "").trim();
     if (title.textContent !== name) {
