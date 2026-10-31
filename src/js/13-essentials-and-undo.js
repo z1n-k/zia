@@ -10,13 +10,8 @@
   const REGROUP_DELAY_MS = 250;
 
   function animateEssentialsAdds() {
-    const manager = window.gZenPinnedTabManager;
-    if (!manager || typeof manager.addToEssentials !== "function" || manager.addToEssentials.__zia) {
-      return;
-    }
     let fromMenu = false;
-    const original = manager.addToEssentials;
-    const patched = function (tab, ...rest) {
+    const replaced = patchMethod(window.gZenPinnedTabManager, "addToEssentials", (original) => function (tab, ...rest) {
       fromMenu = !tab;
       try {
         return original.call(this, tab, ...rest);
@@ -24,9 +19,10 @@
         // (to the end of this turn: Zen can announce the tab once the call has returned)
         setTimeout(() => (fromMenu = false), 0);
       }
-    };
-    patched.__zia = true;
-    manager.addToEssentials = patched;
+    });
+    if (!replaced) {
+      return;
+    }
 
     window.addEventListener("TabAddedToEssentials", (event) => {
       if (!fromMenu || matchMedia("(prefers-reduced-motion: reduce)").matches) {

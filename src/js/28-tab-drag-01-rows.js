@@ -68,10 +68,9 @@
     window.addEventListener("dragend", () => (dragImage.library = false), true);
     window.addEventListener("dragstart", () => (dragImage.zen = false), true);
     for (const name of ["setDragImage", "updateDragImage"]) {
-      const original = DataTransfer.prototype[name];
-      DataTransfer.prototype[name] = function (node, x, y) {
+      patchMethod(DataTransfer.prototype, name, (original) => function (node, x, y) {
         return blanksDragImage(node) ? original.call(this, blankImage(), 0, 0) : original.call(this, node, x, y);
-      };
+      });
     }
   }
 

@@ -218,18 +218,16 @@
 
   const holdOffZenAnimate = () => {
     const ui = window.gZenUIManager;
-    if (ui?.elementAnimate && !ui.elementAnimate.ziaTabLock) {
-      const originalAnimate = ui.elementAnimate.bind(ui);
-      const wrappedAnimate = function (ele, ...args) {
+    patchMethod(ui, "elementAnimate", (elementAnimate) => {
+      const originalAnimate = elementAnimate.bind(ui);
+      return function (ele, ...args) {
         if (Date.now() < blockAnimUntil && ele?.closest?.("#tabbrowser-tabs")) {
           ele.style.removeProperty("transform");
           return Promise.resolve();
         }
         return originalAnimate(ele, ...args);
       };
-      wrappedAnimate.ziaTabLock = true;
-      ui.elementAnimate = wrappedAnimate;
-    }
+    });
   };
 
   const noteShownAtDrop = (event) => {

@@ -265,11 +265,7 @@
   // immediately. The picture sinks while that flight plays. A first click
   // that only asks for confirmation does not hide the tab, so it does not sink.
   function sinkOnGlanceClose(manager) {
-    if (!manager?.closeGlance || manager.closeGlance.ziaGlanceSink) {
-      return;
-    }
-    const originalClose = manager.closeGlance;
-    const closeGlance = function (options) {
+    patchMethod(manager, "closeGlance", (originalClose) => function (options) {
       const glanceTab = options?.noAnimation
         ? null
         : glanceTabsOnNormalTabs().find((tab) => tab.selected || glanceHost.get(tab)?.selected);
@@ -278,18 +274,12 @@
         sinkGlanceThumb(glanceTab, true);
       }
       return result;
-    };
-    closeGlance.ziaGlanceSink = true;
-    manager.closeGlance = closeGlance;
+    });
   }
 
   // (opening a glance into a split marks it, for the sink to wait out the strip's rebuild)
   function markGlanceSplitOpen(manager) {
-    if (!manager?.fullyOpenGlance || manager.fullyOpenGlance.ziaGlanceSink) {
-      return;
-    }
-    const originalOpen = manager.fullyOpenGlance;
-    const fullyOpenGlance = function (options) {
+    patchMethod(manager, "fullyOpenGlance", (originalOpen) => function (options) {
       const splitting = !!options?.forSplit;
       if (splitting) {
         glanceSplitOpen = true;
@@ -303,9 +293,7 @@
           });
         }
       }
-    };
-    fullyOpenGlance.ziaGlanceSink = true;
-    manager.fullyOpenGlance = fullyOpenGlance;
+    });
   }
 
   function photographShowingGlances() {

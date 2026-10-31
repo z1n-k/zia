@@ -24,6 +24,7 @@
     if (desc.get.__zia) {
       return true;
     }
+    // (a getter, so defined in place rather than through patchMethod, with the same mark)
     const original = desc.get;
     const patched = function () {
       try {
@@ -58,39 +59,33 @@
     if (!proto || typeof proto.updateIcon !== "function" || proto.updateIcon.__zia) {
       return !!proto?.updateIcon?.__zia;
     }
-    const originalPosition = proto.updatePosition;
-    if (typeof originalPosition === "function") {
-      proto.updatePosition = function (...args) {
-        const result = originalPosition.apply(this, args);
-        try {
-          const known = this.element.__ziaCard === this;
-          this.element.__ziaCard = this;
-          watchTimeLeft(this);
-          showTimeLeft(this);
-          markLiveStream(this);
-          if (!known) {
-            repaintSoundTabs();
-          }
-        } catch (err) {
-          noteError("music and sound bars: useMediaArtwork", err);
+    patchMethod(proto, "updatePosition", (originalPosition) => function (...args) {
+      const result = originalPosition.apply(this, args);
+      try {
+        const known = this.element.__ziaCard === this;
+        this.element.__ziaCard = this;
+        watchTimeLeft(this);
+        showTimeLeft(this);
+        markLiveStream(this);
+        if (!known) {
+          repaintSoundTabs();
         }
-        return result;
-      };
-    }
+      } catch (err) {
+        noteError("music and sound bars: useMediaArtwork", err);
+      }
+      return result;
+    });
 
-    const original = proto.updateIcon;
     // Zen drops a card if setting it up throws, so nothing here may throw: a slip
     // over a Kick stream's picture had left Kick with no card at all
-    const patched = function () {
+    patchMethod(proto, "updateIcon", (original) => function () {
       original.call(this);
       try {
         dressCardIcon(this);
       } catch (err) {
         noteError("music and sound bars: updateIcon", err);
       }
-    };
-    patched.__zia = true;
-    proto.updateIcon = patched;
+    });
     try {
       front.updateIcon();
       front.updatePosition?.();
@@ -181,6 +176,7 @@
       if (typeof own !== "function" || own.__zia) {
         return;
       }
+      // (defined as the prototype's own, not set through patchMethod: own may come from further up)
       const patched = function () {
         try {
           return own.call(this);
@@ -197,20 +193,17 @@
     };
 
     const manager = window.gZenMediaController;
-    if (!manager || typeof manager.activateMediaControls !== "function" || manager.activateMediaControls.__zia) {
-      return;
-    }
-    const original = manager.activateMediaControls;
-    const activate = function (controller, browser) {
+    const replaced = patchMethod(manager, "activateMediaControls", (original) => function (controller, browser) {
       try {
         answerPosition(controller);
       } catch (err) {
         noteError("music and sound bars: answerPosition", err);
       }
       return original.call(this, controller, browser);
-    };
-    activate.__zia = true;
-    manager.activateMediaControls = activate;
+    });
+    if (!replaced) {
+      return;
+    }
 
     for (const tab of gBrowser.tabs) {
       if (!tab.hasAttribute("soundplaying")) {

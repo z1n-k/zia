@@ -245,6 +245,7 @@
     const dnd = gBrowser.tabContainer.tabDragAndDrop;
     if (dnd) {
       dnd._dontAnimateTabMove = true;
+      // (not through patchMethod: Zen's is never called, and it's set even where Zen has none)
       if (!dnd.handle_drop_transition?.ziaNeutered) {
         const skip = function () {
           this._dontAnimateTabMove = true;

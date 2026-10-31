@@ -606,12 +606,7 @@
 
   // closing: slid out first, then hidden as Firefox would have
   function slideOutOnHide() {
-    const controller = window.SidebarController;
-    if (!controller || typeof controller.hide !== "function" || controller.ziaSlides) {
-      return;
-    }
-    const hide = controller.hide;
-    controller.hide = function (...args) {
+    patchMethod(window.SidebarController, "hide", (hide) => function (...args) {
       if (sidePanel.hiding || sidePanel.box.hidden || !slidesBeside()) {
         return hide.apply(this, args);
       }
@@ -630,6 +625,5 @@
           }
         });
       return undefined;
-    };
-    controller.ziaSlides = true;
+    });
   }

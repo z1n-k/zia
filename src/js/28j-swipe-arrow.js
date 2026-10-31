@@ -280,15 +280,13 @@
   }
 
   function wrapSwipeAnimation(swipe) {
-    const start = swipe.startAnimation;
-    swipe.startAnimation = function () {
+    patchMethod(swipe, "startAnimation", (start) => function () {
       discardSwipe();
       swipeCard.swiping = true;
       swipeCard.tapOwed = false;
       return start.apply(this, arguments);
-    };
-    const update = swipe.updateAnimation;
-    swipe.updateAnimation = function (aSwipeUpdate) {
+    });
+    patchMethod(swipe, "updateAnimation", (update) => function (aSwipeUpdate) {
       const result = update.apply(this, arguments);
       try {
         followSwipe(this, aSwipeUpdate);
@@ -296,9 +294,8 @@
         noteError("swipe arrow: update", err);
       }
       return result;
-    };
-    const stop = swipe.stopAnimation;
-    swipe.stopAnimation = function () {
+    });
+    patchMethod(swipe, "stopAnimation", (stop) => function () {
       swipeCard.swiping = false;
       try {
         leaveSwipe();
@@ -306,22 +303,18 @@
         noteError("swipe arrow: stop", err);
       }
       return stop.apply(this, arguments);
-    };
+    });
   }
 
   // letting go with the card open: no navigating, the card stays
   function keepSwipeCardOnLift(swipe) {
-    const gestures = window.gGestureSupport;
-    const coordinate = gestures?._coordinateSwipeEventWithAnimation;
-    if (gestures && coordinate) {
-      gestures._coordinateSwipeEventWithAnimation = function (aEvent, aDir) {
-        if (swipeOn() && swipeCard.pinned) {
-          swipe.stopAnimation();
-          return;
-        }
-        return coordinate.apply(this, arguments);
-      };
-    }
+    patchMethod(window.gGestureSupport, "_coordinateSwipeEventWithAnimation", (coordinate) => function (aEvent, aDir) {
+      if (swipeOn() && swipeCard.pinned) {
+        swipe.stopAnimation();
+        return;
+      }
+      return coordinate.apply(this, arguments);
+    });
   }
 
   function watchSwipeArrow() {

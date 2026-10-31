@@ -62,12 +62,7 @@
   // reopened with that search in it. Opened with nothing selected, it starts
   // empty; text selected on the page still fills it in.
   function skipClipboardPrefill(findbar) {
-    if (!findbar || findbar.__ziaNoClipboardPrefill || typeof findbar.onCurrentSelection !== "function") {
-      return;
-    }
-    findbar.__ziaNoClipboardPrefill = true;
-    const original = findbar.onCurrentSelection;
-    findbar.onCurrentSelection = function (selectionString, isInitialSelection) {
+    patchMethod(findbar, "onCurrentSelection", (original) => function (selectionString, isInitialSelection) {
       if (!isInitialSelection || selectionString) {
         return original.call(this, selectionString, isInitialSelection);
       }
@@ -87,7 +82,7 @@
         noteError("find bar: skipClipboardPrefill", err);
         return original.call(this, selectionString, isInitialSelection);
       }
-    };
+    });
   }
 
   function dressFindBar(findbar) {

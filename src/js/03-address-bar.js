@@ -135,12 +135,10 @@
 
   function neverShowScheme() {
     const ui = window.gZenUIManager;
-    if (ui && typeof ui.urlbarTrim === "function" && !ui.urlbarTrim.ziaWrapped) {
-      const original = ui.urlbarTrim.bind(ui);
-      const trimmed = (url) => (urlbarTyping && gURLBar.focused ? original(url) : plainAddress(original(url)));
-      trimmed.ziaWrapped = true;
-      ui.urlbarTrim = trimmed;
-    }
+    patchMethod(ui, "urlbarTrim", (urlbarTrim) => {
+      const original = urlbarTrim.bind(ui);
+      return (url) => (urlbarTyping && gURLBar.focused ? original(url) : plainAddress(original(url)));
+    });
 
     const input = gURLBar?.inputField || document.querySelector("#urlbar .urlbar-input");
     if (!input || input.ziaSchemeStripped) {
@@ -151,6 +149,7 @@
       return;
     }
     input.ziaSchemeStripped = true;
+    // (a property with a getter and setter, so defined in place rather than through patchMethod)
     Object.defineProperty(input, "value", {
       configurable: true,
       enumerable: desc.enumerable,
@@ -195,17 +194,12 @@
   let holdWholeSelection = false;
 
   function holdSelectionOnRewrite(input) {
-    if (input.ziaSelectionHeld) {
-      return;
-    }
-    input.ziaSelectionHeld = true;
-    const setRange = input.setSelectionRange;
-    input.setSelectionRange = function (start, end, direction) {
+    patchMethod(input, "setSelectionRange", (setRange) => function (start, end, direction) {
       if (holdWholeSelection && gURLBar.focused) {
         return setRange.call(this, 0, this.value.length, direction);
       }
       return setRange.call(this, start, end, direction);
-    };
+    });
   }
 
   function keepWholeUrlSelected(urlbar) {

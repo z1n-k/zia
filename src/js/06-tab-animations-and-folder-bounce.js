@@ -631,11 +631,7 @@
   }
 
   function addFolderBounce() {
-    const animate = Element.prototype.animate;
-    if (animate.__zia) {
-      return;
-    }
-    const patched = function (keyframes, options) {
+    const replaced = patchMethod(Element.prototype, "animate", (animate) => function (keyframes, options) {
       try {
         keyframes = fadeBackIn(this, keyframes);
         keyframes = settleTuckedPins(this, keyframes);
@@ -672,9 +668,10 @@
         noteError("folder bounce: hold contents", err);
       }
       return animate.call(this, margin || spring.keyframes, spring.options);
-    };
-    patched.__zia = true;
-    Element.prototype.animate = patched;
+    });
+    if (!replaced) {
+      return;
+    }
     window.addEventListener("TabGroupCollapse", noteFolderMotion, true);
     window.addEventListener("TabGroupExpand", noteFolderMotion, true);
   }

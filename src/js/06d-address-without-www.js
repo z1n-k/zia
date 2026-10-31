@@ -3,16 +3,13 @@
   // From 06: nothing (plainAddress is 03's).
 
   function hideWwwInUrlbar() {
-    const original = gURLBar?._zenTrimURL;
-    if (typeof original !== "function" || original.__zia) {
-      return;
-    }
-    const wrapped = function (url) {
+    const replaced = patchMethod(gURLBar, "_zenTrimURL", (original) => function (url) {
       const trimmed = original.call(this, url);
       return typeof trimmed === "string" ? plainAddress(trimmed) : trimmed;
-    };
-    wrapped.__zia = true;
-    gURLBar._zenTrimURL = wrapped;
+    });
+    if (!replaced) {
+      return;
+    }
     try {
       gURLBar.setURI();
     } catch (err) {

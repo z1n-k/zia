@@ -211,6 +211,8 @@
     if (!provider) {
       return;
     }
+    // (not through patchMethod: the original is kept on the provider, shared by every window,
+    // to put back when the setting's turned off)
     const original = provider.ziaOriginalStartQuery || provider.startQuery;
     provider.ziaOriginalStartQuery = original;
     provider.startQuery = function (queryContext, addCallback) {

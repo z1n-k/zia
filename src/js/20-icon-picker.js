@@ -635,6 +635,7 @@
     }
   }
 
+  // (not through patchMethod: it wraps 06c's own replacement of open, once, as the picker's set up)
   function wrapIconPickerOpen(picker) {
     const openPicker = picker.open.bind(picker);
     picker.open = function (anchor, settings = {}) {

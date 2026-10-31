@@ -503,16 +503,9 @@
   }
 
   function quietZenFolderPopup() {
-    const folders = window.gZenFolders;
-    if (!folders || typeof folders.openTabsPopup !== "function" || folders.openTabsPopup.ziaWrapped) {
-      return;
-    }
-    const original = folders.openTabsPopup;
-    const wrapped = function (...args) {
+    patchMethod(window.gZenFolders, "openTabsPopup", (original) => function (...args) {
       return featureOn("tab-hover-cards") ? undefined : original.apply(this, args);
-    };
-    wrapped.ziaWrapped = true;
-    folders.openTabsPopup = wrapped;
+    });
   }
 
   function addTabHoverCards() {

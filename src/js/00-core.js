@@ -2,8 +2,8 @@
 
 // The start of Zia's one scope: the once-per-window guard, and the small helpers every part
 // shares (errors noted once, prefs watched, attributes and styles set or removed).
-// Used elsewhere: isLittleZenWindow, root, XHTML_NS, noteError, watchPrefs, setAttr, setStyle,
-// setFlag, urlbarAtBottom, svgSourceOf.
+// Used elsewhere: isLittleZenWindow, root, XHTML_NS, noteError, watchPrefs, patchMethod, setAttr,
+// setStyle, setFlag, urlbarAtBottom, svgSourceOf.
 (() => {
   if (window.__ziaLoaded) {
     return;
@@ -44,6 +44,20 @@
         Services.prefs.removeObserver(name, fn);
       }
     });
+  }
+
+  // Every Zen or Firefox method Zia replaces goes through here: make(original) returns the
+  // replacement, which calls the original as it needs, and its mark (__zia) keeps a method
+  // from being replaced twice. True if it was replaced now.
+  function patchMethod(target, name, make) {
+    const original = target?.[name];
+    if (typeof original !== "function" || original.__zia) {
+      return false;
+    }
+    const patched = make(original);
+    patched.__zia = true;
+    target[name] = patched;
+    return true;
   }
 
   // an attribute or style property set to a value, or (null) removed

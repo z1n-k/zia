@@ -2,8 +2,8 @@
 
 // The start of Zia's one scope: the once-per-window guard, and the small helpers every part
 // shares (errors noted once, prefs watched, attributes and styles set or removed).
-// Used elsewhere: isLittleZenWindow, root, XHTML_NS, noteError, watchPrefs, setAttr, setStyle,
-// setFlag, urlbarAtBottom, svgSourceOf.
+// Used elsewhere: isLittleZenWindow, root, XHTML_NS, noteError, watchPrefs, patchMethod, setAttr,
+// setStyle, setFlag, urlbarAtBottom, svgSourceOf.
 (() => {
   if (window.__ziaLoaded) {
     return;
@@ -44,6 +44,20 @@
         Services.prefs.removeObserver(name, fn);
       }
     });
+  }
+
+  // Every Zen or Firefox method Zia replaces goes through here: make(original) returns the
+  // replacement, which calls the original as it needs, and its mark (__zia) keeps a method
+  // from being replaced twice. True if it was replaced now.
+  function patchMethod(target, name, make) {
+    const original = target?.[name];
+    if (typeof original !== "function" || original.__zia) {
+      return false;
+    }
+    const patched = make(original);
+    patched.__zia = true;
+    target[name] = patched;
+    return true;
   }
 
   // an attribute or style property set to a value, or (null) removed
@@ -1441,12 +1455,10 @@
 
   function neverShowScheme() {
     const ui = window.gZenUIManager;
-    if (ui && typeof ui.urlbarTrim === "function" && !ui.urlbarTrim.ziaWrapped) {
-      const original = ui.urlbarTrim.bind(ui);
-      const trimmed = (url) => (urlbarTyping && gURLBar.focused ? original(url) : plainAddress(original(url)));
-      trimmed.ziaWrapped = true;
-      ui.urlbarTrim = trimmed;
-    }
+    patchMethod(ui, "urlbarTrim", (urlbarTrim) => {
+      const original = urlbarTrim.bind(ui);
+      return (url) => (urlbarTyping && gURLBar.focused ? original(url) : plainAddress(original(url)));
+    });
 
     const input = gURLBar?.inputField || document.querySelector("#urlbar .urlbar-input");
     if (!input || input.ziaSchemeStripped) {
@@ -1457,6 +1469,7 @@
       return;
     }
     input.ziaSchemeStripped = true;
+    // (a property with a getter and setter, so defined in place rather than through patchMethod)
     Object.defineProperty(input, "value", {
       configurable: true,
       enumerable: desc.enumerable,
@@ -1501,17 +1514,12 @@
   let holdWholeSelection = false;
 
   function holdSelectionOnRewrite(input) {
-    if (input.ziaSelectionHeld) {
-      return;
-    }
-    input.ziaSelectionHeld = true;
-    const setRange = input.setSelectionRange;
-    input.setSelectionRange = function (start, end, direction) {
+    patchMethod(input, "setSelectionRange", (setRange) => function (start, end, direction) {
       if (holdWholeSelection && gURLBar.focused) {
         return setRange.call(this, 0, this.value.length, direction);
       }
       return setRange.call(this, start, end, direction);
-    };
+    });
   }
 
   function keepWholeUrlSelected(urlbar) {
@@ -3289,11 +3297,7 @@
   }
 
   function addFolderBounce() {
-    const animate = Element.prototype.animate;
-    if (animate.__zia) {
-      return;
-    }
-    const patched = function (keyframes, options) {
+    const replaced = patchMethod(Element.prototype, "animate", (animate) => function (keyframes, options) {
       try {
         keyframes = fadeBackIn(this, keyframes);
         keyframes = settleTuckedPins(this, keyframes);
@@ -3330,9 +3334,10 @@
         noteError("folder bounce: hold contents", err);
       }
       return animate.call(this, margin || spring.keyframes, spring.options);
-    };
-    patched.__zia = true;
-    Element.prototype.animate = patched;
+    });
+    if (!replaced) {
+      return;
+    }
     window.addEventListener("TabGroupCollapse", noteFolderMotion, true);
     window.addEventListener("TabGroupExpand", noteFolderMotion, true);
   }
@@ -3798,19 +3803,12 @@
   // From 06: nothing.
 
   function allowEmojiFolderIcons() {
-    const picker = window.gZenEmojiPicker;
-    if (!picker || typeof picker.open !== "function" || picker.open.__zia) {
-      return;
-    }
-    const original = picker.open;
-    const patched = function (anchor, options = {}) {
+    patchMethod(window.gZenEmojiPicker, "open", (original) => function (anchor, options = {}) {
       if (options?.onlySvgIcons && anchor?.closest?.("zen-folder")) {
         options = { ...options, onlySvgIcons: false, emojiAsSVG: true };
       }
       return original.call(this, anchor, options);
-    };
-    patched.__zia = true;
-    picker.open = patched;
+    });
   }
 
   // The address shown without its www. (Zen's own trimmed address, gURLBar._zenTrimURL patched).
@@ -3818,16 +3816,13 @@
   // From 06: nothing (plainAddress is 03's).
 
   function hideWwwInUrlbar() {
-    const original = gURLBar?._zenTrimURL;
-    if (typeof original !== "function" || original.__zia) {
-      return;
-    }
-    const wrapped = function (url) {
+    const replaced = patchMethod(gURLBar, "_zenTrimURL", (original) => function (url) {
       const trimmed = original.call(this, url);
       return typeof trimmed === "string" ? plainAddress(trimmed) : trimmed;
-    };
-    wrapped.__zia = true;
-    gURLBar._zenTrimURL = wrapped;
+    });
+    if (!replaced) {
+      return;
+    }
     try {
       gURLBar.setURI();
     } catch (err) {
@@ -4990,6 +4985,7 @@
     if (desc.get.__zia) {
       return true;
     }
+    // (a getter, so defined in place rather than through patchMethod, with the same mark)
     const original = desc.get;
     const patched = function () {
       try {
@@ -5024,39 +5020,33 @@
     if (!proto || typeof proto.updateIcon !== "function" || proto.updateIcon.__zia) {
       return !!proto?.updateIcon?.__zia;
     }
-    const originalPosition = proto.updatePosition;
-    if (typeof originalPosition === "function") {
-      proto.updatePosition = function (...args) {
-        const result = originalPosition.apply(this, args);
-        try {
-          const known = this.element.__ziaCard === this;
-          this.element.__ziaCard = this;
-          watchTimeLeft(this);
-          showTimeLeft(this);
-          markLiveStream(this);
-          if (!known) {
-            repaintSoundTabs();
-          }
-        } catch (err) {
-          noteError("music and sound bars: useMediaArtwork", err);
+    patchMethod(proto, "updatePosition", (originalPosition) => function (...args) {
+      const result = originalPosition.apply(this, args);
+      try {
+        const known = this.element.__ziaCard === this;
+        this.element.__ziaCard = this;
+        watchTimeLeft(this);
+        showTimeLeft(this);
+        markLiveStream(this);
+        if (!known) {
+          repaintSoundTabs();
         }
-        return result;
-      };
-    }
+      } catch (err) {
+        noteError("music and sound bars: useMediaArtwork", err);
+      }
+      return result;
+    });
 
-    const original = proto.updateIcon;
     // Zen drops a card if setting it up throws, so nothing here may throw: a slip
     // over a Kick stream's picture had left Kick with no card at all
-    const patched = function () {
+    patchMethod(proto, "updateIcon", (original) => function () {
       original.call(this);
       try {
         dressCardIcon(this);
       } catch (err) {
         noteError("music and sound bars: updateIcon", err);
       }
-    };
-    patched.__zia = true;
-    proto.updateIcon = patched;
+    });
     try {
       front.updateIcon();
       front.updatePosition?.();
@@ -5147,6 +5137,7 @@
       if (typeof own !== "function" || own.__zia) {
         return;
       }
+      // (defined as the prototype's own, not set through patchMethod: own may come from further up)
       const patched = function () {
         try {
           return own.call(this);
@@ -5163,20 +5154,17 @@
     };
 
     const manager = window.gZenMediaController;
-    if (!manager || typeof manager.activateMediaControls !== "function" || manager.activateMediaControls.__zia) {
-      return;
-    }
-    const original = manager.activateMediaControls;
-    const activate = function (controller, browser) {
+    const replaced = patchMethod(manager, "activateMediaControls", (original) => function (controller, browser) {
       try {
         answerPosition(controller);
       } catch (err) {
         noteError("music and sound bars: answerPosition", err);
       }
       return original.call(this, controller, browser);
-    };
-    activate.__zia = true;
-    manager.activateMediaControls = activate;
+    });
+    if (!replaced) {
+      return;
+    }
 
     for (const tab of gBrowser.tabs) {
       if (!tab.hasAttribute("soundplaying")) {
@@ -5738,12 +5726,7 @@
   // reopened with that search in it. Opened with nothing selected, it starts
   // empty; text selected on the page still fills it in.
   function skipClipboardPrefill(findbar) {
-    if (!findbar || findbar.__ziaNoClipboardPrefill || typeof findbar.onCurrentSelection !== "function") {
-      return;
-    }
-    findbar.__ziaNoClipboardPrefill = true;
-    const original = findbar.onCurrentSelection;
-    findbar.onCurrentSelection = function (selectionString, isInitialSelection) {
+    patchMethod(findbar, "onCurrentSelection", (original) => function (selectionString, isInitialSelection) {
       if (!isInitialSelection || selectionString) {
         return original.call(this, selectionString, isInitialSelection);
       }
@@ -5763,7 +5746,7 @@
         noteError("find bar: skipClipboardPrefill", err);
         return original.call(this, selectionString, isInitialSelection);
       }
-    };
+    });
   }
 
   function dressFindBar(findbar) {
@@ -6320,13 +6303,8 @@
   const REGROUP_DELAY_MS = 250;
 
   function animateEssentialsAdds() {
-    const manager = window.gZenPinnedTabManager;
-    if (!manager || typeof manager.addToEssentials !== "function" || manager.addToEssentials.__zia) {
-      return;
-    }
     let fromMenu = false;
-    const original = manager.addToEssentials;
-    const patched = function (tab, ...rest) {
+    const replaced = patchMethod(window.gZenPinnedTabManager, "addToEssentials", (original) => function (tab, ...rest) {
       fromMenu = !tab;
       try {
         return original.call(this, tab, ...rest);
@@ -6334,9 +6312,10 @@
         // (to the end of this turn: Zen can announce the tab once the call has returned)
         setTimeout(() => (fromMenu = false), 0);
       }
-    };
-    patched.__zia = true;
-    manager.addToEssentials = patched;
+    });
+    if (!replaced) {
+      return;
+    }
 
     window.addEventListener("TabAddedToEssentials", (event) => {
       if (!fromMenu || matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -7617,11 +7596,7 @@
   function flyFirstDownloadToButton() {
     customElements.whenDefined("zen-download-animation").then(() => {
       const proto = customElements.get("zen-download-animation")?.prototype;
-      const original = proto?.initializeAnimation;
-      if (typeof original !== "function" || original.__zia) {
-        return;
-      }
-      const patched = async function (...args) {
+      patchMethod(proto, "initializeAnimation", (original) => async function (...args) {
         // (Zia's own flight, a row with the file's icon and name, flyDownloadRows)
         if (downloadFlightOn && flightTarget()) {
           return undefined;
@@ -7637,9 +7612,7 @@
           await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         }
         return original.apply(this, args);
-      };
-      patched.__zia = true;
-      proto.initializeAnimation = patched;
+      });
     }, () => {});
   }
 
@@ -8578,6 +8551,7 @@
     }
   }
 
+  // (not through patchMethod: it wraps 06c's own replacement of open, once, as the picker's set up)
   function wrapIconPickerOpen(picker) {
     const openPicker = picker.open.bind(picker);
     picker.open = function (anchor, settings = {}) {
@@ -12178,16 +12152,9 @@
   }
 
   function quietZenFolderPopup() {
-    const folders = window.gZenFolders;
-    if (!folders || typeof folders.openTabsPopup !== "function" || folders.openTabsPopup.ziaWrapped) {
-      return;
-    }
-    const original = folders.openTabsPopup;
-    const wrapped = function (...args) {
+    patchMethod(window.gZenFolders, "openTabsPopup", (original) => function (...args) {
       return featureOn("tab-hover-cards") ? undefined : original.apply(this, args);
-    };
-    wrapped.ziaWrapped = true;
-    folders.openTabsPopup = wrapped;
+    });
   }
 
   function addTabHoverCards() {
@@ -12514,10 +12481,9 @@
     window.addEventListener("dragend", () => (dragImage.library = false), true);
     window.addEventListener("dragstart", () => (dragImage.zen = false), true);
     for (const name of ["setDragImage", "updateDragImage"]) {
-      const original = DataTransfer.prototype[name];
-      DataTransfer.prototype[name] = function (node, x, y) {
+      patchMethod(DataTransfer.prototype, name, (original) => function (node, x, y) {
         return blanksDragImage(node) ? original.call(this, blankImage(), 0, 0) : original.call(this, node, x, y);
-      };
+      });
     }
   }
 
@@ -14329,6 +14295,7 @@
 
   const trackCopy = (node) => {
     liveCopies.add(node);
+    // (the copy is Zia's own element, so its remove is replaced directly)
     node.remove = function () {
       removeCopy(this);
     };
@@ -16321,18 +16288,16 @@
 
   const holdOffZenAnimate = () => {
     const ui = window.gZenUIManager;
-    if (ui?.elementAnimate && !ui.elementAnimate.ziaTabLock) {
-      const originalAnimate = ui.elementAnimate.bind(ui);
-      const wrappedAnimate = function (ele, ...args) {
+    patchMethod(ui, "elementAnimate", (elementAnimate) => {
+      const originalAnimate = elementAnimate.bind(ui);
+      return function (ele, ...args) {
         if (Date.now() < blockAnimUntil && ele?.closest?.("#tabbrowser-tabs")) {
           ele.style.removeProperty("transform");
           return Promise.resolve();
         }
         return originalAnimate(ele, ...args);
       };
-      wrappedAnimate.ziaTabLock = true;
-      ui.elementAnimate = wrappedAnimate;
-    }
+    });
   };
 
   const noteShownAtDrop = (event) => {
@@ -16792,6 +16757,7 @@
     const dnd = gBrowser.tabContainer.tabDragAndDrop;
     if (dnd) {
       dnd._dontAnimateTabMove = true;
+      // (not through patchMethod: Zen's is never called, and it's set even where Zen has none)
       if (!dnd.handle_drop_transition?.ziaNeutered) {
         const skip = function () {
           this._dontAnimateTabMove = true;
@@ -18401,11 +18367,7 @@
   // immediately. The picture sinks while that flight plays. A first click
   // that only asks for confirmation does not hide the tab, so it does not sink.
   function sinkOnGlanceClose(manager) {
-    if (!manager?.closeGlance || manager.closeGlance.ziaGlanceSink) {
-      return;
-    }
-    const originalClose = manager.closeGlance;
-    const closeGlance = function (options) {
+    patchMethod(manager, "closeGlance", (originalClose) => function (options) {
       const glanceTab = options?.noAnimation
         ? null
         : glanceTabsOnNormalTabs().find((tab) => tab.selected || glanceHost.get(tab)?.selected);
@@ -18414,18 +18376,12 @@
         sinkGlanceThumb(glanceTab, true);
       }
       return result;
-    };
-    closeGlance.ziaGlanceSink = true;
-    manager.closeGlance = closeGlance;
+    });
   }
 
   // (opening a glance into a split marks it, for the sink to wait out the strip's rebuild)
   function markGlanceSplitOpen(manager) {
-    if (!manager?.fullyOpenGlance || manager.fullyOpenGlance.ziaGlanceSink) {
-      return;
-    }
-    const originalOpen = manager.fullyOpenGlance;
-    const fullyOpenGlance = function (options) {
+    patchMethod(manager, "fullyOpenGlance", (originalOpen) => function (options) {
       const splitting = !!options?.forSplit;
       if (splitting) {
         glanceSplitOpen = true;
@@ -18439,9 +18395,7 @@
           });
         }
       }
-    };
-    fullyOpenGlance.ziaGlanceSink = true;
-    manager.fullyOpenGlance = fullyOpenGlance;
+    });
   }
 
   function photographShowingGlances() {
@@ -19150,12 +19104,7 @@
 
   // closing: slid out first, then hidden as Firefox would have
   function slideOutOnHide() {
-    const controller = window.SidebarController;
-    if (!controller || typeof controller.hide !== "function" || controller.ziaSlides) {
-      return;
-    }
-    const hide = controller.hide;
-    controller.hide = function (...args) {
+    patchMethod(window.SidebarController, "hide", (hide) => function (...args) {
       if (sidePanel.hiding || sidePanel.box.hidden || !slidesBeside()) {
         return hide.apply(this, args);
       }
@@ -19174,8 +19123,7 @@
           }
         });
       return undefined;
-    };
-    controller.ziaSlides = true;
+    });
   }
   // A page gone full screen inside the window (a YouTube video) is shown square,
   // edge to edge: it kept the page's rounded card, grey behind the video's corners.
@@ -19470,15 +19418,13 @@
   }
 
   function wrapSwipeAnimation(swipe) {
-    const start = swipe.startAnimation;
-    swipe.startAnimation = function () {
+    patchMethod(swipe, "startAnimation", (start) => function () {
       discardSwipe();
       swipeCard.swiping = true;
       swipeCard.tapOwed = false;
       return start.apply(this, arguments);
-    };
-    const update = swipe.updateAnimation;
-    swipe.updateAnimation = function (aSwipeUpdate) {
+    });
+    patchMethod(swipe, "updateAnimation", (update) => function (aSwipeUpdate) {
       const result = update.apply(this, arguments);
       try {
         followSwipe(this, aSwipeUpdate);
@@ -19486,9 +19432,8 @@
         noteError("swipe arrow: update", err);
       }
       return result;
-    };
-    const stop = swipe.stopAnimation;
-    swipe.stopAnimation = function () {
+    });
+    patchMethod(swipe, "stopAnimation", (stop) => function () {
       swipeCard.swiping = false;
       try {
         leaveSwipe();
@@ -19496,22 +19441,18 @@
         noteError("swipe arrow: stop", err);
       }
       return stop.apply(this, arguments);
-    };
+    });
   }
 
   // letting go with the card open: no navigating, the card stays
   function keepSwipeCardOnLift(swipe) {
-    const gestures = window.gGestureSupport;
-    const coordinate = gestures?._coordinateSwipeEventWithAnimation;
-    if (gestures && coordinate) {
-      gestures._coordinateSwipeEventWithAnimation = function (aEvent, aDir) {
-        if (swipeOn() && swipeCard.pinned) {
-          swipe.stopAnimation();
-          return;
-        }
-        return coordinate.apply(this, arguments);
-      };
-    }
+    patchMethod(window.gGestureSupport, "_coordinateSwipeEventWithAnimation", (coordinate) => function (aEvent, aDir) {
+      if (swipeOn() && swipeCard.pinned) {
+        swipe.stopAnimation();
+        return;
+      }
+      return coordinate.apply(this, arguments);
+    });
   }
 
   function watchSwipeArrow() {
@@ -20578,6 +20519,8 @@
     if (!provider) {
       return;
     }
+    // (not through patchMethod: the original is kept on the provider, shared by every window,
+    // to put back when the setting's turned off)
     const original = provider.ziaOriginalStartQuery || provider.startQuery;
     provider.ziaOriginalStartQuery = original;
     provider.startQuery = function (queryContext, addCallback) {

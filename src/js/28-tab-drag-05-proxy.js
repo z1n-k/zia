@@ -364,6 +364,7 @@
 
   const trackCopy = (node) => {
     liveCopies.add(node);
+    // (the copy is Zia's own element, so its remove is replaced directly)
     node.remove = function () {
       removeCopy(this);
     };

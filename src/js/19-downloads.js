@@ -107,11 +107,7 @@
   function flyFirstDownloadToButton() {
     customElements.whenDefined("zen-download-animation").then(() => {
       const proto = customElements.get("zen-download-animation")?.prototype;
-      const original = proto?.initializeAnimation;
-      if (typeof original !== "function" || original.__zia) {
-        return;
-      }
-      const patched = async function (...args) {
+      patchMethod(proto, "initializeAnimation", (original) => async function (...args) {
         // (Zia's own flight, a row with the file's icon and name, flyDownloadRows)
         if (downloadFlightOn && flightTarget()) {
           return undefined;
@@ -127,9 +123,7 @@
           await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         }
         return original.apply(this, args);
-      };
-      patched.__zia = true;
-      proto.initializeAnimation = patched;
+      });
     }, () => {});
   }
 
