@@ -40,16 +40,18 @@ const zia = Object.fromEntries(
 const zenAndFirefox = Object.fromEntries(ZEN_AND_FIREFOX.map((name) => [name, both(name)]));
 const marks = Object.fromEntries(ONCE_MARKS.map((name) => [name, both(name)]));
 
+// (each read once Zia has followed the switch)
+const followed = async (name, from) => {
+  await until(() => JSON.stringify(both(name)) !== JSON.stringify(from), { what: `${name} to follow` });
+  return steady(() => both(name));
+};
 Services.prefs.setBoolPref("zia.urlbar.full-url", true);
-await wait(300);
-const fullAddress = both("browser.urlbar.trimHttps");
+const fullAddress = await followed("browser.urlbar.trimHttps", zenAndFirefox["browser.urlbar.trimHttps"]);
 Services.prefs.clearUserPref("zia.urlbar.full-url");
-await wait(300);
-const trimmedAgain = both("browser.urlbar.trimHttps");
+const trimmedAgain = await followed("browser.urlbar.trimHttps", fullAddress);
 const pipFrom = both("media.videocontrols.picture-in-picture.enable-when-switching-tabs.enabled");
 Services.prefs.setBoolPref("zia.pip.auto-on-tab-switch", !Services.prefs.getBoolPref("zia.pip.auto-on-tab-switch"));
-await wait(300);
-const pipTo = both("media.videocontrols.picture-in-picture.enable-when-switching-tabs.enabled");
+const pipTo = await followed("media.videocontrols.picture-in-picture.enable-when-switching-tabs.enabled", pipFrom);
 
 done({
   zia,

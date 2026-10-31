@@ -3,9 +3,11 @@
 // out of the essential by the time it says it's closed, so none shows (recorded as it is).
 const [a, b] = await addTabs(["A", "B"]);
 gZenPinnedTabManager.addToEssentials(b);
-await wait(800);
+await until(() => b.hasAttribute("zen-essential"));
+await atRest();
 gBrowser.selectedTab = b;
-await wait(800);
+await until(() => b.linkedBrowser.docShellIsActive);
+await atRest();
 let seenGhost = null;
 const watcher = new MutationObserver(() => {
   const ghost = document.querySelector(".zia-glance-ghost");
@@ -14,10 +16,14 @@ const watcher = new MutationObserver(() => {
   }
 });
 watcher.observe(gBrowser.tabContainer, { childList: true, subtree: true });
-const springs = await animationsDuring(() => {
+const glanceTab = () => gBrowser.tabs.find((tab) => tab.hasAttribute("zen-glance-tab"));
+// (watched from when the glance's tab is in, which Zen makes as it opens)
+const springs = await animationsDuring(async () => {
   gZenGlanceManager.openGlance({ url: "data:text/html,<title>Peek</title>Peek", clientX: 400, clientY: 300, width: 10, height: 10, triggeringPrincipal: SYSTEM });
+  await until(glanceTab);
 }, 1500);
-const glance = gBrowser.tabs.find((tab) => tab.hasAttribute("zen-glance-tab"));
+await until(() => glanceTab()?.getAttribute("zia-glance-shown"));
+const glance = glanceTab();
 const open = {
   on: nameOf(glance?.parentElement?.closest(".tabbrowser-tab")),
   shown: glance?.getAttribute("zia-glance-shown"),
@@ -26,7 +32,8 @@ const open = {
   springs: springs.filter((line) => line.startsWith("tab:") && line.includes("rotate:")).map((line) => line.replace(/^tab:\S+ /, "tab ")),
 };
 gZenGlanceManager.closeGlance({ onTabClose: true });
-await wait(1500);
+await until(() => !glanceTab() && !document.querySelector(".zia-glance-ghost"));
+await atRest();
 watcher.disconnect();
 const closed = { glances: gBrowser.tabs.filter((tab) => tab.hasAttribute("zen-glance-tab")).length, ghosts: document.querySelectorAll(".zia-glance-ghost").length, ghost: seenGhost };
 done({

@@ -2,7 +2,7 @@
  "checks": {
   "its box ends the gap below the inner one's": true,
   "left again is as before": true,
-  "the folder ending in a folder has its bottom set": true,
+  "the outer folder ends in the inner one": true,
   "the sidebar changes side": true,
   "the tab and folder edges are measured": true
  },
@@ -11,11 +11,10 @@
   "folders": {
    "F": {
     "endsTheGapBelow": true,
-    "lastIsFolder": true,
-    "set": true
+    "lastIsFolder": true
    },
    "G": {
-    "set": false
+    "lastIsFolder": false
    }
   },
   "side": "left",
@@ -30,11 +29,10 @@
   "folders": {
    "F": {
     "endsTheGapBelow": true,
-    "lastIsFolder": true,
-    "set": true
+    "lastIsFolder": true
    },
    "G": {
-    "set": false
+    "lastIsFolder": false
    }
   },
   "side": "left",
@@ -49,11 +47,10 @@
   "folders": {
    "F": {
     "endsTheGapBelow": true,
-    "lastIsFolder": true,
-    "set": true
+    "lastIsFolder": true
    },
    "G": {
-    "set": false
+    "lastIsFolder": false
    }
   },
   "side": "right",

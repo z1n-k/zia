@@ -20,7 +20,8 @@ const tiles = await addTabs(["E1", "E2"]);
 for (const tab of tiles) {
   gZenPinnedTabManager.addToEssentials(tab);
 }
-await wait(1200);
+await until(() => tiles.every((tab) => tab.hasAttribute("zen-essential")));
+await atRest();
 const drift = () =>
   Object.fromEntries(
     gBrowser.tabs
@@ -36,21 +37,21 @@ const drift = () =>
           }),
       ])
   );
+// (each read once the open essential's drift has come or gone, and held)
+const drifting = async (name) => {
+  await until(() => Object.entries(drift()).every(([tile, list]) => (tile === name ? list.length > 0 : !list.length)));
+  return steady(drift);
+};
 gBrowser.selectedTab = named("E1");
-await wait(800);
-const drifts = { E1: drift() };
+const drifts = { E1: await drifting("E1") };
 gBrowser.selectedTab = named("E2");
-await wait(800);
-drifts.E2 = drift();
+drifts.E2 = await drifting("E2");
 ultra(false);
-await wait(500);
-drifts.ultraOff = drift();
+drifts.ultraOff = await drifting(null);
 ultra(true);
-await wait(500);
-drifts.ultraOn = drift();
+drifts.ultraOn = await drifting("E2");
 Services.prefs.setBoolPref("zen.theme.essentials-favicon-bg", false);
-await wait(500);
-drifts.zenColourOff = drift();
+drifts.zenColourOff = await drifting(null);
 
 // The orb on a loading tab
 const [busy] = await addTabs(["Busy"]);
@@ -64,33 +65,39 @@ const orbOf = () => {
 const load = (changed) => gBrowser._tabAttrModified(busy, changed);
 busy.setAttribute("busy", "true");
 load(["busy"]);
+// (a moment in, well before the orb's own wait: a timer of Zia's due later, so always after this)
 await wait(100);
 const orbs = { "a moment in": orbOf() };
-await wait(600);
-orbs.loading = orbOf();
+await until(() => orbOf().canvas);
+orbs.loading = await steady(orbOf);
+// (each still frame read once it's drawn afresh, from the last one, and held)
+const drawn = { pixels: null };
+const redrawn = async () => {
+  const before = drawn.pixels;
+  await until(() => busy.querySelector("canvas.zia-orb") && pixels(busy.querySelector("canvas.zia-orb")) !== before);
+  const seen = await steady(() => ({ ...orbOf(), pixels: pixels(busy.querySelector("canvas.zia-orb")) }));
+  drawn.pixels = seen.pixels;
+  return seen;
+};
 Services.prefs.setIntPref("ui.prefersReducedMotion", 1);
-await wait(600);
-orbs.still = { ...orbOf(), pixels: pixels(busy.querySelector("canvas.zia-orb")) };
+orbs.still = await redrawn();
 busy.setAttribute("progress", "true");
 load(["progress"]);
-await wait(300);
-orbs.searching = { ...orbOf(), pixels: pixels(busy.querySelector("canvas.zia-orb")) };
+orbs.searching = await redrawn();
 document.documentElement.setAttribute("zia-light", "true");
-await wait(300);
-orbs.light = { ...orbOf(), pixels: pixels(busy.querySelector("canvas.zia-orb")) };
+orbs.light = await redrawn();
 document.documentElement.removeAttribute("zia-light");
-await wait(300);
-orbs.dark = { ...orbOf(), pixels: pixels(busy.querySelector("canvas.zia-orb")) };
+orbs.dark = await redrawn();
 ultra(false);
-await wait(300);
-orbs.ultraOff = orbOf();
+await until(() => !orbOf().canvas);
+orbs.ultraOff = await steady(orbOf);
 ultra(true);
-await wait(800);
-orbs.ultraOn = { ...orbOf(), pixels: pixels(busy.querySelector("canvas.zia-orb")) };
+drawn.pixels = null;
+orbs.ultraOn = await redrawn();
 busy.removeAttribute("busy");
 busy.removeAttribute("progress");
 load(["busy", "progress"]);
-await wait(300);
+await until(() => !orbOf().canvas && !orbOf().tab);
 orbs.loaded = orbOf();
 
 // The glow under the music card (see music.js for the tab that plays)
@@ -120,7 +127,12 @@ ctx.fillRect(0, 0, 16, 32);
 ctx.fillStyle = "rgb(30, 80, 230)";
 ctx.fillRect(16, 0, 16, 32);
 navigator.mediaSession.metadata = new MediaMetadata({ title: "Zia Song", artist: "Zia Test", artwork: [{ src: art.toDataURL(), sizes: "32x32", type: "image/png" }] });
-a.onloadedmetadata = () => a.play();
+// (played once it knows its length: already, if that came before this ran, as it can on a busy Mac)
+if (a.readyState >= 1) {
+  a.play();
+} else {
+  a.onloadedmetadata = () => a.play();
+}
 </script>`;
 const file = PathUtils.join(PathUtils.profileDir, "music.html");
 await IOUtils.writeUTF8(file, page);
@@ -129,11 +141,12 @@ music.setAttribute("zia-test", "Music");
 const [other] = await addTabs(["Other"]);
 gBrowser.selectedTab = other;
 const controller = () => music.linkedBrowser.browsingContext?.mediaController;
-for (let i = 0; i < 40 && !controller()?.isPlaying; i++) {
-  await wait(250);
-}
-await wait(2500);
-const card = document.querySelector("#zen-media-controls-toolbar .zen-media-card");
+await until(() => controller()?.isPlaying, { what: "the tone to play", timeout: 30000 });
+// (Zen's card up, dressed by Zia as in music.js, with its glow in)
+const card = await until(() => {
+  const el = document.querySelector("#zen-media-controls-toolbar .zen-media-card");
+  return el?.hasAttribute("zia-glow-ready") && el.querySelector(".zen-media-focus-button[zia-art]") && el.querySelector(".zia-glow") && el;
+}, { what: "the music card, dressed, with its glow", timeout: 20000 });
 const glowOf = () => {
   const root = card?.querySelector(".zia-glow");
   if (!root) {
@@ -148,15 +161,16 @@ const glowOf = () => {
     canvas: `${root.querySelector("canvas").width}x${root.querySelector("canvas").height} ${pixels(root.querySelector("canvas"))}`,
   };
 };
-const glows = { playing: glowOf() };
+const glows = { playing: await steady(glowOf, { quiet: 500 }) };
 EU.synthesizeMouseAtCenter(card, { type: "mousemove" }, window);
-await wait(2000);
-glows.pointedAt = glowOf();
+// (lit, its still frame drawn, and held)
+await until(() => glowOf()?.attributes.includes("data-on=") && glowOf().values["--zg-glow"]);
+glows.pointedAt = await steady(glowOf, { quiet: 500 });
 EU.synthesizeMouseAtCenter(other, { type: "mousemove" }, window);
-await wait(1500);
-glows.left = glowOf();
+await until(() => !glowOf()?.attributes.includes("data-on="));
+glows.left = await steady(glowOf, { quiet: 500 });
 ultra(false);
-await wait(500);
+await until(() => glowOf() === null);
 glows.ultraOff = glowOf();
 done({
   drifts,

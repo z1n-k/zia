@@ -6,10 +6,12 @@
 Services.prefs.setBoolPref("zen.haptic-feedback.enabled", false);
 const [tab] = await addTabs(["P1"]);
 gBrowser.selectedTab = tab;
-await wait(300);
+await until(() => tab.linkedBrowser.docShellIsActive);
+await atRest();
 for (const name of ["P2", "P3"]) {
   gBrowser.selectedBrowser.loadURI(Services.io.newURI(`data:text/html,<title>${name}</title>${name}`), { triggeringPrincipal: SYSTEM });
-  await wait(600);
+  await until(() => tab.label === name && !gBrowser.selectedBrowser.webProgress.isLoadingDocument);
+  await atRest();
 }
 const swipe = gHistorySwipeAnimation;
 // (what a trackpad's swipe update carries: the event, for the gesture's command, and how far)
@@ -29,32 +31,30 @@ const marked = document.documentElement.hasAttribute("zia-swipe-arrow");
 
 swipe.startAnimation();
 update(0.1);
-await wait(50);
-const partWay = arrow();
+const partWay = await until(arrow);
 update(0.3);
-await wait(50);
-const far = arrow();
-await wait(700);
+const far = await until(() => arrow()?.marks.includes("will") && arrow());
+// (held there, it opens a moment on, and settles a moment after that)
+await until(() => arrow()?.marks.includes("settled"));
 const held = { ...arrow(), backdrop: !!document.getElementById("zia-swipe-backdrop") };
 swipe.stopAnimation();
+// (and a moment after the lift, still open)
 await wait(100);
 const lifted = arrow();
 const row = document.querySelectorAll("#zia-swipe .zia-swipe-page")[1];
+// (read as the click lands: the card's on its way out, and goes a moment later)
 EU.synthesizeMouseAtCenter(row, {}, window);
-await wait(50);
 const clicked = arrow();
-await wait(1000);
+await until(() => !arrow() && gBrowser.selectedTab.label !== "P3" && !gBrowser.selectedBrowser.webProgress.isLoadingDocument);
 const page = gBrowser.selectedTab.label;
 const gone = arrow();
 
 swipe.startAnimation();
 update(-0.1);
-await wait(50);
-const early = arrow();
+const early = await until(() => arrow()?.side === "forward" && arrow());
 swipe.stopAnimation();
-await wait(50);
 const earlyLeaving = arrow();
-await wait(500);
+await until(() => !arrow());
 
 done({
   marked,

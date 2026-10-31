@@ -2,9 +2,66 @@
 // Zen's browser window). A flow is the body of an async function: it ends with done(result),
 // result being what it saw, the same on every run of an unchanged Zia.
 
-const done = arguments[arguments.length - 1];
+// (the flow's own servers, see serve(), are closed as it ends, however it ends)
+const servers = [];
+const finish = arguments[arguments.length - 1];
+const done = (result) => {
+  for (const server of servers.splice(0)) {
+    server.close();
+  }
+  finish(result);
+};
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const frame = () => new Promise((resolve) => requestAnimationFrame(() => resolve()));
+// Waits for a state rather than a fixed time: resolves with test()'s value as soon as it's
+// truthy (a test that throws counts as not yet), and past `timeout` throws, naming what it
+// waited for (`what`, or else the test's own code). A busy Mac only makes it slower, never wrong.
+async function until(test, { what = "", timeout = 10000, every = 50 } = {}) {
+  const end = Date.now() + timeout;
+  for (;;) {
+    let value;
+    let threw = null;
+    try {
+      value = await test();
+    } catch (e) {
+      threw = e;
+    }
+    if (value) {
+      return value;
+    }
+    if (Date.now() >= end) {
+      const named = what || String(test).replace(/\s+/g, " ");
+      throw new Error(`waited ${timeout / 1000}s for ${named}, in vain${threw ? ` (it last threw ${threw})` : ""}`);
+    }
+    await wait(every);
+  }
+}
+// Waits for read() to give the same answer (as JSON) for `quiet` ms on end, and resolves with
+// it: for a state reached in steps (a card dressed bit by bit, a page's styles), where no one
+// step says it's all there. (A first answer that's falsy never counts.)
+async function steady(read, { quiet = 300, what = "", timeout = 10000, every = 50 } = {}) {
+  let last;
+  let since = Date.now();
+  return until(
+    async () => {
+      const value = await read();
+      const text = JSON.stringify(value);
+      if (text !== last) {
+        last = text;
+        since = Date.now();
+        return false;
+      }
+      return value && Date.now() - since >= quiet && value;
+    },
+    { what: what || `${String(read).replace(/\s+/g, " ")} to hold still`, timeout, every }
+  );
+}
+// Whether nothing in the window is moving: no animation or transition that has an end is still
+// running (an endless one, a loading spinner or Ultra's drift, doesn't count)
+const still = () => document.getAnimations().every((a) => a.playState !== "running" || !Number.isFinite(a.effect?.getComputedTiming().endTime));
+// Waits for the window to come to rest: still, and staying so for `quiet` ms (so a motion
+// that starts a frame or a timer later isn't missed)
+const atRest = ({ quiet = 150, what = "the window to come to rest", timeout = 10000 } = {}) => steady(still, { quiet, what, timeout });
 // Firefox's own test helpers (EventUtils.js, handed in by run.py), for faking clicks, keys and
 // the mouse; run in a sandbox over the window, as Firefox's own tests run them
 const EU = Cu.Sandbox(window, { sandboxPrototype: window, wantXrays: false });
@@ -13,10 +70,9 @@ Cu.evalInSandbox(arguments[0], EU);
 const SYSTEM = Services.scriptSecurityManager.getSystemPrincipal();
 
 async function ready() {
-  // (half a minute: Zia is in within seconds even on a busy Mac; past that, Sine never loaded)
-  for (let i = 0; i < 120 && !window.__ziaLoaded; i++) {
-    await wait(250);
-  }
+  // (half a minute: Zia is in within seconds even on a busy Mac; past that, Sine never loaded,
+  // which run.py tries again in a fresh profile, so it says so in its own words)
+  await until(() => window.__ziaLoaded, { timeout: 30000, every: 250 }).catch(() => {});
   if (!window.__ziaLoaded) {
     // (with the browser's own start-up errors, to say why)
     const errors = Services.console
@@ -31,12 +87,15 @@ async function ready() {
     };
     throw new Error(`Zia didn't load (${JSON.stringify(state)}). Start-up errors: ${errors.join(" | ") || "none"}`);
   }
+  // (and its start, which waits for the window's own: it has run once its last part is in)
+  await until(() => window.gBrowserInit?.delayedStartupFinished && document.getElementById("zia-copy-link-button"), { what: "Zia to start", timeout: 20000 });
   // (the hidden window's first click only wakes it, so it goes to a spot of the harness's own)
   const primer = document.createXULElement("box");
   primer.style.cssText = "position:fixed;left:0;bottom:0;width:4px;height:4px;z-index:2147483647";
   document.documentElement.append(primer);
   EU.synthesizeMouseAtCenter(primer, {}, window);
   primer.remove();
+  // (and a moment more, as some of its start-up is on timers, up to a second or two in)
   await wait(1500);
 }
 
@@ -60,7 +119,9 @@ async function addTabs(names, options = {}) {
     tab.setAttribute("zia-test", name);
     tabs.push(tab);
   }
-  await wait(900);
+  // (each loaded, with its title, and grown in)
+  await until(() => tabs.every((tab) => tab.label === tab.getAttribute("zia-test") && !tab.hasAttribute("busy")), { what: `the tabs ${names.join(", ")} to load` });
+  await atRest();
   return tabs;
 }
 
@@ -90,8 +151,9 @@ function slides() {
 
 // A drag as Firefox makes one in its own tests: a drag session, one DataTransfer for every
 // event, dragstart on the source and dragover at each point (on whatever is under it).
-// `during(step)` runs between points; `drop: false` lets it go without dropping.
-async function drag(source, points, { during = null, drop = true, settle = 1000 } = {}) {
+// `during(step)` runs between points; `drop: false` lets it go without dropping; `landed` says
+// when what the drop does has happened.
+async function drag(source, points, { during = null, drop = true, landed = () => true } = {}) {
   const service = Cc["@mozilla.org/widget/dragservice;1"].getService(Ci.nsIDragService);
   service.startDragSessionForTests(window, Ci.nsIDragService.DRAGDROP_ACTION_MOVE);
   const session = window.windowUtils.dragSession;
@@ -130,7 +192,11 @@ async function drag(source, points, { during = null, drop = true, settle = 1000 
   // (a drop that ended the drag itself has ended the session already)
   window.windowUtils.dragSession?.endDragSession(true);
   EU.synthesizeMouse(target, 2, 2, { type: "mouseup" }, window);
-  await wait(settle);
+  // (landed: the drag's marks gone and what the drop does done, which Zen can take its time
+  // over, then all come to rest and held still a while, as a drop lands in steps, a timer or a
+  // frame apart. A drop that never does what it should is left to the flow's checks to say.)
+  await until(() => !document.querySelector("[zia-dragging-tab], [zia-landing], [zia-settling], [zia-drop-lock]") && landed()).catch(() => {});
+  await atRest({ quiet: 300 });
   return seen;
 }
 
@@ -177,10 +243,12 @@ async function animationsDuring(action, ms = 900) {
 
 // A tiny web server of the flow's own, on localhost, so a flow can show real http pages
 // (a site, to Zia) without the network. `pages` maps a path to its HTML; anything else is a
-// 404. The port is the system's pick, so results leave it out (see `unported`).
+// 404. The port is the system's pick, so results leave it out (see `unported`). It's closed
+// when the flow calls done().
 function serve(pages) {
   const server = Cc["@mozilla.org/network/server-socket;1"].createInstance(Ci.nsIServerSocket);
   server.init(-1, true, -1);
+  servers.push(server);
   server.asyncListen({
     onSocketAccepted(socket, transport) {
       const input = transport.openInputStream(0, 0, 0);

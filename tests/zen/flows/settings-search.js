@@ -2,11 +2,12 @@
 // their sections), clicking a row's switch writes its setting and the switch follows, Esc first
 // clears the search, then closes the page.
 PanelUI.show();
-await wait(1000);
-document.getElementById("zia-settings-menu-button").doCommand();
-await wait(1200);
-const page = document.getElementById("zia-settings");
+// (the menu is built as it first opens, the page once its list of settings has loaded)
+(await until(() => PanelUI.panel.state === "open" && document.getElementById("zia-settings-menu-button"))).doCommand();
+const page = await until(() => document.getElementById("zia-settings")?.querySelector(".zia-set-row") && document.getElementById("zia-settings"));
 const search = page.querySelector(".zia-set-search input");
+// (it focuses its search as it opens)
+await until(() => document.activeElement === search);
 const visible = () => ({
   sections: [...page.querySelectorAll(".zia-set-section")].filter((el) => !el.hidden).map((el) => el.querySelector(".zia-set-section-title").textContent),
   nav: [...page.querySelectorAll(".zia-set-nav-item")].filter((el) => !el.hidden).map((el) => el.textContent),
@@ -17,23 +18,23 @@ const focused = document.activeElement === search;
 const all = visible().rows.length;
 search.focus();
 EU.sendString("sound bars", window);
-await wait(300);
-const searched = visible();
+const searched = await until(() => visible().rows.length < all && visible());
 const row = [...page.querySelectorAll(".zia-set-row")].find((el) => el.querySelector(".zia-set-label").firstChild.textContent === "Sound bars");
 const toggle = row.querySelector(".zia-set-switch");
 const before = { pref: Services.prefs.getBoolPref("zia.tabs.sound-bars", true), checked: toggle.getAttribute("aria-checked") };
 EU.synthesizeMouseAtCenter(toggle, {}, window);
-await wait(300);
-const after = { pref: Services.prefs.getBoolPref("zia.tabs.sound-bars", true), checked: toggle.getAttribute("aria-checked"), rows: visible().rows };
+// (the switch, and the rows that hang on it, follow on the next frame)
+await until(() => toggle.getAttribute("aria-checked") !== before.checked);
+const after = await steady(() => ({ pref: Services.prefs.getBoolPref("zia.tabs.sound-bars", true), checked: toggle.getAttribute("aria-checked"), rows: visible().rows }));
 search.select();
 EU.sendString("qqqzzzq", window);
-await wait(300);
-const nothing = visible();
+const nothing = await until(() => visible().empty && visible());
 EU.synthesizeKey("KEY_Escape", {}, window);
-await wait(300);
+// (Esc clears it at once)
+await until(() => search.value === "");
 const cleared = { query: search.value, rows: visible().rows.length, open: page.isConnected && !page.hasAttribute("closing") };
 EU.synthesizeKey("KEY_Escape", {}, window);
-await wait(800);
+await until(() => !page.isConnected);
 done({
   focused,
   all,

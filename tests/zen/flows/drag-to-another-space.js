@@ -4,15 +4,18 @@
 const [a, b] = await addTabs(["A", "B"]);
 const home = gZenWorkspaces.activeWorkspace;
 const other = await gZenWorkspaces.createAndSaveWorkspace("Two", undefined, true);
-await wait(800);
-const icon = gZenWorkspaces.workspaceIcons.querySelector(`[zen-workspace-id="${other.uuid}"]`);
+const icon = await until(() => gZenWorkspaces.workspaceIcons.querySelector(`[zen-workspace-id="${other.uuid}"]`));
+await atRest();
 const from = centre(a);
 const over = centre(icon);
 const back = { x: from.x, y: from.y + 30 };
 const seen = await drag(a, [...path(from, over, 8), over, over, ...path(over, back, 8)], {
+  landed: () => a.getAttribute("zen-workspace-id") === other.uuid,
   during: async (step) => {
+    // (held over the icon till Zen has switched to its space, and that's come to rest)
     if (step === 9) {
-      await wait(900);
+      await until(() => gZenWorkspaces.activeWorkspace === other.uuid);
+      await atRest();
     }
   },
 });
