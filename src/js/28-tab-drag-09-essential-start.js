@@ -15,7 +15,7 @@
   ];
 
   // (the tile last under the pointer, when it's over the essentials but on no tile)
-  const OVER_GAP = {};
+  const BETWEEN_TILES = {};
 
   // the essential being dragged (endEssentialDrag), and the one just dropped (settle)
   let essentialDrag = null;
@@ -223,7 +223,7 @@
     } else if (skip && inBox(window.gZenWorkspaces?.getCurrentEssentialsContainer?.(), point)) {
       // over the essentials but on no tile (the drop's gap, or its own spot): the next tile is
       // a new one, so moving back onto the tile that just slid aside taps again
-      tileTap.under = OVER_GAP;
+      tileTap.under = BETWEEN_TILES;
     }
   };
 

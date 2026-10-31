@@ -392,7 +392,8 @@
     if (!past) {
       return;
     }
-    // (a step later, once Zen's drop has put it among the tiles; it checks it's still there)
+    // (a step later, once Zen's drop has put it among the tiles; not kept, as it checks it's
+    // still there and nothing else could want it stopped)
     setTimeout(() => {
       if (tab.isConnected && tab.hasAttribute("zen-essential") && last.isConnected && tab.previousElementSibling !== last) {
         try {

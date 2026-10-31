@@ -11754,12 +11754,22 @@
   // (its easing kept a little past the move, then dropped)
   const TOP_ROOM_CLEAR_MS = 200;
 
-  // The one drag under way, made by begin (07) and dropped by endDrag. It's the drag's
-  // shared record: each step of the drag (07-12) notes its part of it there, so it isn't
-  // split by file (02's width morph, with a timer of its own, keeps its own state).
+  // The one drag under way, made by begin (07) and dropped by endDrag: the drag's session,
+  // shared by the 28-tab-drag-* files as one module. Each step notes its part of it, and only
+  // these set its fields after begin (02's width morph, with a timer of its own, keeps its own
+  // state):
+  //   01 target, dropSlot (where it would land)
+  //   03 rows, origin, index, height, pitch, shifted, target, newTabShift and the line's
+  //      sepTop, sepDelta, sepShownY (the rows measured and slid aside)
+  //   04 sepShownY (put back once dropped)
+  //   08 essentials, hasTiles, noTiles, firstTop, tileShifts, foldedFrom, splitEssential,
+  //      splitRefusalNoted (over the essentials)
+  //   09 tileShifts, 11 essentials, target (as Zen takes the drop), 12 clientY, screenY
+  //   (followed into another space)
   let drag = null;
 
-  // (what outlives a single drag record: the press before it, the frame pending, the rows moved)
+  // (what outlives a single drag record: the press before it, set by 07; the frame pending
+  // and the last slide, set by 07, 08 and 12; the rows moved)
   const dragCore = {
     // the tab pressed, before the drag starts
     pending: null,
@@ -14511,7 +14521,7 @@
   ];
 
   // (the tile last under the pointer, when it's over the essentials but on no tile)
-  const OVER_GAP = {};
+  const BETWEEN_TILES = {};
 
   // the essential being dragged (endEssentialDrag), and the one just dropped (settle)
   let essentialDrag = null;
@@ -14719,7 +14729,7 @@
     } else if (skip && inBox(window.gZenWorkspaces?.getCurrentEssentialsContainer?.(), point)) {
       // over the essentials but on no tile (the drop's gap, or its own spot): the next tile is
       // a new one, so moving back onto the tile that just slid aside taps again
-      tileTap.under = OVER_GAP;
+      tileTap.under = BETWEEN_TILES;
     }
   };
 
@@ -15210,7 +15220,8 @@
     if (!past) {
       return;
     }
-    // (a step later, once Zen's drop has put it among the tiles; it checks it's still there)
+    // (a step later, once Zen's drop has put it among the tiles; not kept, as it checks it's
+    // still there and nothing else could want it stopped)
     setTimeout(() => {
       if (tab.isConnected && tab.hasAttribute("zen-essential") && last.isConnected && tab.previousElementSibling !== last) {
         try {
@@ -16253,6 +16264,14 @@
   // Tabs dragged the way Dia drags them: the rows slide out of the dragged tab's way and it
   // lands where it's let go, in place of Zen's drop line (28-tab-drag-*.js). Listeners are
   // added in this order, the order they run in.
+  //
+  // Words used across the drag's files:
+  //   room   space opened among the rows or tiles for what's dragged (makeRoom, topRoom)
+  //   slot   an element holding a place: the drop slot in a folder, an empty folder's slot,
+  //          a split's cell among the essentials
+  //   proxy  the copy that follows the pointer over the essentials; copy, any cloned tab
+  //   clear  undo a look for good (clearMoved, clearProxy); hide, fade it out (hideThumb);
+  //          release, hand something back (releaseToZen, releaseHome)
   function moveTabsLikeDia() {
     watchDragImage();
     watchDragStart();

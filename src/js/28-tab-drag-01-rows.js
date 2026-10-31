@@ -9,12 +9,22 @@
   // (its easing kept a little past the move, then dropped)
   const TOP_ROOM_CLEAR_MS = 200;
 
-  // The one drag under way, made by begin (07) and dropped by endDrag. It's the drag's
-  // shared record: each step of the drag (07-12) notes its part of it there, so it isn't
-  // split by file (02's width morph, with a timer of its own, keeps its own state).
+  // The one drag under way, made by begin (07) and dropped by endDrag: the drag's session,
+  // shared by the 28-tab-drag-* files as one module. Each step notes its part of it, and only
+  // these set its fields after begin (02's width morph, with a timer of its own, keeps its own
+  // state):
+  //   01 target, dropSlot (where it would land)
+  //   03 rows, origin, index, height, pitch, shifted, target, newTabShift and the line's
+  //      sepTop, sepDelta, sepShownY (the rows measured and slid aside)
+  //   04 sepShownY (put back once dropped)
+  //   08 essentials, hasTiles, noTiles, firstTop, tileShifts, foldedFrom, splitEssential,
+  //      splitRefusalNoted (over the essentials)
+  //   09 tileShifts, 11 essentials, target (as Zen takes the drop), 12 clientY, screenY
+  //   (followed into another space)
   let drag = null;
 
-  // (what outlives a single drag record: the press before it, the frame pending, the rows moved)
+  // (what outlives a single drag record: the press before it, set by 07; the frame pending
+  // and the last slide, set by 07, 08 and 12; the rows moved)
   const dragCore = {
     // the tab pressed, before the drag starts
     pending: null,
