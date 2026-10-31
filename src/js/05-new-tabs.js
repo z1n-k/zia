@@ -1,3 +1,13 @@
+  // New tabs: the search engine's home page as the new tab page, and a new tab's address
+  // bar, kept empty and either let go or kept ready to type in.
+  // Used elsewhere: searchHomeUrl, currentNewTabUrl, newTabSearchEnabled, redirectBlankNewTab,
+  // keepNewTabAddressEmpty, blankLoadingNewTabAddress, watchNewTabPage.
+
+  // (the search page can pull focus to its own box as it arrives, up to a second or so in)
+  const REFOCUS_AT = [250, 700, 1500];
+  const LET_GO_AT = [250, 700];
+  const LET_GO_WATCH_MS = 800;
+
   function searchEngineHomePage(engine) {
     try {
       if (engine.searchForm) {
@@ -128,7 +138,8 @@
     tab.ziaBlankAddress = true;
     tab.linkedBrowser?.addEventListener("mousedown", () => (tab.ziaTypedInPage = true), { once: true });
     requestAnimationFrame(focus);
-    for (const ms of [250, 700, 1500]) {
+    // (not cancelled: each checks it's still this tab, untouched)
+    for (const ms of REFOCUS_AT) {
       setTimeout(() => {
         if (document.activeElement === tab.linkedBrowser) {
           focus();
@@ -283,13 +294,13 @@
     };
     requestAnimationFrame(letGo);
     // (an extension's page, arriving, can put the cursor back in the bar)
-    for (const ms of [250, 700]) {
+    for (const ms of LET_GO_AT) {
       setTimeout(letGo, ms);
     }
     setTimeout(() => {
       gURLBar?.textbox?.removeEventListener("mousedown", touch);
       gURLBar?.inputField?.removeEventListener("input", touch);
-    }, 800);
+    }, LET_GO_WATCH_MS);
   }
 
   function watchNewTabPage() {

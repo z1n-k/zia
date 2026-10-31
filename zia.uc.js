@@ -82,13 +82,33 @@
     return /^<(?:\?xml|!--|!DOCTYPE|svg)[\s>]/i.test(body) && /<svg[\s>]/i.test(body) ? body : null;
   }
 
+  // The toolbar's colour, read from the top of the page: the reading, the ink that goes
+  // with it, the checker that corrects it, the address pop-up's colour frozen as it
+  // opens, and the page helpers that report loads and scrolls (actors/ZiaChild.sys.mjs,
+  // calling window.ziaOnPagePainted and window.ziaOnPageScroll) and draw PDFs.
+  // Used elsewhere: scrollPositions, ERROR_PAGE_COLOR, errorBrowsers, colorCache, cacheColor,
+  // colorRequestId (bumped by 29 as a load starts), appliedColorKey (cleared by 18 as the
+  // options change), siteColorOn, applyColor, showColor, isErrorPage, isLoading,
+  // sampleTopColor, parseColor, colorOver, chromeBackdrop, cssColor, wantsDarkInk,
+  // updateColor, watchColorDrift, watchPopUpColor, snapColorForTab, scheduleColor,
+  // requestScrollSample, watchScrollInput, registerPdfActor, registerScrollActor.
+
+  const SCROLL_SAMPLE_INTERVAL = 50;
+  // (the wait for a second reading of an unsure one, and the checker's timings, below)
+  const UNSURE_RECHECK = 200;
+  const CHECK_EVERY = 3000;
+  const CHECK_SOON_MS = 400;
+  const CHECK_AFTER_RESIZE_MS = 500;
+  // (the last for pages that recolour their header once their scripts run: GitHub)
+  const PAINTED_READS_AT = [150, 450, 1200, 2800, 5000];
+  const SCROLL_FOLLOW_UPS_AT = [250, 600, 1200];
+
   // One band, 24px deep, for every reading: the checker once read deeper, and on
   // a page with a thin strip of another colour at its top the toolbar flicked.
   const TOP_BAND = 24;
   const STRIP_SCALE = 0.5;
   const FULL_VIEW_SCALE = 0.125;
   const TOP_BAND_ROWS = TOP_BAND * FULL_VIEW_SCALE;
-  const SCROLL_SAMPLE_INTERVAL = 50;
   const scrollPositions = new WeakMap();
   const LIGHT_THRESHOLD = 150;
   const INK_MAX = 90;
@@ -101,13 +121,16 @@
 
   const MIN_COLOR_SHARE = 0.6;
   const SAME_COLOR_DISTANCE = 10;
-  let pendingColor = null;
 
   let appliedColorKey = null;
 
   // a reading unlike the site's remembered colour, waiting on a second
-  const UNSURE_RECHECK = 200;
   let unsureColor = null;
+
+  // Readings on scroll: the one waiting (timer) or under way (sampling), when the last was
+  // taken, whether the page helper reports scrolls (else scroll input stands in for it), and
+  // a reading unlike the toolbar waiting on the next to agree (pendingColor)
+  const scrollReading = { timer: null, sampling: false, last: 0, helperWorks: false, pendingColor: null };
 
   const siteColorOn = () => Services.prefs.getBoolPref("zia.toolbar.site-color", true);
 
@@ -258,6 +281,11 @@
   function showColor(rgb) {
     colorRequestId++;
     applyColor(rgb);
+  }
+
+  // the colour a tab's toolbar shows from now on (a colour set by hand, 01b)
+  function cacheColor(browser, rgb) {
+    colorCache.set(browser, rgb);
   }
 
   function isErrorPage(browser) {
@@ -460,32 +488,7 @@
 
   async function updateColor(fromScroll = false, duringLoad = false) {
     const browser = gBrowser.selectedBrowser;
-    if (!siteColorOn()) {
-      applyColor(null);
-      return;
-    }
-
-    // (while a colour's being picked by hand, the toolbar shows that)
-    if (colorPick) {
-      return;
-    }
-    if (isErrorPage(browser)) {
-      showColor(ERROR_PAGE_COLOR);
-      return;
-    }
-    // a site with a toolbar colour of its own (01b) keeps it, unread
-    const manual = manualSiteColor(browser);
-    if (manual) {
-      pendingColor = null;
-      showColor(manual);
-      colorCache.set(browser, manual);
-      return;
-    }
-    if (isLoading(browser) && !duringLoad) {
-      return;
-    }
-
-    if (showsThrough(browser) && chromeOverPage()) {
+    if (readingSkipped(browser, duringLoad)) {
       return;
     }
     const id = ++colorRequestId;
@@ -501,39 +504,15 @@
 
     const known = colorCache.has(browser);
     const current = colorCache.get(browser) ?? null;
-    let rgb = reading?.rgb ?? null;
-
-    // A reading unlike the site's remembered colour is often a passing splash
-    // (Discord is white a moment before going dark), which made the toolbar flash:
-    // it's believed only when a second reading a moment later agrees.
-    if (!fromScroll && rgb) {
-      const remembered = rememberedSiteColor(browser);
-      if (remembered && colorDistance(rgb, remembered) > CHECK_DISTANCE) {
-        if (unsureColor?.browser !== browser || colorDistance(rgb, unsureColor.rgb) > CHECK_DISTANCE) {
-          unsureColor = { browser, rgb };
-          setTimeout(() => updateColor(false, isLoading(browser)), UNSURE_RECHECK);
-          return;
-        }
-      }
+    const rgb = reading?.rgb ?? null;
+    if (!fromScroll && rgb && awaitingSecondReading(browser, rgb)) {
+      return;
     }
     unsureColor = null;
-
-    if (known && fromScroll) {
-      if (reading && reading.share < MIN_COLOR_SHARE) {
-        pendingColor = null;
-        return;
-      }
-      if (colorDistance(rgb, current) <= SAME_COLOR_DISTANCE) {
-        pendingColor = null;
-        return;
-      }
-      if (rgb && colorDistance(rgb, pendingColor) > SAME_COLOR_DISTANCE) {
-        pendingColor = rgb;
-        requestScrollSample();
-        return;
-      }
+    if (known && fromScroll && !scrollReadingCounts(reading, current)) {
+      return;
     }
-    pendingColor = null;
+    scrollReading.pendingColor = null;
     applyColor(rgb);
     colorCache.set(browser, rgb);
     if (!fromScroll && rgb) {
@@ -541,23 +520,88 @@
     }
   }
 
+  // True when the page isn't to be read now, with whatever shows instead shown
+  function readingSkipped(browser, duringLoad) {
+    if (!siteColorOn()) {
+      applyColor(null);
+      return true;
+    }
+
+    // (while a colour's being picked by hand, the toolbar shows that)
+    if (colorPick) {
+      return true;
+    }
+    if (isErrorPage(browser)) {
+      showColor(ERROR_PAGE_COLOR);
+      return true;
+    }
+    // a site with a toolbar colour of its own (01b) keeps it, unread
+    const manual = manualSiteColor(browser);
+    if (manual) {
+      scrollReading.pendingColor = null;
+      showColor(manual);
+      colorCache.set(browser, manual);
+      return true;
+    }
+    if (isLoading(browser) && !duringLoad) {
+      return true;
+    }
+
+    return showsThrough(browser) && chromeOverPage();
+  }
+
+  // A reading unlike the site's remembered colour is often a passing splash
+  // (Discord is white a moment before going dark), which made the toolbar flash:
+  // it's believed only when a second reading a moment later agrees.
+  function awaitingSecondReading(browser, rgb) {
+    const remembered = rememberedSiteColor(browser);
+    if (remembered && colorDistance(rgb, remembered) > CHECK_DISTANCE) {
+      if (unsureColor?.browser !== browser || colorDistance(rgb, unsureColor.rgb) > CHECK_DISTANCE) {
+        unsureColor = { browser, rgb };
+        // (not cancelled: the second reading checks for itself that it's still wanted)
+        setTimeout(() => updateColor(false, isLoading(browser)), UNSURE_RECHECK);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // On scroll, a reading counts if most of the band is one colour, unlike the toolbar's,
+  // and the next reading agrees
+  function scrollReadingCounts(reading, current) {
+    const rgb = reading?.rgb ?? null;
+    if (reading && reading.share < MIN_COLOR_SHARE) {
+      scrollReading.pendingColor = null;
+      return false;
+    }
+    if (colorDistance(rgb, current) <= SAME_COLOR_DISTANCE) {
+      scrollReading.pendingColor = null;
+      return false;
+    }
+    if (rgb && colorDistance(rgb, scrollReading.pendingColor) > SAME_COLOR_DISTANCE) {
+      scrollReading.pendingColor = rgb;
+      requestScrollSample();
+      return false;
+    }
+    return true;
+  }
+
   // The checker: the colour is read on load, for a few seconds after, and on
   // scroll, so a page that changes later (or has a thin strip at its top) could
   // leave it wrong. Every few seconds, and on focus or resize, the settled tab is
   // read again; two readings agreeing with each other, not the toolbar, correct it.
-  const CHECK_EVERY = 3000;
   const CHECK_DISTANCE = 24;
-  let checkSuspect = null;
-  let checking = false;
+  // a reading under way, and the last one unlike the toolbar (suspect), waiting on a second
+  const colorCheck = { running: false, suspect: null };
 
   async function checkColor() {
     const browser = gBrowser.selectedBrowser;
-    if (checking || document.hidden || !siteColorOn() || !browser || isErrorPage(browser) || isLoading(browser) ||
-        scrollTimer || scrollSampling || !colorCache.has(browser) || colorPick || manualSiteColor(browser) ||
+    if (colorCheck.running || document.hidden || !siteColorOn() || !browser || isErrorPage(browser) || isLoading(browser) ||
+        scrollReading.timer || scrollReading.sampling || !colorCache.has(browser) || colorPick || manualSiteColor(browser) ||
         (showsThrough(browser) && chromeOverPage())) {
       return;
     }
-    checking = true;
+    colorCheck.running = true;
     const id = colorRequestId;
     let reading = null;
     try {
@@ -565,23 +609,23 @@
     } catch (err) {
       noteError("site colour: checkColor", err);
     } finally {
-      checking = false;
+      colorCheck.running = false;
     }
     // Something else read or changed the colour meanwhile, or the tab changed
     if (id !== colorRequestId || browser !== gBrowser.selectedBrowser || isLoading(browser) || !reading?.rgb) {
-      checkSuspect = null;
+      colorCheck.suspect = null;
       return;
     }
     const shown = colorCache.get(browser);
     if (reading.share < MIN_COLOR_SHARE || colorDistance(reading.rgb, shown) <= CHECK_DISTANCE) {
-      checkSuspect = null;
+      colorCheck.suspect = null;
       return;
     }
-    if (!checkSuspect || checkSuspect.browser !== browser || colorDistance(reading.rgb, checkSuspect.rgb) > SAME_COLOR_DISTANCE) {
-      checkSuspect = { browser, rgb: reading.rgb };
+    if (!colorCheck.suspect || colorCheck.suspect.browser !== browser || colorDistance(reading.rgb, colorCheck.suspect.rgb) > SAME_COLOR_DISTANCE) {
+      colorCheck.suspect = { browser, rgb: reading.rgb };
       return;
     }
-    checkSuspect = null;
+    colorCheck.suspect = null;
     applyColor(reading.rgb);
     colorCache.set(browser, reading.rgb);
     rememberSiteColor(browser, reading.rgb);
@@ -589,15 +633,16 @@
 
   function watchColorDrift() {
     setInterval(checkColor, CHECK_EVERY);
-    const soon = () => setTimeout(checkColor, 400);
+    // (not cancelled: a check that comes to nothing returns)
+    const soon = () => setTimeout(checkColor, CHECK_SOON_MS);
     document.addEventListener("visibilitychange", soon);
     window.addEventListener("focus", soon);
     window.addEventListener("resize", () => {
       clearTimeout(watchColorDrift.resizeTimer);
-      watchColorDrift.resizeTimer = setTimeout(checkColor, 500);
+      watchColorDrift.resizeTimer = setTimeout(checkColor, CHECK_AFTER_RESIZE_MS);
     });
     gBrowser.tabContainer.addEventListener("TabSelect", () => {
-      checkSuspect = null;
+      colorCheck.suspect = null;
     });
   }
 
@@ -644,64 +689,8 @@
     }).observe(urlbar, { attributes: true, attributeFilter: ["breakout-extend"] });
   }
 
-  const SITE_COLORS_PREF = "zia.siteColors";
-  const SITE_COLORS_MAX = 200;
-  let siteColors = null;
-  let siteColorsSaveTimer = null;
-
-  function siteKey(browser) {
-    try {
-      const uri = browser.currentURI;
-      return /^https?$/.test(uri.scheme) ? uri.host : "";
-    } catch (err) {
-      return "";
-    }
-  }
-
-  function loadSiteColors() {
-    if (siteColors) {
-      return siteColors;
-    }
-    siteColors = new Map();
-    try {
-      siteColors = new Map(Object.entries(JSON.parse(Services.prefs.getStringPref(SITE_COLORS_PREF, "{}"))));
-    } catch (err) {
-      noteError("site colour: loadSiteColors", err);
-    }
-    return siteColors;
-  }
-
-  function rememberSiteColor(browser, rgb) {
-    const host = siteKey(browser);
-    if (!host) {
-      return;
-    }
-    const colors = loadSiteColors();
-    const value = rgb.join(",");
-    if (colors.get(host) === value) {
-      return;
-    }
-    colors.delete(host);
-    colors.set(host, value);
-    while (colors.size > SITE_COLORS_MAX) {
-      colors.delete(colors.keys().next().value);
-    }
-    if (!siteColorsSaveTimer) {
-      siteColorsSaveTimer = setTimeout(() => {
-        siteColorsSaveTimer = null;
-        Services.prefs.setStringPref(SITE_COLORS_PREF, JSON.stringify(Object.fromEntries(siteColors)));
-      }, 20000);
-    }
-  }
-
-  function rememberedSiteColor(browser) {
-    const host = siteKey(browser);
-    const value = host && loadSiteColors().get(host);
-    return value ? value.split(",").map(Number) : null;
-  }
-
   function snapColorForTab(browser) {
-    pendingColor = null;
+    scrollReading.pendingColor = null;
     setFlag("zia-color-snap", true);
     const manual = siteColorOn() && !isErrorPage(browser) ? manualSiteColor(browser) : null;
     if (isErrorPage(browser)) {
@@ -721,28 +710,23 @@
     setTimeout(() => updateColor(), delay);
   }
 
-  let pageHelperWorks = false;
-  let scrollTimer = null;
-  let scrollSampling = false;
-  let lastScrollSample = 0;
-
   function requestScrollSample() {
-    if (scrollTimer) {
+    if (scrollReading.timer) {
       return;
     }
-    const wait = Math.max(0, SCROLL_SAMPLE_INTERVAL - (Date.now() - lastScrollSample));
-    scrollTimer = setTimeout(async () => {
-      scrollTimer = null;
-      if (scrollSampling) {
+    const wait = Math.max(0, SCROLL_SAMPLE_INTERVAL - (Date.now() - scrollReading.last));
+    scrollReading.timer = setTimeout(async () => {
+      scrollReading.timer = null;
+      if (scrollReading.sampling) {
         requestScrollSample();
         return;
       }
-      scrollSampling = true;
-      lastScrollSample = Date.now();
+      scrollReading.sampling = true;
+      scrollReading.last = Date.now();
       try {
         await updateColor(true);
       } finally {
-        scrollSampling = false;
+        scrollReading.sampling = false;
       }
     }, wait);
   }
@@ -752,15 +736,15 @@
       return;
     }
     updateColor(false, true);
-    // (the last for pages that recolour their header once their scripts run: GitHub)
-    for (const ms of [150, 450, 1200, 2800, 5000]) {
+    // (not cancelled: each reads whichever page is showing then)
+    for (const ms of PAINTED_READS_AT) {
       setTimeout(() => updateColor(false, isLoading(browser)), ms);
     }
   };
 
   window.ziaOnPageScroll = (browser, position) => {
     if (position) {
-      pageHelperWorks = true;
+      scrollReading.helperWorks = true;
       scrollPositions.set(browser, { x: position.x || 0, y: position.y || 0 });
     }
     if (browser !== gBrowser.selectedBrowser || isLoading(browser) || isErrorPage(browser)) {
@@ -777,12 +761,12 @@
     const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "]);
     let followUps = [];
     const onInput = () => {
-      if (pageHelperWorks) {
+      if (scrollReading.helperWorks) {
         return;
       }
       window.ziaOnPageScroll(gBrowser.selectedBrowser);
       followUps.forEach(clearTimeout);
-      followUps = [250, 600, 1200].map((ms) =>
+      followUps = SCROLL_FOLLOW_UPS_AT.map((ms) =>
         setTimeout(() => window.ziaOnPageScroll(gBrowser.selectedBrowser), ms)
       );
     };
@@ -824,10 +808,72 @@
     }
   }
 
+  // Each site's colour as last read, kept across restarts (zia.siteColors), so a site
+  // opens in its colour before it's read, and a reading unlike it is checked twice (01).
+  // Used elsewhere: siteKey, rememberSiteColor, rememberedSiteColor.
+
+  const SITE_COLORS_PREF = "zia.siteColors";
+  const SITE_COLORS_MAX = 200;
+  const SITE_COLORS_SAVE_MS = 20000;
+  let siteColors = null;
+  let siteColorsSaveTimer = null;
+
+  function siteKey(browser) {
+    try {
+      const uri = browser.currentURI;
+      return /^https?$/.test(uri.scheme) ? uri.host : "";
+    } catch (err) {
+      return "";
+    }
+  }
+
+  function loadSiteColors() {
+    if (siteColors) {
+      return siteColors;
+    }
+    siteColors = new Map();
+    try {
+      siteColors = new Map(Object.entries(JSON.parse(Services.prefs.getStringPref(SITE_COLORS_PREF, "{}"))));
+    } catch (err) {
+      noteError("site colour: loadSiteColors", err);
+    }
+    return siteColors;
+  }
+
+  function rememberSiteColor(browser, rgb) {
+    const host = siteKey(browser);
+    if (!host) {
+      return;
+    }
+    const colors = loadSiteColors();
+    const value = rgb.join(",");
+    if (colors.get(host) === value) {
+      return;
+    }
+    colors.delete(host);
+    colors.set(host, value);
+    while (colors.size > SITE_COLORS_MAX) {
+      colors.delete(colors.keys().next().value);
+    }
+    // (saved once for every colour that comes in meanwhile; never cancelled, so none is lost)
+    if (!siteColorsSaveTimer) {
+      siteColorsSaveTimer = setTimeout(() => {
+        siteColorsSaveTimer = null;
+        Services.prefs.setStringPref(SITE_COLORS_PREF, JSON.stringify(Object.fromEntries(siteColors)));
+      }, SITE_COLORS_SAVE_MS);
+    }
+  }
+
+  function rememberedSiteColor(browser) {
+    const host = siteKey(browser);
+    const value = host && loadSiteColors().get(host);
+    return value ? value.split(",").map(Number) : null;
+  }
 
   // A site's toolbar colour set by hand (right-click the address bar or toolbar):
   // click the page or type a hex. A site with its own colour is never read again,
   // so it can't flicker.
+  // Used elsewhere: colorPick, manualSiteColor, rgbOfHex, addToolbarColorMenuItems.
   const MANUAL_COLORS_PREF = "zia.toolbar.manual-colors";
   let manualColors = null;
   let colorPick = null;
@@ -891,7 +937,7 @@
     const manual = manualSiteColor(browser);
     if (manual) {
       showColor(manual);
-      colorCache.set(browser, manual);
+      cacheColor(browser, manual);
     } else {
       showColor(colorCache.get(browser) ?? null);
       updateColor();
@@ -948,7 +994,14 @@
     if (!shot || browser !== gBrowser.selectedBrowser) {
       return;
     }
+    const picker = makeColorPicker(browser, host);
+    stack.append(picker.overlay);
+    colorPick = { browser, overlay: picker.overlay, shot, typed: null };
+    followPickPointer(picker, shot, host);
+    followPickTyping(picker, host);
+  }
 
+  function makeColorPicker(browser, host) {
     const el = (tag, className) => {
       const node = document.createElementNS(XHTML_NS, tag);
       if (className) {
@@ -979,16 +1032,17 @@
     cancel.textContent = "Cancel";
     bar.append(hint, input, reset, cancel);
     overlay.append(loupe, bar);
-    stack.append(overlay);
+    return { overlay, loupe, swatch, loupeHex, bar, input, reset, cancel };
+  }
 
-    colorPick = { browser, overlay, shot, typed: null };
+  // (kept for the site picking began on, should the page have moved on)
+  function keepPickedColor(host, rgb) {
+    setManualSiteColor(host, rgb);
+    endColorPick(true);
+  }
 
-    // (kept for the site picking began on, should the page have moved on)
-    const keep = (rgb) => {
-      setManualSiteColor(host, rgb);
-      endColorPick(true);
-    };
-
+  // The colour under the pointer shows on the toolbar and in the loupe; a click keeps it
+  function followPickPointer({ overlay, loupe, swatch, loupeHex, bar }, shot, host) {
     overlay.addEventListener("mousemove", (event) => {
       if (bar.contains(event.target)) {
         loupe.hidden = true;
@@ -1014,8 +1068,12 @@
       }
       event.preventDefault();
       const rect = overlay.getBoundingClientRect();
-      keep(colorAt(shot, event.clientX - rect.left, event.clientY - rect.top));
+      keepPickedColor(host, colorAt(shot, event.clientX - rect.left, event.clientY - rect.top));
     });
+  }
+
+  // A hex typed in shows as it's typed, and Enter keeps it; or Reset, or Cancel
+  function followPickTyping({ input, reset, cancel }, host) {
     input.addEventListener("input", () => {
       const rgb = rgbOfHex(input.value);
       input.toggleAttribute("invalid", !!input.value.trim() && !rgb);
@@ -1028,7 +1086,7 @@
       if (event.key === "Enter") {
         const rgb = rgbOfHex(input.value);
         if (rgb) {
-          keep(rgb);
+          keepPickedColor(host, rgb);
         }
       }
     });
@@ -1048,7 +1106,7 @@
     overlay.remove();
     if (kept) {
       const manual = manualSiteColor(browser);
-      colorCache.set(browser, manual);
+      cacheColor(browser, manual);
       if (browser === gBrowser.selectedBrowser) {
         showColor(manual);
       }
@@ -1057,52 +1115,11 @@
     }
   }
 
-  function addToolbarColorMenuItems() {
-    const added = new WeakMap();
-    document.addEventListener(
-      "popupshowing",
-      (event) => {
-        const menu = event.target;
-        if (menu?.localName !== "menupopup") {
-          return;
-        }
-        const trigger = menu.triggerNode;
-        // (the address's own menu, Cut, Copy, Paste: not a submenu, nor one
-        // of the bar's buttons' menus)
-        const onUrlbar = menu.parentElement?.localName !== "menu" &&
-          !!trigger?.closest?.("#urlbar :is(moz-input-box, .urlbar-input-box, .urlbar-input)");
-        const onToolbar = menu.id === "toolbar-context-menu" && !!trigger?.closest?.("#zen-appcontent-navbar-wrapper, #nav-bar");
-        let items = added.get(menu);
-        if (!onUrlbar && !onToolbar) {
-          if (items) {
-            items.separator.hidden = items.pick.hidden = items.reset.hidden = true;
-          }
-          return;
-        }
-        if (!items) {
-          const separator = document.createXULElement("menuseparator");
-          const pick = document.createXULElement("menuitem");
-          pick.setAttribute("label", "Toolbar Color for This Site…");
-          pick.addEventListener("command", () => startColorPick(gBrowser.selectedBrowser));
-          const reset = document.createXULElement("menuitem");
-          reset.setAttribute("label", "Reset Toolbar Color");
-          reset.addEventListener("command", () => {
-            const browser = gBrowser.selectedBrowser;
-            setManualSiteColor(siteKey(browser), null);
-            restoreToolbarColor(browser);
-          });
-          menu.append(separator, pick, reset);
-          items = { separator, pick, reset };
-          added.set(menu, items);
-        }
-        const browser = gBrowser.selectedBrowser;
-        const shown = siteColorOn() && !!siteKey(browser) && !isErrorPage(browser);
-        items.separator.hidden = items.pick.hidden = !shown;
-        items.reset.hidden = !shown || !manualSiteColor(browser);
-      },
-      true
-    );
+  // Zia's items on each menu, once added
+  const colorMenuItems = new WeakMap();
 
+  function addToolbarColorMenuItems() {
+    document.addEventListener("popupshowing", showColorMenuItems, true);
     window.addEventListener(
       "keydown",
       (event) => {
@@ -1116,6 +1133,49 @@
     );
     gBrowser.tabContainer.addEventListener("TabSelect", () => endColorPick(false));
     window.addEventListener("resize", () => endColorPick(false));
+  }
+
+  function showColorMenuItems(event) {
+    const menu = event.target;
+    if (menu?.localName !== "menupopup") {
+      return;
+    }
+    const trigger = menu.triggerNode;
+    // (the address's own menu, Cut, Copy, Paste: not a submenu, nor one
+    // of the bar's buttons' menus)
+    const onUrlbar = menu.parentElement?.localName !== "menu" &&
+      !!trigger?.closest?.("#urlbar :is(moz-input-box, .urlbar-input-box, .urlbar-input)");
+    const onToolbar = menu.id === "toolbar-context-menu" && !!trigger?.closest?.("#zen-appcontent-navbar-wrapper, #nav-bar");
+    let items = colorMenuItems.get(menu);
+    if (!onUrlbar && !onToolbar) {
+      if (items) {
+        items.separator.hidden = items.pick.hidden = items.reset.hidden = true;
+      }
+      return;
+    }
+    items ||= addColorMenuItems(menu);
+    const browser = gBrowser.selectedBrowser;
+    const shown = siteColorOn() && !!siteKey(browser) && !isErrorPage(browser);
+    items.separator.hidden = items.pick.hidden = !shown;
+    items.reset.hidden = !shown || !manualSiteColor(browser);
+  }
+
+  function addColorMenuItems(menu) {
+    const separator = document.createXULElement("menuseparator");
+    const pick = document.createXULElement("menuitem");
+    pick.setAttribute("label", "Toolbar Color for This Site…");
+    pick.addEventListener("command", () => startColorPick(gBrowser.selectedBrowser));
+    const reset = document.createXULElement("menuitem");
+    reset.setAttribute("label", "Reset Toolbar Color");
+    reset.addEventListener("command", () => {
+      const browser = gBrowser.selectedBrowser;
+      setManualSiteColor(siteKey(browser), null);
+      restoreToolbarColor(browser);
+    });
+    menu.append(separator, pick, reset);
+    const items = { separator, pick, reset };
+    colorMenuItems.set(menu, items);
+    return items;
   }
   const loader = {
     shown: 0,
@@ -2162,6 +2222,16 @@
     setFlag("zia-workspace-slot", !!indicator);
   }
 
+  // New tabs: the search engine's home page as the new tab page, and a new tab's address
+  // bar, kept empty and either let go or kept ready to type in.
+  // Used elsewhere: searchHomeUrl, currentNewTabUrl, newTabSearchEnabled, redirectBlankNewTab,
+  // keepNewTabAddressEmpty, blankLoadingNewTabAddress, watchNewTabPage.
+
+  // (the search page can pull focus to its own box as it arrives, up to a second or so in)
+  const REFOCUS_AT = [250, 700, 1500];
+  const LET_GO_AT = [250, 700];
+  const LET_GO_WATCH_MS = 800;
+
   function searchEngineHomePage(engine) {
     try {
       if (engine.searchForm) {
@@ -2292,7 +2362,8 @@
     tab.ziaBlankAddress = true;
     tab.linkedBrowser?.addEventListener("mousedown", () => (tab.ziaTypedInPage = true), { once: true });
     requestAnimationFrame(focus);
-    for (const ms of [250, 700, 1500]) {
+    // (not cancelled: each checks it's still this tab, untouched)
+    for (const ms of REFOCUS_AT) {
       setTimeout(() => {
         if (document.activeElement === tab.linkedBrowser) {
           focus();
@@ -2447,13 +2518,13 @@
     };
     requestAnimationFrame(letGo);
     // (an extension's page, arriving, can put the cursor back in the bar)
-    for (const ms of [250, 700]) {
+    for (const ms of LET_GO_AT) {
       setTimeout(letGo, ms);
     }
     setTimeout(() => {
       gURLBar?.textbox?.removeEventListener("mousedown", touch);
       gURLBar?.inputField?.removeEventListener("input", touch);
-    }, 800);
+    }, LET_GO_WATCH_MS);
   }
 
   function watchNewTabPage() {
@@ -6146,6 +6217,11 @@
     );
   }
 
+  // The address bar's pop-up: the site's icon while an address is typed, the rows' icons
+  // and engine actions, the rows lined up with the typed text, and its bottom fitted to
+  // the last row.
+  // Used elsewhere: watchTypedAddress.
+
   function defaultEngineName() {
     try {
       const search =
@@ -6297,9 +6373,9 @@
 
   const POP_STEP = 0.5;
   const ALIGN_STEP = 1;
-  let popIconStart = null;
-  let popTextGap = null;
-  let popLayout = null;
+  // The rows' icon start and text gap as last measured, for the bar's place and size
+  // (layout) they were measured at
+  const rowSpacing = { layout: null, iconStart: null, textGap: null };
 
   const clamp = (value, low, high) => Math.min(high, Math.max(low, value));
 
@@ -6326,20 +6402,7 @@
     if (!barRect?.width || !iconRect?.width || !titleRect?.width) {
       return;
     }
-
-    const layout = `${Math.round(barRect.left)}:${Math.round(barRect.width)}`;
-    if (layout !== popLayout) {
-      popLayout = layout;
-      popIconStart = null;
-      popTextGap = null;
-    }
-
-    if (popIconStart === null) {
-      popIconStart = clamp(iconRect.left - barRect.left, 0, 60);
-      popTextGap = clamp(titleRect.left - iconRect.right, 0, 40);
-      urlbar.style.setProperty("--zia-pop-icon-start", `${popIconStart}px`);
-      urlbar.style.setProperty("--zia-pop-text-gap", `${popTextGap}px`);
-    }
+    measureRowSpacing(urlbar, barRect, iconRect, titleRect);
 
     const barIcon = document.getElementById("identity-icon");
     const input = urlbar.querySelector(".urlbar-input");
@@ -6351,21 +6414,39 @@
     const textLeft = inputRect.left + (parseFloat(getComputedStyle(input).paddingInlineStart) || 0);
     const iconError = iconRect.left - barIconRect.left;
     const gapError = titleRect.left - textLeft - iconError;
+    if (nudgeRowSpacing(urlbar, iconError, gapError) && passesLeft > 0) {
+      requestAnimationFrame(() => alignTypedTextWithRows(results, passesLeft - 1));
+    }
+  }
 
+  // The spacing as the rows have it, measured once for each place and size of the bar
+  function measureRowSpacing(urlbar, barRect, iconRect, titleRect) {
+    const layout = `${Math.round(barRect.left)}:${Math.round(barRect.width)}`;
+    if (layout !== rowSpacing.layout) {
+      Object.assign(rowSpacing, { layout, iconStart: null, textGap: null });
+    }
+    if (rowSpacing.iconStart === null) {
+      rowSpacing.iconStart = clamp(iconRect.left - barRect.left, 0, 60);
+      rowSpacing.textGap = clamp(titleRect.left - iconRect.right, 0, 40);
+      urlbar.style.setProperty("--zia-pop-icon-start", `${rowSpacing.iconStart}px`);
+      urlbar.style.setProperty("--zia-pop-text-gap", `${rowSpacing.textGap}px`);
+    }
+  }
+
+  // Moves the rows' icon and text towards the bar's icon and the typed text; true if moved
+  function nudgeRowSpacing(urlbar, iconError, gapError) {
     let moved = false;
     if (Math.abs(iconError) > 0.3) {
-      popIconStart = clamp(popIconStart + iconError * ALIGN_STEP, 0, 60);
-      urlbar.style.setProperty("--zia-pop-icon-start", `${popIconStart}px`);
+      rowSpacing.iconStart = clamp(rowSpacing.iconStart + iconError * ALIGN_STEP, 0, 60);
+      urlbar.style.setProperty("--zia-pop-icon-start", `${rowSpacing.iconStart}px`);
       moved = true;
     }
     if (Math.abs(gapError) > 0.3) {
-      popTextGap = clamp(popTextGap + gapError * ALIGN_STEP, 0, 40);
-      urlbar.style.setProperty("--zia-pop-text-gap", `${popTextGap}px`);
+      rowSpacing.textGap = clamp(rowSpacing.textGap + gapError * ALIGN_STEP, 0, 40);
+      urlbar.style.setProperty("--zia-pop-text-gap", `${rowSpacing.textGap}px`);
       moved = true;
     }
-    if (moved && passesLeft > 0) {
-      requestAnimationFrame(() => alignTypedTextWithRows(results, passesLeft - 1));
-    }
+    return moved;
   }
 
   const POP_BOTTOM_WANT = 8;
@@ -6400,33 +6481,7 @@
     popBottomTrim ??= parseFloat(getComputedStyle(urlbar).getPropertyValue("--zia-pop-bottom-trim")) || 0;
     const scroller = [view, ...view.querySelectorAll("*")].find((el) => el.scrollHeight > el.clientHeight + 1);
     if (scroller) {
-      root.setAttribute("zia-pop-scrolls", "true");
-      // A list that scrolls is cut off at the pop-up's edge, and how far down
-      // that falls is up to Zen (it changed with Zen 1.23). Trimmed by a set
-      // amount, the last whole row could end well above the edge, or the next
-      // one start just short of it. The pop-up ends instead under the last
-      // row that fits whole, at rest, with the same gap as at the sides; the
-      // space added at the list's end (the trim again) gives the last row the
-      // same gap once it's scrolled to.
-      const trim = popBottomTrim;
-      const untrimmed = popUpBottom(background) + trim;
-      let end = null;
-      for (const row of rows) {
-        const box = row.getBoundingClientRect();
-        // (where it sits with the list scrolled to the top)
-        const bottom = box.bottom + scroller.scrollTop + POP_BOTTOM_WANT;
-        if (box.height && bottom <= untrimmed + 0.5) {
-          end = Math.max(end ?? bottom, bottom);
-        }
-      }
-      const want = end === null ? POP_SCROLL_TRIM : Math.max(0, untrimmed - end);
-      if (Math.abs(want - trim) > 0.3) {
-        popBottomTrim = want;
-        urlbar.style.setProperty("--zia-pop-bottom-trim", `${want}px`);
-        if (passesLeft > 0) {
-          requestAnimationFrame(() => fitPopoverBottom(passesLeft - 1));
-        }
-      }
+      fitScrollingPopover(urlbar, background, rows, scroller, passesLeft);
       return;
     }
     root.removeAttribute("zia-pop-scrolls");
@@ -6444,6 +6499,36 @@
     const want = Math.max(0, Math.round(reach - error));
     if (Math.abs(want - reach) > 0.5) {
       setStyle(urlbar, "--zia-pop-reach-bottom", want ? `${want}px` : null);
+    }
+  }
+
+  // A list that scrolls is cut off at the pop-up's edge, and how far down
+  // that falls is up to Zen (it changed with Zen 1.23). Trimmed by a set
+  // amount, the last whole row could end well above the edge, or the next
+  // one start just short of it. The pop-up ends instead under the last
+  // row that fits whole, at rest, with the same gap as at the sides; the
+  // space added at the list's end (the trim again) gives the last row the
+  // same gap once it's scrolled to.
+  function fitScrollingPopover(urlbar, background, rows, scroller, passesLeft) {
+    root.setAttribute("zia-pop-scrolls", "true");
+    const trim = popBottomTrim;
+    const untrimmed = popUpBottom(background) + trim;
+    let end = null;
+    for (const row of rows) {
+      const box = row.getBoundingClientRect();
+      // (where it sits with the list scrolled to the top)
+      const bottom = box.bottom + scroller.scrollTop + POP_BOTTOM_WANT;
+      if (box.height && bottom <= untrimmed + 0.5) {
+        end = Math.max(end ?? bottom, bottom);
+      }
+    }
+    const want = end === null ? POP_SCROLL_TRIM : Math.max(0, untrimmed - end);
+    if (Math.abs(want - trim) > 0.3) {
+      popBottomTrim = want;
+      urlbar.style.setProperty("--zia-pop-bottom-trim", `${want}px`);
+      if (passesLeft > 0) {
+        requestAnimationFrame(() => fitPopoverBottom(passesLeft - 1));
+      }
     }
   }
 
@@ -10867,6 +10952,12 @@
     fit();
   }
 
+  // Copying a tab's link: the address bar's paperclip, popping into a tick once copied, and
+  // the hover card's actions (Copy link among them) with the card's timings and sizes.
+  // Used elsewhere: TAB_CARD_DELAY, TAB_CARD_GRACE, TAB_CARD_GAP, ESSENTIAL_CARD_OVERLAP_X,
+  // ESSENTIAL_CARD_OVERLAP_Y, DEFAULT_TAB_ICON, TAB_CARD_ACTIONS, copyLink, COPY_ICON,
+  // showCopiedIcon, showCopied, addCopyLinkButton.
+
   const TAB_CARD_DELAY = 600;
   const TAB_CARD_GRACE = 120;
   const TAB_CARD_GAP = 8;
@@ -10876,6 +10967,10 @@
   const ESSENTIAL_CARD_OVERLAP_X = 6;
   const ESSENTIAL_CARD_OVERLAP_Y = 2;
   const DEFAULT_TAB_ICON = "chrome://sine/content/zia/icons/tab-default.svg";
+  const POP_OUT_MS = 130;
+  const TICK_POP_IN_MS = 380;
+  const PAPERCLIP_POP_IN_MS = 320;
+  const COPIED_SHOWN_MS = 1200;
 
   const TAB_CARD_ACTIONS = [
     {
@@ -10958,7 +11053,7 @@
       toTick
         ? [{ opacity: 1, scale: 1, rotate: "0deg" }, { opacity: 0, scale: 0.35, rotate: "-40deg" }]
         : [{ opacity: 1, scale: 1 }, { opacity: 0, scale: 0.5 }],
-      { duration: 130, easing: "ease-in", fill: "forwards" }
+      { duration: POP_OUT_MS, easing: "ease-in", fill: "forwards" }
     );
     icon.ziaPop = out;
     out.finished.then(
@@ -10972,7 +11067,7 @@
                 { opacity: 1, scale: 1, rotate: "0deg" },
               ]
             : [{ opacity: 0, scale: 0.5, rotate: "-20deg" }, { opacity: 1, scale: 1, rotate: "0deg" }],
-          { duration: toTick ? 380 : 320, easing: POP_SPRING }
+          { duration: toTick ? TICK_POP_IN_MS : PAPERCLIP_POP_IN_MS, easing: POP_SPRING }
         );
         out.cancel();
       },
@@ -10991,7 +11086,7 @@
     };
     popIcon(icon, true, set(true));
     clearTimeout(button.ziaCopiedTimer);
-    button.ziaCopiedTimer = setTimeout(() => popIcon(icon, false, set(false)), 1200);
+    button.ziaCopiedTimer = setTimeout(() => popIcon(icon, false, set(false)), COPIED_SHOWN_MS);
   }
 
   function showCopied(button) {
@@ -11008,19 +11103,37 @@
     }
     const siteData = document.getElementById("zen-site-data-icon-button");
     if (!siteData) {
-      const urlbar = document.getElementById("urlbar");
-      if (!urlbar || addCopyLinkButton.waiting) {
-        return;
-      }
-      addCopyLinkButton.waiting = new MutationObserver(() => {
-        if (document.getElementById("zen-site-data-icon-button")) {
-          addCopyLinkButton.waiting.disconnect();
-          safely("addCopyLinkButton", addCopyLinkButton);
-        }
-      });
-      addCopyLinkButton.waiting.observe(urlbar, { childList: true, subtree: true });
+      waitForSiteDataButton();
       return;
     }
+    const button = makeCopyLinkButton();
+    siteData.before(button);
+    // As faint as the site settings icon beside it (a fixed see-through
+    // level); its colour follows the toolbar in CSS.
+    const siteIcon = siteData.querySelector("image");
+    if (siteIcon) {
+      const style = getComputedStyle(siteIcon);
+      button.firstChild.style.fillOpacity = style.fillOpacity;
+      button.firstChild.style.opacity = style.opacity;
+    }
+    showCopyLinkOnWebsites(button);
+  }
+
+  function waitForSiteDataButton() {
+    const urlbar = document.getElementById("urlbar");
+    if (!urlbar || addCopyLinkButton.waiting) {
+      return;
+    }
+    addCopyLinkButton.waiting = new MutationObserver(() => {
+      if (document.getElementById("zen-site-data-icon-button")) {
+        addCopyLinkButton.waiting.disconnect();
+        safely("addCopyLinkButton", addCopyLinkButton);
+      }
+    });
+    addCopyLinkButton.waiting.observe(urlbar, { childList: true, subtree: true });
+  }
+
+  function makeCopyLinkButton() {
     const button = document.createXULElement("hbox");
     button.id = "zia-copy-link-button";
     button.className = "urlbar-page-action";
@@ -11041,19 +11154,15 @@
         console.error("[Zia] Copy link failed:", err);
       }
     });
-    siteData.before(button);
+    return button;
+  }
+
+  // Only a website's link is copied, so the button shows only there
+  function showCopyLinkOnWebsites(button) {
     const update = () => {
       const uri = gBrowser.selectedBrowser?.currentURI;
       button.hidden = !uri || !/^https?$/.test(uri.scheme);
     };
-    // As faint as the site settings icon beside it (a fixed see-through
-    // level); its colour follows the toolbar in CSS.
-    const siteIcon = siteData.querySelector("image");
-    if (siteIcon) {
-      const style = getComputedStyle(siteIcon);
-      icon.style.fillOpacity = style.fillOpacity;
-      icon.style.opacity = style.opacity;
-    }
     gBrowser.tabContainer.addEventListener("TabSelect", update);
     gBrowser.addProgressListener({
       onLocationChange: (progress) => {
@@ -17249,17 +17358,34 @@
   // The welcome tour (welcome/index.html): once on a first install, and once after
   // a release that bumps WELCOME_VERSION ("release + welcome card"), over a dimmed
   // window. Closed, it stays closed; settings can switch it off or show it again.
+  // Used elsewhere: watchWelcome.
   const WELCOME_VERSION = "2.102.0";
   const WELCOME_SEEN_PREF = "zia.welcome.seen";
   const WELCOME_UPDATES_PREF = "zia.welcome.show";
   const WELCOME_AGAIN_PREF = "zia.welcome.again";
   const WHATS_NEW_AGAIN_PREF = "zia.welcome.whats-new-again";
   const WELCOME_URL = "chrome://sine/content/zia/welcome/index.html";
+  const WELCOME_CLOSE_MS = 260;
+  const WELCOME_LOOK_EVERY = 250;
+  // (after the window has settled, so it isn't lost under the restore)
+  const WELCOME_DELAY = 1500;
 
   function showWelcome(mode) {
     if (document.getElementById("zia-welcome")) {
       return;
     }
+    const { overlay, frame } = makeWelcome(mode);
+    listenToWelcome(overlay, frame);
+    document.documentElement.appendChild(overlay);
+    try {
+      overlay.showPopover();
+    } catch (err) {
+      noteError("welcome: top layer", err);
+    }
+    requestAnimationFrame(() => overlay.setAttribute("shown", ""));
+  }
+
+  function makeWelcome(mode) {
     const overlay = document.createElementNS(XHTML_NS, "div");
     overlay.id = "zia-welcome";
     // In the top layer, as pop-ups are: above the toolbar and address bar,
@@ -17271,26 +17397,28 @@
     frame.setAttribute("src", `${WELCOME_URL}${ultra}#${mode === "update" ? `update-${WELCOME_VERSION}` : mode}`);
     frame.setAttribute("title", "Welcome to Zia");
     overlay.append(frame);
+    return { overlay, frame };
+  }
 
-    const close = () => {
-      if (!overlay.isConnected || overlay.hasAttribute("closing")) {
-        return;
-      }
-      overlay.setAttribute("closing", "");
-      setTimeout(() => {
-        try {
-          overlay.hidePopover?.();
-        } catch (err) {}
-        overlay.remove();
-      }, 260);
-      gBrowser.selectedBrowser?.focus();
-    };
-    // The page tells Zia what to do three ways (it runs apart from the
-    // window, so functions handed to it don't reach it): an event on its
-    // document, a message to this window, and a mark on the page, looked
-    // for every quarter second. The first to arrive counts.
+  function closeWelcome(overlay) {
+    if (!overlay.isConnected || overlay.hasAttribute("closing")) {
+      return;
+    }
+    overlay.setAttribute("closing", "");
+    // (never cancelled: once closing, it always goes)
+    setTimeout(() => {
+      try {
+        overlay.hidePopover?.();
+      } catch (err) {}
+      overlay.remove();
+    }, WELCOME_CLOSE_MS);
+    gBrowser.selectedBrowser?.focus();
+  }
+
+  // What the page asks for, as JSON: only the first ask counts
+  function welcomeAnswer(overlay) {
     let acted = false;
-    const act = (text) => {
+    return (text) => {
       if (acted) {
         return;
       }
@@ -17306,9 +17434,17 @@
       }
       if (message.action === "open" || message.action === "done") {
         acted = true;
-        close();
+        closeWelcome(overlay);
       }
     };
+  }
+
+  // The page tells Zia what to do three ways (it runs apart from the
+  // window, so functions handed to it don't reach it): an event on its
+  // document, a message to this window, and a mark on the page, looked
+  // for every quarter second. The first to arrive counts.
+  function listenToWelcome(overlay, frame) {
+    const act = welcomeAnswer(overlay);
     const onMessage = (event) => {
       if (event.source === frame.contentWindow && typeof event.data?.ziaWelcome === "string") {
         act(event.data.ziaWelcome);
@@ -17330,7 +17466,7 @@
       } catch (err) {
         noteError("welcome: look", err);
       }
-    }, 250);
+    }, WELCOME_LOOK_EVERY);
     frame.addEventListener("load", () => {
       try {
         frame.contentDocument?.addEventListener("ZiaWelcome", (event) => act(event.detail));
@@ -17339,13 +17475,6 @@
         noteError("welcome: hook", err);
       }
     });
-    document.documentElement.appendChild(overlay);
-    try {
-      overlay.showPopover();
-    } catch (err) {
-      noteError("welcome: top layer", err);
-    }
-    requestAnimationFrame(() => overlay.setAttribute("shown", ""));
   }
 
   function watchWelcome() {
@@ -17356,8 +17485,7 @@
       // show it too
       Services.prefs.setStringPref(WELCOME_SEEN_PREF, WELCOME_VERSION);
       if (firstTime || Services.prefs.getBoolPref(WELCOME_UPDATES_PREF, true)) {
-        // after the window has settled, so it isn't lost under the restore
-        setTimeout(() => showWelcome(firstTime ? "install" : "update"), 1500);
+        setTimeout(() => showWelcome(firstTime ? "install" : "update"), WELCOME_DELAY);
       }
     }
 
@@ -19486,7 +19614,9 @@
   // drops the ones nobody types (next/previous tab or space, plain reload), and
   // renames a few to the words people use. Commands run with the window they
   // were picked in, never this script's own, since the list outlives windows.
+  // Used elsewhere: setupAddressBarCommands.
   const ZEN_ICON = "chrome://browser/skin/zen-icons/";
+  const SINE_PAGE_LOOK_EVERY = 100;
 
   function ziaAction(label, icon, command, isAvailable = () => true) {
     return {
@@ -19515,7 +19645,7 @@
   async function openSineMods(win) {
     win.openPreferences("paneSineMods");
     for (let i = 0; i < 40; i++) {
-      await new Promise((resolve) => win.setTimeout(resolve, 100));
+      await new Promise((resolve) => win.setTimeout(resolve, SINE_PAGE_LOOK_EVERY));
       const browser = win.gBrowser.selectedBrowser;
       if (!browser.currentURI?.spec.startsWith("about:preferences")) {
         continue;
@@ -19765,25 +19895,27 @@
     }
     refreshSpaceActions(actions, window);
     gURLBar.inputField?.addEventListener("focus", () => refreshSpaceActions(actions, window));
-    window.addEventListener("unload", () => {
-      if (actions.ziaOwner !== window) {
-        // its "Move Tab to" entries may be this window's: made again on the next focus
-        removeZiaEntries(actions, true);
-        return;
+    window.addEventListener("unload", () => handOverAddressBarCommands(actions));
+  }
+
+  function handOverAddressBarCommands(actions) {
+    if (actions.ziaOwner !== window) {
+      // its "Move Tab to" entries may be this window's: made again on the next focus
+      removeZiaEntries(actions, true);
+      return;
+    }
+    removeZiaEntries(actions, false);
+    unmatchCommandsStrictly();
+    actions.ziaOwner = null;
+    try {
+      colourProvider?.manager.unregisterProvider(colourProvider.provider);
+    } catch (err) {}
+    for (const other of Services.wm.getEnumerator("navigator:browser")) {
+      if (other !== window && other.ZiaCommands) {
+        other.ZiaCommands.takeOver();
+        break;
       }
-      removeZiaEntries(actions, false);
-      unmatchCommandsStrictly();
-      actions.ziaOwner = null;
-      try {
-        colourProvider?.manager.unregisterProvider(colourProvider.provider);
-      } catch (err) {}
-      for (const other of Services.wm.getEnumerator("navigator:browser")) {
-        if (other !== window && other.ZiaCommands) {
-          other.ZiaCommands.takeOver();
-          break;
-        }
-      }
-    });
+    }
   }
 
   // ---------- Colour answers: a hex or rgb() colour, shown with its swatch and
@@ -19825,25 +19957,39 @@
   }
 
   function registerColourAnswer() {
-    let manager;
-    let UrlbarProvider;
-    let UrlbarResult;
-    let UrlbarShared;
-    try {
-      ({ ProvidersManager: manager } = ChromeUtils.importESModule("moz-src:///browser/components/urlbar/UrlbarProvidersManager.sys.mjs"));
-      manager = manager.getInstanceForSap("urlbar");
-      ({ UrlbarProvider } = ChromeUtils.importESModule("moz-src:///browser/components/urlbar/UrlbarUtils.sys.mjs"));
-      ({ UrlbarResult } = ChromeUtils.importESModule("chrome://browser/content/urlbar/UrlbarResult.mjs"));
-      ({ UrlbarShared } = ChromeUtils.importESModule("chrome://browser/content/urlbar/UrlbarShared.mjs"));
-    } catch (err) {
-      noteError("address bar commands: colour answer", err);
+    const urlbar = urlbarModules();
+    if (!urlbar) {
       return null;
     }
+    const { manager } = urlbar;
     const existing = manager.getProvider("ProviderZiaColour");
     if (existing) {
       manager.unregisterProvider(existing);
     }
-    class ProviderZiaColour extends UrlbarProvider {
+    const ProviderZiaColour = colourProviderClass(urlbar);
+    const provider = new ProviderZiaColour();
+    manager.registerProvider(provider);
+    return { manager, provider };
+  }
+
+  // Firefox's address bar parts the colour answer is made of
+  function urlbarModules() {
+    try {
+      const { ProvidersManager } = ChromeUtils.importESModule("moz-src:///browser/components/urlbar/UrlbarProvidersManager.sys.mjs");
+      const manager = ProvidersManager.getInstanceForSap("urlbar");
+      const { UrlbarProvider } = ChromeUtils.importESModule("moz-src:///browser/components/urlbar/UrlbarUtils.sys.mjs");
+      const { UrlbarResult } = ChromeUtils.importESModule("chrome://browser/content/urlbar/UrlbarResult.mjs");
+      const { UrlbarShared } = ChromeUtils.importESModule("chrome://browser/content/urlbar/UrlbarShared.mjs");
+      return { manager, UrlbarProvider, UrlbarResult, UrlbarShared };
+    } catch (err) {
+      noteError("address bar commands: colour answer", err);
+      return null;
+    }
+  }
+
+  // (a class, as Firefox's providers are: its name is the provider's)
+  function colourProviderClass({ UrlbarProvider, UrlbarResult, UrlbarShared }) {
+    return class ProviderZiaColour extends UrlbarProvider {
       get type() {
         return UrlbarShared.PROVIDER_TYPE.PROFILE;
       }
@@ -19895,10 +20041,7 @@
       onEngagement(queryContext, controller, details) {
         copyText(details.result.payload.hex);
       }
-    }
-    const provider = new ProviderZiaColour();
-    manager.registerProvider(provider);
-    return { manager, provider };
+    };
   }
 
   // The screenshot buttons as Zia's tiles: flat, a squircle, a hairline, lighter

@@ -1,10 +1,30 @@
+  // The toolbar's colour, read from the top of the page: the reading, the ink that goes
+  // with it, the checker that corrects it, the address pop-up's colour frozen as it
+  // opens, and the page helpers that report loads and scrolls (actors/ZiaChild.sys.mjs,
+  // calling window.ziaOnPagePainted and window.ziaOnPageScroll) and draw PDFs.
+  // Used elsewhere: scrollPositions, ERROR_PAGE_COLOR, errorBrowsers, colorCache, cacheColor,
+  // colorRequestId (bumped by 29 as a load starts), appliedColorKey (cleared by 18 as the
+  // options change), siteColorOn, applyColor, showColor, isErrorPage, isLoading,
+  // sampleTopColor, parseColor, colorOver, chromeBackdrop, cssColor, wantsDarkInk,
+  // updateColor, watchColorDrift, watchPopUpColor, snapColorForTab, scheduleColor,
+  // requestScrollSample, watchScrollInput, registerPdfActor, registerScrollActor.
+
+  const SCROLL_SAMPLE_INTERVAL = 50;
+  // (the wait for a second reading of an unsure one, and the checker's timings, below)
+  const UNSURE_RECHECK = 200;
+  const CHECK_EVERY = 3000;
+  const CHECK_SOON_MS = 400;
+  const CHECK_AFTER_RESIZE_MS = 500;
+  // (the last for pages that recolour their header once their scripts run: GitHub)
+  const PAINTED_READS_AT = [150, 450, 1200, 2800, 5000];
+  const SCROLL_FOLLOW_UPS_AT = [250, 600, 1200];
+
   // One band, 24px deep, for every reading: the checker once read deeper, and on
   // a page with a thin strip of another colour at its top the toolbar flicked.
   const TOP_BAND = 24;
   const STRIP_SCALE = 0.5;
   const FULL_VIEW_SCALE = 0.125;
   const TOP_BAND_ROWS = TOP_BAND * FULL_VIEW_SCALE;
-  const SCROLL_SAMPLE_INTERVAL = 50;
   const scrollPositions = new WeakMap();
   const LIGHT_THRESHOLD = 150;
   const INK_MAX = 90;
@@ -17,13 +37,16 @@
 
   const MIN_COLOR_SHARE = 0.6;
   const SAME_COLOR_DISTANCE = 10;
-  let pendingColor = null;
 
   let appliedColorKey = null;
 
   // a reading unlike the site's remembered colour, waiting on a second
-  const UNSURE_RECHECK = 200;
   let unsureColor = null;
+
+  // Readings on scroll: the one waiting (timer) or under way (sampling), when the last was
+  // taken, whether the page helper reports scrolls (else scroll input stands in for it), and
+  // a reading unlike the toolbar waiting on the next to agree (pendingColor)
+  const scrollReading = { timer: null, sampling: false, last: 0, helperWorks: false, pendingColor: null };
 
   const siteColorOn = () => Services.prefs.getBoolPref("zia.toolbar.site-color", true);
 
@@ -174,6 +197,11 @@
   function showColor(rgb) {
     colorRequestId++;
     applyColor(rgb);
+  }
+
+  // the colour a tab's toolbar shows from now on (a colour set by hand, 01b)
+  function cacheColor(browser, rgb) {
+    colorCache.set(browser, rgb);
   }
 
   function isErrorPage(browser) {
@@ -376,32 +404,7 @@
 
   async function updateColor(fromScroll = false, duringLoad = false) {
     const browser = gBrowser.selectedBrowser;
-    if (!siteColorOn()) {
-      applyColor(null);
-      return;
-    }
-
-    // (while a colour's being picked by hand, the toolbar shows that)
-    if (colorPick) {
-      return;
-    }
-    if (isErrorPage(browser)) {
-      showColor(ERROR_PAGE_COLOR);
-      return;
-    }
-    // a site with a toolbar colour of its own (01b) keeps it, unread
-    const manual = manualSiteColor(browser);
-    if (manual) {
-      pendingColor = null;
-      showColor(manual);
-      colorCache.set(browser, manual);
-      return;
-    }
-    if (isLoading(browser) && !duringLoad) {
-      return;
-    }
-
-    if (showsThrough(browser) && chromeOverPage()) {
+    if (readingSkipped(browser, duringLoad)) {
       return;
     }
     const id = ++colorRequestId;
@@ -417,39 +420,15 @@
 
     const known = colorCache.has(browser);
     const current = colorCache.get(browser) ?? null;
-    let rgb = reading?.rgb ?? null;
-
-    // A reading unlike the site's remembered colour is often a passing splash
-    // (Discord is white a moment before going dark), which made the toolbar flash:
-    // it's believed only when a second reading a moment later agrees.
-    if (!fromScroll && rgb) {
-      const remembered = rememberedSiteColor(browser);
-      if (remembered && colorDistance(rgb, remembered) > CHECK_DISTANCE) {
-        if (unsureColor?.browser !== browser || colorDistance(rgb, unsureColor.rgb) > CHECK_DISTANCE) {
-          unsureColor = { browser, rgb };
-          setTimeout(() => updateColor(false, isLoading(browser)), UNSURE_RECHECK);
-          return;
-        }
-      }
+    const rgb = reading?.rgb ?? null;
+    if (!fromScroll && rgb && awaitingSecondReading(browser, rgb)) {
+      return;
     }
     unsureColor = null;
-
-    if (known && fromScroll) {
-      if (reading && reading.share < MIN_COLOR_SHARE) {
-        pendingColor = null;
-        return;
-      }
-      if (colorDistance(rgb, current) <= SAME_COLOR_DISTANCE) {
-        pendingColor = null;
-        return;
-      }
-      if (rgb && colorDistance(rgb, pendingColor) > SAME_COLOR_DISTANCE) {
-        pendingColor = rgb;
-        requestScrollSample();
-        return;
-      }
+    if (known && fromScroll && !scrollReadingCounts(reading, current)) {
+      return;
     }
-    pendingColor = null;
+    scrollReading.pendingColor = null;
     applyColor(rgb);
     colorCache.set(browser, rgb);
     if (!fromScroll && rgb) {
@@ -457,23 +436,88 @@
     }
   }
 
+  // True when the page isn't to be read now, with whatever shows instead shown
+  function readingSkipped(browser, duringLoad) {
+    if (!siteColorOn()) {
+      applyColor(null);
+      return true;
+    }
+
+    // (while a colour's being picked by hand, the toolbar shows that)
+    if (colorPick) {
+      return true;
+    }
+    if (isErrorPage(browser)) {
+      showColor(ERROR_PAGE_COLOR);
+      return true;
+    }
+    // a site with a toolbar colour of its own (01b) keeps it, unread
+    const manual = manualSiteColor(browser);
+    if (manual) {
+      scrollReading.pendingColor = null;
+      showColor(manual);
+      colorCache.set(browser, manual);
+      return true;
+    }
+    if (isLoading(browser) && !duringLoad) {
+      return true;
+    }
+
+    return showsThrough(browser) && chromeOverPage();
+  }
+
+  // A reading unlike the site's remembered colour is often a passing splash
+  // (Discord is white a moment before going dark), which made the toolbar flash:
+  // it's believed only when a second reading a moment later agrees.
+  function awaitingSecondReading(browser, rgb) {
+    const remembered = rememberedSiteColor(browser);
+    if (remembered && colorDistance(rgb, remembered) > CHECK_DISTANCE) {
+      if (unsureColor?.browser !== browser || colorDistance(rgb, unsureColor.rgb) > CHECK_DISTANCE) {
+        unsureColor = { browser, rgb };
+        // (not cancelled: the second reading checks for itself that it's still wanted)
+        setTimeout(() => updateColor(false, isLoading(browser)), UNSURE_RECHECK);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // On scroll, a reading counts if most of the band is one colour, unlike the toolbar's,
+  // and the next reading agrees
+  function scrollReadingCounts(reading, current) {
+    const rgb = reading?.rgb ?? null;
+    if (reading && reading.share < MIN_COLOR_SHARE) {
+      scrollReading.pendingColor = null;
+      return false;
+    }
+    if (colorDistance(rgb, current) <= SAME_COLOR_DISTANCE) {
+      scrollReading.pendingColor = null;
+      return false;
+    }
+    if (rgb && colorDistance(rgb, scrollReading.pendingColor) > SAME_COLOR_DISTANCE) {
+      scrollReading.pendingColor = rgb;
+      requestScrollSample();
+      return false;
+    }
+    return true;
+  }
+
   // The checker: the colour is read on load, for a few seconds after, and on
   // scroll, so a page that changes later (or has a thin strip at its top) could
   // leave it wrong. Every few seconds, and on focus or resize, the settled tab is
   // read again; two readings agreeing with each other, not the toolbar, correct it.
-  const CHECK_EVERY = 3000;
   const CHECK_DISTANCE = 24;
-  let checkSuspect = null;
-  let checking = false;
+  // a reading under way, and the last one unlike the toolbar (suspect), waiting on a second
+  const colorCheck = { running: false, suspect: null };
 
   async function checkColor() {
     const browser = gBrowser.selectedBrowser;
-    if (checking || document.hidden || !siteColorOn() || !browser || isErrorPage(browser) || isLoading(browser) ||
-        scrollTimer || scrollSampling || !colorCache.has(browser) || colorPick || manualSiteColor(browser) ||
+    if (colorCheck.running || document.hidden || !siteColorOn() || !browser || isErrorPage(browser) || isLoading(browser) ||
+        scrollReading.timer || scrollReading.sampling || !colorCache.has(browser) || colorPick || manualSiteColor(browser) ||
         (showsThrough(browser) && chromeOverPage())) {
       return;
     }
-    checking = true;
+    colorCheck.running = true;
     const id = colorRequestId;
     let reading = null;
     try {
@@ -481,23 +525,23 @@
     } catch (err) {
       noteError("site colour: checkColor", err);
     } finally {
-      checking = false;
+      colorCheck.running = false;
     }
     // Something else read or changed the colour meanwhile, or the tab changed
     if (id !== colorRequestId || browser !== gBrowser.selectedBrowser || isLoading(browser) || !reading?.rgb) {
-      checkSuspect = null;
+      colorCheck.suspect = null;
       return;
     }
     const shown = colorCache.get(browser);
     if (reading.share < MIN_COLOR_SHARE || colorDistance(reading.rgb, shown) <= CHECK_DISTANCE) {
-      checkSuspect = null;
+      colorCheck.suspect = null;
       return;
     }
-    if (!checkSuspect || checkSuspect.browser !== browser || colorDistance(reading.rgb, checkSuspect.rgb) > SAME_COLOR_DISTANCE) {
-      checkSuspect = { browser, rgb: reading.rgb };
+    if (!colorCheck.suspect || colorCheck.suspect.browser !== browser || colorDistance(reading.rgb, colorCheck.suspect.rgb) > SAME_COLOR_DISTANCE) {
+      colorCheck.suspect = { browser, rgb: reading.rgb };
       return;
     }
-    checkSuspect = null;
+    colorCheck.suspect = null;
     applyColor(reading.rgb);
     colorCache.set(browser, reading.rgb);
     rememberSiteColor(browser, reading.rgb);
@@ -505,15 +549,16 @@
 
   function watchColorDrift() {
     setInterval(checkColor, CHECK_EVERY);
-    const soon = () => setTimeout(checkColor, 400);
+    // (not cancelled: a check that comes to nothing returns)
+    const soon = () => setTimeout(checkColor, CHECK_SOON_MS);
     document.addEventListener("visibilitychange", soon);
     window.addEventListener("focus", soon);
     window.addEventListener("resize", () => {
       clearTimeout(watchColorDrift.resizeTimer);
-      watchColorDrift.resizeTimer = setTimeout(checkColor, 500);
+      watchColorDrift.resizeTimer = setTimeout(checkColor, CHECK_AFTER_RESIZE_MS);
     });
     gBrowser.tabContainer.addEventListener("TabSelect", () => {
-      checkSuspect = null;
+      colorCheck.suspect = null;
     });
   }
 
@@ -560,64 +605,8 @@
     }).observe(urlbar, { attributes: true, attributeFilter: ["breakout-extend"] });
   }
 
-  const SITE_COLORS_PREF = "zia.siteColors";
-  const SITE_COLORS_MAX = 200;
-  let siteColors = null;
-  let siteColorsSaveTimer = null;
-
-  function siteKey(browser) {
-    try {
-      const uri = browser.currentURI;
-      return /^https?$/.test(uri.scheme) ? uri.host : "";
-    } catch (err) {
-      return "";
-    }
-  }
-
-  function loadSiteColors() {
-    if (siteColors) {
-      return siteColors;
-    }
-    siteColors = new Map();
-    try {
-      siteColors = new Map(Object.entries(JSON.parse(Services.prefs.getStringPref(SITE_COLORS_PREF, "{}"))));
-    } catch (err) {
-      noteError("site colour: loadSiteColors", err);
-    }
-    return siteColors;
-  }
-
-  function rememberSiteColor(browser, rgb) {
-    const host = siteKey(browser);
-    if (!host) {
-      return;
-    }
-    const colors = loadSiteColors();
-    const value = rgb.join(",");
-    if (colors.get(host) === value) {
-      return;
-    }
-    colors.delete(host);
-    colors.set(host, value);
-    while (colors.size > SITE_COLORS_MAX) {
-      colors.delete(colors.keys().next().value);
-    }
-    if (!siteColorsSaveTimer) {
-      siteColorsSaveTimer = setTimeout(() => {
-        siteColorsSaveTimer = null;
-        Services.prefs.setStringPref(SITE_COLORS_PREF, JSON.stringify(Object.fromEntries(siteColors)));
-      }, 20000);
-    }
-  }
-
-  function rememberedSiteColor(browser) {
-    const host = siteKey(browser);
-    const value = host && loadSiteColors().get(host);
-    return value ? value.split(",").map(Number) : null;
-  }
-
   function snapColorForTab(browser) {
-    pendingColor = null;
+    scrollReading.pendingColor = null;
     setFlag("zia-color-snap", true);
     const manual = siteColorOn() && !isErrorPage(browser) ? manualSiteColor(browser) : null;
     if (isErrorPage(browser)) {
@@ -637,28 +626,23 @@
     setTimeout(() => updateColor(), delay);
   }
 
-  let pageHelperWorks = false;
-  let scrollTimer = null;
-  let scrollSampling = false;
-  let lastScrollSample = 0;
-
   function requestScrollSample() {
-    if (scrollTimer) {
+    if (scrollReading.timer) {
       return;
     }
-    const wait = Math.max(0, SCROLL_SAMPLE_INTERVAL - (Date.now() - lastScrollSample));
-    scrollTimer = setTimeout(async () => {
-      scrollTimer = null;
-      if (scrollSampling) {
+    const wait = Math.max(0, SCROLL_SAMPLE_INTERVAL - (Date.now() - scrollReading.last));
+    scrollReading.timer = setTimeout(async () => {
+      scrollReading.timer = null;
+      if (scrollReading.sampling) {
         requestScrollSample();
         return;
       }
-      scrollSampling = true;
-      lastScrollSample = Date.now();
+      scrollReading.sampling = true;
+      scrollReading.last = Date.now();
       try {
         await updateColor(true);
       } finally {
-        scrollSampling = false;
+        scrollReading.sampling = false;
       }
     }, wait);
   }
@@ -668,15 +652,15 @@
       return;
     }
     updateColor(false, true);
-    // (the last for pages that recolour their header once their scripts run: GitHub)
-    for (const ms of [150, 450, 1200, 2800, 5000]) {
+    // (not cancelled: each reads whichever page is showing then)
+    for (const ms of PAINTED_READS_AT) {
       setTimeout(() => updateColor(false, isLoading(browser)), ms);
     }
   };
 
   window.ziaOnPageScroll = (browser, position) => {
     if (position) {
-      pageHelperWorks = true;
+      scrollReading.helperWorks = true;
       scrollPositions.set(browser, { x: position.x || 0, y: position.y || 0 });
     }
     if (browser !== gBrowser.selectedBrowser || isLoading(browser) || isErrorPage(browser)) {
@@ -693,12 +677,12 @@
     const SCROLL_KEYS = new Set(["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "]);
     let followUps = [];
     const onInput = () => {
-      if (pageHelperWorks) {
+      if (scrollReading.helperWorks) {
         return;
       }
       window.ziaOnPageScroll(gBrowser.selectedBrowser);
       followUps.forEach(clearTimeout);
-      followUps = [250, 600, 1200].map((ms) =>
+      followUps = SCROLL_FOLLOW_UPS_AT.map((ms) =>
         setTimeout(() => window.ziaOnPageScroll(gBrowser.selectedBrowser), ms)
       );
     };
