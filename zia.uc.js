@@ -17554,9 +17554,38 @@
   // pages of their own inside the panel, which Zia's chrome.css doesn't
   // reach: zia-sidebar.css is loaded into each as it opens. The panel's
   // frame is styled in chrome.css. On unless switched off in settings.
+  // Used elsewhere: tabMeasurements, watchSidebarPanels.
   const SIDEBAR_PANELS_PREF = "zia.sidebar-panels.style";
+  const SIDEBAR_BESIDE_PREF = "zia.sidebar-panels.beside";
+  const SIDEBAR_MAX_WIDTH_PREF = "zen.view.sidebar-expanded.max-width";
   // fresh each session, so an updated Zia's styles aren't served from cache
   const SIDEBAR_SHEET = `chrome://sine/content/zia/zia-sidebar.css?${Date.now()}`;
+  // (the search field drawn a moment later, the first time)
+  const SEARCH_FIELD_LATE_MS = 300;
+  // (how often an open tree's row highlights are checked over)
+  const TREE_CHECK_MS = 250;
+  // (how long the panel's slide runs where Zen's own motion isn't there)
+  const PANEL_SLIDE_MS = 100;
+  // (the sliding mark held after a slide stops)
+  const PANEL_SLIDING_HOLD_MS = 250;
+
+  // The panel moved beside the page: its box, splitter and the page's card, where Zen had
+  // the first two (to put them back), whether its width is being put back to the limit,
+  // how many slides are running, whether Zen's own sidebar is sliding, whether the box was
+  // hidden when last seen, and whether a close is sliding it out
+  const sidePanel = {
+    box: null,
+    splitter: null,
+    card: null,
+    home: null,
+    homeNext: null,
+    resize: null,
+    clamping: false,
+    slides: 0,
+    zenSliding: false,
+    wasHidden: false,
+    hiding: false,
+  };
 
   // The tabs' own measurements, read off a tab in the sidebar, for the
   // panels' rows to match: text size and weight, row height, the gap
@@ -17799,7 +17828,7 @@
       apply();
       // drawn a moment later, the first time
       field.updateComplete?.then(apply, () => {});
-      win.setTimeout(apply, 300);
+      win.setTimeout(apply, SEARCH_FIELD_LATE_MS);
     }
   }
 
@@ -17824,58 +17853,17 @@
     layer.append(chosen, hover);
     tree.before(layer);
 
-    let hoveredRow = -1;
-    const put = (pill, row) => {
-      const body = tree.treeBody || tree.querySelector("treechildren");
-      const height = tree.rowHeight;
-      if (row < 0 || !body || !height) {
-        pill.hidden = true;
-        return;
-      }
-      const shown = row - tree.getFirstVisibleRow();
-      const box = body.getBoundingClientRect();
-      // each row is a tab's height and the gap after it: the pill is the tab
-      const gap = parseFloat(win.getComputedStyle(doc.documentElement).getPropertyValue("--zia-row-gap")) || 0;
-      const top = box.top + shown * height;
-      if (shown < 0 || top + height > box.bottom + 1) {
-        pill.hidden = true;
-        return;
-      }
-      // a row inside a folder steps in, as a folder's tabs do
-      const indent = (tree.view?.getLevel(row) || 0) * (parseFloat(win.getComputedStyle(doc.documentElement).getPropertyValue("--zia-row-indent")) || 0);
-      pill.hidden = false;
-      pill.style.top = `${top + gap / 2}px`;
-      pill.style.left = `${box.left + indent}px`;
-      pill.style.width = `${Math.max(0, box.width - indent)}px`;
-      pill.style.height = `${height - gap}px`;
-    };
-    let queued = false;
-    const update = () => {
-      if (queued) {
-        return;
-      }
-      queued = true;
-      win.requestAnimationFrame(() => {
-        queued = false;
-        try {
-          // the selected row keeps its look under the pointer, as a tab does
-          const current = tree.view?.selection?.count ? tree.currentIndex : -1;
-          put(chosen, current);
-          put(hover, hoveredRow === current ? -1 : hoveredRow);
-        } catch (err) {
-          noteError("sidebar panels: rows", err);
-        }
-      });
-    };
+    const pills = { doc, win, tree, hover, chosen, hoveredRow: -1, queued: false };
+    const update = () => updateRowPills(pills);
     tree.addEventListener("mousemove", (event) => {
       const row = tree.getRowAt(event.clientX, event.clientY);
-      if (row !== hoveredRow) {
-        hoveredRow = row;
+      if (row !== pills.hoveredRow) {
+        pills.hoveredRow = row;
         update();
       }
     });
     tree.addEventListener("mouseleave", () => {
-      hoveredRow = -1;
+      pills.hoveredRow = -1;
       update();
     });
     for (const type of ["select", "wheel", "keydown", "click", "focus", "blur"]) {
@@ -17884,9 +17872,52 @@
     win.addEventListener("resize", update);
     // rows coming and going (a search, a folder opened) and scrolling the
     // tree itself don't all tell anyone: checked over as well while open
-    const every = win.setInterval(update, 250);
+    const every = win.setInterval(update, TREE_CHECK_MS);
     win.addEventListener("unload", () => win.clearInterval(every));
     update();
+  }
+
+  function updateRowPills(pills) {
+    if (pills.queued) {
+      return;
+    }
+    pills.queued = true;
+    pills.win.requestAnimationFrame(() => {
+      pills.queued = false;
+      try {
+        // the selected row keeps its look under the pointer, as a tab does
+        const current = pills.tree.view?.selection?.count ? pills.tree.currentIndex : -1;
+        placeRowPill(pills, pills.chosen, current);
+        placeRowPill(pills, pills.hover, pills.hoveredRow === current ? -1 : pills.hoveredRow);
+      } catch (err) {
+        noteError("sidebar panels: rows", err);
+      }
+    });
+  }
+
+  function placeRowPill({ doc, win, tree }, pill, row) {
+    const body = tree.treeBody || tree.querySelector("treechildren");
+    const height = tree.rowHeight;
+    if (row < 0 || !body || !height) {
+      pill.hidden = true;
+      return;
+    }
+    const shown = row - tree.getFirstVisibleRow();
+    const box = body.getBoundingClientRect();
+    // each row is a tab's height and the gap after it: the pill is the tab
+    const gap = parseFloat(win.getComputedStyle(doc.documentElement).getPropertyValue("--zia-row-gap")) || 0;
+    const top = box.top + shown * height;
+    if (shown < 0 || top + height > box.bottom + 1) {
+      pill.hidden = true;
+      return;
+    }
+    // a row inside a folder steps in, as a folder's tabs do
+    const indent = (tree.view?.getLevel(row) || 0) * (parseFloat(win.getComputedStyle(doc.documentElement).getPropertyValue("--zia-row-indent")) || 0);
+    pill.hidden = false;
+    pill.style.top = `${top + gap / 2}px`;
+    pill.style.left = `${box.left + indent}px`;
+    pill.style.width = `${Math.max(0, box.width - indent)}px`;
+    pill.style.height = `${height - gap}px`;
   }
 
   function watchSidebarPanels() {
@@ -17931,8 +17962,6 @@
   // moves it beside the card instead, full height on the window's own
   // background, a second sidebar, on whichever side it's set to (Firefox's
   // "Move sidebar to left/right"). Off in settings: back where Zen has it.
-  const SIDEBAR_BESIDE_PREF = "zia.sidebar-panels.beside";
-
   function placeSidebarPanel() {
     const box = document.getElementById("sidebar-box");
     const splitter = document.getElementById("sidebar-splitter");
@@ -17940,199 +17969,220 @@
     if (!box || !splitter || !card) {
       return;
     }
-    // where Zen had them, to put them back
-    const home = box.parentNode;
-    const homeNext = splitter.nextSibling;
-    const resize = [splitter.getAttribute("resizebefore"), splitter.getAttribute("resizeafter")];
-
-    const reload = () => {
-      // a moved panel's page starts again: shown again if it was open
-      try {
-        const id = window.SidebarController?.currentID;
-        if (id && !box.hidden) {
-          window.SidebarController.show(id);
-        }
-      } catch (err) {
-        noteError("sidebar panels: reload", err);
-      }
-    };
-    const place = () => {
-      const beside = Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true);
-      setFlag("zia-panels-beside", beside);
-      const end = box.hasAttribute("sidebar-positionend");
-      let moved = false;
-      if (beside) {
-        // the splitter sits between the card and the panel, and resizes
-        // the panel
-        if (end && (card.nextElementSibling !== splitter || splitter.nextElementSibling !== box)) {
-          card.after(splitter, box);
-          moved = true;
-        } else if (!end && (card.previousElementSibling !== splitter || splitter.previousElementSibling !== box)) {
-          card.before(box, splitter);
-          moved = true;
-        }
-        splitter.setAttribute("resizebefore", end ? "none" : "sibling");
-        splitter.setAttribute("resizeafter", end ? "sibling" : "none");
-      } else if (box.parentNode !== home) {
-        home.insertBefore(box, homeNext);
-        home.insertBefore(splitter, homeNext);
-        splitter.setAttribute("resizebefore", resize[0] ?? "sibling");
-        splitter.setAttribute("resizeafter", resize[1] ?? "none");
-        moved = true;
-      }
-      if (moved) {
-        reload();
-      }
-    };
-    place();
-    watchPrefs(SIDEBAR_BESIDE_PREF, place);
+    Object.assign(sidePanel, {
+      box,
+      splitter,
+      card,
+      // where Zen had them, to put them back
+      home: box.parentNode,
+      homeNext: splitter.nextSibling,
+      resize: [splitter.getAttribute("resizebefore"), splitter.getAttribute("resizeafter")],
+    });
+    moveSidebarPanel();
+    watchPrefs(SIDEBAR_BESIDE_PREF, moveSidebarPanel);
 
     // no wider than Zen lets the tab sidebar be (dragging its edge stops
     // there too), and following that setting if it's changed
-    const MAX_PREF = "zen.view.sidebar-expanded.max-width";
-    // the tab sidebar's own limit as Zen sets it on it, else its setting
-    const maxWidth = () => {
-      const toolbox = parseFloat(gNavToolbox?.style.maxWidth || getComputedStyle(gNavToolbox).maxWidth);
-      if (toolbox > 0) {
-        return toolbox;
-      }
-      try {
-        return Services.prefs.getIntPref(MAX_PREF);
-      } catch (err) {
-        return 300;
-      }
-    };
-    let clamping = false;
-    const cap = () => {
-      if (clamping) {
-        return;
-      }
-      const beside = Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true);
-      const max = maxWidth();
-      if (!beside || !(max > 0)) {
-        box.style.removeProperty("max-width");
-        return;
-      }
-      box.style.setProperty("max-width", `${max}px`, "important");
-      // dragged past it anyway: back to the limit, as the tab sidebar stops
-      if (box.getBoundingClientRect().width > max + 0.5) {
-        clamping = true;
-        box.style.width = `${max}px`;
-        box.setAttribute("width", String(max));
-        clamping = false;
-      }
-    };
-    cap();
-    new MutationObserver(cap).observe(box, { attributes: true, attributeFilter: ["width", "style"] });
-    new MutationObserver(cap).observe(gNavToolbox, { attributes: true, attributeFilter: ["style"] });
-    watchPrefs([MAX_PREF, SIDEBAR_BESIDE_PREF], cap);
+    capPanelWidth();
+    new MutationObserver(capPanelWidth).observe(box, { attributes: true, attributeFilter: ["width", "style"] });
+    new MutationObserver(capPanelWidth).observe(gNavToolbox, { attributes: true, attributeFilter: ["style"] });
+    watchPrefs([SIDEBAR_MAX_WIDTH_PREF, SIDEBAR_BESIDE_PREF], capPanelWidth);
     // moving it to the other side
-    new MutationObserver(place).observe(box, { attributes: true, attributeFilter: ["sidebar-positionend"] });
+    new MutationObserver(moveSidebarPanel).observe(box, { attributes: true, attributeFilter: ["sidebar-positionend"] });
 
-    // It slides in from the window's edge as it opens, the page giving way
-    // to it, and back out as it closes: exactly as Zen slides the tab
-    // sidebar (its outer margin, from minus its width to nothing, with
-    // Zen's own spring: no bounce, a tenth of a second)
-    const beside = () => Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true) && !matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let slides = 0;
-    const sliding = (on) => {
-      slides = Math.max(0, slides + (on ? 1 : -1));
-      // a little after it stops, as the site catches up with its new size
-      if (slides) {
-        setFlag("zia-panel-sliding", true);
-      } else {
-        setTimeout(() => !slides && setFlag("zia-panel-sliding", false), 250);
-      }
-    };
     // the tab sidebar's own slide too: Zen marks it while it runs, and the
     // colour is held a moment after, as the site catches up
-    let zenSliding = false;
-    new MutationObserver(() => {
-      const now = root.hasAttribute("zen-compact-animating");
-      if (now !== zenSliding) {
-        zenSliding = now;
-        sliding(now);
-      }
-    }).observe(root, { attributes: true, attributeFilter: ["zen-compact-animating"] });
-    const slide = (opening) => {
-      const run = slideBox(opening);
-      sliding(true);
-      return run.finally(() => {
-        sliding(false);
-        // its sides measured where it has come to rest
-        if (opening) {
-          safely("sidebar panels: sides", sidebarSides);
-        }
-      });
-    };
-    const slideBox = (opening) => {
-      // off the window's edge; but on the tab sidebar's own side that edge
-      // is the tabs, so it's tucked under the page instead (the margin on
-      // the page's side), never sliding over the tabs
-      const onRight = box.hasAttribute("sidebar-positionend");
-      const besideTabs = onRight === (root.getAttribute("zen-right-side") === "true");
-      const side = onRight !== besideTabs ? "marginRight" : "marginLeft";
-      const hidden = `-${box.getBoundingClientRect().width}px`;
-      const motion = window.gZenUIManager?.motion;
-      const done = () => box.style.removeProperty(side === "marginRight" ? "margin-right" : "margin-left");
-      if (motion?.animate) {
-        box.style[side] = opening ? hidden : "0px";
-        return Promise.resolve(
-          motion.animate(box, { [side]: opening ? [hidden, "0px"] : ["0px", hidden] }, {
-            ease: opening ? "easeOut" : "easeIn",
-            type: "spring",
-            bounce: 0,
-            duration: 0.1,
-          })
-        ).then(() => {
-          if (opening) {
-            done();
-          }
-          return done;
-        });
-      }
-      const run = box.animate([{ [side]: opening ? hidden : "0px" }, { [side]: opening ? "0px" : hidden }], {
-        duration: 100,
-        easing: opening ? "ease-out" : "ease-in",
-        fill: "forwards",
-      });
-      return run.finished.catch(() => {}).then(() => () => run.cancel());
-    };
-    let wasHidden = box.hidden;
-    new MutationObserver(() => {
-      if (wasHidden && !box.hidden && beside()) {
-        slide(true).catch((err) => noteError("sidebar panels: slide in", err));
-      }
-      wasHidden = box.hidden;
-    }).observe(box, { attributes: true, attributeFilter: ["hidden"] });
+    new MutationObserver(followZenSlide).observe(root, { attributes: true, attributeFilter: ["zen-compact-animating"] });
+    sidePanel.wasHidden = box.hidden;
+    new MutationObserver(slideInOnShow).observe(box, { attributes: true, attributeFilter: ["hidden"] });
+    slideOutOnHide();
+  }
 
-    // closing: slid out first, then hidden as Firefox would have
-    const controller = window.SidebarController;
-    if (controller && typeof controller.hide === "function" && !controller.ziaSlides) {
-      const hide = controller.hide;
-      let sliding = false;
-      controller.hide = function (...args) {
-        if (sliding || box.hidden || !beside()) {
-          return hide.apply(this, args);
-        }
-        sliding = true;
-        slide(false)
-          .catch((err) => {
-            noteError("sidebar panels: slide out", err);
-            return () => {};
-          })
-          .then((undo) => {
-            sliding = false;
-            try {
-              hide.apply(this, args);
-            } finally {
-              undo?.();
-            }
-          });
-        return undefined;
-      };
-      controller.ziaSlides = true;
+  function reloadSidebarPanel() {
+    // a moved panel's page starts again: shown again if it was open
+    try {
+      const id = window.SidebarController?.currentID;
+      if (id && !sidePanel.box.hidden) {
+        window.SidebarController.show(id);
+      }
+    } catch (err) {
+      noteError("sidebar panels: reload", err);
     }
+  }
+
+  function moveSidebarPanel() {
+    const { box, splitter, card, home, homeNext, resize } = sidePanel;
+    const beside = Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true);
+    setFlag("zia-panels-beside", beside);
+    const end = box.hasAttribute("sidebar-positionend");
+    let moved = false;
+    if (beside) {
+      // the splitter sits between the card and the panel, and resizes
+      // the panel
+      if (end && (card.nextElementSibling !== splitter || splitter.nextElementSibling !== box)) {
+        card.after(splitter, box);
+        moved = true;
+      } else if (!end && (card.previousElementSibling !== splitter || splitter.previousElementSibling !== box)) {
+        card.before(box, splitter);
+        moved = true;
+      }
+      splitter.setAttribute("resizebefore", end ? "none" : "sibling");
+      splitter.setAttribute("resizeafter", end ? "sibling" : "none");
+    } else if (box.parentNode !== home) {
+      home.insertBefore(box, homeNext);
+      home.insertBefore(splitter, homeNext);
+      splitter.setAttribute("resizebefore", resize[0] ?? "sibling");
+      splitter.setAttribute("resizeafter", resize[1] ?? "none");
+      moved = true;
+    }
+    if (moved) {
+      reloadSidebarPanel();
+    }
+  }
+
+  // the tab sidebar's own limit as Zen sets it on it, else its setting
+  function panelMaxWidth() {
+    const toolbox = parseFloat(gNavToolbox?.style.maxWidth || getComputedStyle(gNavToolbox).maxWidth);
+    if (toolbox > 0) {
+      return toolbox;
+    }
+    try {
+      return Services.prefs.getIntPref(SIDEBAR_MAX_WIDTH_PREF);
+    } catch (err) {
+      return 300;
+    }
+  }
+
+  function capPanelWidth() {
+    const box = sidePanel.box;
+    if (sidePanel.clamping) {
+      return;
+    }
+    const beside = Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true);
+    const max = panelMaxWidth();
+    if (!beside || !(max > 0)) {
+      box.style.removeProperty("max-width");
+      return;
+    }
+    box.style.setProperty("max-width", `${max}px`, "important");
+    // dragged past it anyway: back to the limit, as the tab sidebar stops
+    if (box.getBoundingClientRect().width > max + 0.5) {
+      sidePanel.clamping = true;
+      box.style.width = `${max}px`;
+      box.setAttribute("width", String(max));
+      sidePanel.clamping = false;
+    }
+  }
+
+  // It slides in from the window's edge as it opens, the page giving way
+  // to it, and back out as it closes: exactly as Zen slides the tab
+  // sidebar (its outer margin, from minus its width to nothing, with
+  // Zen's own spring: no bounce, a tenth of a second)
+  function slidesBeside() {
+    return Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true) && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  function markPanelSliding(on) {
+    sidePanel.slides = Math.max(0, sidePanel.slides + (on ? 1 : -1));
+    // a little after it stops, as the site catches up with its new size
+    if (sidePanel.slides) {
+      setFlag("zia-panel-sliding", true);
+    } else {
+      setTimeout(() => !sidePanel.slides && setFlag("zia-panel-sliding", false), PANEL_SLIDING_HOLD_MS);
+    }
+  }
+
+  function followZenSlide() {
+    const now = root.hasAttribute("zen-compact-animating");
+    if (now !== sidePanel.zenSliding) {
+      sidePanel.zenSliding = now;
+      markPanelSliding(now);
+    }
+  }
+
+  function slidePanel(opening) {
+    const run = slidePanelBox(opening);
+    markPanelSliding(true);
+    return run.finally(() => {
+      markPanelSliding(false);
+      // its sides measured where it has come to rest
+      if (opening) {
+        safely("sidebar panels: sides", sidebarSides);
+      }
+    });
+  }
+
+  function slidePanelBox(opening) {
+    const box = sidePanel.box;
+    // off the window's edge; but on the tab sidebar's own side that edge
+    // is the tabs, so it's tucked under the page instead (the margin on
+    // the page's side), never sliding over the tabs
+    const onRight = box.hasAttribute("sidebar-positionend");
+    const besideTabs = onRight === (root.getAttribute("zen-right-side") === "true");
+    const side = onRight !== besideTabs ? "marginRight" : "marginLeft";
+    const hidden = `-${box.getBoundingClientRect().width}px`;
+    const motion = window.gZenUIManager?.motion;
+    const done = () => box.style.removeProperty(side === "marginRight" ? "margin-right" : "margin-left");
+    if (motion?.animate) {
+      box.style[side] = opening ? hidden : "0px";
+      return Promise.resolve(
+        motion.animate(box, { [side]: opening ? [hidden, "0px"] : ["0px", hidden] }, {
+          ease: opening ? "easeOut" : "easeIn",
+          type: "spring",
+          bounce: 0,
+          duration: 0.1,
+        })
+      ).then(() => {
+        if (opening) {
+          done();
+        }
+        return done;
+      });
+    }
+    const run = box.animate([{ [side]: opening ? hidden : "0px" }, { [side]: opening ? "0px" : hidden }], {
+      duration: PANEL_SLIDE_MS,
+      easing: opening ? "ease-out" : "ease-in",
+      fill: "forwards",
+    });
+    return run.finished.catch(() => {}).then(() => () => run.cancel());
+  }
+
+  function slideInOnShow() {
+    const box = sidePanel.box;
+    if (sidePanel.wasHidden && !box.hidden && slidesBeside()) {
+      slidePanel(true).catch((err) => noteError("sidebar panels: slide in", err));
+    }
+    sidePanel.wasHidden = box.hidden;
+  }
+
+  // closing: slid out first, then hidden as Firefox would have
+  function slideOutOnHide() {
+    const controller = window.SidebarController;
+    if (!controller || typeof controller.hide !== "function" || controller.ziaSlides) {
+      return;
+    }
+    const hide = controller.hide;
+    controller.hide = function (...args) {
+      if (sidePanel.hiding || sidePanel.box.hidden || !slidesBeside()) {
+        return hide.apply(this, args);
+      }
+      sidePanel.hiding = true;
+      slidePanel(false)
+        .catch((err) => {
+          noteError("sidebar panels: slide out", err);
+          return () => {};
+        })
+        .then((undo) => {
+          sidePanel.hiding = false;
+          try {
+            hide.apply(this, args);
+          } finally {
+            undo?.();
+          }
+        });
+      return undefined;
+    };
+    controller.ziaSlides = true;
   }
   // A page gone full screen inside the window (a YouTube video) is shown square,
   // edge to edge: it kept the page's rounded card, grey behind the video's corners.
