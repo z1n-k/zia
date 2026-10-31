@@ -2,8 +2,8 @@
 
 // The start of Zia's one scope: the once-per-window guard, and the small helpers every part
 // shares (errors noted once, prefs watched, attributes and styles set or removed).
-// Used elsewhere: isLittleZenWindow, root, XHTML_NS, noteError, watchPrefs, patchMethod, setAttr,
-// setStyle, setFlag, urlbarAtBottom, svgSourceOf.
+// Used elsewhere: isLittleZenWindow, root, XHTML_NS, noteError, watchPrefs, patchMethod,
+// patchDefined, setAttr, setStyle, setFlag, urlbarAtBottom, svgSourceOf.
 (() => {
   if (window.__ziaLoaded) {
     return;
@@ -57,6 +57,20 @@
     const patched = make(original);
     patched.__zia = true;
     target[name] = patched;
+    return true;
+  }
+
+  // The same for what's defined rather than set: a getter (its other attributes kept), or a
+  // method that may come from further up, made the object's own.
+  function patchDefined(target, name, make) {
+    const own = target && Object.getOwnPropertyDescriptor(target, name);
+    const original = own?.get || target?.[name];
+    if (typeof original !== "function" || original.__zia) {
+      return false;
+    }
+    const patched = make(original);
+    patched.__zia = true;
+    Object.defineProperty(target, name, own?.get ? { ...own, get: patched } : { value: patched, writable: true, configurable: true, enumerable: true });
     return true;
   }
 
@@ -4982,12 +4996,7 @@
     if (!desc?.get) {
       return false;
     }
-    if (desc.get.__zia) {
-      return true;
-    }
-    // (a getter, so defined in place rather than through patchMethod, with the same mark)
-    const original = desc.get;
-    const patched = function () {
+    const replaced = patchDefined(proto, "shouldBeVisible", (original) => function () {
       try {
         // (fullscreen is Zen's to decide, as before)
         if (keepWithPip() && !this.isSharing && this.controller?.isBeingUsedInPIPModeOrFullscreen && !document.fullscreenElement && !window.fullScreen) {
@@ -4997,9 +5006,10 @@
         noteError("music and sound bars: keepCardsWithPip", err);
       }
       return original.call(this);
-    };
-    patched.__zia = true;
-    Object.defineProperty(proto, "shouldBeVisible", { ...desc, get: patched });
+    });
+    if (!replaced) {
+      return true;
+    }
 
     const refreshCards = () => {
       for (const element of document.querySelectorAll("#zen-media-controls-toolbar .zen-media-card")) {
@@ -5017,8 +5027,22 @@
   function useMediaArtwork() {
     const front = window.gZenMediaController?.frontCard;
     const proto = front && Object.getPrototypeOf(front);
-    if (!proto || typeof proto.updateIcon !== "function" || proto.updateIcon.__zia) {
-      return !!proto?.updateIcon?.__zia;
+    if (!proto || typeof proto.updateIcon !== "function") {
+      return false;
+    }
+    // Zen drops a card if setting it up throws, so nothing here may throw: a slip
+    // over a Kick stream's picture had left Kick with no card at all
+    const replaced = patchMethod(proto, "updateIcon", (original) => function () {
+      original.call(this);
+      try {
+        dressCardIcon(this);
+      } catch (err) {
+        noteError("music and sound bars: updateIcon", err);
+      }
+    });
+    // (already Zia's)
+    if (!replaced) {
+      return true;
     }
     patchMethod(proto, "updatePosition", (originalPosition) => function (...args) {
       const result = originalPosition.apply(this, args);
@@ -5035,17 +5059,6 @@
         noteError("music and sound bars: useMediaArtwork", err);
       }
       return result;
-    });
-
-    // Zen drops a card if setting it up throws, so nothing here may throw: a slip
-    // over a Kick stream's picture had left Kick with no card at all
-    patchMethod(proto, "updateIcon", (original) => function () {
-      original.call(this);
-      try {
-        dressCardIcon(this);
-      } catch (err) {
-        noteError("music and sound bars: updateIcon", err);
-      }
     });
     try {
       front.updateIcon();
@@ -5133,12 +5146,7 @@
     // on the controller's own type: the one this window knows by name isn't it
     const answerPosition = (controller) => {
       const proto = controller && Object.getPrototypeOf(controller);
-      const own = proto?.getPositionState;
-      if (typeof own !== "function" || own.__zia) {
-        return;
-      }
-      // (defined as the prototype's own, not set through patchMethod: own may come from further up)
-      const patched = function () {
+      patchDefined(proto, "getPositionState", (own) => function () {
         try {
           return own.call(this);
         } catch (err) {
@@ -5148,9 +5156,7 @@
           // an endless length: Zen hides the progress line and the card reads LIVE
           return { duration: Infinity, playbackRate: 1, position: 0 };
         }
-      };
-      patched.__zia = true;
-      Object.defineProperty(proto, "getPositionState", { value: patched, writable: true, configurable: true, enumerable: true });
+      });
     };
 
     const manager = window.gZenMediaController;

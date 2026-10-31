@@ -2,8 +2,8 @@
 
 // The start of Zia's one scope: the once-per-window guard, and the small helpers every part
 // shares (errors noted once, prefs watched, attributes and styles set or removed).
-// Used elsewhere: isLittleZenWindow, root, XHTML_NS, noteError, watchPrefs, patchMethod, setAttr,
-// setStyle, setFlag, urlbarAtBottom, svgSourceOf.
+// Used elsewhere: isLittleZenWindow, root, XHTML_NS, noteError, watchPrefs, patchMethod,
+// patchDefined, setAttr, setStyle, setFlag, urlbarAtBottom, svgSourceOf.
 (() => {
   if (window.__ziaLoaded) {
     return;
@@ -57,6 +57,20 @@
     const patched = make(original);
     patched.__zia = true;
     target[name] = patched;
+    return true;
+  }
+
+  // The same for what's defined rather than set: a getter (its other attributes kept), or a
+  // method that may come from further up, made the object's own.
+  function patchDefined(target, name, make) {
+    const own = target && Object.getOwnPropertyDescriptor(target, name);
+    const original = own?.get || target?.[name];
+    if (typeof original !== "function" || original.__zia) {
+      return false;
+    }
+    const patched = make(original);
+    patched.__zia = true;
+    Object.defineProperty(target, name, own?.get ? { ...own, get: patched } : { value: patched, writable: true, configurable: true, enumerable: true });
     return true;
   }
 
