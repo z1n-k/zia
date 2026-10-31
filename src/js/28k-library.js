@@ -1,7 +1,12 @@
   // ---------- Zen's Library: Clear in Downloads, and rows measured off the tabs
   // Off with "Zen's own Library look" (zia.library.zen-look): Zia leaves the
   // Library as Zen draws it (24-library.css is off then too).
+  // Used elsewhere: dressLibrary, clearLibraryBadgeSoon.
   const LIBRARY_ZEN_LOOK_PREF = "zia.library.zen-look";
+  // (the page's overlap measured as the Library opens and as Zen's opening slide settles)
+  const LIBRARY_MEASURE_AT_MS = [0, 350, 700];
+  // (how long the Library button's picture of the last download stays)
+  const LIBRARY_BADGE_MS = 4000;
   const libraryZenLook = () => Services.prefs.getBoolPref(LIBRARY_ZEN_LOOK_PREF, false);
 
   // The Library's rows (and the downloads that fan out above its button)
@@ -63,10 +68,6 @@
     });
   }
 
-  // ---------- The chosen section's tile slides between sections
-  // One lit tile behind the section buttons, moved to the chosen one, so
-  // choosing another slides it there along the column, with Zia's spring,
-  // rather than one going out and the other coming on (24-library.css).
   // Each space's card in the Library light or dark as that space makes the window (Zen's own
   // call for it, from its colour), whatever the space now open: a light space's card had white
   // text in a dark one, and the other way round, its tabs too (24-library.css, #514)
@@ -98,12 +99,17 @@
       const overlap = Math.max(0, Math.ceil(onRight ? page.right - box.left : box.right - page.left));
       setStyle(library, "--zia-lib-page-overlap", overlap ? `${overlap}px` : null);
     };
-    // (once Zen's opening slide has settled, the page with it)
-    for (const ms of [0, 350, 700]) {
+    // (once Zen's opening slide has settled, the page with it; not kept: each only reads the
+    // page as it is then)
+    for (const ms of LIBRARY_MEASURE_AT_MS) {
       setTimeout(measure, ms);
     }
   }
 
+  // ---------- The chosen section's tile slides between sections
+  // One lit tile behind the section buttons, moved to the chosen one, so
+  // choosing another slides it there along the column, with Zia's spring,
+  // rather than one going out and the other coming on (24-library.css).
   function railLibrarySections(library) {
     const column = library.querySelector("#zen-library-sidebar-tabs");
     if (!column) {
@@ -170,7 +176,7 @@
         if (!badge?.hasAttribute("downloading") && !foot.hasAttribute("zen-library-stack-open")) {
           foot.removeAttribute("zen-library-badge");
         }
-      }, 4000);
+      }, LIBRARY_BADGE_MS);
     };
     new MutationObserver(check).observe(foot, { attributes: true, attributeFilter: ["zen-library-badge"] });
     check();
@@ -181,97 +187,101 @@
   // Clear Downloads does (finished ones leave the list and history, the files stay).
   // Zen redraws the section, so it's put back whenever missing. History's Clear
   // opens Firefox's Clear browsing data dialog.
+  function clearLibraryDownloads() {
+    try {
+      window.DownloadsCommon.getData(window, true).removeFinished();
+    } catch (err) {
+      console.warn("[Zia] Couldn't clear the downloads:", err);
+    }
+    if (!window.PrivateBrowsingUtils?.isWindowPrivate(window)) {
+      PlacesUtils.history
+        .removeVisitsByFilter({ transition: PlacesUtils.history.TRANSITIONS.DOWNLOAD })
+        .catch((err) => console.warn("[Zia] Couldn't clear the downloads' history:", err));
+    }
+  }
+
+  function clearLibraryHistory() {
+    try {
+      if (window.Sanitizer?.showUI) {
+        window.Sanitizer.showUI(window);
+      } else {
+        document.getElementById("Tools:Sanitize")?.doCommand();
+      }
+    } catch (err) {
+      console.warn("[Zia] Couldn't open Clear browsing data:", err);
+    }
+  }
+
+  const LIBRARY_CLEARS = [
+    ["zen-library-downloads-section", "Clear downloads", "Clear downloads (the files stay)", clearLibraryDownloads],
+    ["zen-library-history-section", "Clear history", "Clear history…", clearLibraryHistory],
+  ];
+
+  function addLibraryClears(library) {
+    if (libraryZenLook()) {
+      for (const button of library.querySelectorAll(".zia-library-clear")) {
+        button.remove();
+      }
+      return;
+    }
+    for (const [section, label, title, clear] of LIBRARY_CLEARS) {
+      for (const header of library.querySelectorAll(`${section} .zen-library-search-header`)) {
+        if (header.querySelector(".zia-library-clear")) {
+          continue;
+        }
+        const button = document.createElementNS(XHTML_NS, "button");
+        button.className = "zen-library-filter-button zia-library-clear";
+        button.setAttribute("aria-label", label);
+        button.title = title;
+        button.addEventListener("click", clear);
+        header.appendChild(button);
+      }
+    }
+  }
+
+  // The Library being watched (it's only made the first time it's opened) and the watch on it
+  const libraryWatch = { library: null, observer: null };
+
+  function onLibraryChanged(records) {
+    const watched = libraryWatch.library;
+    addLibraryClears(watched);
+    safely("library: space inks", () => inkLibrarySpaces(watched));
+    if (!records.every((record) => record.target.classList?.contains("zia-library-rail"))) {
+      safely("library: rail", () => railLibrarySections(watched));
+    }
+    if (records.some((record) => record.target === watched && record.attributeName === "open") && watched.hasAttribute("open")) {
+      safely("library: rows", matchLibraryRowsToTabs);
+      safely("library: page overlap", () => fitLibraryToPage(watched));
+    }
+  }
+
+  function watchLibraryElement() {
+    const library = document.querySelector("zen-library");
+    if (!library || library === libraryWatch.library) {
+      return;
+    }
+    libraryWatch.library = library;
+    libraryWatch.observer.disconnect();
+    libraryWatch.observer.observe(library, { childList: true, subtree: true, attributes: true, attributeFilter: ["open", "active"] });
+    addLibraryClears(library);
+    safely("library: lift media", () => liftMediaUnderCursor(library));
+  }
+
   function dressLibrary() {
-    const clearDownloads = () => {
-      try {
-        window.DownloadsCommon.getData(window, true).removeFinished();
-      } catch (err) {
-        console.warn("[Zia] Couldn't clear the downloads:", err);
-      }
-      if (!window.PrivateBrowsingUtils?.isWindowPrivate(window)) {
-        PlacesUtils.history
-          .removeVisitsByFilter({ transition: PlacesUtils.history.TRANSITIONS.DOWNLOAD })
-          .catch((err) => console.warn("[Zia] Couldn't clear the downloads' history:", err));
-      }
-    };
-
-    const clearHistory = () => {
-      try {
-        if (window.Sanitizer?.showUI) {
-          window.Sanitizer.showUI(window);
-        } else {
-          document.getElementById("Tools:Sanitize")?.doCommand();
-        }
-      } catch (err) {
-        console.warn("[Zia] Couldn't open Clear browsing data:", err);
-      }
-    };
-
-    const CLEARS = [
-      ["zen-library-downloads-section", "Clear downloads", "Clear downloads (the files stay)", clearDownloads],
-      ["zen-library-history-section", "Clear history", "Clear history…", clearHistory],
-    ];
-
-    const addButtons = (library) => {
-      if (libraryZenLook()) {
-        for (const button of library.querySelectorAll(".zia-library-clear")) {
-          button.remove();
-        }
-        return;
-      }
-      for (const [section, label, title, clear] of CLEARS) {
-        for (const header of library.querySelectorAll(`${section} .zen-library-search-header`)) {
-          if (header.querySelector(".zia-library-clear")) {
-            continue;
-          }
-          const button = document.createElementNS(XHTML_NS, "button");
-          button.className = "zen-library-filter-button zia-library-clear";
-          button.setAttribute("aria-label", label);
-          button.title = title;
-          button.addEventListener("click", clear);
-          header.appendChild(button);
-        }
-      }
-    };
-
-    // the Library is only made the first time it's opened
-    let watched = null;
-    const sectionWatcher = new MutationObserver((records) => {
-      addButtons(watched);
-      safely("library: space inks", () => inkLibrarySpaces(watched));
-      if (!records.every((record) => record.target.classList?.contains("zia-library-rail"))) {
-        safely("library: rail", () => railLibrarySections(watched));
-      }
-      if (records.some((record) => record.target === watched && record.attributeName === "open") && watched.hasAttribute("open")) {
-        safely("library: rows", matchLibraryRowsToTabs);
-        safely("library: page overlap", () => fitLibraryToPage(watched));
-      }
-    });
-    const watchLibrary = () => {
-      const library = document.querySelector("zen-library");
-      if (!library || library === watched) {
-        return;
-      }
-      watched = library;
-      sectionWatcher.disconnect();
-      sectionWatcher.observe(library, { childList: true, subtree: true, attributes: true, attributeFilter: ["open", "active"] });
-      addButtons(library);
-      safely("library: lift media", () => liftMediaUnderCursor(library));
-    };
+    libraryWatch.observer = new MutationObserver(onLibraryChanged);
     const toolbox = document.getElementById("navigator-toolbox");
     if (toolbox?.parentNode) {
-      new MutationObserver(watchLibrary).observe(toolbox.parentNode, { childList: true });
+      new MutationObserver(watchLibraryElement).observe(toolbox.parentNode, { childList: true });
     }
-    watchLibrary();
-    window.addEventListener("resize", () => watched && safely("library: page overlap", () => fitLibraryToPage(watched)));
+    watchLibraryElement();
+    window.addEventListener("resize", () => libraryWatch.library && safely("library: page overlap", () => fitLibraryToPage(libraryWatch.library)));
     // (and before the downloads fan out above the Library button)
     document.getElementById("zen-library-button")?.addEventListener("mouseenter", () => safely("library: rows", matchLibraryRowsToTabs));
     safely("library: rows", matchLibraryRowsToTabs);
     watchPrefs(LIBRARY_ZEN_LOOK_PREF, () => {
-      if (watched) {
-        addButtons(watched);
-        safely("library: rail", () => railLibrarySections(watched));
+      if (libraryWatch.library) {
+        addLibraryClears(libraryWatch.library);
+        safely("library: rail", () => railLibrarySections(libraryWatch.library));
       }
     });
   }
-

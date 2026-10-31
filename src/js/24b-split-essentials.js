@@ -19,10 +19,16 @@
   // of the split and both go, until the tile is clicked again. It's all
   // behind zia.essentials.split, and turned off, every split essential goes
   // back to being a plain essential and its split an ordinary one.
+  // Used elsewhere: dressSplitProxy, dressSplitCopy, splitCardSource, splitEssentialRefusal,
+  // canBecomeSplitEssential, addSplitToEssentials, splitBackToList, watchSplitEssentials.
   const SPLIT_PREF = "zia.essentials.split";
   const SPLIT_DATA = "zia-split";
   const SPLIT_OF = "zia-split-of";
   const SPLIT_SIDE = "zia-split-side";
+  // (how long a split essential taken out of the essentials waits for a drag to place it,
+  // and how long after a drag anything missed is tidied)
+  const SPLIT_RELEASE_WAIT_MS = 120;
+  const SPLIT_SWEEP_AFTER_DRAG_MS = 400;
 
   const splitEssentialsOn = () => Services.prefs.getBoolPref(SPLIT_PREF, true);
 
@@ -434,164 +440,177 @@
     }
   }
 
-  function watchSplitEssentials() {
-    const container = gBrowser.tabContainer;
-
-    // Clicking the tile shows its split, at the half that was clicked. The
-    // press itself only keeps Zen from selecting the essential (so it can
-    // still be dragged); the split opens on the click.
-    const tileUnder = (event) => {
-      if (event.button !== 0 || !splitEssentialsOn()) {
-        return null;
-      }
-      const essential = event.target.closest?.(".tabbrowser-tab[zen-essential][zia-split-tile]");
-      if (!essential || event.target.closest(".tab-close-button, .tab-reset-button, .tab-icon-overlay, .tab-audio-button")) {
-        return null;
-      }
-      return essential;
-    };
-    container.addEventListener("mousedown", (event) => {
-      if (tileUnder(event)) {
-        event.stopPropagation();
-      }
-    }, true);
-    container.addEventListener("click", (event) => {
-      const essential = tileUnder(event);
-      if (!essential) {
-        return;
-      }
-      event.stopPropagation();
-      const box = essential.getBoundingClientRect();
-      openSplitEssential(essential, event.clientX > box.left + box.width / 2 ? "b" : "a");
-    }, true);
-
-    // Reached some other way (a shortcut, a restored selection): the split
-    // shows instead of the essential by itself.
-    container.addEventListener("TabSelect", (event) => {
-      const tab = event.target;
-      setTimeout(sweepReleased, 0);
-      if (splitEssentialsOn() && splitDataOf(tab)) {
-        setTimeout(() => {
-          if (gBrowser.selectedTab === tab) {
-            openSplitEssential(tab, "a");
-          }
-        }, 0);
-        return;
-      }
-      syncSplitSelection();
-    });
-
-    container.addEventListener("TabClose", (event) => {
-      const tab = event.target;
-      if (tab.ziaSplit?.id) {
-        releaseSplit(tab);
-        return;
-      }
-      // One half closed: the whole split goes, until the tile's clicked again
-      const id = tab.getAttribute(SPLIT_OF);
-      if (id) {
-        const { a, b } = pairOf(id);
-        for (const other of [a, b]) {
-          if (other && other !== tab) {
-            untagPairTab(other);
-            gBrowser.removeTab(other, { animate: false });
-          }
-        }
-        setTimeout(syncSplitSelection, 0);
-      }
-    });
-
-    // Taken out of the essentials (dragged back to the list, or Remove from
-    // Essentials): its split takes its place there, and the essential goes.
-    // A drag places the essential first, so this waits a moment for that;
-    // and after any drag, or on switching tabs, anything missed is tidied.
-    const sweepReleased = () => {
-      clearDeadRows();
-      for (const tab of gBrowser.tabs) {
-        if (tab.ziaSplit?.id && !tab.closing && !tab.hasAttribute("zen-essential")) {
-          splitBackToList(tab);
-        }
-      }
-    };
-    new MutationObserver((records) => {
-      for (const { target } of records) {
-        if (target.ziaSplit?.id && !target.hasAttribute("zen-essential")) {
-          setTimeout(() => splitBackToList(target), 120);
-        }
-      }
-    }).observe(container, { subtree: true, attributes: true, attributeFilter: ["zen-essential", "pinned"] });
-    window.addEventListener("dragend", () => setTimeout(sweepReleased, 400), true);
-    window.addEventListener("drop", () => setTimeout(sweepReleased, 400), true);
-
-    // Each half's icon follows its site
-    container.addEventListener("TabAttrModified", (event) => {
-      const tab = event.target;
-      const side = tab.getAttribute(SPLIT_SIDE);
-      if (!side || !event.detail?.changed?.includes("image")) {
-        return;
-      }
-      const essential = essentialFor(tab);
-      const data = essential && splitDataOf(essential);
-      if (data && tabIcon(tab) && data[side]?.icon !== tabIcon(tab)) {
-        saveSplitData(essential, { ...data, [side]: { ...data[side], icon: tabIcon(tab) } });
-        drawSplitTile(essential);
-      }
-    });
-
-    // Right-click a tab in a two-site split: Add Split to Essentials
-    const menu = document.getElementById("tabContextMenu");
-    if (menu) {
-      const item = document.createXULElement("menuitem");
-      item.id = "zia-context-split-essential";
-      item.setAttribute("label", "Add Split to Essentials");
-      item.addEventListener("command", () => addSplitToEssentials(window.TabContextMenu?.contextTab));
-      (document.getElementById("context_zen-add-essential") || menu.lastElementChild)?.after(item);
-      menu.addEventListener("popupshowing", (event) => {
-        if (event.target !== menu) {
-          return;
-        }
-        const tab = window.TabContextMenu?.contextTab;
-        item.hidden = !canBecomeSplitEssential(tab);
-        // Zen's own Add to Essentials can't take a tab in a split: it made
-        // the one tab half an essential and stranded the other
-        if (tab?.group?.hasAttribute?.("split-view-group")) {
-          const zens = document.getElementById("context_zen-add-essential");
-          if (zens) {
-            zens.hidden = true;
-          }
-        }
-      });
+  // Clicking the tile shows its split, at the half that was clicked. The
+  // press itself only keeps Zen from selecting the essential (so it can
+  // still be dragged); the split opens on the click.
+  function splitTileUnder(event) {
+    if (event.button !== 0 || !splitEssentialsOn()) {
+      return null;
     }
-
-    // After a restart: tags back on from the session; orphans let go
-    const restore = () => {
-      const on = splitEssentialsOn();
-      const ids = new Set();
-      for (const tab of gBrowser.tabs) {
-        const data = splitDataOf(tab);
-        if (data && on) {
-          ids.add(data.id);
-        } else if (data) {
-          releaseSplit(tab);
-        }
-        drawSplitTile(tab);
-      }
-      for (const tab of gBrowser.tabs) {
-        const id = tab.getAttribute(SPLIT_OF) || sessionValue(tab, SPLIT_OF);
-        if (!id) {
-          continue;
-        }
-        if (ids.has(id)) {
-          tab.setAttribute(SPLIT_OF, id);
-          tab.setAttribute(SPLIT_SIDE, sessionValue(tab, SPLIT_SIDE) || tab.getAttribute(SPLIT_SIDE) || "a");
-        } else {
-          untagPairTab(tab);
-        }
-      }
-      syncSplitSelection();
-    };
-    window.SessionStore?.promiseAllWindowsRestored?.then(restore, restore);
-    container.addEventListener("TabAddedToEssentials", (event) => drawSplitTile(event.target));
-    watchPrefs(SPLIT_PREF, restore);
+    const essential = event.target.closest?.(".tabbrowser-tab[zen-essential][zia-split-tile]");
+    if (!essential || event.target.closest(".tab-close-button, .tab-reset-button, .tab-icon-overlay, .tab-audio-button")) {
+      return null;
+    }
+    return essential;
   }
 
+  function holdSplitTilePress(event) {
+    if (splitTileUnder(event)) {
+      event.stopPropagation();
+    }
+  }
+
+  function openClickedSplitTile(event) {
+    const essential = splitTileUnder(event);
+    if (!essential) {
+      return;
+    }
+    event.stopPropagation();
+    const box = essential.getBoundingClientRect();
+    openSplitEssential(essential, event.clientX > box.left + box.width / 2 ? "b" : "a");
+  }
+
+  // Reached some other way (a shortcut, a restored selection): the split
+  // shows instead of the essential by itself.
+  function onSplitEssentialSelect(event) {
+    const tab = event.target;
+    setTimeout(sweepReleasedSplits, 0);
+    if (splitEssentialsOn() && splitDataOf(tab)) {
+      setTimeout(() => {
+        if (gBrowser.selectedTab === tab) {
+          openSplitEssential(tab, "a");
+        }
+      }, 0);
+      return;
+    }
+    syncSplitSelection();
+  }
+
+  function onSplitTabClose(event) {
+    const tab = event.target;
+    if (tab.ziaSplit?.id) {
+      releaseSplit(tab);
+      return;
+    }
+    // One half closed: the whole split goes, until the tile's clicked again
+    const id = tab.getAttribute(SPLIT_OF);
+    if (id) {
+      const { a, b } = pairOf(id);
+      for (const other of [a, b]) {
+        if (other && other !== tab) {
+          untagPairTab(other);
+          gBrowser.removeTab(other, { animate: false });
+        }
+      }
+      setTimeout(syncSplitSelection, 0);
+    }
+  }
+
+  // Taken out of the essentials (dragged back to the list, or Remove from
+  // Essentials): its split takes its place there, and the essential goes.
+  // A drag places the essential first, so this waits a moment for that;
+  // and after any drag, or on switching tabs, anything missed is tidied.
+  function sweepReleasedSplits() {
+    clearDeadRows();
+    for (const tab of gBrowser.tabs) {
+      if (tab.ziaSplit?.id && !tab.closing && !tab.hasAttribute("zen-essential")) {
+        splitBackToList(tab);
+      }
+    }
+  }
+
+  function onSplitEssentialMarks(records) {
+    for (const { target } of records) {
+      if (target.ziaSplit?.id && !target.hasAttribute("zen-essential")) {
+        // (not kept, nor the sweeps after a drag: splitBackToList checks the tab again first)
+        setTimeout(() => splitBackToList(target), SPLIT_RELEASE_WAIT_MS);
+      }
+    }
+  }
+
+  // Each half's icon follows its site
+  function followSplitHalfIcon(event) {
+    const tab = event.target;
+    const side = tab.getAttribute(SPLIT_SIDE);
+    if (!side || !event.detail?.changed?.includes("image")) {
+      return;
+    }
+    const essential = essentialFor(tab);
+    const data = essential && splitDataOf(essential);
+    if (data && tabIcon(tab) && data[side]?.icon !== tabIcon(tab)) {
+      saveSplitData(essential, { ...data, [side]: { ...data[side], icon: tabIcon(tab) } });
+      drawSplitTile(essential);
+    }
+  }
+
+  // Right-click a tab in a two-site split: Add Split to Essentials
+  function addSplitEssentialMenuItem() {
+    const menu = document.getElementById("tabContextMenu");
+    if (!menu) {
+      return;
+    }
+    const item = document.createXULElement("menuitem");
+    item.id = "zia-context-split-essential";
+    item.setAttribute("label", "Add Split to Essentials");
+    item.addEventListener("command", () => addSplitToEssentials(window.TabContextMenu?.contextTab));
+    (document.getElementById("context_zen-add-essential") || menu.lastElementChild)?.after(item);
+    menu.addEventListener("popupshowing", (event) => {
+      if (event.target !== menu) {
+        return;
+      }
+      const tab = window.TabContextMenu?.contextTab;
+      item.hidden = !canBecomeSplitEssential(tab);
+      // Zen's own Add to Essentials can't take a tab in a split: it made
+      // the one tab half an essential and stranded the other
+      if (tab?.group?.hasAttribute?.("split-view-group")) {
+        const zens = document.getElementById("context_zen-add-essential");
+        if (zens) {
+          zens.hidden = true;
+        }
+      }
+    });
+  }
+
+  // After a restart: tags back on from the session; orphans let go
+  function restoreSplitEssentials() {
+    const on = splitEssentialsOn();
+    const ids = new Set();
+    for (const tab of gBrowser.tabs) {
+      const data = splitDataOf(tab);
+      if (data && on) {
+        ids.add(data.id);
+      } else if (data) {
+        releaseSplit(tab);
+      }
+      drawSplitTile(tab);
+    }
+    for (const tab of gBrowser.tabs) {
+      const id = tab.getAttribute(SPLIT_OF) || sessionValue(tab, SPLIT_OF);
+      if (!id) {
+        continue;
+      }
+      if (ids.has(id)) {
+        tab.setAttribute(SPLIT_OF, id);
+        tab.setAttribute(SPLIT_SIDE, sessionValue(tab, SPLIT_SIDE) || tab.getAttribute(SPLIT_SIDE) || "a");
+      } else {
+        untagPairTab(tab);
+      }
+    }
+    syncSplitSelection();
+  }
+
+  function watchSplitEssentials() {
+    const container = gBrowser.tabContainer;
+    container.addEventListener("mousedown", holdSplitTilePress, true);
+    container.addEventListener("click", openClickedSplitTile, true);
+    container.addEventListener("TabSelect", onSplitEssentialSelect);
+    container.addEventListener("TabClose", onSplitTabClose);
+    new MutationObserver(onSplitEssentialMarks).observe(container, { subtree: true, attributes: true, attributeFilter: ["zen-essential", "pinned"] });
+    window.addEventListener("dragend", () => setTimeout(sweepReleasedSplits, SPLIT_SWEEP_AFTER_DRAG_MS), true);
+    window.addEventListener("drop", () => setTimeout(sweepReleasedSplits, SPLIT_SWEEP_AFTER_DRAG_MS), true);
+    container.addEventListener("TabAttrModified", followSplitHalfIcon);
+    addSplitEssentialMenuItem();
+    window.SessionStore?.promiseAllWindowsRestored?.then(restoreSplitEssentials, restoreSplitEssentials);
+    container.addEventListener("TabAddedToEssentials", (event) => drawSplitTile(event.target));
+    watchPrefs(SPLIT_PREF, restoreSplitEssentials);
+  }

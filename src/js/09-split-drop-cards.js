@@ -1,3 +1,7 @@
+  // Split drop cards: a tab dragged over the page brings up two cards, Add left split and Add
+  // right split, the one nearer the pointer pulled towards it, with a picture of the dragged
+  // page following the pointer; dropped on one, the tab is split in on that side.
+  // Used elsewhere: watchSplitDrop, DRAG_PICTURE_W, DRAG_PICTURE_H.
   const TAB_DROP_TYPE = "application/x-moz-tabbrowser-tab";
   const MAGNET_SHARE = 0.32;
   const MAGNET_PULL_X = 0.55;
@@ -6,6 +10,14 @@
   const ZONE_EDGE = 44;
   const ZONE_ACTIVE_W = 350;
   const ZONE_ACTIVE_H = 580;
+
+  const PRESS_SELECT_MS = 1500;
+  const DRAG_PICTURE_W = 200;
+  const DRAG_PICTURE_H = 125;
+  // (how often the system's drag image is blanked again while the picture follows)
+  const BLANK_IMAGE_EVERY_MS = 250;
+  // (the tab to split with shown by then, if the picture isn't ready first)
+  const SPLIT_TARGET_SHOW_MS = 450;
 
   const splitDrop = {
     overlay: null,
@@ -30,8 +42,6 @@
       return null;
     }
   }
-
-  const PRESS_SELECT_MS = 1500;
 
   function splitTargetFor(tab) {
     const last = splitDrop.lastSelect;
@@ -114,14 +124,12 @@
     return overlay;
   }
 
-  const DRAG_PICTURE_W = 200;
-  const DRAG_PICTURE_H = 125;
   let blankDragImage = null;
   const lastCursor = { x: 0, y: 0 };
   let lastBlankAt = 0;
 
   function hideSystemDragImage(dt, force = true) {
-    if (!dt || (!force && Date.now() - lastBlankAt < 250)) {
+    if (!dt || (!force && Date.now() - lastBlankAt < BLANK_IMAGE_EVERY_MS)) {
       return;
     }
     lastBlankAt = Date.now();
@@ -173,6 +181,18 @@
     ctx.clip();
     ctx.fillStyle = "#1f1f1f";
     ctx.fillRect(0, 0, width, height);
+    await drawDragPage(ctx, tab, width, height, ratio);
+    ctx.restore();
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.28)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(0.5, 0.5, width - 1, height - 1, 7);
+    ctx.stroke();
+    return canvas;
+  }
+
+  // The page as it's scrolled, cut to the picture's shape, or its icon if it can't be drawn
+  async function drawDragPage(ctx, tab, width, height, ratio) {
     try {
       const browser = tab.linkedBrowser;
       const pageW = browser?.clientWidth;
@@ -206,13 +226,6 @@
         ctx.drawImage(icon, width / 2 - 12, height / 2 - 12, 24, 24);
       }
     }
-    ctx.restore();
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.28)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(0.5, 0.5, width - 1, height - 1, 7);
-    ctx.stroke();
-    return canvas;
   }
 
   function showSplitDrop(tab, event) {
@@ -239,7 +252,8 @@
       }
     };
     picture.finally(showTarget);
-    setTimeout(showTarget, 450);
+    // (not kept: it does nothing once the picture's in, or once these cards are gone)
+    setTimeout(showTarget, SPLIT_TARGET_SHOW_MS);
     overlay.setAttribute("open", "true");
 
     requestAnimationFrame(() => {

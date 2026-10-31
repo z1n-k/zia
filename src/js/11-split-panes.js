@@ -1,4 +1,21 @@
+  // Split panes: each pane of a split gets a toolbar of its own (back, forward, reload, the
+  // address as host and title with its loading bar, copy link, site settings, close), coloured
+  // like its page; the focused one holds the extensions' buttons, and the top-right one the
+  // window's buttons, both from the main toolbar a split hides.
+  // Used elsewhere: watchSplitPanes, schedulePanes.
   const ICONS = "chrome://sine/content/zia/icons/";
+  // (how long after a change a pane's colour is read, unless said otherwise)
+  const PANE_COLOR_DELAY_MS = 60;
+  // ...after it goes somewhere else, after it loads, and once more, late
+  const PANE_COLOR_AFTER_MOVE_MS = 150;
+  const PANE_COLOR_AFTER_LOAD_MS = 50;
+  const PANE_COLOR_LATE_MS = 800;
+  // The address's loading bar: how often it creeps on, how long it shows at least, how long
+  // it's held full, and how long it takes to fade
+  const PANE_PROGRESS_TICK_MS = 120;
+  const PANE_LOAD_MIN_MS = 450;
+  const PANE_LOAD_HOLD_MS = 250;
+  const PANE_LOAD_FADE_MS = 320;
   const paneColorTimers = new WeakMap();
 
   function splitContainers() {
@@ -36,35 +53,28 @@
     return button;
   }
 
-  function createPaneBar(container) {
-    const bar = document.createElementNS(XHTML_NS, "div");
-    bar.className = "zia-pane-bar";
-    const tabOf = () => gBrowser.getTabForBrowser(paneBrowser(container));
-    const selectPane = () => {
-      const tab = tabOf();
-      if (tab && gBrowser.selectedTab !== tab) {
-        gBrowser.selectedTab = tab;
-      }
-    };
+  function paneTab(container) {
+    return gBrowser.getTabForBrowser(paneBrowser(container));
+  }
 
-    bar.addEventListener("mousedown", selectPane);
-    // (Zen's own sidebar button sits in the toolbar a split hides, and a
-    // hidden button's doCommand does nothing: this goes to Zen's command)
-    bar.appendChild(paneButton("sidebar", "Toggle sidebar", () => document.getElementById("cmd_zenCompactModeToggle")?.doCommand()));
-    bar.appendChild(paneButton("back", "Back", () => paneBrowser(container)?.goBack()));
-    bar.appendChild(paneButton("forward", "Forward", () => paneBrowser(container)?.goForward()));
-    bar.appendChild(
-      paneButton("reload", "Reload", () => {
-        const browser = paneBrowser(container);
-        const tab = tabOf();
-        if (tab?.hasAttribute("busy")) {
-          browser?.stop();
-        } else {
-          browser?.reload();
-        }
-      })
-    );
+  function selectPane(container) {
+    const tab = paneTab(container);
+    if (tab && gBrowser.selectedTab !== tab) {
+      gBrowser.selectedTab = tab;
+    }
+  }
 
+  function reloadPane(container) {
+    const browser = paneBrowser(container);
+    const tab = paneTab(container);
+    if (tab?.hasAttribute("busy")) {
+      browser?.stop();
+    } else {
+      browser?.reload();
+    }
+  }
+
+  function createPaneAddress(container) {
     const address = document.createElementNS(XHTML_NS, "div");
     address.className = "zia-pane-address";
     const host = document.createElementNS(XHTML_NS, "span");
@@ -73,51 +83,58 @@
     rest.className = "zia-pane-rest";
     address.append(host, rest);
     address.addEventListener("click", () => {
-      selectPane();
+      selectPane(container);
       requestAnimationFrame(() => {
         placeOpenedAddressBar();
         document.getElementById("Browser:OpenLocation").doCommand();
       });
     });
-    bar.appendChild(address);
+    return address;
+  }
+
+  function copyPaneLink(container, button) {
+    try {
+      copyLink(paneTab(container));
+      showCopied(button);
+    } catch (err) {
+      console.error("[Zia] Copy link failed:", err);
+    }
+  }
+
+  function openPaneSiteSettings(container) {
+    selectPane(container);
+    placeOpenedAddressBar();
+    requestAnimationFrame(() => document.getElementById("zen-site-data-icon-button")?.click());
+  }
+
+  // Closes the pane's tab, as Dia's does (Zen's own only takes it out of
+  // the split, into a tab of its own)
+  function closePane(container) {
+    const tab = paneTab(container);
+    if (tab && !tab.closing) {
+      gBrowser.removeTab(tab);
+    }
+  }
+
+  function createPaneBar(container) {
+    const bar = document.createElementNS(XHTML_NS, "div");
+    bar.className = "zia-pane-bar";
+    bar.addEventListener("mousedown", () => selectPane(container));
+    // (Zen's own sidebar button sits in the toolbar a split hides, and a
+    // hidden button's doCommand does nothing: this goes to Zen's command)
+    bar.appendChild(paneButton("sidebar", "Toggle sidebar", () => document.getElementById("cmd_zenCompactModeToggle")?.doCommand()));
+    bar.appendChild(paneButton("back", "Back", () => paneBrowser(container)?.goBack()));
+    bar.appendChild(paneButton("forward", "Forward", () => paneBrowser(container)?.goForward()));
+    bar.appendChild(paneButton("reload", "Reload", () => reloadPane(container)));
+    bar.appendChild(createPaneAddress(container));
 
     const extensions = document.createElementNS(XHTML_NS, "div");
     extensions.className = "zia-pane-extensions";
     bar.appendChild(extensions);
 
-    bar.appendChild(
-      paneButton(
-        "copy-link",
-        "Copy link",
-        (event, button) => {
-          try {
-            copyLink(tabOf());
-            showCopied(button);
-          } catch (err) {
-            console.error("[Zia] Copy link failed:", err);
-          }
-        },
-        COPY_ICON
-      )
-    );
-    bar.appendChild(
-      paneButton("site-settings", "Site settings and extensions", () => {
-        selectPane();
-        placeOpenedAddressBar();
-        requestAnimationFrame(() => document.getElementById("zen-site-data-icon-button")?.click());
-      })
-    );
-
-    bar.appendChild(
-      // Closes the pane's tab, as Dia's does (Zen's own only takes it out of
-      // the split, into a tab of its own)
-      paneButton("close", "Close", () => {
-        const tab = tabOf();
-        if (tab && !tab.closing) {
-          gBrowser.removeTab(tab);
-        }
-      })
-    );
+    bar.appendChild(paneButton("copy-link", "Copy link", (event, button) => copyPaneLink(container, button), COPY_ICON));
+    bar.appendChild(paneButton("site-settings", "Site settings and extensions", () => openPaneSiteSettings(container)));
+    bar.appendChild(paneButton("close", "Close", () => closePane(container)));
 
     const stack = container.querySelector(".browserStack");
     const holder = stack?.parentNode || container.querySelector(".browserContainer") || container;
@@ -156,7 +173,7 @@
       if (state.progress < 0.85) {
         setPaneProgress(container, state.progress + (0.85 - state.progress) * 0.08);
       }
-    }, 120);
+    }, PANE_PROGRESS_TICK_MS);
   }
 
   function finishPaneLoad(container) {
@@ -169,7 +186,8 @@
 
     const shownFor = Date.now() - (state?.startedAt || 0);
     const stillThisLoad = () => paneLoads.get(container) === state;
-    setTimeout(() => stillThisLoad() && setPaneProgress(container, 1), Math.max(0, 450 - shownFor));
+    // (not kept: each checks it's still this load's before it does anything)
+    setTimeout(() => stillThisLoad() && setPaneProgress(container, 1), Math.max(0, PANE_LOAD_MIN_MS - shownFor));
     setTimeout(() => {
       if (!stillThisLoad()) {
         return;
@@ -180,8 +198,8 @@
           address.style.setProperty("--zia-load-progress", "0");
           paneLoads.delete(container);
         }
-      }, 320);
-    }, 250 + Math.max(0, 450 - shownFor));
+      }, PANE_LOAD_FADE_MS);
+    }, PANE_LOAD_HOLD_MS + Math.max(0, PANE_LOAD_MIN_MS - shownFor));
   }
 
   function updatePaneBar(container) {
@@ -235,7 +253,7 @@
     bar.toggleAttribute("light", wantsDarkInk(reading.rgb));
   }
 
-  function colorPaneSoon(container, delay = 60) {
+  function colorPaneSoon(container, delay = PANE_COLOR_DELAY_MS) {
     if (!container || paneColorTimers.get(container)) {
       return;
     }
@@ -287,8 +305,8 @@
   }
 
   const PANE_EXTENSION_ITEMS = "#nav-bar-customization-target > .unified-extensions-item";
-  let movedExtensions = [];
-  const extensionHomes = new Map();
+  // The extensions' buttons moved into a pane's toolbar, and where each came from
+  const paneExtensions = { moved: [], homes: new Map() };
 
   function placePaneExtensions(containers) {
     const focused = containers.find((c) => c.classList.contains("deck-selected")) || containers[0];
@@ -298,12 +316,12 @@
     }
 
     for (const node of document.querySelectorAll(PANE_EXTENSION_ITEMS)) {
-      if (!extensionHomes.has(node)) {
-        extensionHomes.set(node, { parent: node.parentNode, next: node.nextSibling });
-        movedExtensions.push(node);
+      if (!paneExtensions.homes.has(node)) {
+        paneExtensions.homes.set(node, { parent: node.parentNode, next: node.nextSibling });
+        paneExtensions.moved.push(node);
       }
     }
-    for (const node of movedExtensions) {
+    for (const node of paneExtensions.moved) {
       if (node.parentNode !== slot) {
         slot.appendChild(node);
       }
@@ -311,16 +329,16 @@
   }
 
   function restorePaneExtensions() {
-    for (const node of [...movedExtensions].reverse()) {
-      const home = extensionHomes.get(node);
+    for (const node of [...paneExtensions.moved].reverse()) {
+      const home = paneExtensions.homes.get(node);
       if (!home?.parent?.isConnected) {
         continue;
       }
       const next = home.next?.parentNode === home.parent ? home.next : null;
       home.parent.insertBefore(node, next);
     }
-    movedExtensions = [];
-    extensionHomes.clear();
+    paneExtensions.moved = [];
+    paneExtensions.homes.clear();
   }
 
   function placeOpenedAddressBar(containers = splitContainers()) {
@@ -366,59 +384,48 @@
     }
   }
 
-  function watchSplitPanes() {
-    const panels = gBrowser.tabpanels;
-    if (!panels) {
-      return;
+  function onPaneTabChanged(event) {
+    const container = paneOfBrowser(event.target.linkedBrowser);
+    if (container) {
+      updatePaneBar(container);
     }
-    new MutationObserver(schedulePanes).observe(panels, {
-      attributes: true,
-      subtree: true,
-      attributeFilter: ["zen-split-view", "zen-split"],
-    });
-    gBrowser.tabContainer.addEventListener("TabSelect", schedulePanes);
-    window.addEventListener("beforecustomization", restorePaneExtensions);
-    window.addEventListener("aftercustomization", schedulePanes);
-    gBrowser.tabContainer.addEventListener("TabAttrModified", (event) => {
-      const container = paneOfBrowser(event.target.linkedBrowser);
+  }
+
+  // Each pane's address, buttons, loading bar and colour follow its page
+  const paneProgressListener = {
+    onProgressChange(browser, webProgress, request, curSelf, maxSelf, curTotal, maxTotal) {
+      const container = paneOfBrowser(browser);
+      if (container && maxTotal > 0) {
+        setPaneProgress(container, 0.12 + (curTotal / maxTotal) * 0.8);
+      }
+    },
+    onLocationChange(browser, webProgress) {
+      const container = webProgress.isTopLevel && paneOfBrowser(browser);
       if (container) {
         updatePaneBar(container);
+        colorPaneSoon(container, PANE_COLOR_AFTER_MOVE_MS);
       }
-    });
-    window.addEventListener("resize", schedulePanes);
+    },
+    onStateChange(browser, webProgress, request, stateFlags) {
+      const container = webProgress.isTopLevel && paneOfBrowser(browser);
+      if (!container) {
+        return;
+      }
+      const { STATE_START, STATE_STOP, STATE_IS_WINDOW } = Ci.nsIWebProgressListener;
+      updatePaneBar(container);
+      if (stateFlags & STATE_START && stateFlags & STATE_IS_WINDOW) {
+        startPaneLoad(container);
+      }
+      if (stateFlags & STATE_STOP && stateFlags & STATE_IS_WINDOW) {
+        finishPaneLoad(container);
+        colorPaneSoon(container, PANE_COLOR_AFTER_LOAD_MS);
+        colorPaneSoon(container, PANE_COLOR_LATE_MS);
+      }
+    },
+  };
 
-    const { STATE_START, STATE_STOP, STATE_IS_WINDOW } = Ci.nsIWebProgressListener;
-    gBrowser.addTabsProgressListener({
-      onProgressChange(browser, webProgress, request, curSelf, maxSelf, curTotal, maxTotal) {
-        const container = paneOfBrowser(browser);
-        if (container && maxTotal > 0) {
-          setPaneProgress(container, 0.12 + (curTotal / maxTotal) * 0.8);
-        }
-      },
-      onLocationChange(browser, webProgress) {
-        const container = webProgress.isTopLevel && paneOfBrowser(browser);
-        if (container) {
-          updatePaneBar(container);
-          colorPaneSoon(container, 150);
-        }
-      },
-      onStateChange(browser, webProgress, request, stateFlags) {
-        const container = webProgress.isTopLevel && paneOfBrowser(browser);
-        if (!container) {
-          return;
-        }
-        updatePaneBar(container);
-        if (stateFlags & STATE_START && stateFlags & STATE_IS_WINDOW) {
-          startPaneLoad(container);
-        }
-        if (stateFlags & STATE_STOP && stateFlags & STATE_IS_WINDOW) {
-          finishPaneLoad(container);
-          colorPaneSoon(container, 50);
-          colorPaneSoon(container, 800);
-        }
-      },
-    });
-
+  // A pane's colour read again as its page scrolls or paints, after what the site colour does
+  function colorPanesWithPage() {
     const onScroll = window.ziaOnPageScroll;
     window.ziaOnPageScroll = (browser, position) => {
       onScroll?.(browser, position);
@@ -435,7 +442,24 @@
         colorPaneSoon(container, 0);
       }
     };
-
-    schedulePanes();
   }
 
+  function watchSplitPanes() {
+    const panels = gBrowser.tabpanels;
+    if (!panels) {
+      return;
+    }
+    new MutationObserver(schedulePanes).observe(panels, {
+      attributes: true,
+      subtree: true,
+      attributeFilter: ["zen-split-view", "zen-split"],
+    });
+    gBrowser.tabContainer.addEventListener("TabSelect", schedulePanes);
+    window.addEventListener("beforecustomization", restorePaneExtensions);
+    window.addEventListener("aftercustomization", schedulePanes);
+    gBrowser.tabContainer.addEventListener("TabAttrModified", onPaneTabChanged);
+    window.addEventListener("resize", schedulePanes);
+    gBrowser.addTabsProgressListener(paneProgressListener);
+    colorPanesWithPage();
+    schedulePanes();
+  }
