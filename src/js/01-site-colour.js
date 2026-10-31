@@ -622,6 +622,7 @@
     requestAnimationFrame(() => requestAnimationFrame(() => setFlag("zia-color-snap", false)));
   }
 
+  // (not cancelled: each reads whichever page shows then)
   function scheduleColor(delay) {
     setTimeout(() => updateColor(), delay);
   }

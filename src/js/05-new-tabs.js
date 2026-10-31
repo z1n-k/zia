@@ -293,7 +293,8 @@
       }
     };
     requestAnimationFrame(letGo);
-    // (an extension's page, arriving, can put the cursor back in the bar)
+    // (an extension's page, arriving, can put the cursor back in the bar; not cancelled, as
+    // each checks it's still this tab, untouched)
     for (const ms of LET_GO_AT) {
       setTimeout(letGo, ms);
     }

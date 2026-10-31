@@ -706,6 +706,7 @@
     requestAnimationFrame(() => requestAnimationFrame(() => setFlag("zia-color-snap", false)));
   }
 
+  // (not cancelled: each reads whichever page shows then)
   function scheduleColor(delay) {
     setTimeout(() => updateColor(), delay);
   }
@@ -1997,7 +1998,8 @@
       } else {
         // (once the grow-in has let go of it: its animation holds the
         // arrowhead's turn until then, and eased in under it, it jumped
-        // to wherever the ease had got to as the animation ended)
+        // to wherever the ease had got to as the animation ended. Not cancelled, as it
+        // checks it's still wanted)
         setTimeout(() => {
           if (!reload.hasAttribute("displaystop") && !container.hasAttribute("zia-morph") && container.matches(":hover")) {
             reload.ziaReloadCut?.(RELOAD_HOVER_CUT);
@@ -2567,7 +2569,8 @@
       }
     };
     requestAnimationFrame(letGo);
-    // (an extension's page, arriving, can put the cursor back in the bar)
+    // (an extension's page, arriving, can put the cursor back in the bar; not cancelled, as
+    // each checks it's still this tab, untouched)
     for (const ms of LET_GO_AT) {
       setTimeout(letGo, ms);
     }

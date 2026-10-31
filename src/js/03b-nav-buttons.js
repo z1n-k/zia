@@ -54,7 +54,8 @@
       } else {
         // (once the grow-in has let go of it: its animation holds the
         // arrowhead's turn until then, and eased in under it, it jumped
-        // to wherever the ease had got to as the animation ended)
+        // to wherever the ease had got to as the animation ended. Not cancelled, as it
+        // checks it's still wanted)
         setTimeout(() => {
           if (!reload.hasAttribute("displaystop") && !container.hasAttribute("zia-morph") && container.matches(":hover")) {
             reload.ziaReloadCut?.(RELOAD_HOVER_CUT);
