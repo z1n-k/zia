@@ -1,0 +1,168 @@
+{
+ "beforeBeat": null,
+ "checks": {
+  "a folder's card lists its tabs": true,
+  "a tab's card shows after a beat": true,
+  "choosing a row selects the tab": true,
+  "leaving closes it": true,
+  "the next tab's shows at once": true
+ },
+ "folderAfter": {
+  "hidden": true,
+  "left": "238px",
+  "marks": [],
+  "origin": "left 27px 0px",
+  "rows": [
+   {
+    "acts": [
+     "unload:Unload tab"
+    ],
+    "label": "X",
+    "newTab": false,
+    "selected": false,
+    "top": 0
+   },
+   {
+    "acts": [
+     "unload:Unload tab"
+    ],
+    "label": "Y",
+    "newTab": false,
+    "selected": false,
+    "top": 0
+   },
+   {
+    "acts": [],
+    "label": "New Tab",
+    "newTab": true,
+    "selected": false,
+    "top": 0
+   }
+  ],
+  "size": [
+   0,
+   0
+  ],
+  "top": "80px"
+ },
+ "folderOpen": {
+  "hidden": false,
+  "left": "238px",
+  "marks": [
+   "zia-open=true"
+  ],
+  "origin": "left 27px 0px",
+  "rows": [
+   {
+    "acts": [
+     "unload:Unload tab"
+    ],
+    "label": "X",
+    "newTab": false,
+    "selected": false,
+    "top": 90
+   },
+   {
+    "acts": [
+     "unload:Unload tab"
+    ],
+    "label": "Y",
+    "newTab": false,
+    "selected": false,
+    "top": 128
+   },
+   {
+    "acts": [],
+    "label": "New Tab",
+    "newTab": true,
+    "selected": false,
+    "top": 166
+   }
+  ],
+  "size": [
+   222,
+   129
+  ],
+  "top": "80px"
+ },
+ "nextTab": {
+  "actions": [
+   "essential",
+   "unpin (hidden)",
+   "split",
+   "copy (hidden)"
+  ],
+  "hidden": false,
+  "left": "238px",
+  "marks": [
+   "zia-open=true",
+   "zia-snap=true",
+   "zia-anchor=tab"
+  ],
+  "origin": "left center 0px",
+  "size": [
+   230,
+   74
+  ],
+  "sub": [
+   "",
+   true
+  ],
+  "thumb": true,
+  "title": "A",
+  "top": "206px"
+ },
+ "picked": "Y",
+ "tab": {
+  "actions": [
+   "essential",
+   "unpin (hidden)",
+   "split",
+   "copy (hidden)"
+  ],
+  "hidden": false,
+  "left": "238px",
+  "marks": [
+   "zia-open=true",
+   "zia-anchor=tab"
+  ],
+  "origin": "left center 0px",
+  "size": [
+   230,
+   74
+  ],
+  "sub": [
+   "",
+   true
+  ],
+  "thumb": true,
+  "title": "B",
+  "top": "168px"
+ },
+ "tabLeft": {
+  "actions": [
+   "essential",
+   "unpin (hidden)",
+   "split",
+   "copy (hidden)"
+  ],
+  "hidden": true,
+  "left": "238px",
+  "marks": [
+   "zia-anchor=tab"
+  ],
+  "origin": "left center 0px",
+  "size": [
+   0,
+   0
+  ],
+  "sub": [
+   "",
+   true
+  ],
+  "thumb": true,
+  "title": "A",
+  "top": "206px"
+ },
+ "ziaErrors": []
+}

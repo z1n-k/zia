@@ -1,0 +1,54 @@
+{
+ "after": {
+  "checked": "false",
+  "pref": false,
+  "rows": [
+   "Site-tinted glow",
+   "Sound bars",
+   "Always animate sound bars (off)"
+  ]
+ },
+ "all": 71,
+ "before": {
+  "checked": "true",
+  "pref": true
+ },
+ "checks": {
+  "Esc clears the search first": true,
+  "no match says so": true,
+  "the search starts focused": true,
+  "the switch writes its setting": true,
+  "then closes the page": true,
+  "typing narrows the list": true
+ },
+ "cleared": {
+  "open": true,
+  "query": "",
+  "rows": 70
+ },
+ "closed": true,
+ "focused": true,
+ "nothing": {
+  "empty": true,
+  "nav": [],
+  "rows": [],
+  "sections": []
+ },
+ "searched": {
+  "empty": false,
+  "nav": [
+   "Look",
+   "Tabs and essentials"
+  ],
+  "rows": [
+   "Site-tinted glow",
+   "Sound bars",
+   "Always animate sound bars"
+  ],
+  "sections": [
+   "Look",
+   "Tabs and essentials"
+  ]
+ },
+ "ziaErrors": []
+}

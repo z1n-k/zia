@@ -1,0 +1,170 @@
+{
+ "back": {
+  "besideCard": true,
+  "flags": [
+   "zia-panels-beside"
+  ],
+  "hidden": true,
+  "maxWidth": "500px",
+  "order": [
+   "sidebar-box",
+   "sidebar-splitter",
+   "zen-appcontent-wrapper"
+  ],
+  "resize": [
+   "sibling",
+   "none"
+  ]
+ },
+ "checks": {
+  "a hovered row gets its pill": true,
+  "and on again, beside": true,
+  "beside off, it goes back": true,
+  "closing hides it": true,
+  "it opens beside the page": true,
+  "its page is styled like the tabs": true
+ },
+ "closed": {
+  "besideCard": true,
+  "flags": [
+   "zia-panels-beside"
+  ],
+  "hidden": true,
+  "maxWidth": "500px",
+  "order": [
+   "sidebar-box",
+   "sidebar-splitter",
+   "zen-appcontent-wrapper"
+  ],
+  "resize": [
+   "sibling",
+   "none"
+  ]
+ },
+ "hiding": {
+  "besideCard": true,
+  "flags": [
+   "zia-panels-beside",
+   "zia-panel-sliding"
+  ],
+  "hidden": false,
+  "maxWidth": "500px",
+  "order": [
+   "sidebar-box",
+   "sidebar-splitter",
+   "zen-appcontent-wrapper"
+  ],
+  "resize": [
+   "sibling",
+   "none"
+  ]
+ },
+ "home": {
+  "besideCard": false,
+  "flags": [],
+  "hidden": true,
+  "maxWidth": "",
+  "order": [
+   "zen-appcontent-wrapper"
+  ],
+  "resize": [
+   "sibling",
+   "none"
+  ]
+ },
+ "hovered": [
+  {
+   "box": null,
+   "hidden": true,
+   "kind": "selected"
+  },
+  {
+   "box": [
+    46,
+    0,
+    210,
+    34
+   ],
+   "hidden": false,
+   "kind": "hover"
+  }
+ ],
+ "open": {
+  "besideCard": true,
+  "flags": [
+   "zia-panels-beside"
+  ],
+  "hidden": false,
+  "maxWidth": "500px",
+  "order": [
+   "sidebar-box",
+   "sidebar-splitter",
+   "zen-appcontent-wrapper"
+  ],
+  "resize": [
+   "sibling",
+   "none"
+  ]
+ },
+ "page": {
+  "rowVars": {
+   "--zia-panel-inset": "0px",
+   "--zia-pill-corner": "superellipse(1.5)",
+   "--zia-pill-radius": "14px",
+   "--zia-row-font-family": "-apple-system",
+   "--zia-row-font-size": "13px",
+   "--zia-row-font-weight": "400",
+   "--zia-row-gap": "4px",
+   "--zia-row-h": "34px",
+   "--zia-row-hover-bg": "rgba(255, 255, 255, 0.115)",
+   "--zia-row-icon-gap": "10px",
+   "--zia-row-indent": "14px",
+   "--zia-row-inset": "8px",
+   "--zia-row-pad": "9px",
+   "--zia-row-radius": "10px",
+   "--zia-row-selected-bg": "rgba(0, 0, 0, 0.1)",
+   "--zia-row-text": "rgba(255, 255, 255, 0.8)",
+   "--zia-row-text-selected": "rgb(255, 255, 255)"
+  },
+  "url": "chrome://browser/content/places/bookmarksSidebar.xhtml",
+  "windowVars": {
+   "--zia-panel-pad-card": "0px",
+   "--zia-panel-pad-window": "6px",
+   "--zia-panel-title-top": "2px"
+  }
+ },
+ "shut": {
+  "besideCard": true,
+  "flags": [
+   "zia-panels-beside"
+  ],
+  "hidden": true,
+  "maxWidth": "500px",
+  "order": [
+   "sidebar-box",
+   "sidebar-splitter",
+   "zen-appcontent-wrapper"
+  ],
+  "resize": [
+   "sibling",
+   "none"
+  ]
+ },
+ "size": [
+  230,
+  216
+ ],
+ "unhovered": [
+  {
+   "box": null,
+   "hidden": true,
+   "kind": "selected"
+  },
+  {
+   "box": null,
+   "hidden": true,
+   "kind": "hover"
+  }
+ ],
+ "ziaErrors": []
+}
