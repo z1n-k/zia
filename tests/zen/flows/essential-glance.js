@@ -18,7 +18,13 @@ const springs = await animationsDuring(() => {
   gZenGlanceManager.openGlance({ url: "data:text/html,<title>Peek</title>Peek", clientX: 400, clientY: 300, width: 10, height: 10, triggeringPrincipal: SYSTEM });
 }, 1500);
 const glance = gBrowser.tabs.find((tab) => tab.hasAttribute("zen-glance-tab"));
-const open = { on: nameOf(glance?.parentElement?.closest(".tabbrowser-tab")), shown: glance?.getAttribute("zia-glance-shown"), springs: springs.filter((line) => line.startsWith("tab:")) };
+const open = {
+  on: nameOf(glance?.parentElement?.closest(".tabbrowser-tab")),
+  shown: glance?.getAttribute("zia-glance-shown"),
+  // (Zia's spring, the one that turns: Zen's own on the tab come and go with its timing; and
+  // without the tab's name, which is its address or its title by then)
+  springs: springs.filter((line) => line.startsWith("tab:") && line.includes("rotate:")).map((line) => line.replace(/^tab:\S+ /, "tab ")),
+};
 gZenGlanceManager.closeGlance({ onTabClose: true });
 await wait(1500);
 watcher.disconnect();
