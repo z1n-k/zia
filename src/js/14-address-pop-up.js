@@ -1,3 +1,8 @@
+  // The address bar's pop-up: the site's icon while an address is typed, the rows' icons
+  // and engine actions, the rows lined up with the typed text, and its bottom fitted to
+  // the last row.
+  // Used elsewhere: watchTypedAddress.
+
   function defaultEngineName() {
     try {
       const search =
@@ -149,9 +154,9 @@
 
   const POP_STEP = 0.5;
   const ALIGN_STEP = 1;
-  let popIconStart = null;
-  let popTextGap = null;
-  let popLayout = null;
+  // The rows' icon start and text gap as last measured, for the bar's place and size
+  // (layout) they were measured at
+  const rowSpacing = { layout: null, iconStart: null, textGap: null };
 
   const clamp = (value, low, high) => Math.min(high, Math.max(low, value));
 
@@ -178,20 +183,7 @@
     if (!barRect?.width || !iconRect?.width || !titleRect?.width) {
       return;
     }
-
-    const layout = `${Math.round(barRect.left)}:${Math.round(barRect.width)}`;
-    if (layout !== popLayout) {
-      popLayout = layout;
-      popIconStart = null;
-      popTextGap = null;
-    }
-
-    if (popIconStart === null) {
-      popIconStart = clamp(iconRect.left - barRect.left, 0, 60);
-      popTextGap = clamp(titleRect.left - iconRect.right, 0, 40);
-      urlbar.style.setProperty("--zia-pop-icon-start", `${popIconStart}px`);
-      urlbar.style.setProperty("--zia-pop-text-gap", `${popTextGap}px`);
-    }
+    measureRowSpacing(urlbar, barRect, iconRect, titleRect);
 
     const barIcon = document.getElementById("identity-icon");
     const input = urlbar.querySelector(".urlbar-input");
@@ -203,21 +195,39 @@
     const textLeft = inputRect.left + (parseFloat(getComputedStyle(input).paddingInlineStart) || 0);
     const iconError = iconRect.left - barIconRect.left;
     const gapError = titleRect.left - textLeft - iconError;
+    if (nudgeRowSpacing(urlbar, iconError, gapError) && passesLeft > 0) {
+      requestAnimationFrame(() => alignTypedTextWithRows(results, passesLeft - 1));
+    }
+  }
 
+  // The spacing as the rows have it, measured once for each place and size of the bar
+  function measureRowSpacing(urlbar, barRect, iconRect, titleRect) {
+    const layout = `${Math.round(barRect.left)}:${Math.round(barRect.width)}`;
+    if (layout !== rowSpacing.layout) {
+      Object.assign(rowSpacing, { layout, iconStart: null, textGap: null });
+    }
+    if (rowSpacing.iconStart === null) {
+      rowSpacing.iconStart = clamp(iconRect.left - barRect.left, 0, 60);
+      rowSpacing.textGap = clamp(titleRect.left - iconRect.right, 0, 40);
+      urlbar.style.setProperty("--zia-pop-icon-start", `${rowSpacing.iconStart}px`);
+      urlbar.style.setProperty("--zia-pop-text-gap", `${rowSpacing.textGap}px`);
+    }
+  }
+
+  // Moves the rows' icon and text towards the bar's icon and the typed text; true if moved
+  function nudgeRowSpacing(urlbar, iconError, gapError) {
     let moved = false;
     if (Math.abs(iconError) > 0.3) {
-      popIconStart = clamp(popIconStart + iconError * ALIGN_STEP, 0, 60);
-      urlbar.style.setProperty("--zia-pop-icon-start", `${popIconStart}px`);
+      rowSpacing.iconStart = clamp(rowSpacing.iconStart + iconError * ALIGN_STEP, 0, 60);
+      urlbar.style.setProperty("--zia-pop-icon-start", `${rowSpacing.iconStart}px`);
       moved = true;
     }
     if (Math.abs(gapError) > 0.3) {
-      popTextGap = clamp(popTextGap + gapError * ALIGN_STEP, 0, 40);
-      urlbar.style.setProperty("--zia-pop-text-gap", `${popTextGap}px`);
+      rowSpacing.textGap = clamp(rowSpacing.textGap + gapError * ALIGN_STEP, 0, 40);
+      urlbar.style.setProperty("--zia-pop-text-gap", `${rowSpacing.textGap}px`);
       moved = true;
     }
-    if (moved && passesLeft > 0) {
-      requestAnimationFrame(() => alignTypedTextWithRows(results, passesLeft - 1));
-    }
+    return moved;
   }
 
   const POP_BOTTOM_WANT = 8;
@@ -252,33 +262,7 @@
     popBottomTrim ??= parseFloat(getComputedStyle(urlbar).getPropertyValue("--zia-pop-bottom-trim")) || 0;
     const scroller = [view, ...view.querySelectorAll("*")].find((el) => el.scrollHeight > el.clientHeight + 1);
     if (scroller) {
-      root.setAttribute("zia-pop-scrolls", "true");
-      // A list that scrolls is cut off at the pop-up's edge, and how far down
-      // that falls is up to Zen (it changed with Zen 1.23). Trimmed by a set
-      // amount, the last whole row could end well above the edge, or the next
-      // one start just short of it. The pop-up ends instead under the last
-      // row that fits whole, at rest, with the same gap as at the sides; the
-      // space added at the list's end (the trim again) gives the last row the
-      // same gap once it's scrolled to.
-      const trim = popBottomTrim;
-      const untrimmed = popUpBottom(background) + trim;
-      let end = null;
-      for (const row of rows) {
-        const box = row.getBoundingClientRect();
-        // (where it sits with the list scrolled to the top)
-        const bottom = box.bottom + scroller.scrollTop + POP_BOTTOM_WANT;
-        if (box.height && bottom <= untrimmed + 0.5) {
-          end = Math.max(end ?? bottom, bottom);
-        }
-      }
-      const want = end === null ? POP_SCROLL_TRIM : Math.max(0, untrimmed - end);
-      if (Math.abs(want - trim) > 0.3) {
-        popBottomTrim = want;
-        urlbar.style.setProperty("--zia-pop-bottom-trim", `${want}px`);
-        if (passesLeft > 0) {
-          requestAnimationFrame(() => fitPopoverBottom(passesLeft - 1));
-        }
-      }
+      fitScrollingPopover(urlbar, background, rows, scroller, passesLeft);
       return;
     }
     root.removeAttribute("zia-pop-scrolls");
@@ -296,6 +280,36 @@
     const want = Math.max(0, Math.round(reach - error));
     if (Math.abs(want - reach) > 0.5) {
       setStyle(urlbar, "--zia-pop-reach-bottom", want ? `${want}px` : null);
+    }
+  }
+
+  // A list that scrolls is cut off at the pop-up's edge, and how far down
+  // that falls is up to Zen (it changed with Zen 1.23). Trimmed by a set
+  // amount, the last whole row could end well above the edge, or the next
+  // one start just short of it. The pop-up ends instead under the last
+  // row that fits whole, at rest, with the same gap as at the sides; the
+  // space added at the list's end (the trim again) gives the last row the
+  // same gap once it's scrolled to.
+  function fitScrollingPopover(urlbar, background, rows, scroller, passesLeft) {
+    root.setAttribute("zia-pop-scrolls", "true");
+    const trim = popBottomTrim;
+    const untrimmed = popUpBottom(background) + trim;
+    let end = null;
+    for (const row of rows) {
+      const box = row.getBoundingClientRect();
+      // (where it sits with the list scrolled to the top)
+      const bottom = box.bottom + scroller.scrollTop + POP_BOTTOM_WANT;
+      if (box.height && bottom <= untrimmed + 0.5) {
+        end = Math.max(end ?? bottom, bottom);
+      }
+    }
+    const want = end === null ? POP_SCROLL_TRIM : Math.max(0, untrimmed - end);
+    if (Math.abs(want - trim) > 0.3) {
+      popBottomTrim = want;
+      urlbar.style.setProperty("--zia-pop-bottom-trim", `${want}px`);
+      if (passesLeft > 0) {
+        requestAnimationFrame(() => fitPopoverBottom(passesLeft - 1));
+      }
     }
   }
 

@@ -1,0 +1,66 @@
+{
+ "back": {
+  "marks": [
+   "zia-site-light"
+  ],
+  "props": {
+   "--zia-ink-h": "42",
+   "--zia-ink-s": "20%",
+   "--zia-light-ink-l": "38%",
+   "--zia-site-bg": "rgb(245, 236, 215)"
+  }
+ },
+ "before": {
+  "marks": [
+   "zia-site-dark"
+  ],
+  "props": {
+   "--zia-dark-ink": "hsl(var(--zia-ink-h, 0) var(--zia-ink-s, 0%) 63.5%)",
+   "--zia-ink-h": "249",
+   "--zia-ink-s": "4%",
+   "--zia-site-bg": "rgb(28, 27, 34)",
+   "--zia-urlbar-hover-bg": "rgb(13, 12, 15)"
+  }
+ },
+ "checks": {
+  "cream is read": true,
+  "cream takes dark ink": true,
+  "near-black is read": true,
+  "red is read": true,
+  "the tab shows its own colour again": true
+ },
+ "cream": {
+  "marks": [
+   "zia-site-light"
+  ],
+  "props": {
+   "--zia-ink-h": "42",
+   "--zia-ink-s": "20%",
+   "--zia-light-ink-l": "38%",
+   "--zia-site-bg": "rgb(245, 236, 215)"
+  }
+ },
+ "dark": {
+  "marks": [
+   "zia-site-dark"
+  ],
+  "props": {
+   "--zia-dark-ink": "hsl(var(--zia-ink-h, 0) var(--zia-ink-s, 0%) 60.0%)",
+   "--zia-ink-h": "216",
+   "--zia-ink-s": "9%",
+   "--zia-site-bg": "rgb(13, 17, 23)",
+   "--zia-urlbar-hover-bg": "rgb(6, 8, 10)"
+  }
+ },
+ "red": {
+  "marks": [
+   "zia-site-mid"
+  ],
+  "props": {
+   "--zia-ink-h": "0",
+   "--zia-ink-s": "25%",
+   "--zia-site-bg": "rgb(200, 30, 30)"
+  }
+ },
+ "ziaErrors": []
+}

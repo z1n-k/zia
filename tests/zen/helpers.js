@@ -174,3 +174,57 @@ async function animationsDuring(action, ms = 900) {
   }
   return [...new Set(seen)].sort();
 }
+
+// A tiny web server of the flow's own, on localhost, so a flow can show real http pages
+// (a site, to Zia) without the network. `pages` maps a path to its HTML; anything else is a
+// 404. The port is the system's pick, so results leave it out (see `unported`).
+function serve(pages) {
+  const server = Cc["@mozilla.org/network/server-socket;1"].createInstance(Ci.nsIServerSocket);
+  server.init(-1, true, -1);
+  server.asyncListen({
+    onSocketAccepted(socket, transport) {
+      const input = transport.openInputStream(0, 0, 0);
+      const output = transport.openOutputStream(Ci.nsITransport.OPEN_BLOCKING, 0, 0);
+      input.asyncWait(
+        {
+          onInputStreamReady(stream) {
+            const reader = Cc["@mozilla.org/scriptableinputstream;1"].createInstance(Ci.nsIScriptableInputStream);
+            reader.init(stream);
+            let request = "";
+            try {
+              request = reader.read(stream.available());
+            } catch (e) {
+              // (the browser let go before asking)
+            }
+            const body = pages[request.split(" ")[1]];
+            const head = body === undefined ? "HTTP/1.1 404 Not Found\r\nContent-Length: 0" : `HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ${body.length}`;
+            const response = `${head}\r\nConnection: close\r\n\r\n${body ?? ""}`;
+            output.write(response, response.length);
+            output.close();
+            input.close();
+          },
+        },
+        0,
+        0,
+        Services.tm.mainThread
+      );
+    },
+    onStopListening() {},
+  });
+  const base = `http://localhost:${server.port}`;
+  return base;
+}
+const unported = (text) => String(text ?? "").replace(/localhost:\d+/g, "localhost:PORT");
+
+// The variables and zia-* marks Zia has set on the window for the toolbar's colour
+function toolbarColour() {
+  const style = document.documentElement.style;
+  const props = {};
+  for (let i = 0; i < style.length; i++) {
+    if (/^--zia-(site-bg|ink-|light-ink|dark-ink|urlbar-hover-bg)/.test(style[i])) {
+      props[style[i]] = style.getPropertyValue(style[i]);
+    }
+  }
+  const marks = [...document.documentElement.attributes].map((a) => a.name).filter((n) => /^zia-(site-|theme-toolbar)/.test(n)).sort();
+  return { props, marks };
+}

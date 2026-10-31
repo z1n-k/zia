@@ -1,3 +1,9 @@
+  // Copying a tab's link: the address bar's paperclip, popping into a tick once copied, and
+  // the hover card's actions (Copy link among them) with the card's timings and sizes.
+  // Used elsewhere: TAB_CARD_DELAY, TAB_CARD_GRACE, TAB_CARD_GAP, ESSENTIAL_CARD_OVERLAP_X,
+  // ESSENTIAL_CARD_OVERLAP_Y, DEFAULT_TAB_ICON, TAB_CARD_ACTIONS, copyLink, COPY_ICON,
+  // showCopiedIcon, showCopied, addCopyLinkButton.
+
   const TAB_CARD_DELAY = 600;
   const TAB_CARD_GRACE = 120;
   const TAB_CARD_GAP = 8;
@@ -7,6 +13,10 @@
   const ESSENTIAL_CARD_OVERLAP_X = 6;
   const ESSENTIAL_CARD_OVERLAP_Y = 2;
   const DEFAULT_TAB_ICON = "chrome://sine/content/zia/icons/tab-default.svg";
+  const POP_OUT_MS = 130;
+  const TICK_POP_IN_MS = 380;
+  const PAPERCLIP_POP_IN_MS = 320;
+  const COPIED_SHOWN_MS = 1200;
 
   const TAB_CARD_ACTIONS = [
     {
@@ -89,7 +99,7 @@
       toTick
         ? [{ opacity: 1, scale: 1, rotate: "0deg" }, { opacity: 0, scale: 0.35, rotate: "-40deg" }]
         : [{ opacity: 1, scale: 1 }, { opacity: 0, scale: 0.5 }],
-      { duration: 130, easing: "ease-in", fill: "forwards" }
+      { duration: POP_OUT_MS, easing: "ease-in", fill: "forwards" }
     );
     icon.ziaPop = out;
     out.finished.then(
@@ -103,7 +113,7 @@
                 { opacity: 1, scale: 1, rotate: "0deg" },
               ]
             : [{ opacity: 0, scale: 0.5, rotate: "-20deg" }, { opacity: 1, scale: 1, rotate: "0deg" }],
-          { duration: toTick ? 380 : 320, easing: POP_SPRING }
+          { duration: toTick ? TICK_POP_IN_MS : PAPERCLIP_POP_IN_MS, easing: POP_SPRING }
         );
         out.cancel();
       },
@@ -122,7 +132,7 @@
     };
     popIcon(icon, true, set(true));
     clearTimeout(button.ziaCopiedTimer);
-    button.ziaCopiedTimer = setTimeout(() => popIcon(icon, false, set(false)), 1200);
+    button.ziaCopiedTimer = setTimeout(() => popIcon(icon, false, set(false)), COPIED_SHOWN_MS);
   }
 
   function showCopied(button) {
@@ -139,19 +149,37 @@
     }
     const siteData = document.getElementById("zen-site-data-icon-button");
     if (!siteData) {
-      const urlbar = document.getElementById("urlbar");
-      if (!urlbar || addCopyLinkButton.waiting) {
-        return;
-      }
-      addCopyLinkButton.waiting = new MutationObserver(() => {
-        if (document.getElementById("zen-site-data-icon-button")) {
-          addCopyLinkButton.waiting.disconnect();
-          safely("addCopyLinkButton", addCopyLinkButton);
-        }
-      });
-      addCopyLinkButton.waiting.observe(urlbar, { childList: true, subtree: true });
+      waitForSiteDataButton();
       return;
     }
+    const button = makeCopyLinkButton();
+    siteData.before(button);
+    // As faint as the site settings icon beside it (a fixed see-through
+    // level); its colour follows the toolbar in CSS.
+    const siteIcon = siteData.querySelector("image");
+    if (siteIcon) {
+      const style = getComputedStyle(siteIcon);
+      button.firstChild.style.fillOpacity = style.fillOpacity;
+      button.firstChild.style.opacity = style.opacity;
+    }
+    showCopyLinkOnWebsites(button);
+  }
+
+  function waitForSiteDataButton() {
+    const urlbar = document.getElementById("urlbar");
+    if (!urlbar || addCopyLinkButton.waiting) {
+      return;
+    }
+    addCopyLinkButton.waiting = new MutationObserver(() => {
+      if (document.getElementById("zen-site-data-icon-button")) {
+        addCopyLinkButton.waiting.disconnect();
+        safely("addCopyLinkButton", addCopyLinkButton);
+      }
+    });
+    addCopyLinkButton.waiting.observe(urlbar, { childList: true, subtree: true });
+  }
+
+  function makeCopyLinkButton() {
     const button = document.createXULElement("hbox");
     button.id = "zia-copy-link-button";
     button.className = "urlbar-page-action";
@@ -172,19 +200,15 @@
         console.error("[Zia] Copy link failed:", err);
       }
     });
-    siteData.before(button);
+    return button;
+  }
+
+  // Only a website's link is copied, so the button shows only there
+  function showCopyLinkOnWebsites(button) {
     const update = () => {
       const uri = gBrowser.selectedBrowser?.currentURI;
       button.hidden = !uri || !/^https?$/.test(uri.scheme);
     };
-    // As faint as the site settings icon beside it (a fixed see-through
-    // level); its colour follows the toolbar in CSS.
-    const siteIcon = siteData.querySelector("image");
-    if (siteIcon) {
-      const style = getComputedStyle(siteIcon);
-      icon.style.fillOpacity = style.fillOpacity;
-      icon.style.opacity = style.opacity;
-    }
     gBrowser.tabContainer.addEventListener("TabSelect", update);
     gBrowser.addProgressListener({
       onLocationChange: (progress) => {

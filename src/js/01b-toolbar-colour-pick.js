@@ -2,6 +2,7 @@
   // A site's toolbar colour set by hand (right-click the address bar or toolbar):
   // click the page or type a hex. A site with its own colour is never read again,
   // so it can't flicker.
+  // Used elsewhere: colorPick, manualSiteColor, rgbOfHex, addToolbarColorMenuItems.
   const MANUAL_COLORS_PREF = "zia.toolbar.manual-colors";
   let manualColors = null;
   let colorPick = null;
@@ -65,7 +66,7 @@
     const manual = manualSiteColor(browser);
     if (manual) {
       showColor(manual);
-      colorCache.set(browser, manual);
+      cacheColor(browser, manual);
     } else {
       showColor(colorCache.get(browser) ?? null);
       updateColor();
@@ -122,7 +123,14 @@
     if (!shot || browser !== gBrowser.selectedBrowser) {
       return;
     }
+    const picker = makeColorPicker(browser, host);
+    stack.append(picker.overlay);
+    colorPick = { browser, overlay: picker.overlay, shot, typed: null };
+    followPickPointer(picker, shot, host);
+    followPickTyping(picker, host);
+  }
 
+  function makeColorPicker(browser, host) {
     const el = (tag, className) => {
       const node = document.createElementNS(XHTML_NS, tag);
       if (className) {
@@ -153,16 +161,17 @@
     cancel.textContent = "Cancel";
     bar.append(hint, input, reset, cancel);
     overlay.append(loupe, bar);
-    stack.append(overlay);
+    return { overlay, loupe, swatch, loupeHex, bar, input, reset, cancel };
+  }
 
-    colorPick = { browser, overlay, shot, typed: null };
+  // (kept for the site picking began on, should the page have moved on)
+  function keepPickedColor(host, rgb) {
+    setManualSiteColor(host, rgb);
+    endColorPick(true);
+  }
 
-    // (kept for the site picking began on, should the page have moved on)
-    const keep = (rgb) => {
-      setManualSiteColor(host, rgb);
-      endColorPick(true);
-    };
-
+  // The colour under the pointer shows on the toolbar and in the loupe; a click keeps it
+  function followPickPointer({ overlay, loupe, swatch, loupeHex, bar }, shot, host) {
     overlay.addEventListener("mousemove", (event) => {
       if (bar.contains(event.target)) {
         loupe.hidden = true;
@@ -188,8 +197,12 @@
       }
       event.preventDefault();
       const rect = overlay.getBoundingClientRect();
-      keep(colorAt(shot, event.clientX - rect.left, event.clientY - rect.top));
+      keepPickedColor(host, colorAt(shot, event.clientX - rect.left, event.clientY - rect.top));
     });
+  }
+
+  // A hex typed in shows as it's typed, and Enter keeps it; or Reset, or Cancel
+  function followPickTyping({ input, reset, cancel }, host) {
     input.addEventListener("input", () => {
       const rgb = rgbOfHex(input.value);
       input.toggleAttribute("invalid", !!input.value.trim() && !rgb);
@@ -202,7 +215,7 @@
       if (event.key === "Enter") {
         const rgb = rgbOfHex(input.value);
         if (rgb) {
-          keep(rgb);
+          keepPickedColor(host, rgb);
         }
       }
     });
@@ -222,7 +235,7 @@
     overlay.remove();
     if (kept) {
       const manual = manualSiteColor(browser);
-      colorCache.set(browser, manual);
+      cacheColor(browser, manual);
       if (browser === gBrowser.selectedBrowser) {
         showColor(manual);
       }
@@ -231,52 +244,11 @@
     }
   }
 
-  function addToolbarColorMenuItems() {
-    const added = new WeakMap();
-    document.addEventListener(
-      "popupshowing",
-      (event) => {
-        const menu = event.target;
-        if (menu?.localName !== "menupopup") {
-          return;
-        }
-        const trigger = menu.triggerNode;
-        // (the address's own menu, Cut, Copy, Paste: not a submenu, nor one
-        // of the bar's buttons' menus)
-        const onUrlbar = menu.parentElement?.localName !== "menu" &&
-          !!trigger?.closest?.("#urlbar :is(moz-input-box, .urlbar-input-box, .urlbar-input)");
-        const onToolbar = menu.id === "toolbar-context-menu" && !!trigger?.closest?.("#zen-appcontent-navbar-wrapper, #nav-bar");
-        let items = added.get(menu);
-        if (!onUrlbar && !onToolbar) {
-          if (items) {
-            items.separator.hidden = items.pick.hidden = items.reset.hidden = true;
-          }
-          return;
-        }
-        if (!items) {
-          const separator = document.createXULElement("menuseparator");
-          const pick = document.createXULElement("menuitem");
-          pick.setAttribute("label", "Toolbar Color for This Site…");
-          pick.addEventListener("command", () => startColorPick(gBrowser.selectedBrowser));
-          const reset = document.createXULElement("menuitem");
-          reset.setAttribute("label", "Reset Toolbar Color");
-          reset.addEventListener("command", () => {
-            const browser = gBrowser.selectedBrowser;
-            setManualSiteColor(siteKey(browser), null);
-            restoreToolbarColor(browser);
-          });
-          menu.append(separator, pick, reset);
-          items = { separator, pick, reset };
-          added.set(menu, items);
-        }
-        const browser = gBrowser.selectedBrowser;
-        const shown = siteColorOn() && !!siteKey(browser) && !isErrorPage(browser);
-        items.separator.hidden = items.pick.hidden = !shown;
-        items.reset.hidden = !shown || !manualSiteColor(browser);
-      },
-      true
-    );
+  // Zia's items on each menu, once added
+  const colorMenuItems = new WeakMap();
 
+  function addToolbarColorMenuItems() {
+    document.addEventListener("popupshowing", showColorMenuItems, true);
     window.addEventListener(
       "keydown",
       (event) => {
@@ -290,4 +262,47 @@
     );
     gBrowser.tabContainer.addEventListener("TabSelect", () => endColorPick(false));
     window.addEventListener("resize", () => endColorPick(false));
+  }
+
+  function showColorMenuItems(event) {
+    const menu = event.target;
+    if (menu?.localName !== "menupopup") {
+      return;
+    }
+    const trigger = menu.triggerNode;
+    // (the address's own menu, Cut, Copy, Paste: not a submenu, nor one
+    // of the bar's buttons' menus)
+    const onUrlbar = menu.parentElement?.localName !== "menu" &&
+      !!trigger?.closest?.("#urlbar :is(moz-input-box, .urlbar-input-box, .urlbar-input)");
+    const onToolbar = menu.id === "toolbar-context-menu" && !!trigger?.closest?.("#zen-appcontent-navbar-wrapper, #nav-bar");
+    let items = colorMenuItems.get(menu);
+    if (!onUrlbar && !onToolbar) {
+      if (items) {
+        items.separator.hidden = items.pick.hidden = items.reset.hidden = true;
+      }
+      return;
+    }
+    items ||= addColorMenuItems(menu);
+    const browser = gBrowser.selectedBrowser;
+    const shown = siteColorOn() && !!siteKey(browser) && !isErrorPage(browser);
+    items.separator.hidden = items.pick.hidden = !shown;
+    items.reset.hidden = !shown || !manualSiteColor(browser);
+  }
+
+  function addColorMenuItems(menu) {
+    const separator = document.createXULElement("menuseparator");
+    const pick = document.createXULElement("menuitem");
+    pick.setAttribute("label", "Toolbar Color for This Site…");
+    pick.addEventListener("command", () => startColorPick(gBrowser.selectedBrowser));
+    const reset = document.createXULElement("menuitem");
+    reset.setAttribute("label", "Reset Toolbar Color");
+    reset.addEventListener("command", () => {
+      const browser = gBrowser.selectedBrowser;
+      setManualSiteColor(siteKey(browser), null);
+      restoreToolbarColor(browser);
+    });
+    menu.append(separator, pick, reset);
+    const items = { separator, pick, reset };
+    colorMenuItems.set(menu, items);
+    return items;
   }

@@ -1,0 +1,14 @@
+{
+ "back": true,
+ "checks": {
+  "and back": true,
+  "it shows on a website": true,
+  "it turns into a tick": true,
+  "the link is copied": true
+ },
+ "copied": "http://localhost:PORT/page?q=1",
+ "hiddenOffSite": true,
+ "shownOnPage": true,
+ "tick": true,
+ "ziaErrors": []
+}

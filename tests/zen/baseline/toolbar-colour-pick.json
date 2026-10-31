@@ -1,0 +1,45 @@
+{
+ "checks": {
+  "a click keeps the colour under it": true,
+  "a typed hex is kept": true,
+  "reset reads the page again": true,
+  "the menu offers it": true,
+  "the picker opens": true
+ },
+ "clicked": {
+  "closed": true,
+  "saved": "{\"localhost\":\"224,160,32\"}",
+  "toolbar": "rgb(224, 160, 32)"
+ },
+ "hover": {
+  "loupe": "#1e50c8",
+  "toolbar": "rgb(30, 80, 200)"
+ },
+ "items": {
+  "pick": true,
+  "reset": false
+ },
+ "overlaySize": [
+  1130,
+  756
+ ],
+ "picker": {
+  "hint": "Click the page to color the toolbar for localhost",
+  "input": "",
+  "open": true,
+  "resetShown": false
+ },
+ "read": "rgb(30, 80, 200)",
+ "reset": {
+  "saved": "{}",
+  "toolbar": "rgb(30, 80, 200)"
+ },
+ "resetOffered": true,
+ "typed": {
+  "closed": true,
+  "prefilled": "#e0a020",
+  "saved": "{\"localhost\":\"51,102,153\"}",
+  "toolbar": "rgb(51, 102, 153)"
+ },
+ "ziaErrors": []
+}

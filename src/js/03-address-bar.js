@@ -1,3 +1,16 @@
+  // The address bar's text: the site and title shown closed, the address without its
+  // scheme, the whole address selected by the click that opens the bar, typed text put back
+  // on leaving it, and the bar (or its text) centred on the toolbar.
+  // Used elsewhere: createTitleElement, watchTitleOnly, updateTitle, plainAddress,
+  // neverShowScheme, keepWholeUrlSelected, revertTypedTextOnLeave, watchCenteredBar,
+  // watchCenteredAddress.
+
+  // (a click sent to a page or the bar's list is taken as going somewhere for this long)
+  const NAVIGATING_MS = 1500;
+  // (passes after the bar opens, as it writes in the whole address)
+  const SELECTION_FIX_AT = [30, 100, 200];
+  const SELECTION_FIX_UNTIL_MS = 400;
+
   let titleEl = null;
   let plainEl = null;
 
@@ -201,12 +214,14 @@
       return;
     }
     holdSelectionOnRewrite(input);
-    let closedLength = -1;
+    // The click that opens the bar: the address's length before it (closedLength), where it
+    // was pressed, and where the pointer has been since
+    const click = { closedLength: -1, pressedAt: null, lastPointer: null };
     urlbar.addEventListener(
       "mousedown",
       (event) => {
         const opening = !urlbar.hasAttribute("breakout-extend") && !gURLBar.focused;
-        closedLength = opening ? input.value.length : -1;
+        click.closedLength = opening ? input.value.length : -1;
         holdWholeSelection = opening && event.button === 0;
       },
       true
@@ -216,12 +231,11 @@
     // slid under a pointer that hadn't moved and Firefox took it for a drag,
     // selecting only part of it ("youtub"). Unless the pointer itself moved,
     // that click selects the whole address however the text moved under it.
-    let pressedAt = null;
     urlbar.addEventListener(
       "mousedown",
       (event) => {
-        pressedAt = holdWholeSelection ? { x: event.screenX, y: event.screenY } : null;
-        lastPointer = null;
+        click.pressedAt = holdWholeSelection ? { x: event.screenX, y: event.screenY } : null;
+        click.lastPointer = null;
       },
       true
     );
@@ -229,75 +243,81 @@
     // undone as it happens, before it's drawn (only fixed on release, the
     // part-selection showed for a moment first). A real drag moves the
     // pointer, and is left alone.
-    let lastPointer = null;
     window.addEventListener(
       "mousemove",
       (event) => {
-        lastPointer = pressedAt ? { x: event.screenX, y: event.screenY } : null;
+        click.lastPointer = click.pressedAt ? { x: event.screenX, y: event.screenY } : null;
       },
       true
     );
-    const holdWhole = () => {
-      const press = pressedAt;
-      if (!press || !gURLBar.focused || urlbarTyping) {
-        return;
-      }
-      if (lastPointer && Math.hypot(lastPointer.x - press.x, lastPointer.y - press.y) > 4) {
-        return;
-      }
-      if (input.selectionStart !== 0 || input.selectionEnd !== input.value.length) {
-        input.select();
-      }
-    };
+    const holdWhole = () => holdWholeWhilePressed(input, click);
     input.addEventListener("selectionchange", holdWhole);
     input.addEventListener("select", holdWhole);
-    window.addEventListener(
-      "mouseup",
-      (event) => {
-        const press = pressedAt;
-        pressedAt = null;
-        if (!press || event.button !== 0 || Math.hypot(event.screenX - press.x, event.screenY - press.y) > 4) {
-          return;
-        }
-        const wholeLater = () => {
-          if (gURLBar.focused && !urlbarTyping && (input.selectionStart !== 0 || input.selectionEnd !== input.value.length)) {
-            input.select();
-          }
-        };
-        wholeLater();
-        requestAnimationFrame(wholeLater);
-      },
-      true
-    );
+    window.addEventListener("mouseup", (event) => selectWholeOnRelease(event, input, click), true);
     const release = () => {
       holdWholeSelection = false;
-      pressedAt = null;
+      click.pressedAt = null;
     };
     urlbar.addEventListener("keydown", release, true);
     input.addEventListener("input", release);
     input.addEventListener("blur", release);
+    watchOpenedSelection(urlbar, input, click);
+  }
+
+  function holdWholeWhilePressed(input, click) {
+    const press = click.pressedAt;
+    if (!press || !gURLBar.focused || urlbarTyping) {
+      return;
+    }
+    if (click.lastPointer && Math.hypot(click.lastPointer.x - press.x, click.lastPointer.y - press.y) > 4) {
+      return;
+    }
+    if (input.selectionStart !== 0 || input.selectionEnd !== input.value.length) {
+      input.select();
+    }
+  }
+
+  function selectWholeOnRelease(event, input, click) {
+    const press = click.pressedAt;
+    click.pressedAt = null;
+    if (!press || event.button !== 0 || Math.hypot(event.screenX - press.x, event.screenY - press.y) > 4) {
+      return;
+    }
+    const wholeLater = () => {
+      if (gURLBar.focused && !urlbarTyping && (input.selectionStart !== 0 || input.selectionEnd !== input.value.length)) {
+        input.select();
+      }
+    };
+    wholeLater();
+    requestAnimationFrame(wholeLater);
+  }
+
+  // Opened, the bar writes in the whole address, longer than the closed one: a selection
+  // of just the closed address's length is made the whole of it
+  function watchOpenedSelection(urlbar, input, click) {
     const fix = () => {
-      if (closedLength < 0) {
+      if (click.closedLength < 0) {
         return;
       }
       const { selectionStart, selectionEnd, value } = input;
-      if (selectionStart === 0 && selectionEnd === closedLength && closedLength < value.length) {
+      if (selectionStart === 0 && selectionEnd === click.closedLength && click.closedLength < value.length) {
         input.select();
-        closedLength = -1;
+        click.closedLength = -1;
       }
     };
     new MutationObserver(() => {
       if (!urlbar.hasAttribute("breakout-extend")) {
-        closedLength = -1;
+        click.closedLength = -1;
         return;
       }
       requestAnimationFrame(fix);
-      for (const ms of [30, 100, 200]) {
+      // (not cancelled: each does nothing once the opening's selection is fixed or over)
+      for (const ms of SELECTION_FIX_AT) {
         setTimeout(fix, ms);
       }
       setTimeout(() => {
-        closedLength = -1;
-      }, 400);
+        click.closedLength = -1;
+      }, SELECTION_FIX_UNTIL_MS);
     }).observe(urlbar, { attributes: true, attributeFilter: ["breakout-extend"] });
   }
 
@@ -328,7 +348,7 @@
     input.addEventListener("blur", () => {
       const browser = gBrowser.selectedBrowser;
       setTimeout(() => {
-        if (gURLBar.focused || !document.hasFocus() || Date.now() - navigatingAt < 1500) {
+        if (gURLBar.focused || !document.hasFocus() || Date.now() - navigatingAt < NAVIGATING_MS) {
           return;
         }
         if (urlbar.hasAttribute("zen-newtab")) {
@@ -352,8 +372,6 @@
       }, 0);
     });
   }
-
-  let openOffset = 0;
 
   // Optional (zia.urlbar.center-text): the address centred on the toolbar, not in the bar,
   // which the buttons either side push off the toolbar's middle; and held there as the
@@ -475,256 +493,4 @@
     watchPrefs(["zia.urlbar.center-text", "zia.urlbar.center-text.pop-up-left"], update);
     window.addEventListener("unload", () => observer.disconnect());
     update();
-  }
-
-  function desiredOpenTop() {
-    return parseFloat(getComputedStyle(root).getPropertyValue("--zia-urlbar-open-top")) || 0;
-  }
-
-  let closedTextRect = null;
-  let openOffsetX = 0;
-
-  let clickedUrlbarAt = 0;
-
-  function rememberClosedText() {
-    const urlbar = gURLBar.textbox || document.getElementById("urlbar");
-    if (!urlbar || urlbar.hasAttribute("breakout-extend") || root.getAttribute("zia-split") === "true") {
-      return;
-    }
-    // At the bottom, the opened pop-up is pinned by its bottom edge to where
-    // the closed bar sits, so it grows upwards instead of off the screen.
-    const bar = urlbar.getBoundingClientRect();
-    if (bar.width) {
-      root.style.setProperty("--zia-url-left", `${Math.round(bar.left)}px`);
-      root.style.setProperty("--zia-url-width", `${Math.round(bar.width)}px`);
-      root.style.setProperty("--zia-url-bottom", `${Math.round(window.innerHeight - bar.bottom)}px`);
-    }
-    const title = document.getElementById("zia-url-title");
-    const input = urlbar.querySelector(".urlbar-input");
-    const titleRect = title?.getBoundingClientRect();
-    const rect = titleRect?.width ? titleRect : input?.getBoundingClientRect();
-    if (rect?.width) {
-      closedTextRect = { left: rect.left, centerY: rect.top + rect.height / 2, at: Date.now() };
-    }
-  }
-
-  function alignOpenedUrlbar() {
-    const urlbar = gURLBar.textbox || document.getElementById("urlbar");
-    // Opened as wide as the closed bar: Zen measures that as the layout changes, but not
-    // as compact mode takes the sidebar away, so it opened at its width beside the sidebar
-    const container = document.getElementById("urlbar-container");
-    const single = root.getAttribute("zen-single-toolbar") === "true";
-    if (urlbar?.hasAttribute("breakout-extend") && urlbar.getAttribute("zen-floating-urlbar") !== "true" && !single && container) {
-      const width = `${container.getBoundingClientRect().width}px`;
-      if (width !== "0px" && urlbar.style.getPropertyValue("--urlbar-width") !== width) {
-        urlbar.style.setProperty("--urlbar-width", width);
-      }
-    }
-    // (and in the sidebar, with Zen's single toolbar, it opens where Zen puts it: moved to
-    // keep the text where it was, it went past the window's left edge)
-    if (urlbar) {
-      setStyle(urlbar, "--zia-pop-reach-top", null);
-    }
-    if ((urlbar?.getAttribute("zen-floating-urlbar") === "true" && !urlbarAtBottom()) || single) {
-      openOffset = 0;
-      openOffsetX = 0;
-      root.style.setProperty("--zia-urlbar-open-offset", "0px");
-      root.style.setProperty("--zia-urlbar-open-offset-x", "0px");
-      return;
-    }
-    if (!urlbar?.hasAttribute("breakout-extend")) {
-      return;
-    }
-    // Only while it's shown over the window: a modal dialog (Cmd+Q's quit or close, say)
-    // takes every pop-up down, the opened bar too, while it stays marked opened, and measured
-    // there, back in the toolbar, it was moved further out of place each time
-    if (urlbar.matches?.("[popover]") && !urlbar.matches(":popover-open")) {
-      return;
-    }
-    if (root.getAttribute("zia-split") === "true") {
-      return;
-    }
-    const input = urlbar.querySelector(".urlbar-input");
-    const inputRect = input?.getBoundingClientRect();
-
-    // At the bottom the pop-up grows upwards from the bar, so the text always
-    // stays where it was, however the bar was opened.
-    // (lined up only with where the text was at that click: taken earlier, say before compact
-    // mode moved the bar, or with Zen's new tab bar still open as it was clicked, the old
-    // spot sent the pop-up up and to the left)
-    const fresh = !!closedTextRect && (urlbarAtBottom() || clickedUrlbarAt - closedTextRect.at < 100);
-    const openedByClick = (urlbarAtBottom() || Date.now() - clickedUrlbarAt < 1500) && fresh;
-    // (with the text centred, it's kept where it was by its centring, watchCenteredAddress:
-    // lined up by the left of its box as well, the opened pop-up went off to the left, #515)
-    const centred =
-      Services.prefs.getBoolPref("zia.urlbar.center-text", false) &&
-      !Services.prefs.getBoolPref("zia.urlbar.center-text.pop-up-left", false);
-    if (!openedByClick && openOffsetX) {
-      openOffsetX = 0;
-      root.style.setProperty("--zia-urlbar-open-offset-x", "0px");
-    }
-    if (openedByClick && inputRect?.width) {
-      const dx = centred ? -openOffsetX : closedTextRect.left - inputRect.left;
-      const dy = closedTextRect.centerY - (inputRect.top + inputRect.height / 2);
-      if (Math.abs(dx) > 0.5) {
-        openOffsetX += dx;
-        root.style.setProperty("--zia-urlbar-open-offset-x", `${openOffsetX}px`);
-      }
-      if (Math.abs(dy) > 0.5) {
-        openOffset += dy;
-        root.style.setProperty("--zia-urlbar-open-offset", `${openOffset}px`);
-      }
-      if (!urlbarAtBottom()) {
-        keepOpenedUrlbarInWindow(urlbar);
-      }
-      reachWindowTop(urlbar);
-      return;
-    }
-
-    const top = urlbar.getBoundingClientRect().top;
-    const diff = desiredOpenTop() - top;
-    if (Math.abs(diff) > 0.5) {
-      openOffset += diff;
-      root.style.setProperty("--zia-urlbar-open-offset", `${openOffset}px`);
-    }
-    reachWindowTop(urlbar);
-  }
-
-  // Moved to keep the text where it was, the pop-up stays inside the window: with the page
-  // edge to edge the bar sits against the window's edge, and the bigger pop-up round the
-  // same text went past it and was cut off
-  function keepOpenedUrlbarInWindow(urlbar) {
-    const box = urlbar.getBoundingClientRect();
-    if (!box.width) {
-      return;
-    }
-    const dy = box.top < 0 ? -box.top : 0;
-    const dx = box.left < 0 ? -box.left : box.right > window.innerWidth ? window.innerWidth - box.right : 0;
-    if (dy > 0.5) {
-      openOffset += dy;
-      root.style.setProperty("--zia-urlbar-open-offset", `${openOffset}px`);
-    }
-    if (Math.abs(dx) > 0.5) {
-      openOffsetX += dx;
-      root.style.setProperty("--zia-urlbar-open-offset-x", `${openOffsetX}px`);
-    }
-  }
-
-  // The pop-up at the top of the window reaches up to its top edge, as Dia's does: it stopped
-  // the card's gap short of it. Its background grows up into that gap, so the address and
-  // the results stay where they are. Not at the bottom, in the sidebar or floating.
-  function reachWindowTop(urlbar) {
-    const top = urlbar.getBoundingClientRect().top;
-    const reach = !urlbarAtBottom() && top > 0 && top < 24 ? top : 0;
-    setStyle(urlbar, "--zia-pop-reach-top", reach ? `${reach}px` : null);
-  }
-
-  function alignOpenedUrlbarSoon() {
-    // Straight away, before the opened bar is first drawn, so the text doesn't
-    // visibly jump; the later passes only catch late layout changes.
-    alignOpenedUrlbar();
-    requestAnimationFrame(alignOpenedUrlbar);
-    setTimeout(alignOpenedUrlbar, 60);
-    setTimeout(alignOpenedUrlbar, 200);
-  }
-
-  // Restarts a CSS animation keyed on an attribute, then clears it.
-  function replayAttribute(el, name, ms, value = "true") {
-    el.removeAttribute(name);
-    el.getBoundingClientRect();
-    el.setAttribute(name, value);
-    clearTimeout(el.ziaReplayTimers?.[name]);
-    el.ziaReplayTimers = { ...el.ziaReplayTimers, [name]: setTimeout(() => el.removeAttribute(name), ms) };
-  }
-
-  // Back and forward slide through when clicked; reload and stop turn into
-  // each other as a page starts and finishes loading (the motion itself is
-  // in the CSS, keyed on these attributes).
-  function animateNavButtons() {
-    for (const id of ["back-button", "forward-button"]) {
-      const button = document.getElementById(id);
-      button?.addEventListener(
-        "click",
-        (event) => {
-          if (event.button === 0 && !button.hasAttribute("disabled")) {
-            replayAttribute(button, "zia-slide", 420);
-          }
-        },
-        true
-      );
-    }
-    const reload = document.getElementById("reload-button");
-    const container = document.getElementById("stop-reload-button");
-    if (!reload || !container) {
-      return;
-    }
-    let showingStop = reload.hasAttribute("displaystop");
-    new MutationObserver(() => {
-      const now = reload.hasAttribute("displaystop");
-      if (now === showingStop) {
-        return;
-      }
-      showingStop = now;
-      replayAttribute(container, "zia-morph", 450, now ? "to-stop" : "to-reload");
-      // Reload's hover look (its arrowhead drawn back) isn't kept while
-      // stop's showing: coming back, reload grew in whole and then snapped
-      // to that look. It springs into it once it's in, if still hovered.
-      if (now) {
-        reload.ziaReloadCut?.(0, true);
-      } else {
-        // (once the grow-in has let go of it: its animation holds the
-        // arrowhead's turn until then, and eased in under it, it jumped
-        // to wherever the ease had got to as the animation ended)
-        setTimeout(() => {
-          if (!reload.hasAttribute("displaystop") && !container.hasAttribute("zia-morph") && container.matches(":hover")) {
-            reload.ziaReloadCut?.(RELOAD_HOVER_CUT);
-          }
-        }, 470);
-      }
-    }).observe(reload, { attributes: true, attributeFilter: ["displaystop"] });
-  }
-
-  // Reload on hover: the arrowhead draws back 20 degrees round the circle
-  // and the arc shortens with it, on Zia's spring. The CSS reads the angle
-  // from --zia-reload-cut, eased here frame by frame.
-  const RELOAD_HOVER_CUT = 20;
-  const RELOAD_HOVER_MS = 380;
-
-  function springReloadHover() {
-    const button = document.getElementById("reload-button");
-    if (!button) {
-      return;
-    }
-    const ease = cubicBezier(0.3, 1.35, 0.5, 1);
-    let cut = 0;
-    let frame = 0;
-    const setCut = (value) => {
-      cut = value;
-      button.style.setProperty("--zia-reload-cut", `${cut}deg`);
-    };
-    const go = (target, instant = false) => {
-      cancelAnimationFrame(frame);
-      if (instant || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        setCut(target);
-        return;
-      }
-      const from = cut;
-      const start = performance.now();
-      const step = (now) => {
-        const t = Math.min(1, (now - start) / RELOAD_HOVER_MS);
-        setCut(from + (target - from) * ease(t));
-        if (t < 1) {
-          frame = requestAnimationFrame(step);
-        }
-      };
-      frame = requestAnimationFrame(step);
-    };
-    button.addEventListener("mouseenter", () => {
-      // (not while it's coming back in from stop: that springs it after)
-      if (!button.parentElement?.hasAttribute("zia-morph")) {
-        go(RELOAD_HOVER_CUT);
-      }
-    });
-    button.addEventListener("mouseleave", () => go(0));
-    button.ziaReloadCut = go;
   }
