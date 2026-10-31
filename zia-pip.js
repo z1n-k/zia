@@ -2,6 +2,7 @@
 // zia.uc.js. It restyles Firefox's controls like Dia's (zia-pip.css) and lets
 // the window tuck into the side of the screen. Self-contained, so it keeps
 // working whichever browser window opened it.
+// Used elsewhere: nothing (16-picture-in-picture.js loads it into each player window).
 (() => {
   if (window.__ziaPipLoaded) {
     return;
@@ -259,19 +260,42 @@
   const MAGNET = 40; // this close to a corner, it's pulled into the corner
   const UNSNAP = 48; // dragged this far out of a corner, it's a side again
   const MARGIN = 16;
+  // the window's glides (ms): by default, into a spot, the nudge, a peek, pulled out and let
+  // go, into a corner, and out of one along a side
+  const GLIDE_MS = 280;
+  const TUCK_MS = 360;
+  const NUDGE_MS = 160;
+  const PEEK_MS = 200;
+  const PULLED_OUT_MS = 200;
+  const SNAP_MS = 200;
+  const UNSNAP_MS = 180;
+  // a throw's speed is read over the last of its trail; a pause starts a new trail, and a
+  // window still for a moment after moving has been let go
+  const FLING_TRAIL_MS = 150;
+  const TRAIL_BREAK_MS = 300;
+  const LET_GO_MS = 200;
+  // (moves of the window's own this soon after a drag, or a refit to a new video, aren't drags)
+  const DRAG_SETTLE_MS = 300;
+  const REFIT_SETTLE_MS = 800;
+  const LEAVING_CLEAR_MS = 120;
+  const RETUCK_MS = 120;
+  const WATCH_MS = 40;
   const SPOT_PREF = "zia.pip.tuck-spot";
   // No top spots: macOS won't move a window up past the top of the screen
   const SPOTS = ["left", "right", "bottom-left", "bottom", "bottom-right"];
   // Which way the arrows point (the chevron points left at 0deg)
   const TURN = { right: 0, left: 180, top: -90, bottom: 90, "top-right": -45, "top-left": -135, "bottom-right": 45, "bottom-left": 135 };
-  let state = "free"; // "free" or "tucked"
-  let spot = null;
-  let animating = false;
-  let lastX = window.screenX;
-  let lastY = window.screenY;
-  let movedAt = 0;
-  let trail = []; // [time, x, y] while the window is being dragged
-  let glideId = 0;
+  const pip = {
+    state: "free", // "free" or "tucked"
+    spot: null,
+    animating: false,
+    lastX: window.screenX,
+    lastY: window.screenY,
+    movedAt: 0,
+    trail: [], // [time, x, y] while the window is being dragged
+    glideId: 0,
+    settleUntil: 0, // just after a drag, the window may still be arriving
+  };
 
   const clamp = (value, low, high) => Math.min(Math.max(value, low), Math.max(low, high));
   const W = () => window.outerWidth;
@@ -282,12 +306,14 @@
   };
 
   // Which sides have no other screen beyond them
-  let screenManager = null;
-  try {
-    screenManager = Cc["@mozilla.org/gfx/screenmanager;1"].getService(Ci.nsIScreenManager);
-  } catch (err) {
-    console.debug("[Zia] picture-in-picture: screens", err);
-  }
+  const screenManager = (() => {
+    try {
+      return Cc["@mozilla.org/gfx/screenmanager;1"].getService(Ci.nsIScreenManager);
+    } catch (err) {
+      console.debug("[Zia] picture-in-picture: screens", err);
+      return null;
+    }
+  })();
   // All in the screen list's own units (desktop pixels: device pixels over
   // the screen's scale). Probed from the page's own measures, which are in
   // CSS pixels, the probes landed on the wrong screen wherever Windows
@@ -385,16 +411,16 @@
     const h = H();
     let x = clamp(window.screenX, b.left + MARGIN, b.right - w - MARGIN);
     let y = clamp(window.screenY, b.top + MARGIN, b.bottom - h - MARGIN);
-    if (spot?.endsWith("left")) {
+    if (pip.spot?.endsWith("left")) {
       x = b.left + MARGIN;
     }
-    if (spot?.endsWith("right")) {
+    if (pip.spot?.endsWith("right")) {
       x = b.right - w - MARGIN;
     }
-    if (spot?.startsWith("top")) {
+    if (pip.spot?.startsWith("top")) {
       y = b.top + MARGIN;
     }
-    if (spot?.startsWith("bottom")) {
+    if (pip.spot?.startsWith("bottom")) {
       y = b.bottom - h - MARGIN;
     }
     return [Math.round(x), Math.round(y)];
@@ -449,8 +475,8 @@
     const y = window.screenY;
     let vx = 0;
     let vy = 0;
-    const last = trail.at(-1);
-    const first = last && trail.find(([time]) => last[0] - time <= 150);
+    const last = pip.trail.at(-1);
+    const first = last && pip.trail.find(([time]) => last[0] - time <= FLING_TRAIL_MS);
     if (first && first !== last) {
       vx = (last[1] - first[1]) / (last[0] - first[0] || 1);
       vy = (last[2] - first[2]) / (last[0] - first[0] || 1);
@@ -511,7 +537,7 @@
   };
 
   const updateButton = () => {
-    const name = spot || defaultSpot();
+    const name = pip.spot || defaultSpot();
     root.toggleAttribute("zia-no-tuck", !name);
     if (name) {
       root.style.setProperty("--zia-tuck-button-turn", `${TURN[name]}deg`);
@@ -519,21 +545,21 @@
     tuckButton.setAttribute("tooltip", "Tuck away · right-click for where");
   };
   const setSpot = (name) => {
-    spot = name;
+    pip.spot = name;
     root.setAttribute("zia-tucked", name);
     root.style.setProperty("--zia-tuck-turn", `${TURN[name]}deg`);
   };
 
   // A newer glide takes over from one still running.
   // `spring` runs a little past the end and settles back
-  const glide = (x, y, duration = 280, done = null, spring = false) => {
-    animating = true;
-    const id = ++glideId;
+  const glide = (x, y, duration = GLIDE_MS, done = null, spring = false) => {
+    pip.animating = true;
+    const id = ++pip.glideId;
     const fromX = window.screenX;
     const fromY = window.screenY;
     const start = performance.now();
     const step = (now) => {
-      if (id !== glideId) {
+      if (id !== pip.glideId) {
         return;
       }
       const t = Math.min(1, (now - start) / duration);
@@ -542,9 +568,9 @@
       if (t < 1) {
         requestAnimationFrame(step);
       } else {
-        animating = false;
-        lastX = window.screenX;
-        lastY = window.screenY;
+        pip.animating = false;
+        pip.lastX = window.screenX;
+        pip.lastY = window.screenY;
         done?.();
       }
     };
@@ -554,45 +580,45 @@
     if (!name) {
       return;
     }
-    state = "tucked";
+    pip.state = "tucked";
     setSpot(name);
     root.removeAttribute("zia-nudged");
     root.removeAttribute("zia-peeking");
     root.removeAttribute("zia-emerging");
     closePicker();
     updateButton();
-    glide(...tuckedPos(name), 360, null, true);
+    glide(...tuckedPos(name), TUCK_MS, null, true);
   };
   const nudge = (out) => {
-    if (state !== "tucked" || root.hasAttribute("zia-nudged") === out) {
+    if (pip.state !== "tucked" || root.hasAttribute("zia-nudged") === out) {
       return;
     }
     root.toggleAttribute("zia-nudged", out);
-    glide(...tuckedPos(spot, out ? NUDGE : 0), 160);
+    glide(...tuckedPos(pip.spot, out ? NUDGE : 0), NUDGE_MS);
   };
   // Optionally (zia.pip.tuck-peek) pointing at the strip shows the whole video, clear,
   // where it would be out, and it tucks again once the pointer leaves the window (from
   // PiP Tuck Away, by Apostol Apostolov, MIT)
   const peek = (out) => {
-    if (state !== "tucked" || root.hasAttribute("zia-peeking") === out) {
+    if (pip.state !== "tucked" || root.hasAttribute("zia-peeking") === out) {
       return;
     }
     root.removeAttribute("zia-nudged");
     root.toggleAttribute("zia-peeking", out);
-    glide(...(out ? peekPos() : tuckedPos(spot)), 200);
+    glide(...(out ? peekPos() : tuckedPos(pip.spot)), PEEK_MS);
   };
   // (flush with the side it's tucked into, not out by the margin: the pointer at the very
   // edge of the screen would be off the window, and it would tuck and peek over and over)
   const peekPos = () => {
     const b = screenBox();
     let [x, y] = outPos();
-    if (spot.endsWith("left")) {
+    if (pip.spot.endsWith("left")) {
       x = b.left;
     }
-    if (spot.endsWith("right")) {
+    if (pip.spot.endsWith("right")) {
       x = b.right - W();
     }
-    if (spot.startsWith("bottom")) {
+    if (pip.spot.startsWith("bottom")) {
       y = b.bottom - H();
     }
     return [x, y];
@@ -600,14 +626,14 @@
   // The strip stays over the window's edge and fades as the window slides
   // in, so no slice of video flashes at the side of the screen first. Once
   // out, the window is free and stays where it is.
-  const slideOut = (duration = 280) => {
+  const slideOut = (duration = GLIDE_MS) => {
     root.removeAttribute("zia-nudged");
     root.setAttribute("zia-emerging", "");
     glide(...outPos(), duration, release);
   };
   const release = () => {
-    state = "free";
-    spot = null;
+    pip.state = "free";
+    pip.spot = null;
     root.removeAttribute("zia-tucked");
     root.removeAttribute("zia-nudged");
     root.removeAttribute("zia-peeking");
@@ -622,14 +648,15 @@
   const pickerTitle = make("div", "zia-pip-picker-title", picker);
   pickerTitle.textContent = "Tuck into…";
   const pickerMap = make("div", "zia-pip-picker-map", picker);
-  const spotButtons = {};
-  for (const name of SPOTS) {
-    const button = make("button", "zia-pip-spot", pickerMap);
-    button.dataset.spot = name;
-    button.style.setProperty("--zia-spot-turn", `${TURN[name] + 180}deg`);
-    button.title = name.replace("-", " ");
-    spotButtons[name] = button;
-  }
+  const spotButtons = Object.fromEntries(
+    SPOTS.map((name) => {
+      const button = make("button", "zia-pip-spot", pickerMap);
+      button.dataset.spot = name;
+      button.style.setProperty("--zia-spot-turn", `${TURN[name] + 180}deg`);
+      button.title = name.replace("-", " ");
+      return [name, button];
+    })
+  );
   const pickerRow = make("label", "zia-pip-picker-row", picker);
   const makeDefault = document.createElementNS(HTML, "input");
   makeDefault.type = "checkbox";
@@ -666,7 +693,7 @@
         console.debug("[Zia] picture-in-picture: default spot", err);
       }
     }
-    if (state === "free") {
+    if (pip.state === "free") {
       tuck(button.dataset.spot);
     }
     closePicker();
@@ -693,7 +720,7 @@
 
   tuckButton.addEventListener("click", (event) => {
     event.stopPropagation();
-    if (state === "free") {
+    if (pip.state === "free") {
       tuck(defaultSpot());
     }
   });
@@ -704,7 +731,7 @@
       return;
     }
     event.preventDefault();
-    if (state === "free") {
+    if (pip.state === "free") {
       tuck(defaultSpot());
     } else {
       slideOut();
@@ -714,11 +741,12 @@
 
   // Dragging the tucked strip
   const PULL_OUT = 4;
-  let dragFrom = null;
-  let dragMode = null; // null until the pointer has moved: "along" or "out"
-  let snapping = false;
-  let pointer = null; // the latest pointer position during a drag
-  let settleUntil = 0; // just after a drag, the window may still be arriving
+  const stripDrag = {
+    from: null,
+    mode: null, // null until the pointer has moved: "along" or "out"
+    snapping: false,
+    pointer: null, // the latest pointer position during a drag
+  };
   const inward = (name) => {
     const x = name.endsWith("left") ? 1 : name.endsWith("right") ? -1 : 0;
     const y = name.startsWith("top") ? 1 : name.startsWith("bottom") ? -1 : 0;
@@ -726,15 +754,15 @@
     return [x / length, y / length];
   };
   const restartDrag = (event) => {
-    dragFrom = { x: event.screenX, y: event.screenY, windowX: window.screenX, windowY: window.screenY };
+    stripDrag.from = { x: event.screenX, y: event.screenY, windowX: window.screenX, windowY: window.screenY };
   };
   // Into a corner, with a little spring, like a magnet
   const snapTo = (name, event) => {
     setSpot(name);
-    snapping = true;
-    glide(...tuckedPos(name), 200, () => {
-      snapping = false;
-      restartDrag(pointer || event);
+    stripDrag.snapping = true;
+    glide(...tuckedPos(name), SNAP_MS, () => {
+      stripDrag.snapping = false;
+      restartDrag(stripDrag.pointer || event);
     }, true);
   };
   // Out of a corner along one of its edges: that side again, a little way
@@ -748,55 +776,55 @@
       at = [fromCorner.endsWith("left") ? b.left + MAGNET + 10 : b.right - W() - MAGNET - 10, 0];
     }
     setSpot(name);
-    snapping = true;
-    glide(...tuckedPos(name, 0, at), 180, () => {
-      snapping = false;
-      restartDrag(pointer || event);
+    stripDrag.snapping = true;
+    glide(...tuckedPos(name, 0, at), UNSNAP_MS, () => {
+      stripDrag.snapping = false;
+      restartDrag(stripDrag.pointer || event);
     }, true);
   };
   const moveAlong = (event) => {
     const b = screenBox();
-    const dx = event.screenX - dragFrom.x;
-    const dy = event.screenY - dragFrom.y;
-    if (spot.includes("-")) {
-      const [v, h] = spot.split("-");
+    const dx = event.screenX - stripDrag.from.x;
+    const dy = event.screenY - stripDrag.from.y;
+    if (pip.spot.includes("-")) {
+      const [v, h] = pip.spot.split("-");
       const alongSide = v === "top" ? dy : -dy; // down the left or right side
       const alongTop = h === "left" ? dx : -dx; // along the top or bottom
       if (alongSide > UNSNAP && alongSide >= alongTop && spotOpen(h)) {
-        unsnapTo(h, spot, event);
+        unsnapTo(h, pip.spot, event);
       } else if (alongTop > UNSNAP && spotOpen(v)) {
-        unsnapTo(v, spot, event);
+        unsnapTo(v, pip.spot, event);
       }
       return;
     }
-    const vertical = spot === "left" || spot === "right";
-    let [x, y] = tuckedPos(spot);
+    const vertical = pip.spot === "left" || pip.spot === "right";
+    let [x, y] = tuckedPos(pip.spot);
     if (vertical) {
-      y = dragFrom.windowY + dy;
-      if (y < b.top + MAGNET - 8 && spotOpen(`top-${spot}`)) {
-        snapTo(`top-${spot}`, event);
+      y = stripDrag.from.windowY + dy;
+      if (y < b.top + MAGNET - 8 && spotOpen(`top-${pip.spot}`)) {
+        snapTo(`top-${pip.spot}`, event);
         return;
       }
-      if (y + H() > b.bottom - MAGNET + 8 && spotOpen(`bottom-${spot}`)) {
-        snapTo(`bottom-${spot}`, event);
+      if (y + H() > b.bottom - MAGNET + 8 && spotOpen(`bottom-${pip.spot}`)) {
+        snapTo(`bottom-${pip.spot}`, event);
         return;
       }
       y = clamp(y, b.top, b.bottom - H());
     } else {
-      x = dragFrom.windowX + dx;
-      if (x < b.left + MAGNET - 8 && spotOpen(`${spot}-left`)) {
-        snapTo(`${spot}-left`, event);
+      x = stripDrag.from.windowX + dx;
+      if (x < b.left + MAGNET - 8 && spotOpen(`${pip.spot}-left`)) {
+        snapTo(`${pip.spot}-left`, event);
         return;
       }
-      if (x + W() > b.right - MAGNET + 8 && spotOpen(`${spot}-right`)) {
-        snapTo(`${spot}-right`, event);
+      if (x + W() > b.right - MAGNET + 8 && spotOpen(`${pip.spot}-right`)) {
+        snapTo(`${pip.spot}-right`, event);
         return;
       }
       x = clamp(x, b.left, b.right - W());
     }
     window.moveTo(x, y);
-    lastX = x;
-    lastY = y;
+    pip.lastX = x;
+    pip.lastY = y;
   };
   // Pulling out follows the pointer, never back past the tucked position.
   // Once it's fully on the screen and the pointer keeps going, it's out:
@@ -804,24 +832,24 @@
   const FREE_AFTER = 12;
   const moveOut = (event) => {
     const b = screenBox();
-    const dx = event.screenX - dragFrom.x;
-    const dy = event.screenY - dragFrom.y;
-    const [tx, ty] = tuckedPos(spot);
+    const dx = event.screenX - stripDrag.from.x;
+    const dy = event.screenY - stripDrag.from.y;
+    const [tx, ty] = tuckedPos(pip.spot);
     const [ox, oy] = outPos();
-    const acrossX = spot.endsWith("left") || spot.endsWith("right");
-    const acrossY = spot.startsWith("top") || spot.startsWith("bottom");
+    const acrossX = pip.spot.endsWith("left") || pip.spot.endsWith("right");
+    const acrossY = pip.spot.startsWith("top") || pip.spot.startsWith("bottom");
     const past = (raw, tucked, out) => (out - tucked) * (raw - out) > 0 && Math.abs(raw - out) > FREE_AFTER;
-    if ((acrossX && past(dragFrom.windowX + dx, tx, ox)) || (acrossY && past(dragFrom.windowY + dy, ty, oy))) {
+    if ((acrossX && past(stripDrag.from.windowX + dx, tx, ox)) || (acrossY && past(stripDrag.from.windowY + dy, ty, oy))) {
       veil(0);
       release();
-      dragMode = "free";
+      stripDrag.mode = "free";
       root.setAttribute("zia-dragging", "free");
-      dragFrom = { x: event.screenX, y: event.screenY, windowX: window.screenX, windowY: window.screenY };
+      stripDrag.from = { x: event.screenX, y: event.screenY, windowX: window.screenX, windowY: window.screenY };
       moveFree(event);
       return;
     }
-    const x = acrossX ? clamp(dragFrom.windowX + dx, Math.min(tx, ox), Math.max(tx, ox)) : clamp(dragFrom.windowX + dx, b.left, b.right - W());
-    const y = acrossY ? clamp(dragFrom.windowY + dy, Math.min(ty, oy), Math.max(ty, oy)) : clamp(dragFrom.windowY + dy, b.top, b.bottom - H());
+    const x = acrossX ? clamp(stripDrag.from.windowX + dx, Math.min(tx, ox), Math.max(tx, ox)) : clamp(stripDrag.from.windowX + dx, b.left, b.right - W());
+    const y = acrossY ? clamp(stripDrag.from.windowY + dy, Math.min(ty, oy), Math.max(ty, oy)) : clamp(stripDrag.from.windowY + dy, b.top, b.bottom - H());
     const parts = [];
     if (acrossX) {
       parts.push((x - tx) / (ox - tx || 1));
@@ -831,27 +859,27 @@
     }
     veil(1 - Math.max(...parts, 0));
     window.moveTo(Math.round(x), Math.round(y));
-    lastX = Math.round(x);
-    lastY = Math.round(y);
+    pip.lastX = Math.round(x);
+    pip.lastY = Math.round(y);
   };
 
   // Out and still held: the window follows the pointer anywhere, as if it
   // were being dragged by its video, and can be tucked away again the same
   // way (past a side or flicked at one when let go)
   const moveFree = (event) => {
-    const x = Math.round(dragFrom.windowX + event.screenX - dragFrom.x);
-    const y = Math.round(dragFrom.windowY + event.screenY - dragFrom.y);
+    const x = Math.round(stripDrag.from.windowX + event.screenX - stripDrag.from.x);
+    const y = Math.round(stripDrag.from.windowY + event.screenY - stripDrag.from.y);
     window.moveTo(x, y);
-    lastX = x;
-    lastY = y;
+    pip.lastX = x;
+    pip.lastY = y;
     const now = Date.now();
-    if (now - movedAt > 300) {
-      trail = [];
+    if (now - pip.movedAt > TRAIL_BREAK_MS) {
+      pip.trail = [];
     }
-    movedAt = now;
-    trail.push([now, x, y]);
-    if (trail.length > 20) {
-      trail.shift();
+    pip.movedAt = now;
+    pip.trail.push([now, x, y]);
+    if (pip.trail.length > 20) {
+      pip.trail.shift();
     }
     const past = pastSide();
     root.toggleAttribute("zia-leaving", past > 0);
@@ -860,7 +888,7 @@
 
   sliver.addEventListener("mouseenter", () => (pref("zia.pip.tuck-peek", false) ? peek(true) : nudge(true)));
   sliver.addEventListener("mouseleave", () => {
-    if (!dragFrom && !root.hasAttribute("zia-peeking")) {
+    if (!stripDrag.from && !root.hasAttribute("zia-peeking")) {
       nudge(false);
     }
   });
@@ -872,56 +900,56 @@
     }
   });
   sliver.addEventListener("pointerdown", (event) => {
-    if (state !== "tucked" || event.button !== 0) {
+    if (pip.state !== "tucked" || event.button !== 0) {
       return;
     }
-    glideId++;
-    animating = false;
-    snapping = false;
+    pip.glideId++;
+    pip.animating = false;
+    stripDrag.snapping = false;
     restartDrag(event);
-    dragMode = null;
+    stripDrag.mode = null;
     sliver.setPointerCapture(event.pointerId);
   });
   sliver.addEventListener("pointermove", (event) => {
-    if (!dragFrom) {
+    if (!stripDrag.from) {
       return;
     }
-    pointer = { screenX: event.screenX, screenY: event.screenY };
-    if (snapping) {
+    stripDrag.pointer = { screenX: event.screenX, screenY: event.screenY };
+    if (stripDrag.snapping) {
       return;
     }
-    if (!dragMode) {
-      const dx = event.screenX - dragFrom.x;
-      const dy = event.screenY - dragFrom.y;
+    if (!stripDrag.mode) {
+      const dx = event.screenX - stripDrag.from.x;
+      const dy = event.screenY - stripDrag.from.y;
       const length = Math.hypot(dx, dy);
       if (length < PULL_OUT) {
         return;
       }
-      const [ix, iy] = inward(spot);
-      dragMode = (dx * ix + dy * iy) / length > 0.75 ? "out" : "along";
-      root.setAttribute("zia-dragging", dragMode);
+      const [ix, iy] = inward(pip.spot);
+      stripDrag.mode = (dx * ix + dy * iy) / length > 0.75 ? "out" : "along";
+      root.setAttribute("zia-dragging", stripDrag.mode);
       root.removeAttribute("zia-nudged");
       // Start from where the window is now, nudge and all
       restartDrag(event);
       return;
     }
-    if (dragMode === "free") {
+    if (stripDrag.mode === "free") {
       moveFree(event);
-    } else if (dragMode === "out") {
+    } else if (stripDrag.mode === "out") {
       moveOut(event);
     } else {
       moveAlong(event);
     }
   });
   const endDrag = (event) => {
-    if (!dragFrom) {
+    if (!stripDrag.from) {
       return;
     }
-    const mode = dragMode;
-    dragFrom = null;
-    pointer = null;
-    settleUntil = Date.now() + 300;
-    dragMode = null;
+    const mode = stripDrag.mode;
+    stripDrag.from = null;
+    stripDrag.pointer = null;
+    pip.settleUntil = Date.now() + DRAG_SETTLE_MS;
+    stripDrag.mode = null;
     root.removeAttribute("zia-dragging");
     if (sliver.hasPointerCapture?.(event.pointerId)) {
       sliver.releasePointerCapture(event.pointerId);
@@ -930,22 +958,22 @@
       // Let go: tucked if it was taken past a side or flicked at one,
       // otherwise it stays where it was dropped
       const name = thrownTo();
-      trail = [];
+      pip.trail = [];
       if (name) {
         veil(1);
         tuck(name);
       } else {
         veil(0);
       }
-      setTimeout(() => root.removeAttribute("zia-leaving"), 120);
+      setTimeout(() => root.removeAttribute("zia-leaving"), LEAVING_CLEAR_MS);
     } else if (mode === "out") {
       // Pulled out: it stays out, sliding the rest of the way onto the screen
-      slideOut(200);
+      slideOut(PULLED_OUT_MS);
     } else if (mode === "along") {
-      if (!snapping && !sliver.matches(":hover")) {
+      if (!stripDrag.snapping && !sliver.matches(":hover")) {
         nudge(false);
       }
-    } else if (event.type === "pointerup" && state === "tucked") {
+    } else if (event.type === "pointerup" && pip.state === "tucked") {
       // A click, not a drag
       slideOut();
     }
@@ -958,39 +986,41 @@
   // the screen, so Firefox took it for lost and put it back on screen at
   // its default size, and that move counted as dragging it out. Tucked, it
   // keeps its height, takes the new video's shape and stays tucked.
+  // (replaced here, not through zia.uc.js's patch helper: this script runs in the player's window)
   const fitToVideo = window.resizeToVideo;
   if (typeof fitToVideo === "function") {
     window.resizeToVideo = function (rect) {
-      if (state !== "tucked" || !spot || document.fullscreenElement || !(rect?.width > 0 && rect?.height > 0)) {
+      if (pip.state !== "tucked" || !pip.spot || document.fullscreenElement || !(rect?.width > 0 && rect?.height > 0)) {
         return fitToVideo.apply(this, arguments);
       }
       const height = H();
       const width = Math.max(136, Math.round((height * rect.width) / rect.height));
-      glideId++;
-      animating = false;
-      settleUntil = Date.now() + 800;
+      pip.glideId++;
+      pip.animating = false;
+      pip.settleUntil = Date.now() + REFIT_SETTLE_MS;
       window.resizeTo(width, height);
       const retuck = () => {
-        if (state !== "tucked" || !spot) {
+        if (pip.state !== "tucked" || !pip.spot) {
           return;
         }
-        const [x, y] = tuckedPos(spot, root.hasAttribute("zia-nudged") ? NUDGE : 0);
+        const [x, y] = tuckedPos(pip.spot, root.hasAttribute("zia-nudged") ? NUDGE : 0);
         window.moveTo(x, y);
-        lastX = x;
-        lastY = y;
+        pip.lastX = x;
+        pip.lastY = y;
       };
       // (again once the new size has taken: a right or bottom tuck goes by it)
       retuck();
       requestAnimationFrame(retuck);
-      setTimeout(retuck, 120);
+      setTimeout(retuck, RETUCK_MS);
       return undefined;
     };
   }
 
+  // (for as long as the player's open)
   setInterval(() => {
     const enabled = pref("zia.pip.tuck", true);
     if (!enabled || document.fullscreenElement) {
-      if (state !== "free") {
+      if (pip.state !== "free") {
         release();
       }
       return;
@@ -998,30 +1028,30 @@
     // Zia is moving the window itself: gliding it, or following a drag of
     // the tucked strip. The window's position can lag a moment behind, so
     // none of that counts as the window being dragged.
-    if (animating || dragFrom || snapping) {
+    if (pip.animating || stripDrag.from || stripDrag.snapping) {
       return;
     }
     const x = window.screenX;
     const y = window.screenY;
     const now = Date.now();
-    if (state === "tucked" && (now < settleUntil || (Math.abs(x - lastX) <= 1 && Math.abs(y - lastY) <= 1))) {
-      lastX = x;
-      lastY = y;
+    if (pip.state === "tucked" && (now < pip.settleUntil || (Math.abs(x - pip.lastX) <= 1 && Math.abs(y - pip.lastY) <= 1))) {
+      pip.lastX = x;
+      pip.lastY = y;
       return;
     }
     // Any other move is the window being dragged.
-    if (x !== lastX || y !== lastY) {
-      if (now - movedAt > 300) {
-        trail = [];
+    if (x !== pip.lastX || y !== pip.lastY) {
+      if (now - pip.movedAt > TRAIL_BREAK_MS) {
+        pip.trail = [];
       }
-      lastX = x;
-      lastY = y;
-      movedAt = now;
-      trail.push([now, x, y]);
-      if (trail.length > 20) {
-        trail.shift();
+      pip.lastX = x;
+      pip.lastY = y;
+      pip.movedAt = now;
+      pip.trail.push([now, x, y]);
+      if (pip.trail.length > 20) {
+        pip.trail.shift();
       }
-      if (state !== "free") {
+      if (pip.state !== "free") {
         release();
       }
       const past = pastSide();
@@ -1032,10 +1062,10 @@
     }
     // Just let go after a drag (never where Firefox first puts it): tuck if
     // it was thrown at a side or corner.
-    const sinceMove = now - movedAt;
-    if (state === "free" && trail.length && sinceMove > 200) {
+    const sinceMove = now - pip.movedAt;
+    if (pip.state === "free" && pip.trail.length && sinceMove > LET_GO_MS) {
       const name = thrownTo();
-      trail = [];
+      pip.trail = [];
       if (name) {
         veil(1);
         tuck(name);
@@ -1043,7 +1073,7 @@
         veil(0);
       }
       // Tucked, the strip's own frosting takes over; otherwise it clears
-      setTimeout(() => root.removeAttribute("zia-leaving"), 120);
+      setTimeout(() => root.removeAttribute("zia-leaving"), LEAVING_CLEAR_MS);
     }
-  }, 40);
+  }, WATCH_MS);
 })();
