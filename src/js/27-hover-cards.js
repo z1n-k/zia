@@ -585,7 +585,7 @@
     hoverCards.hideTimer = setTimeout(attempt, TAB_CARD_GRACE);
   }
 
-  function onHoverCard(node) {
+  function isOnHoverCard(node) {
     return !!node && (hoverCards.card?.contains(node) || hoverCards.folderCard?.contains(node));
   }
 
@@ -701,7 +701,7 @@
       return;
     }
     const to = event.relatedTarget;
-    if (to && (tab.contains(to) || onHoverCard(to))) {
+    if (to && (tab.contains(to) || isOnHoverCard(to))) {
       return;
     }
     clearTimeout(hoverCards.showTimer);

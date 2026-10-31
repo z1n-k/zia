@@ -370,9 +370,9 @@
     // (found by its short name and detail, and by its full label too)
     // (and the new ones by "new")
     const words = `${name} ${detail} ${entry.label} ${entry.description || ""} ${section.el.firstChild.textContent}${isNew ? " new" : ""}`.toLowerCase();
-    const one = { entry, row, control, words };
-    page.rows.push(one);
-    section.rows.push(one);
+    const setting = { entry, row, control, words };
+    page.rows.push(setting);
+    section.rows.push(setting);
   }
 
   // the switch, list or field a row's setting takes (none for a kind it can't show)
@@ -409,16 +409,16 @@
   function showSettingRows(page) {
     const query = page.search.value.trim().toLowerCase();
     let any = false;
-    for (const one of page.rows) {
-      const allowed = !one.entry.conditions || conditionsHold(page, one.entry.conditions, one.entry.operator || "OR");
+    for (const setting of page.rows) {
+      const allowed = !setting.entry.conditions || conditionsHold(page, setting.entry.conditions, setting.entry.operator || "OR");
       // (searching, a matching row shows even if its condition hides it, so it can be found)
-      one.row.hidden = query ? !query.split(/\s+/).every((word) => one.words.includes(word)) : !allowed;
-      one.row.classList.toggle("off", !!query && !allowed);
+      setting.row.hidden = query ? !query.split(/\s+/).every((word) => setting.words.includes(word)) : !allowed;
+      setting.row.classList.toggle("off", !!query && !allowed);
     }
-    for (const part of page.sections) {
-      const visible = part.rows.some((one) => !one.row.hidden);
-      part.el.hidden = !visible;
-      part.link.hidden = !visible;
+    for (const section of page.sections) {
+      const visible = section.rows.some((setting) => !setting.row.hidden);
+      section.el.hidden = !visible;
+      section.link.hidden = !visible;
       any ||= visible;
     }
     page.listEl.classList.toggle("empty", !any);
@@ -426,19 +426,19 @@
 
   function fillSettings(page) {
     page.values = settingValues(page.list);
-    for (const one of page.rows) {
-      const value = page.values[one.entry.property];
-      if (one.entry.type === "checkbox") {
-        one.control.setAttribute("aria-checked", String(!!value));
+    for (const setting of page.rows) {
+      const value = page.values[setting.entry.property];
+      if (setting.entry.type === "checkbox") {
+        setting.control.setAttribute("aria-checked", String(!!value));
         continue;
       }
       // (a saved choice that isn't in the list, a model fetched in Sine's page say, is added
       // to it: the dropdown showed empty)
-      if (one.entry.type === "dropdown" && value && ![...one.control.options].some((option) => option.value === value)) {
-        makeSettingEl("option", null, one.control, value).value = value;
+      if (setting.entry.type === "dropdown" && value && ![...setting.control.options].some((option) => option.value === value)) {
+        makeSettingEl("option", null, setting.control, value).value = value;
       }
-      if (document.activeElement !== one.control) {
-        one.control.value = value ?? "";
+      if (document.activeElement !== setting.control) {
+        setting.control.value = value ?? "";
       }
     }
     showSettingRows(page);
@@ -450,22 +450,22 @@
   // the list in preferences.json is only a fallback
   function fillModelLists(page) {
     const lists = window.ziaTidyModels;
-    for (const one of page.rows) {
-      if (one.entry.type !== "dropdown" || one.row.hidden || !lists?.handles(one.entry.property)) {
+    for (const setting of page.rows) {
+      if (setting.entry.type !== "dropdown" || setting.row.hidden || !lists?.handles(setting.entry.property)) {
         continue;
       }
       lists
-        .modelsFor(one.entry.property)
+        .modelsFor(setting.entry.property)
         .then((models) => {
-          if (!models?.length || !one.control.isConnected || document.activeElement === one.control) {
+          if (!models?.length || !setting.control.isConnected || document.activeElement === setting.control) {
             return;
           }
-          const value = page.values[one.entry.property];
-          setSettingOptions(one.control, models);
+          const value = page.values[setting.entry.property];
+          setSettingOptions(setting.control, models);
           if (value && !models.some((model) => model.value === value)) {
-            makeSettingEl("option", null, one.control, value).value = value;
+            makeSettingEl("option", null, setting.control, value).value = value;
           }
-          one.control.value = value ?? "";
+          setting.control.value = value ?? "";
         })
         .catch((err) => noteError("settings page: models", err));
     }
@@ -477,16 +477,16 @@
       (seen) => {
         for (const item of seen) {
           if (item.isIntersecting) {
-            for (const part of page.sections) {
-              part.link.classList.toggle("cur", part.el === item.target);
+            for (const section of page.sections) {
+              section.link.classList.toggle("cur", section.el === item.target);
             }
           }
         }
       },
       { root: page.listEl, rootMargin: "0px 0px -70% 0px" }
     );
-    for (const part of page.sections) {
-      page.lit.observe(part.el);
+    for (const section of page.sections) {
+      page.lit.observe(section.el);
     }
 
     // a "New" row once on screen counts as seen, from the next opening

@@ -165,6 +165,7 @@
     if (event.target !== window) {
       return;
     }
+    // (a step later, once focus has settled: not kept, as it only reads where focus went)
     setTimeout(() => {
       if (Services.focus.activeWindow !== window) {
         hideTabNumbers();
