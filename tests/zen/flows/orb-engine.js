@@ -113,7 +113,7 @@ done({
   geometry,
   seen,
   checks: {
-    "every state drew something": orbs.every((orb) => hash(orb.canvas) !== "0"),
+    "every state drew something": orbs.every((orb) => orb.canvas.getContext("2d").getImageData(0, 0, orb.canvas.width, orb.canvas.height).data.some((value) => value !== 0)),
     "the loop stops when every orb's gone": frames.length === 0,
   },
   ziaErrors: ziaErrors(),

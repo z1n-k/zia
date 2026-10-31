@@ -137,10 +137,13 @@
     fill.style.strokeOpacity = pct > 0.2 ? "1" : "0";
   }
 
+  // (a "length" this long, in seconds, is a live stream's stand-in, not a real one)
+  const ENDLESS_SECONDS = 900_000;
+
   function showTimeLeft(card) {
     const durationEl = card.durationEl;
     const bar = card.progressBar;
-    if (!bar || !card.duration || card.duration >= 900_000) {
+    if (!bar || !card.duration || card.duration >= ENDLESS_SECONDS) {
       setRing(card, 0);
       return;
     }
