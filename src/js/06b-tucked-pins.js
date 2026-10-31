@@ -2,6 +2,7 @@
   // their line kept in place, and the names of folders holding the open tab kept meanwhile.
   // Used elsewhere: tuckAwayUnopenedPins, keepSeparatorWhenPinsTuck,
   // keepFolderNamesInCollapsedSpaces.
+  // From 06: nothing (it works with Zen's own folder calls).
 
   // A collapsed space keeps the names of folders its open tab is in
   // (06-folders-and-sidebar.css), from collapsing until it has finished opening.

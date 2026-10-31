@@ -29,15 +29,18 @@
       topButtons.prepend(workspaceSlot);
     }
 
+    // (not kept: each placement reads the space as it is then, so an extra one does no harm)
     for (const type of ["ZenWorkspacesUIUpdate", "ZenWorkspaceDataChanged", "AfterWorkspacesSessionRestore"]) {
       window.addEventListener(type, () => setTimeout(placeWorkspaceIndicator, 0));
     }
 
+    // (likewise not kept: cancelling one would skip a switch's own placement)
     const onSpaceSwitch = () => setTimeout(placeWorkspaceIndicator, 0);
     watchPrefs(SPACE_NAME_IN_LIST_PREF, onSpaceSwitch);
     watchPrefs("zen.workspaces.active", onSpaceSwitch);
     gBrowser.tabContainer.addEventListener("TabSelect", onSpaceSwitch);
     placeWorkspaceIndicator();
+    // (not kept: start-up's later checks run once each, whatever happens meanwhile)
     for (const ms of INDICATOR_RECHECK_MS) {
       setTimeout(placeWorkspaceIndicator, ms);
     }

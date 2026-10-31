@@ -1,7 +1,7 @@
   // Tabs opening and closing, and Zen's folder slides turned into Zia's spring: every animation
   // the window starts goes through addFolderBounce's Element.prototype.animate.
   // Used elsewhere: closeSplitTabsInPlace, watchTabAnimations, addFolderBounce, FOLDER_SELECTOR,
-  // isFolder, cubicBezier, animateFolderHeight.
+  // isFolder, cubicBezier, animateFolderHeight (only by 06a, its sibling).
 
   const TAB_OPENING_MS = 350;
   const ESSENTIAL_ENTER_MS = 450;
@@ -40,6 +40,7 @@
         return;
       }
       tab.setAttribute("zia-opening", "true");
+      // (not kept: it only clears this tab's own mark, closed or not)
       setTimeout(() => tab.removeAttribute("zia-opening"), TAB_OPENING_MS);
     });
 
@@ -59,6 +60,7 @@
             continue;
           }
           node.setAttribute("zia-essential-enter", "true");
+          // (not kept: it only clears this tile's own mark)
           setTimeout(() => node.removeAttribute("zia-essential-enter"), ESSENTIAL_ENTER_MS);
         }
       }

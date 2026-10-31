@@ -1,6 +1,7 @@
   // Emoji as folder icons: Zen's picker offers folders only its own icons, so Zia opens it with
   // emoji too, drawn as an icon (gZenEmojiPicker.open patched).
   // Used elsewhere: allowEmojiFolderIcons.
+  // From 06: nothing.
 
   function allowEmojiFolderIcons() {
     const picker = window.gZenEmojiPicker;

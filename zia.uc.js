@@ -1970,15 +1970,18 @@
       topButtons.prepend(workspaceSlot);
     }
 
+    // (not kept: each placement reads the space as it is then, so an extra one does no harm)
     for (const type of ["ZenWorkspacesUIUpdate", "ZenWorkspaceDataChanged", "AfterWorkspacesSessionRestore"]) {
       window.addEventListener(type, () => setTimeout(placeWorkspaceIndicator, 0));
     }
 
+    // (likewise not kept: cancelling one would skip a switch's own placement)
     const onSpaceSwitch = () => setTimeout(placeWorkspaceIndicator, 0);
     watchPrefs(SPACE_NAME_IN_LIST_PREF, onSpaceSwitch);
     watchPrefs("zen.workspaces.active", onSpaceSwitch);
     gBrowser.tabContainer.addEventListener("TabSelect", onSpaceSwitch);
     placeWorkspaceIndicator();
+    // (not kept: start-up's later checks run once each, whatever happens meanwhile)
     for (const ms of INDICATOR_RECHECK_MS) {
       setTimeout(placeWorkspaceIndicator, ms);
     }
@@ -2484,7 +2487,7 @@
   // Tabs opening and closing, and Zen's folder slides turned into Zia's spring: every animation
   // the window starts goes through addFolderBounce's Element.prototype.animate.
   // Used elsewhere: closeSplitTabsInPlace, watchTabAnimations, addFolderBounce, FOLDER_SELECTOR,
-  // isFolder, cubicBezier, animateFolderHeight.
+  // isFolder, cubicBezier, animateFolderHeight (only by 06a, its sibling).
 
   const TAB_OPENING_MS = 350;
   const ESSENTIAL_ENTER_MS = 450;
@@ -2523,6 +2526,7 @@
         return;
       }
       tab.setAttribute("zia-opening", "true");
+      // (not kept: it only clears this tab's own mark, closed or not)
       setTimeout(() => tab.removeAttribute("zia-opening"), TAB_OPENING_MS);
     });
 
@@ -2542,6 +2546,7 @@
             continue;
           }
           node.setAttribute("zia-essential-enter", "true");
+          // (not kept: it only clears this tile's own mark)
           setTimeout(() => node.removeAttribute("zia-essential-enter"), ESSENTIAL_ENTER_MS);
         }
       }
@@ -3163,6 +3168,7 @@
   // A closed folder showing its open tab: the other tabs kept out of sight as it lets go of
   // that tab, folders inside it opened where they are, and open inner folders revealed.
   // Used elsewhere: keepTabsHiddenAfterActiveLeaves, openKeptFolderNames, revealOpenSubfolders.
+  // From 06: FOLDER_SELECTOR, isFolder, animateFolderHeight.
 
   const OPEN_IN_CLOSED = "zia-open-in-closed";
   // (while one shuts: its tabs still let show, for the shrink)
@@ -3457,6 +3463,7 @@
   // their line kept in place, and the names of folders holding the open tab kept meanwhile.
   // Used elsewhere: tuckAwayUnopenedPins, keepSeparatorWhenPinsTuck,
   // keepFolderNamesInCollapsedSpaces.
+  // From 06: nothing (it works with Zen's own folder calls).
 
   // A collapsed space keeps the names of folders its open tab is in
   // (06-folders-and-sidebar.css), from collapsing until it has finished opening.
@@ -3616,6 +3623,7 @@
   // Emoji as folder icons: Zen's picker offers folders only its own icons, so Zia opens it with
   // emoji too, drawn as an icon (gZenEmojiPicker.open patched).
   // Used elsewhere: allowEmojiFolderIcons.
+  // From 06: nothing.
 
   function allowEmojiFolderIcons() {
     const picker = window.gZenEmojiPicker;
@@ -3635,6 +3643,7 @@
 
   // The address shown without its www. (Zen's own trimmed address, gURLBar._zenTrimURL patched).
   // Used elsewhere: hideWwwInUrlbar.
+  // From 06: nothing (plainAddress is 03's).
 
   function hideWwwInUrlbar() {
     const original = gURLBar?._zenTrimURL;
@@ -3650,6 +3659,7 @@
     try {
       gURLBar.setURI();
     } catch (err) {
+      // (its old file's name kept, so the log reads the same)
       noteError("tab animations and folder bounce: hideWwwInUrlbar", err);
     }
   }
@@ -3848,6 +3858,7 @@
 
   function scheduleEdgeAlignAfterSwitch() {
     scheduleEdgeAlign();
+    // (not kept: each only asks for a measure, which scheduleEdgeAlign folds into one frame)
     for (const ms of EDGE_AFTER_SWITCH_MS) {
       setTimeout(scheduleEdgeAlign, ms);
     }
@@ -3887,6 +3898,7 @@
     watchPrefs("zen.workspaces.active", onSpaceSwitch);
     window.addEventListener("ZenWorkspacesUIUpdate", onSpaceSwitch);
     scheduleEdgeAlign();
+    // (not kept, as after a switch: each only asks for a measure)
     for (const ms of EDGE_AFTER_START_MS) {
       setTimeout(scheduleEdgeAlign, ms);
     }
@@ -23412,6 +23424,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
       if (!pending) {
         pending = requestAnimationFrame(update);
       }
+      // (not kept: each change gets its own late look, cancelled it'd miss a later layout)
       setTimeout(update, EDGE_GLOW_RECHECK_MS);
     };
     for (const type of [
@@ -23420,8 +23433,10 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     ]) {
       gBrowser.tabContainer.addEventListener(type, soon);
     }
+    // (not kept: a drag's own late look, as each change gets one)
     window.addEventListener("dragend", () => setTimeout(soon, EDGE_GLOW_AFTER_DRAG_MS), true);
 
+    // (runs as long as the window: the catch-all for changes no event reports)
     setInterval(update, EDGE_GLOW_POLL_MS);
     soon();
   }
@@ -23688,6 +23703,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     );
     gBrowser.tabContainer.addEventListener("TabSelect", () => requestAnimationFrame(rememberClosedText));
     window.addEventListener("resize", () => requestAnimationFrame(rememberClosedText));
+    // (not kept: one look once the address bar has settled after start-up)
     setTimeout(rememberClosedText, CLOSED_TEXT_FIRST_MS);
     new MutationObserver(alignOpenedUrlbarSoon).observe(urlbar, {
       attributes: true,

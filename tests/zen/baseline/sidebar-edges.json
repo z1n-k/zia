@@ -1,6 +1,8 @@
 {
  "checks": {
+  "its box ends the gap below the inner one's": true,
   "left again is as before": true,
+  "the folder ending in a folder has its bottom set": true,
   "the sidebar changes side": true,
   "the tab and folder edges are measured": true
  },

@@ -48,6 +48,8 @@ done({
     "the sidebar changes side": left.side === "left" && right.side === "right" && right.sidebarLeft > left.sidebarLeft,
     "the tab and folder edges are measured": Object.keys(left.window).length === 3 && Object.keys(right.window).length === 3,
     "left again is as before": JSON.stringify(left) === JSON.stringify(leftAgain),
+    "the folder ending in a folder has its bottom set": [left, right, leftAgain].every((seen) => seen.folders.F.set && seen.folders.F.lastIsFolder),
+    "its box ends the gap below the inner one's": [left, right, leftAgain].every((seen) => seen.folders.F.endsTheGapBelow),
   },
   ziaErrors: ziaErrors(),
 });

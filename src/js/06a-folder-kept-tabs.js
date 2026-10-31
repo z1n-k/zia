@@ -1,6 +1,7 @@
   // A closed folder showing its open tab: the other tabs kept out of sight as it lets go of
   // that tab, folders inside it opened where they are, and open inner folders revealed.
   // Used elsewhere: keepTabsHiddenAfterActiveLeaves, openKeptFolderNames, revealOpenSubfolders.
+  // From 06: FOLDER_SELECTOR, isFolder, animateFolderHeight.
 
   const OPEN_IN_CLOSED = "zia-open-in-closed";
   // (while one shuts: its tabs still let show, for the shrink)

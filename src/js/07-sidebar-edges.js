@@ -192,6 +192,7 @@
 
   function scheduleEdgeAlignAfterSwitch() {
     scheduleEdgeAlign();
+    // (not kept: each only asks for a measure, which scheduleEdgeAlign folds into one frame)
     for (const ms of EDGE_AFTER_SWITCH_MS) {
       setTimeout(scheduleEdgeAlign, ms);
     }
@@ -231,6 +232,7 @@
     watchPrefs("zen.workspaces.active", onSpaceSwitch);
     window.addEventListener("ZenWorkspacesUIUpdate", onSpaceSwitch);
     scheduleEdgeAlign();
+    // (not kept, as after a switch: each only asks for a measure)
     for (const ms of EDGE_AFTER_START_MS) {
       setTimeout(scheduleEdgeAlign, ms);
     }

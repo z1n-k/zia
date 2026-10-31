@@ -210,6 +210,7 @@
       if (!pending) {
         pending = requestAnimationFrame(update);
       }
+      // (not kept: each change gets its own late look, cancelled it'd miss a later layout)
       setTimeout(update, EDGE_GLOW_RECHECK_MS);
     };
     for (const type of [
@@ -218,8 +219,10 @@
     ]) {
       gBrowser.tabContainer.addEventListener(type, soon);
     }
+    // (not kept: a drag's own late look, as each change gets one)
     window.addEventListener("dragend", () => setTimeout(soon, EDGE_GLOW_AFTER_DRAG_MS), true);
 
+    // (runs as long as the window: the catch-all for changes no event reports)
     setInterval(update, EDGE_GLOW_POLL_MS);
     soon();
   }
@@ -486,6 +489,7 @@
     );
     gBrowser.tabContainer.addEventListener("TabSelect", () => requestAnimationFrame(rememberClosedText));
     window.addEventListener("resize", () => requestAnimationFrame(rememberClosedText));
+    // (not kept: one look once the address bar has settled after start-up)
     setTimeout(rememberClosedText, CLOSED_TEXT_FIRST_MS);
     new MutationObserver(alignOpenedUrlbarSoon).observe(urlbar, {
       attributes: true,
