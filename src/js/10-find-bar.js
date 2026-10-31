@@ -1,3 +1,7 @@
+  // The find bar: it opens empty, its match count reads "1/3", and a drop over the page (not
+  // the sidebar out over it in compact mode) is told apart for the split cards.
+  // Used elsewhere: isOverPage, watchFindBars.
+
   const pointIn = (box, event) => event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
 
   function isOverPage(event) {

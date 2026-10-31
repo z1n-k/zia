@@ -1,3 +1,6 @@
+  // The essentials' rows, and each folder's delete button put on as folders come.
+  // Used elsewhere: watchEssentialRows, watchFolderCloseButtons.
+
   // Optional: the last essential stretches across whatever's left of its row.
   // The grid can't span "to the end of the row" by itself, so Zia counts the
   // columns and sets the span.
@@ -10,6 +13,8 @@
   // columns a span wider than the grid creates; counting those grew the
   // span, which made more of them, until tiles were squeezed into slivers.
   const TWO_PER_ROW_PREF = "zia.essentials.two-per-row";
+  // (again a moment after start-up, for folders Zen puts back late)
+  const FOLDER_CLOSE_RETRY_MS = 1500;
 
   function gridColumns(grid) {
     if (Services.prefs.getBoolPref(TWO_PER_ROW_PREF, false)) {
@@ -90,7 +95,7 @@
       }
     };
     addAll();
-    setTimeout(addAll, 1500);
+    setTimeout(addAll, FOLDER_CLOSE_RETRY_MS);
     gBrowser.tabContainer.addEventListener("TabGroupCreate", (event) => addFolderCloseButton(event.target));
   }
 

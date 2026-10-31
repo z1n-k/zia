@@ -11,6 +11,7 @@
   // out. The box shows up to eight sheets; past that a sheet still goes in
   // or out each time, without the pile growing. Its lid stays open while
   // the folder is.
+  // Used elsewhere: watchFolderIcon.
   const FOLDER_ICON_MAX_SHEETS = 3;
   const FOLDER_BOX_MAX_SHEETS = 8;
   const FOLDER_ICON_DROP_MS = 650;
@@ -19,6 +20,23 @@
   const FOLDER_BOX_LID_LEAD_MS = 120;
   const FOLDER_BOX_SHEET_MS = 600;
   const FOLDER_BOX_LID_MS = FOLDER_BOX_LID_LEAD_MS + FOLDER_BOX_SHEET_MS + 120;
+  // the folder and the box trading places: one out, the other in a little after
+  const FOLDER_MORPH_OUT_MS = 200;
+  const FOLDER_MORPH_IN_LAG_MS = 140;
+  const FOLDER_MORPH_IN_MS = 420;
+  // a sheet rising out of the box
+  const FOLDER_BOX_RISE_DELAY_MS = 100;
+  const FOLDER_BOX_RISE_MS = 500;
+  // (sheets kept in the box going back to the folder: until a little after the sheet's way out)
+  const FOLDER_BOX_KEEP_MS = FOLDER_BOX_LID_LEAD_MS + FOLDER_BOX_SHEET_MS + 200;
+  // (an animation attribute comes off a little after its animation ends)
+  const FOLDER_REPLAY_SLACK_MS = 60;
+  // Counted once the folders have stopped changing: while Zen drops a tab
+  // in, the folder holds an extra child for a moment, and counting then
+  // put down two sheets before settling on one, the sheet jumping wider.
+  const FOLDER_ICON_SETTLE_MS = 150;
+  // (again a moment after start-up, for folders Zen puts back late)
+  const FOLDER_ICON_RETRY_MS = 1500;
 
   function folderIconBox(folder) {
     return folder?.querySelector?.(":scope > .tab-group-label-container .tab-group-folder-icon");
@@ -184,7 +202,7 @@
     void el.offsetWidth;
     el.style.animationDelay = `${delay}ms`;
     el.setAttribute(attr, "");
-    el.ziaReplayOff = setTimeout(() => el.removeAttribute(attr), delay + length + 60);
+    el.ziaReplayOff = setTimeout(() => el.removeAttribute(attr), delay + length + FOLDER_REPLAY_SLACK_MS);
   }
 
   function countFolderBox(folder, count, before) {
@@ -214,9 +232,10 @@
     if (up || down) {
       const wait = down ? FOLDER_BOX_LID_LEAD_MS + FOLDER_BOX_SHEET_MS : 0;
       const [out, into] = up ? [".zia-fi-fold", ".zia-fb"] : [".zia-fb", ".zia-fi-fold"];
+      // (not kept, as it never was: a quick in and out plays as it always has)
       setTimeout(() => folder.toggleAttribute("zia-fi-full", full), wait);
-      replayFolderIcon(icon.querySelector(out), "zia-morph-out", wait, 200);
-      replayFolderIcon(icon.querySelector(into), "zia-morph-in", wait + 140, 420);
+      replayFolderIcon(icon.querySelector(out), "zia-morph-out", wait, FOLDER_MORPH_OUT_MS);
+      replayFolderIcon(icon.querySelector(into), "zia-morph-in", wait + FOLDER_MORPH_IN_LAG_MS, FOLDER_MORPH_IN_MS);
     }
     if (full || down) {
       // the lid opens for the sheet (it's already open with the folder open)
@@ -229,7 +248,7 @@
       // until it's gone
       if (down && was && i < count) {
         clearTimeout(sheet.ziaKeep);
-        sheet.ziaKeep = setTimeout(() => sheet.toggleAttribute("zia-on", folder.ziaFolderItems > FOLDER_ICON_MAX_SHEETS && i < Math.min(folder.ziaFolderItems, FOLDER_BOX_MAX_SHEETS)), FOLDER_BOX_LID_LEAD_MS + FOLDER_BOX_SHEET_MS + 200);
+        sheet.ziaKeep = setTimeout(() => sheet.toggleAttribute("zia-on", folder.ziaFolderItems > FOLDER_ICON_MAX_SHEETS && i < Math.min(folder.ziaFolderItems, FOLDER_BOX_MAX_SHEETS)), FOLDER_BOX_KEEP_MS);
         return;
       }
       clearTimeout(sheet.ziaKeep);
@@ -237,7 +256,7 @@
       if (on && !was && (!up || i === shown - 1)) {
         replayFolderIcon(sheet, "zia-fall", start + FOLDER_BOX_LID_LEAD_MS, FOLDER_BOX_SHEET_MS);
       } else if (!on && was) {
-        replayFolderIcon(sheet, "zia-rise", 100, 500);
+        replayFolderIcon(sheet, "zia-rise", FOLDER_BOX_RISE_DELAY_MS, FOLDER_BOX_RISE_MS);
       }
     });
     // past eight, a sheet still passes in or out
@@ -284,11 +303,6 @@
     document.querySelectorAll("zen-folder, tab-group:not([split-view-group])").forEach(countFolderSheets);
   }
 
-  // Counted once the folders have stopped changing: while Zen drops a tab
-  // in, the folder holds an extra child for a moment, and counting then
-  // put down two sheets before settling on one, the sheet jumping wider.
-  const FOLDER_ICON_SETTLE_MS = 150;
-
   function watchFolderIcon() {
     let timer = null;
     const recount = () => {
@@ -305,12 +319,12 @@
     // (the old per-folder "icon only" choice is the default now)
     Services.prefs.clearUserPref("zia.folder-icon-only");
     restoreIconOnFolder();
-    setTimeout(restoreIconOnFolder, 1500);
+    setTimeout(restoreIconOnFolder, FOLDER_ICON_RETRY_MS);
     gBrowser.tabContainer.addEventListener("TabGroupCreate", (event) => {
       event.target?.toggleAttribute?.("zia-icon-on-folder", !!readIconOnFolder()[event.target.id]);
     });
     addIconOnFolderMenuItem();
     countAllFolderSheets();
     // folders restored at start-up
-    setTimeout(countAllFolderSheets, 1500);
+    setTimeout(countAllFolderSheets, FOLDER_ICON_RETRY_MS);
   }

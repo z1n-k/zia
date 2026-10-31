@@ -1,3 +1,9 @@
+  // The address bar's loading line: an estimate that creeps toward 90% while a page loads,
+  // overtaken by the real progress when there is some, then run out to the end and faded.
+  // Used elsewhere: startLoader, reportRealProgress, finishLoader, cancelLoader.
+  const LOADER_HIDE_MS = 150;
+  const LOADER_ESTIMATE_MS = 250;
+
   const loader = {
     shown: 0,
     target: 0,
@@ -24,7 +30,7 @@
     drawProgress();
     if (loader.finishing && loader.shown >= 0.999) {
       loader.finishing = false;
-      loader.hideTimer = setTimeout(() => setFlag("zia-loading", false), 150);
+      loader.hideTimer = setTimeout(() => setFlag("zia-loading", false), LOADER_HIDE_MS);
       return;
     }
     if (loader.active || loader.finishing) {
@@ -62,7 +68,7 @@
       if (loader.target < 0.9) {
         loader.target += (0.9 - loader.target) * 0.06;
       }
-    }, 250);
+    }, LOADER_ESTIMATE_MS);
     runLoader();
   }
 

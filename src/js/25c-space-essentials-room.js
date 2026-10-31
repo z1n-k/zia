@@ -1,7 +1,12 @@
-  // ---------- Room for the essentials above every space's tabs
+  // Room for the essentials above every space's tabs.
   // Zen pads a space's tabs clear of the essentials as you go to it, but a space made
   // this session started at 0 and its tabs slid in under them (Windows). With shared
   // essentials each space gets that room; one being made or animated is left to Zen.
+  // Used elsewhere: keepRoomForEssentials.
+  const ESSENTIALS_ROOM_SETTLE_MS = 400;
+  // (how often it looks for the essentials' box, which Zen can replace)
+  const ESSENTIALS_ROOM_WATCH_MS = 5000;
+
   function keepRoomForEssentials() {
     const separate = () => {
       try {
@@ -38,7 +43,8 @@
     new MutationObserver((records) => {
       if (records.some((record) => record.target.localName === "zen-workspace")) {
         fit();
-        setTimeout(fit, 400);
+        // (not kept: fitting again is harmless)
+        setTimeout(fit, ESSENTIALS_ROOM_SETTLE_MS);
       }
     }).observe(document.getElementById("navigator-toolbox") || root, { subtree: true, attributes: true, attributeFilter: ["active"] });
 
@@ -53,7 +59,8 @@
       }
     };
     watch();
-    setInterval(watch, 5000);
+    // (for as long as the window's open)
+    setInterval(watch, ESSENTIALS_ROOM_WATCH_MS);
     fit();
   }
 

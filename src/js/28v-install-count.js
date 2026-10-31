@@ -3,8 +3,12 @@
   // Nothing is sent, no ID and no settings; all that's kept is the day it last counted, here.
   // A daily Action (install-count.yml) writes the total down, so a day's rise is about how many
   // installs were in use that day.
+  // Used elsewhere: watchInstallCount.
   const INSTALL_COUNT_URL = "https://github.com/z1n-k/zia/releases/download/install-count/ping.txt";
   const INSTALL_COUNT_DAY = "zia.install-count.day";
+  // a minute after the window opens, and every few hours for a window left open for days
+  const INSTALL_COUNT_FIRST_MS = 60 * 1000;
+  const INSTALL_COUNT_EVERY_MS = 4 * 60 * 60 * 1000;
 
   function countInstallToday() {
     if (!Services.prefs.getBoolPref("zia.install-count", true) || window.PrivateBrowsingUtils?.isWindowPrivate(window)) {
@@ -27,8 +31,8 @@
       .catch(() => Services.prefs.setStringPref(INSTALL_COUNT_DAY, last));
   }
 
-  // a minute after the window opens, and every few hours for a window left open for days
+  // (for as long as the window's open)
   function watchInstallCount() {
-    setTimeout(countInstallToday, 60 * 1000);
-    setInterval(countInstallToday, 4 * 60 * 60 * 1000);
+    setTimeout(countInstallToday, INSTALL_COUNT_FIRST_MS);
+    setInterval(countInstallToday, INSTALL_COUNT_EVERY_MS);
   }

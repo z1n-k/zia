@@ -1,3 +1,7 @@
+  // Zia's options that switch whole features or Zen's own settings: the address bar's place,
+  // Dia's look, the real new tab, split drop cards, and the per-feature switches.
+  // Used elsewhere: watchUrlbarPosition, ZIA_OPTIONS, watchOptions, FEATURES, featureOn, ifOn.
+
   const URLBAR_POSITION_PREF = "zia.urlbar.position";
 
   function watchUrlbarPosition() {

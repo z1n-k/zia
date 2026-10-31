@@ -1,3 +1,14 @@
+  // A tab added to the essentials from its menu springs in, and Cmd/Ctrl+Z just after closing
+  // tabs brings back all of them, into the folders and splits they were in.
+  // Used elsewhere: animateEssentialsAdds, watchUndoClose, REOPEN_NAMING_PAUSE_MS.
+  const ESSENTIAL_SPRING_MS = 820;
+  const UNDO_WINDOW_MS = 10000;
+  // (tabs closed this close together count as one close)
+  const CLOSED_TOGETHER_MS = 1000;
+  // (folders coming back aren't named afresh for this long: 22, folder names)
+  const REOPEN_NAMING_PAUSE_MS = 3000;
+  const REGROUP_DELAY_MS = 250;
+
   function animateEssentialsAdds() {
     const manager = window.gZenPinnedTabManager;
     if (!manager || typeof manager.addToEssentials !== "function" || manager.addToEssentials.__zia) {
@@ -10,6 +21,7 @@
       try {
         return original.call(this, tab, ...rest);
       } finally {
+        // (to the end of this turn: Zen can announce the tab once the call has returned)
         setTimeout(() => (fromMenu = false), 0);
       }
     };
@@ -39,7 +51,7 @@
               { transform: "scale(0.75)", filter: "blur(5px)", opacity: 0 },
               { transform: "scale(1)", filter: "blur(0px)", opacity: 1 },
             ],
-            { duration: 820, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
+            { duration: ESSENTIAL_SPRING_MS, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
           );
           tile.style.removeProperty("opacity");
           const cleanUp = () => tile.style.removeProperty("will-change");
@@ -49,7 +61,6 @@
     });
   }
 
-  const UNDO_WINDOW_MS = 10000;
   const undoState = { closedAt: 0, closed: [] };
 
   // The page a tab shows, read from its saved state so it works for tabs that
@@ -86,7 +97,7 @@
   // took away (a whole folder, a split, several tabs at once), not just one tab.
   function reopenLastClose() {
     // folders coming back keep their names (zia.uc.js, folder names)
-    window.ziaReopeningUntil = Date.now() + 3000;
+    window.ziaReopeningUntil = Date.now() + REOPEN_NAMING_PAUSE_MS;
     try {
       window.undoCloseTab();
     } catch (err) {
@@ -174,7 +185,7 @@
       for (let i = 0; opened.length < wanted && i < wanted; i++) {
         const before = opened.length;
         try {
-          window.ziaReopeningUntil = Date.now() + 3000;
+          window.ziaReopeningUntil = Date.now() + REOPEN_NAMING_PAUSE_MS;
           window.SessionStore?.undoCloseTab?.(window, 0);
         } catch (err) {
           noteError("essentials and undo: reopen one", err);
@@ -187,8 +198,9 @@
     } finally {
       gBrowser.tabContainer.removeEventListener("TabOpen", onOpen);
     }
-    // Give Zen a moment to finish restoring before regrouping.
-    setTimeout(() => safely("regroupReopened", () => regroupReopened(opened, closed)), 250);
+    // Give Zen a moment to finish restoring before regrouping. (Not cancelled: each undo
+    // regroups only the tabs it brought back.)
+    setTimeout(() => safely("regroupReopened", () => regroupReopened(opened, closed)), REGROUP_DELAY_MS);
   }
 
   function watchUndoClose() {
@@ -199,7 +211,7 @@
         return;
       }
       const now = Date.now();
-      if (now - undoState.closedAt > 1000) {
+      if (now - undoState.closedAt > CLOSED_TOGETHER_MS) {
         undoState.closed = [];
       }
       undoState.closedAt = now;

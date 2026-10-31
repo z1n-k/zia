@@ -1,3 +1,14 @@
+  // A new folder's icon and name, suggested on this computer: the icon of the site most of its
+  // tabs are on, else the nearest by meaning (Firefox's own local embedding model), else by its
+  // words; the name from Firefox's local naming model, else from what its tabs share.
+  // Used elsewhere: watchNewFolders.
+  const FOLDER_SUGGEST_DELAY_MS = 600;
+  // Only a folder you've just made is named. Zen announces every folder it
+  // brings back at start-up the same way as a new one, and Cmd+Z can bring
+  // a deleted one back, so a restored "New Folder" was being renamed: the
+  // naming waits until the window's tabs are back, and sits out an undo.
+  const FOLDER_NAMING_SETTLE_MS = 3000;
+
   const ICON_SYNONYMS = {
     flight: "plane", flights: "plane", fly: "plane", airline: "plane",
     travel: "plane", trip: "luggage", holiday: "luggage", vacation: "luggage",
@@ -627,6 +638,7 @@
     }
     folder.setAttribute("zia-suggesting", "true");
     showFolderSkeleton(folder);
+    // (not kept: it checks the folder is still there when it runs)
     setTimeout(async () => {
       try {
         if (!folder.isConnected) {
@@ -665,14 +677,8 @@
         folder.removeAttribute("zia-suggesting");
         hideFolderSkeleton(folder);
       }
-    }, 600);
+    }, FOLDER_SUGGEST_DELAY_MS);
   }
-
-  // Only a folder you've just made is named. Zen announces every folder it
-  // brings back at start-up the same way as a new one, and Cmd+Z can bring
-  // a deleted one back, so a restored "New Folder" was being renamed: the
-  // naming waits until the window's tabs are back, and sits out an undo.
-  const FOLDER_NAMING_SETTLE_MS = 3000;
 
   function watchNewFolders() {
     let ready = false;

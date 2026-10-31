@@ -1,9 +1,10 @@
-  // ---------- Multiview: a tab that grids up videos and live streams
+  // Multiview: a tab that grids up videos and live streams.
   // "Add to Multiview" (on a video, the page or a tab) turns the site's video
   // into an embeddable player and adds it to the Multiview tab, a small page
   // on the repo's GitHub Pages (YouTube and Twitch only play embeds on a real
   // web address). The videos live in the page's address, so it survives
   // restarts.
+  // Used elsewhere: isMultiviewURI, addToMultiview, tabMultiviewEntry, watchMultiview.
   const MULTIVIEW_URL = "https://z1n-k.github.io/zia/multiview/";
   const MULTIVIEW_PREF = "zia.multiview";
   const MULTIVIEW_COLOR_PREF = "zia.multiview.icon-color";

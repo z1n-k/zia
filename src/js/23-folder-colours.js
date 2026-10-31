@@ -1,4 +1,12 @@
+  // Folder colours: Zia's own (a Folder Color menu, kept by folder id), Advanced Tab Groups'
+  // gradient colours turned into a swatch, and each folder header's delete button.
+  // Used elsewhere: readFolderColors, setFolderColor, folderFromNode, addFolderColorPicker,
+  // watchFolderColors, watchGroupColors, addFolderCloseButton.
+
   const FOLDER_DEFAULT_COLOR = "white";
+  const FOLDER_COLOR_PREF = "zia.folder-colors";
+  // (again a moment after start-up, for folders Zen puts back late)
+  const FOLDER_COLORS_RETRY_MS = 1500;
 
   const FOLDER_COLORS = [
     ["white", "#fbfbfb"],
@@ -11,7 +19,6 @@
     ["orange", "#c95125"],
   ];
 
-  const FOLDER_COLOR_PREF = "zia.folder-colors";
 
   function readFolderColors() {
     try {
@@ -158,7 +165,7 @@
 
   function watchFolderColors() {
     restoreFolderColors();
-    setTimeout(restoreFolderColors, 1500);
+    setTimeout(restoreFolderColors, FOLDER_COLORS_RETRY_MS);
     gBrowser.tabContainer.addEventListener("TabGroupCreate", (event) => {
       const saved = readFolderColors()[event.target?.id];
       if (saved) {
@@ -195,7 +202,7 @@
       }
     }).observe(gBrowser.tabContainer, { subtree: true, attributes: true, attributeFilter: ["style"] });
     paintAll();
-    setTimeout(paintAll, 1500);
+    setTimeout(paintAll, FOLDER_COLORS_RETRY_MS);
   }
 
   function addFolderCloseButton(folder) {

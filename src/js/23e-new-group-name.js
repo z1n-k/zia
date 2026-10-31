@@ -5,6 +5,13 @@
   // Advanced Tab Groups names a new group in a field of its own, so with it, its field
   // is the one opened: two at once, tidying its own away it took Zen's, which left
   // the sidebar out for good and no name taking.
+  // Used elsewhere: nameNewGroupsInPlace, hintNameFields, holdSidebarAfterNaming.
+  const NEW_GROUP_MENU_WAIT_MS = 1000;
+  // In compact mode, a name entered (Enter) leaves the sidebar out a moment longer,
+  // to see it take, rather than it sliding away the instant it's done. Zen's own
+  // brief showing of the sidebar (after a space switch) does it.
+  const NAMED_HOLD_MS = 1000;
+
   function nameNewGroupsInPlace() {
     window.addEventListener(
       "TabGroupCreateByUser",
@@ -47,14 +54,16 @@
           const hidden = (e) => {
             if (e.target === menu) {
               menu.removeEventListener("popuphidden", hidden);
+              // (once the menu has finished going)
               setTimeout(name, 0);
             }
           };
           menu.addEventListener("popuphidden", hidden);
+          // (named anyway if the menu never says it's gone: `named` keeps it to once)
           setTimeout(() => {
             menu.removeEventListener("popuphidden", hidden);
             name();
-          }, 1000);
+          }, NEW_GROUP_MENU_WAIT_MS);
         } else {
           requestAnimationFrame(name);
         }
@@ -78,11 +87,6 @@
       true
     );
   }
-
-  // In compact mode, a name entered (Enter) leaves the sidebar out a moment longer,
-  // to see it take, rather than it sliding away the instant it's done. Zen's own
-  // brief showing of the sidebar (after a space switch) does it.
-  const NAMED_HOLD_MS = 1000;
 
   function holdSidebarAfterNaming() {
     window.addEventListener(

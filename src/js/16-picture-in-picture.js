@@ -1,4 +1,6 @@
-  // ---------- Picture-in-picture: Dia's look, and tucking into the screen edge
+  // Picture-in-picture: Dia's look, and tucking into the screen edge. Each player window
+  // gets Zia's own script, zia-pip.js (self-contained: it runs in that window, not this one).
+  // Used elsewhere: watchPipWindows.
   const PIP_PLAYER_URL = "chrome://global/content/pictureinpicture/player.xhtml";
   const PIP_SCRIPT_URL = "chrome://sine/content/zia/zia-pip.js";
 

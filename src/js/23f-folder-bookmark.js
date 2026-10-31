@@ -1,8 +1,9 @@
-  // ---------- A folder bookmarked whole, subfolders and all
+  // A folder bookmarked whole, subfolders and all.
   // Zen's folder menu has no way to bookmark a folder: its tabs selected and Firefox's
   // "Bookmark Tabs…" made one flat folder of them, the subfolders' tabs loose in it.
   // "Bookmark Folder" makes a bookmark folder of the same name where new bookmarks go
   // (Firefox's setting for it), with a bookmark folder for each subfolder, in their order.
+  // Used elsewhere: addFolderBookmarkItem.
   function bookmarkTreeOf(folder) {
     const link = (tab) => {
       const url = tab.linkedBrowser?.currentURI?.spec;

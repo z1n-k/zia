@@ -1,4 +1,9 @@
 // Zia: built from src/js by scripts/build.sh. Edit the parts in src/js, not this file.
+
+// The start of Zia's one scope: the once-per-window guard, and the small helpers every part
+// shares (errors noted once, prefs watched, attributes and styles set or removed).
+// Used elsewhere: isLittleZenWindow, root, XHTML_NS, noteError, watchPrefs, setAttr, setStyle,
+// setFlag, urlbarAtBottom, svgSourceOf.
 (() => {
   if (window.__ziaLoaded) {
     return;
@@ -1178,6 +1183,12 @@
     colorMenuItems.set(menu, items);
     return items;
   }
+  // The address bar's loading line: an estimate that creeps toward 90% while a page loads,
+  // overtaken by the real progress when there is some, then run out to the end and faded.
+  // Used elsewhere: startLoader, reportRealProgress, finishLoader, cancelLoader.
+  const LOADER_HIDE_MS = 150;
+  const LOADER_ESTIMATE_MS = 250;
+
   const loader = {
     shown: 0,
     target: 0,
@@ -1204,7 +1215,7 @@
     drawProgress();
     if (loader.finishing && loader.shown >= 0.999) {
       loader.finishing = false;
-      loader.hideTimer = setTimeout(() => setFlag("zia-loading", false), 150);
+      loader.hideTimer = setTimeout(() => setFlag("zia-loading", false), LOADER_HIDE_MS);
       return;
     }
     if (loader.active || loader.finishing) {
@@ -1242,7 +1253,7 @@
       if (loader.target < 0.9) {
         loader.target += (0.9 - loader.target) * 0.06;
       }
-    }, 250);
+    }, LOADER_ESTIMATE_MS);
     runLoader();
   }
 
@@ -5625,6 +5636,10 @@
     );
   }
 
+  // The find bar: it opens empty, its match count reads "1/3", and a drop over the page (not
+  // the sidebar out over it in compact mode) is told apart for the split cards.
+  // Used elsewhere: isOverPage, watchFindBars.
+
   const pointIn = (box, event) => event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
 
   function isOverPage(event) {
@@ -6195,6 +6210,10 @@
     colorPanesWithPage();
     schedulePanes();
   }
+  // Whether the space has a colour of its own (zia-space-colored), which tucked
+  // picture-in-picture strips take on too.
+  // Used elsewhere: tintPipWindows, watchSpaceColor.
+
   function updateSpaceColored() {
     let colored = false;
     if (root.getAttribute("zen-default-theme") !== "true") {
@@ -6250,6 +6269,17 @@
     schedule();
   }
 
+  // A tab added to the essentials from its menu springs in, and Cmd/Ctrl+Z just after closing
+  // tabs brings back all of them, into the folders and splits they were in.
+  // Used elsewhere: animateEssentialsAdds, watchUndoClose, REOPEN_NAMING_PAUSE_MS.
+  const ESSENTIAL_SPRING_MS = 820;
+  const UNDO_WINDOW_MS = 10000;
+  // (tabs closed this close together count as one close)
+  const CLOSED_TOGETHER_MS = 1000;
+  // (folders coming back aren't named afresh for this long: 22, folder names)
+  const REOPEN_NAMING_PAUSE_MS = 3000;
+  const REGROUP_DELAY_MS = 250;
+
   function animateEssentialsAdds() {
     const manager = window.gZenPinnedTabManager;
     if (!manager || typeof manager.addToEssentials !== "function" || manager.addToEssentials.__zia) {
@@ -6262,6 +6292,7 @@
       try {
         return original.call(this, tab, ...rest);
       } finally {
+        // (to the end of this turn: Zen can announce the tab once the call has returned)
         setTimeout(() => (fromMenu = false), 0);
       }
     };
@@ -6291,7 +6322,7 @@
               { transform: "scale(0.75)", filter: "blur(5px)", opacity: 0 },
               { transform: "scale(1)", filter: "blur(0px)", opacity: 1 },
             ],
-            { duration: 820, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
+            { duration: ESSENTIAL_SPRING_MS, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
           );
           tile.style.removeProperty("opacity");
           const cleanUp = () => tile.style.removeProperty("will-change");
@@ -6301,7 +6332,6 @@
     });
   }
 
-  const UNDO_WINDOW_MS = 10000;
   const undoState = { closedAt: 0, closed: [] };
 
   // The page a tab shows, read from its saved state so it works for tabs that
@@ -6338,7 +6368,7 @@
   // took away (a whole folder, a split, several tabs at once), not just one tab.
   function reopenLastClose() {
     // folders coming back keep their names (zia.uc.js, folder names)
-    window.ziaReopeningUntil = Date.now() + 3000;
+    window.ziaReopeningUntil = Date.now() + REOPEN_NAMING_PAUSE_MS;
     try {
       window.undoCloseTab();
     } catch (err) {
@@ -6426,7 +6456,7 @@
       for (let i = 0; opened.length < wanted && i < wanted; i++) {
         const before = opened.length;
         try {
-          window.ziaReopeningUntil = Date.now() + 3000;
+          window.ziaReopeningUntil = Date.now() + REOPEN_NAMING_PAUSE_MS;
           window.SessionStore?.undoCloseTab?.(window, 0);
         } catch (err) {
           noteError("essentials and undo: reopen one", err);
@@ -6439,8 +6469,9 @@
     } finally {
       gBrowser.tabContainer.removeEventListener("TabOpen", onOpen);
     }
-    // Give Zen a moment to finish restoring before regrouping.
-    setTimeout(() => safely("regroupReopened", () => regroupReopened(opened, closed)), 250);
+    // Give Zen a moment to finish restoring before regrouping. (Not cancelled: each undo
+    // regroups only the tabs it brought back.)
+    setTimeout(() => safely("regroupReopened", () => regroupReopened(opened, closed)), REGROUP_DELAY_MS);
   }
 
   function watchUndoClose() {
@@ -6451,7 +6482,7 @@
         return;
       }
       const now = Date.now();
-      if (now - undoState.closedAt > 1000) {
+      if (now - undoState.closedAt > CLOSED_TOGETHER_MS) {
         undoState.closed = [];
       }
       undoState.closedAt = now;
@@ -6979,7 +7010,9 @@
     }
   }
 
-  // ---------- Picture-in-picture: Dia's look, and tucking into the screen edge
+  // Picture-in-picture: Dia's look, and tucking into the screen edge. Each player window
+  // gets Zia's own script, zia-pip.js (self-contained: it runs in that window, not this one).
+  // Used elsewhere: watchPipWindows.
   const PIP_PLAYER_URL = "chrome://global/content/pictureinpicture/player.xhtml";
   const PIP_SCRIPT_URL = "chrome://sine/content/zia/zia-pip.js";
 
@@ -7015,12 +7048,13 @@
     }
   }
 
-  // ---------- Multiview: a tab that grids up videos and live streams
+  // Multiview: a tab that grids up videos and live streams.
   // "Add to Multiview" (on a video, the page or a tab) turns the site's video
   // into an embeddable player and adds it to the Multiview tab, a small page
   // on the repo's GitHub Pages (YouTube and Twitch only play embeds on a real
   // web address). The videos live in the page's address, so it survives
   // restarts.
+  // Used elsewhere: isMultiviewURI, addToMultiview, tabMultiviewEntry, watchMultiview.
   const MULTIVIEW_URL = "https://z1n-k.github.io/zia/multiview/";
   const MULTIVIEW_PREF = "zia.multiview";
   const MULTIVIEW_COLOR_PREF = "zia.multiview.icon-color";
@@ -7356,6 +7390,10 @@
     gBrowser.tabContainer.addEventListener("TabSelect", (event) => recolorMultiview(event.target));
     watchPrefs(MULTIVIEW_COLOR_PREF, () => gBrowser.tabs.forEach(recolorMultiview));
   }
+
+  // Zia's options that switch whole features or Zen's own settings: the address bar's place,
+  // Dia's look, the real new tab, split drop cards, and the per-feature switches.
+  // Used elsewhere: watchUrlbarPosition, ZIA_OPTIONS, watchOptions, FEATURES, featureOn, ifOn.
 
   const URLBAR_POSITION_PREF = "zia.urlbar.position";
 
@@ -8655,6 +8693,17 @@
     }
   }
 
+  // A new folder's icon and name, suggested on this computer: the icon of the site most of its
+  // tabs are on, else the nearest by meaning (Firefox's own local embedding model), else by its
+  // words; the name from Firefox's local naming model, else from what its tabs share.
+  // Used elsewhere: watchNewFolders.
+  const FOLDER_SUGGEST_DELAY_MS = 600;
+  // Only a folder you've just made is named. Zen announces every folder it
+  // brings back at start-up the same way as a new one, and Cmd+Z can bring
+  // a deleted one back, so a restored "New Folder" was being renamed: the
+  // naming waits until the window's tabs are back, and sits out an undo.
+  const FOLDER_NAMING_SETTLE_MS = 3000;
+
   const ICON_SYNONYMS = {
     flight: "plane", flights: "plane", fly: "plane", airline: "plane",
     travel: "plane", trip: "luggage", holiday: "luggage", vacation: "luggage",
@@ -9284,6 +9333,7 @@
     }
     folder.setAttribute("zia-suggesting", "true");
     showFolderSkeleton(folder);
+    // (not kept: it checks the folder is still there when it runs)
     setTimeout(async () => {
       try {
         if (!folder.isConnected) {
@@ -9322,14 +9372,8 @@
         folder.removeAttribute("zia-suggesting");
         hideFolderSkeleton(folder);
       }
-    }, 600);
+    }, FOLDER_SUGGEST_DELAY_MS);
   }
-
-  // Only a folder you've just made is named. Zen announces every folder it
-  // brings back at start-up the same way as a new one, and Cmd+Z can bring
-  // a deleted one back, so a restored "New Folder" was being renamed: the
-  // naming waits until the window's tabs are back, and sits out an undo.
-  const FOLDER_NAMING_SETTLE_MS = 3000;
 
   function watchNewFolders() {
     let ready = false;
@@ -9348,7 +9392,15 @@
     });
   }
 
+  // Folder colours: Zia's own (a Folder Color menu, kept by folder id), Advanced Tab Groups'
+  // gradient colours turned into a swatch, and each folder header's delete button.
+  // Used elsewhere: readFolderColors, setFolderColor, folderFromNode, addFolderColorPicker,
+  // watchFolderColors, watchGroupColors, addFolderCloseButton.
+
   const FOLDER_DEFAULT_COLOR = "white";
+  const FOLDER_COLOR_PREF = "zia.folder-colors";
+  // (again a moment after start-up, for folders Zen puts back late)
+  const FOLDER_COLORS_RETRY_MS = 1500;
 
   const FOLDER_COLORS = [
     ["white", "#fbfbfb"],
@@ -9361,7 +9413,6 @@
     ["orange", "#c95125"],
   ];
 
-  const FOLDER_COLOR_PREF = "zia.folder-colors";
 
   function readFolderColors() {
     try {
@@ -9508,7 +9559,7 @@
 
   function watchFolderColors() {
     restoreFolderColors();
-    setTimeout(restoreFolderColors, 1500);
+    setTimeout(restoreFolderColors, FOLDER_COLORS_RETRY_MS);
     gBrowser.tabContainer.addEventListener("TabGroupCreate", (event) => {
       const saved = readFolderColors()[event.target?.id];
       if (saved) {
@@ -9545,7 +9596,7 @@
       }
     }).observe(gBrowser.tabContainer, { subtree: true, attributes: true, attributeFilter: ["style"] });
     paintAll();
-    setTimeout(paintAll, 1500);
+    setTimeout(paintAll, FOLDER_COLORS_RETRY_MS);
   }
 
   function addFolderCloseButton(folder) {
@@ -9580,6 +9631,9 @@
   // Zia lets you make a folder before it has any tabs (Dia doesn't), so an
   // empty one says so: open, it shows a dashed "Drag tabs here" slot, which
   // steps aside for a tab dragged into it (chrome.css).
+  // Used elsewhere: watchEmptyFolders.
+  const SLOT_DASHES_SETTLE_MS = 200;
+
   // Zen keeps a hidden placeholder tab in every empty folder, so a folder
   // counts as empty when that's all it holds.
   function isEmptyFolder(folder) {
@@ -9719,27 +9773,25 @@
   // redrawn to size at every step of a sidebar resize: a canvas shows its
   // new drawing at once, where a new picture blanked while it loaded, and
   // the last one stretched while it waited. The canvases sit off screen.
-  let slotCanvasHolder = null;
-  let slotCanvasCount = 0;
-  const slotCanvases = new Set();
+  const slotCanvas = { holder: null, count: 0, all: new Set() };
 
   function drawSlotCanvas(folder, container, width, height, radius, dpr) {
     let canvas = folder.ziaSlotCanvas;
     if (!canvas) {
-      if (!slotCanvasHolder) {
-        slotCanvasHolder = document.createElementNS(XHTML_NS, "div");
-        slotCanvasHolder.id = "zia-slot-canvases";
-        slotCanvasHolder.setAttribute("aria-hidden", "true");
-        slotCanvasHolder.style.cssText = "position: fixed; top: 0; left: -10000px; pointer-events: none;";
-        (document.body || document.documentElement).appendChild(slotCanvasHolder);
+      if (!slotCanvas.holder) {
+        slotCanvas.holder = document.createElementNS(XHTML_NS, "div");
+        slotCanvas.holder.id = "zia-slot-canvases";
+        slotCanvas.holder.setAttribute("aria-hidden", "true");
+        slotCanvas.holder.style.cssText = "position: fixed; top: 0; left: -10000px; pointer-events: none;";
+        (document.body || document.documentElement).appendChild(slotCanvas.holder);
       }
       canvas = document.createElementNS(XHTML_NS, "canvas");
-      canvas.id = `zia-slot-dashes-${++slotCanvasCount}`;
+      canvas.id = `zia-slot-dashes-${++slotCanvas.count}`;
       canvas.style.display = "block";
-      slotCanvasHolder.appendChild(canvas);
+      slotCanvas.holder.appendChild(canvas);
       canvas.ziaFolder = folder;
       folder.ziaSlotCanvas = canvas;
-      slotCanvases.add(canvas);
+      slotCanvas.all.add(canvas);
       folder.style.setProperty("--zia-slot-dashes-live", `-moz-element(#${canvas.id})`);
     }
     const color = getComputedStyle(container, "::after").stroke;
@@ -9765,10 +9817,10 @@
   }
 
   function dropGoneSlotCanvases() {
-    for (const canvas of slotCanvases) {
+    for (const canvas of slotCanvas.all) {
       if (!canvas.ziaFolder.isConnected) {
         canvas.remove();
-        slotCanvases.delete(canvas);
+        slotCanvas.all.delete(canvas);
       }
     }
   }
@@ -9779,18 +9831,16 @@
   // a dragged tab wears is drawn afresh once the width has held still for
   // a moment, swapped in only once it's ready: drawn at every step, each
   // new one blanked the dashes while it loaded.
-  const SLOT_DASHES_SETTLE_MS = 200;
-  let lastSlotDashes = "";
-  let slotDashesTimer = 0;
+  const slotDashes = { last: "", timer: 0 };
   function drawSlotDashes() {
-    clearTimeout(slotDashesTimer);
+    clearTimeout(slotDashes.timer);
     drawSlotDashesNow(true);
     // (a slot not drawn yet, a folder just made or opened, is drawn at once)
     if ([...document.querySelectorAll("zen-folder[zia-empty]")].some((folder) => !folder.ziaSlotDashes)) {
       drawSlotDashesNow();
       return;
     }
-    slotDashesTimer = setTimeout(() => drawSlotDashesNow(), SLOT_DASHES_SETTLE_MS);
+    slotDashes.timer = setTimeout(() => drawSlotDashesNow(), SLOT_DASHES_SETTLE_MS);
   }
 
   function useSlotDashes(target, image) {
@@ -9825,8 +9875,8 @@
         folder.ziaSlotDashes = key;
         const image = slotDashesImage(width, height, radius, dpr);
         useSlotDashes(folder, image);
-        if (!folder.parentElement?.closest("zen-folder") && image !== lastSlotDashes) {
-          lastSlotDashes = image;
+        if (!folder.parentElement?.closest("zen-folder") && image !== slotDashes.last) {
+          slotDashes.last = image;
           useSlotDashes(root, image);
         }
       }
@@ -9921,6 +9971,7 @@
   // out. The box shows up to eight sheets; past that a sheet still goes in
   // or out each time, without the pile growing. Its lid stays open while
   // the folder is.
+  // Used elsewhere: watchFolderIcon.
   const FOLDER_ICON_MAX_SHEETS = 3;
   const FOLDER_BOX_MAX_SHEETS = 8;
   const FOLDER_ICON_DROP_MS = 650;
@@ -9929,6 +9980,23 @@
   const FOLDER_BOX_LID_LEAD_MS = 120;
   const FOLDER_BOX_SHEET_MS = 600;
   const FOLDER_BOX_LID_MS = FOLDER_BOX_LID_LEAD_MS + FOLDER_BOX_SHEET_MS + 120;
+  // the folder and the box trading places: one out, the other in a little after
+  const FOLDER_MORPH_OUT_MS = 200;
+  const FOLDER_MORPH_IN_LAG_MS = 140;
+  const FOLDER_MORPH_IN_MS = 420;
+  // a sheet rising out of the box
+  const FOLDER_BOX_RISE_DELAY_MS = 100;
+  const FOLDER_BOX_RISE_MS = 500;
+  // (sheets kept in the box going back to the folder: until a little after the sheet's way out)
+  const FOLDER_BOX_KEEP_MS = FOLDER_BOX_LID_LEAD_MS + FOLDER_BOX_SHEET_MS + 200;
+  // (an animation attribute comes off a little after its animation ends)
+  const FOLDER_REPLAY_SLACK_MS = 60;
+  // Counted once the folders have stopped changing: while Zen drops a tab
+  // in, the folder holds an extra child for a moment, and counting then
+  // put down two sheets before settling on one, the sheet jumping wider.
+  const FOLDER_ICON_SETTLE_MS = 150;
+  // (again a moment after start-up, for folders Zen puts back late)
+  const FOLDER_ICON_RETRY_MS = 1500;
 
   function folderIconBox(folder) {
     return folder?.querySelector?.(":scope > .tab-group-label-container .tab-group-folder-icon");
@@ -10094,7 +10162,7 @@
     void el.offsetWidth;
     el.style.animationDelay = `${delay}ms`;
     el.setAttribute(attr, "");
-    el.ziaReplayOff = setTimeout(() => el.removeAttribute(attr), delay + length + 60);
+    el.ziaReplayOff = setTimeout(() => el.removeAttribute(attr), delay + length + FOLDER_REPLAY_SLACK_MS);
   }
 
   function countFolderBox(folder, count, before) {
@@ -10124,9 +10192,10 @@
     if (up || down) {
       const wait = down ? FOLDER_BOX_LID_LEAD_MS + FOLDER_BOX_SHEET_MS : 0;
       const [out, into] = up ? [".zia-fi-fold", ".zia-fb"] : [".zia-fb", ".zia-fi-fold"];
+      // (not kept, as it never was: a quick in and out plays as it always has)
       setTimeout(() => folder.toggleAttribute("zia-fi-full", full), wait);
-      replayFolderIcon(icon.querySelector(out), "zia-morph-out", wait, 200);
-      replayFolderIcon(icon.querySelector(into), "zia-morph-in", wait + 140, 420);
+      replayFolderIcon(icon.querySelector(out), "zia-morph-out", wait, FOLDER_MORPH_OUT_MS);
+      replayFolderIcon(icon.querySelector(into), "zia-morph-in", wait + FOLDER_MORPH_IN_LAG_MS, FOLDER_MORPH_IN_MS);
     }
     if (full || down) {
       // the lid opens for the sheet (it's already open with the folder open)
@@ -10139,7 +10208,7 @@
       // until it's gone
       if (down && was && i < count) {
         clearTimeout(sheet.ziaKeep);
-        sheet.ziaKeep = setTimeout(() => sheet.toggleAttribute("zia-on", folder.ziaFolderItems > FOLDER_ICON_MAX_SHEETS && i < Math.min(folder.ziaFolderItems, FOLDER_BOX_MAX_SHEETS)), FOLDER_BOX_LID_LEAD_MS + FOLDER_BOX_SHEET_MS + 200);
+        sheet.ziaKeep = setTimeout(() => sheet.toggleAttribute("zia-on", folder.ziaFolderItems > FOLDER_ICON_MAX_SHEETS && i < Math.min(folder.ziaFolderItems, FOLDER_BOX_MAX_SHEETS)), FOLDER_BOX_KEEP_MS);
         return;
       }
       clearTimeout(sheet.ziaKeep);
@@ -10147,7 +10216,7 @@
       if (on && !was && (!up || i === shown - 1)) {
         replayFolderIcon(sheet, "zia-fall", start + FOLDER_BOX_LID_LEAD_MS, FOLDER_BOX_SHEET_MS);
       } else if (!on && was) {
-        replayFolderIcon(sheet, "zia-rise", 100, 500);
+        replayFolderIcon(sheet, "zia-rise", FOLDER_BOX_RISE_DELAY_MS, FOLDER_BOX_RISE_MS);
       }
     });
     // past eight, a sheet still passes in or out
@@ -10194,11 +10263,6 @@
     document.querySelectorAll("zen-folder, tab-group:not([split-view-group])").forEach(countFolderSheets);
   }
 
-  // Counted once the folders have stopped changing: while Zen drops a tab
-  // in, the folder holds an extra child for a moment, and counting then
-  // put down two sheets before settling on one, the sheet jumping wider.
-  const FOLDER_ICON_SETTLE_MS = 150;
-
   function watchFolderIcon() {
     let timer = null;
     const recount = () => {
@@ -10215,19 +10279,20 @@
     // (the old per-folder "icon only" choice is the default now)
     Services.prefs.clearUserPref("zia.folder-icon-only");
     restoreIconOnFolder();
-    setTimeout(restoreIconOnFolder, 1500);
+    setTimeout(restoreIconOnFolder, FOLDER_ICON_RETRY_MS);
     gBrowser.tabContainer.addEventListener("TabGroupCreate", (event) => {
       event.target?.toggleAttribute?.("zia-icon-on-folder", !!readIconOnFolder()[event.target.id]);
     });
     addIconOnFolderMenuItem();
     countAllFolderSheets();
     // folders restored at start-up
-    setTimeout(countAllFolderSheets, 1500);
+    setTimeout(countAllFolderSheets, FOLDER_ICON_RETRY_MS);
   }
-  // ---------- Folders brought back after being deleted
+  // Folders brought back after being deleted.
   // Firefox keeps a deleted folder as a plain tab group and reopens it as one: it
   // wouldn't collapse, Zia's animations passed it by, and it was named afresh. One
   // back with a deleted folder's id is made a folder again, with its name, icon, colour.
+  // Used elsewhere: wasDeletedFolder, watchReopenedFolders.
   const DELETED_FOLDER_KEEP_MS = 30 * 60 * 1000;
   const deletedFolders = new Map();
 
@@ -10270,7 +10335,7 @@
       return;
     }
     // (the new folder announces itself too: it isn't named either)
-    window.ziaReopeningUntil = Date.now() + 3000;
+    window.ziaReopeningUntil = Date.now() + REOPEN_NAMING_PAUSE_MS;
     try {
       const label = group.label || saved.label;
       const workspaceId = saved.workspaceId || group.getAttribute("zen-workspace-id") || undefined;
@@ -10309,6 +10374,13 @@
   // Advanced Tab Groups names a new group in a field of its own, so with it, its field
   // is the one opened: two at once, tidying its own away it took Zen's, which left
   // the sidebar out for good and no name taking.
+  // Used elsewhere: nameNewGroupsInPlace, hintNameFields, holdSidebarAfterNaming.
+  const NEW_GROUP_MENU_WAIT_MS = 1000;
+  // In compact mode, a name entered (Enter) leaves the sidebar out a moment longer,
+  // to see it take, rather than it sliding away the instant it's done. Zen's own
+  // brief showing of the sidebar (after a space switch) does it.
+  const NAMED_HOLD_MS = 1000;
+
   function nameNewGroupsInPlace() {
     window.addEventListener(
       "TabGroupCreateByUser",
@@ -10351,14 +10423,16 @@
           const hidden = (e) => {
             if (e.target === menu) {
               menu.removeEventListener("popuphidden", hidden);
+              // (once the menu has finished going)
               setTimeout(name, 0);
             }
           };
           menu.addEventListener("popuphidden", hidden);
+          // (named anyway if the menu never says it's gone: `named` keeps it to once)
           setTimeout(() => {
             menu.removeEventListener("popuphidden", hidden);
             name();
-          }, 1000);
+          }, NEW_GROUP_MENU_WAIT_MS);
         } else {
           requestAnimationFrame(name);
         }
@@ -10382,11 +10456,6 @@
       true
     );
   }
-
-  // In compact mode, a name entered (Enter) leaves the sidebar out a moment longer,
-  // to see it take, rather than it sliding away the instant it's done. Zen's own
-  // brief showing of the sidebar (after a space switch) does it.
-  const NAMED_HOLD_MS = 1000;
 
   function holdSidebarAfterNaming() {
     window.addEventListener(
@@ -10415,11 +10484,12 @@
       true
     );
   }
-  // ---------- A folder bookmarked whole, subfolders and all
+  // A folder bookmarked whole, subfolders and all.
   // Zen's folder menu has no way to bookmark a folder: its tabs selected and Firefox's
   // "Bookmark Tabs…" made one flat folder of them, the subfolders' tabs loose in it.
   // "Bookmark Folder" makes a bookmark folder of the same name where new bookmarks go
   // (Firefox's setting for it), with a bookmark folder for each subfolder, in their order.
+  // Used elsewhere: addFolderBookmarkItem.
   function bookmarkTreeOf(folder) {
     const link = (tab) => {
       const url = tab.linkedBrowser?.currentURI?.spec;
@@ -10471,6 +10541,9 @@
     });
   }
 
+  // The essentials' rows, and each folder's delete button put on as folders come.
+  // Used elsewhere: watchEssentialRows, watchFolderCloseButtons.
+
   // Optional: the last essential stretches across whatever's left of its row.
   // The grid can't span "to the end of the row" by itself, so Zia counts the
   // columns and sets the span.
@@ -10483,6 +10556,8 @@
   // columns a span wider than the grid creates; counting those grew the
   // span, which made more of them, until tiles were squeezed into slivers.
   const TWO_PER_ROW_PREF = "zia.essentials.two-per-row";
+  // (again a moment after start-up, for folders Zen puts back late)
+  const FOLDER_CLOSE_RETRY_MS = 1500;
 
   function gridColumns(grid) {
     if (Services.prefs.getBoolPref(TWO_PER_ROW_PREF, false)) {
@@ -10563,7 +10638,7 @@
       }
     };
     addAll();
-    setTimeout(addAll, 1500);
+    setTimeout(addAll, FOLDER_CLOSE_RETRY_MS);
     gBrowser.tabContainer.addEventListener("TabGroupCreate", (event) => addFolderCloseButton(event.target));
   }
 
@@ -11183,6 +11258,13 @@
     container.addEventListener("TabAddedToEssentials", (event) => drawSplitTile(event.target));
     watchPrefs(SPLIT_PREF, restoreSplitEssentials);
   }
+  // The sidebar's paint as one solid colour (for the music card), light spaces marked
+  // zia-light, the sidebar's see-through amount, and macOS's window buttons kept in the
+  // sidebar with it on the right.
+  // Used elsewhere: watchLightSpace, watchSidebarPaint, watchWindowButtonsSide.
+  // (again a moment after start-up, once Zen has laid out its toolbars)
+  const WINDOW_BUTTONS_RETRY_MS = 1000;
+
   function resolveColor(text) {
     if (!text) {
       return null;
@@ -11303,9 +11385,10 @@
   }
 
   function watchWindowButtonsSide() {
+    // (once Zen has finished moving them itself)
     const soon = () => setTimeout(keepWindowButtonsInSidebar, 0);
     soon();
-    setTimeout(keepWindowButtonsInSidebar, 1000);
+    setTimeout(keepWindowButtonsInSidebar, WINDOW_BUTTONS_RETRY_MS);
     const watcher = new MutationObserver(soon);
     watcher.observe(root, {
       attributes: true,
@@ -11317,10 +11400,15 @@
     }
   }
 
-  // ---------- Room for the essentials above every space's tabs
+  // Room for the essentials above every space's tabs.
   // Zen pads a space's tabs clear of the essentials as you go to it, but a space made
   // this session started at 0 and its tabs slid in under them (Windows). With shared
   // essentials each space gets that room; one being made or animated is left to Zen.
+  // Used elsewhere: keepRoomForEssentials.
+  const ESSENTIALS_ROOM_SETTLE_MS = 400;
+  // (how often it looks for the essentials' box, which Zen can replace)
+  const ESSENTIALS_ROOM_WATCH_MS = 5000;
+
   function keepRoomForEssentials() {
     const separate = () => {
       try {
@@ -11357,7 +11445,8 @@
     new MutationObserver((records) => {
       if (records.some((record) => record.target.localName === "zen-workspace")) {
         fit();
-        setTimeout(fit, 400);
+        // (not kept: fitting again is harmless)
+        setTimeout(fit, ESSENTIALS_ROOM_SETTLE_MS);
       }
     }).observe(document.getElementById("navigator-toolbox") || root, { subtree: true, attributes: true, attributeFilter: ["active"] });
 
@@ -11372,7 +11461,8 @@
       }
     };
     watch();
-    setInterval(watch, 5000);
+    // (for as long as the window's open)
+    setInterval(watch, ESSENTIALS_ROOM_WATCH_MS);
     fit();
   }
 
@@ -16874,6 +16964,9 @@
   // Zen's toasts (the little notes up in the corner, like "Copied") go away
   // on a timer that stops while the mouse is over them. Zia gives each one
   // a small ✕ to close it straight away, with the same fade Zen uses.
+  // Used elsewhere: addToastCloseButtons.
+  const TOAST_FADE_MS = 200;
+
   function addToastCloseButtons() {
     const container = document.getElementById("zen-toast-container");
     if (!container) {
@@ -16885,7 +16978,7 @@
           { opacity: 1, scale: 1 },
           { opacity: 0, scale: 0.5 },
         ],
-        { duration: 200, easing: "ease-in", fill: "forwards" }
+        { duration: TOAST_FADE_MS, easing: "ease-in", fill: "forwards" }
       ).finished.then(() => {
         toast.remove();
         if (!container.children.length) {
@@ -19038,6 +19131,7 @@
   }
   // A page gone full screen inside the window (a YouTube video) is shown square,
   // edge to edge: it kept the page's rounded card, grey behind the video's corners.
+  // Used elsewhere: watchPageFullscreen.
   function watchPageFullscreen() {
     const update = () => setFlag("zia-page-fullscreen", !!document.fullscreenElement);
     const soon = () => requestAnimationFrame(update);
@@ -19672,9 +19766,10 @@
       }
     });
   }
-  // ---------- Rename finished downloads with AI (Tidy Downloads, by Bxthesda and
+  // Rename finished downloads with AI (Tidy Downloads, by Bxthesda and
   // Zylaah, in tidy-downloads/ with their permission). Loaded here, only with the
   // option on: as the mod's own scripts, they ran only after Sine installed Zia.
+  // Used elsewhere: loadTidyDownloads.
   const TIDY_DOWNLOADS_SCRIPTS = ["tidy-downloads", "tidy-downloads-models"];
 
   function loadTidyDownloads() {
@@ -24169,8 +24264,12 @@
   // Nothing is sent, no ID and no settings; all that's kept is the day it last counted, here.
   // A daily Action (install-count.yml) writes the total down, so a day's rise is about how many
   // installs were in use that day.
+  // Used elsewhere: watchInstallCount.
   const INSTALL_COUNT_URL = "https://github.com/z1n-k/zia/releases/download/install-count/ping.txt";
   const INSTALL_COUNT_DAY = "zia.install-count.day";
+  // a minute after the window opens, and every few hours for a window left open for days
+  const INSTALL_COUNT_FIRST_MS = 60 * 1000;
+  const INSTALL_COUNT_EVERY_MS = 4 * 60 * 60 * 1000;
 
   function countInstallToday() {
     if (!Services.prefs.getBoolPref("zia.install-count", true) || window.PrivateBrowsingUtils?.isWindowPrivate(window)) {
@@ -24193,10 +24292,10 @@
       .catch(() => Services.prefs.setStringPref(INSTALL_COUNT_DAY, last));
   }
 
-  // a minute after the window opens, and every few hours for a window left open for days
+  // (for as long as the window's open)
   function watchInstallCount() {
-    setTimeout(countInstallToday, 60 * 1000);
-    setInterval(countInstallToday, 4 * 60 * 60 * 1000);
+    setTimeout(countInstallToday, INSTALL_COUNT_FIRST_MS);
+    setInterval(countInstallToday, INSTALL_COUNT_EVERY_MS);
   }
   // Zia's start: every feature wired up in turn once the window is ready, each on its own so
   // one failing leaves the rest working. Also here: Zen's haptics muted for a drag, the pinned

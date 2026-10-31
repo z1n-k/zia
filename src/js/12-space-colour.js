@@ -1,3 +1,7 @@
+  // Whether the space has a colour of its own (zia-space-colored), which tucked
+  // picture-in-picture strips take on too.
+  // Used elsewhere: tintPipWindows, watchSpaceColor.
+
   function updateSpaceColored() {
     let colored = false;
     if (root.getAttribute("zen-default-theme") !== "true") {

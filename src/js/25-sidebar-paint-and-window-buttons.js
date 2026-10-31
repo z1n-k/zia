@@ -1,3 +1,10 @@
+  // The sidebar's paint as one solid colour (for the music card), light spaces marked
+  // zia-light, the sidebar's see-through amount, and macOS's window buttons kept in the
+  // sidebar with it on the right.
+  // Used elsewhere: watchLightSpace, watchSidebarPaint, watchWindowButtonsSide.
+  // (again a moment after start-up, once Zen has laid out its toolbars)
+  const WINDOW_BUTTONS_RETRY_MS = 1000;
+
   function resolveColor(text) {
     if (!text) {
       return null;
@@ -118,9 +125,10 @@
   }
 
   function watchWindowButtonsSide() {
+    // (once Zen has finished moving them itself)
     const soon = () => setTimeout(keepWindowButtonsInSidebar, 0);
     soon();
-    setTimeout(keepWindowButtonsInSidebar, 1000);
+    setTimeout(keepWindowButtonsInSidebar, WINDOW_BUTTONS_RETRY_MS);
     const watcher = new MutationObserver(soon);
     watcher.observe(root, {
       attributes: true,

@@ -1,6 +1,9 @@
   // Zia lets you make a folder before it has any tabs (Dia doesn't), so an
   // empty one says so: open, it shows a dashed "Drag tabs here" slot, which
   // steps aside for a tab dragged into it (chrome.css).
+  // Used elsewhere: watchEmptyFolders.
+  const SLOT_DASHES_SETTLE_MS = 200;
+
   // Zen keeps a hidden placeholder tab in every empty folder, so a folder
   // counts as empty when that's all it holds.
   function isEmptyFolder(folder) {
@@ -140,27 +143,25 @@
   // redrawn to size at every step of a sidebar resize: a canvas shows its
   // new drawing at once, where a new picture blanked while it loaded, and
   // the last one stretched while it waited. The canvases sit off screen.
-  let slotCanvasHolder = null;
-  let slotCanvasCount = 0;
-  const slotCanvases = new Set();
+  const slotCanvas = { holder: null, count: 0, all: new Set() };
 
   function drawSlotCanvas(folder, container, width, height, radius, dpr) {
     let canvas = folder.ziaSlotCanvas;
     if (!canvas) {
-      if (!slotCanvasHolder) {
-        slotCanvasHolder = document.createElementNS(XHTML_NS, "div");
-        slotCanvasHolder.id = "zia-slot-canvases";
-        slotCanvasHolder.setAttribute("aria-hidden", "true");
-        slotCanvasHolder.style.cssText = "position: fixed; top: 0; left: -10000px; pointer-events: none;";
-        (document.body || document.documentElement).appendChild(slotCanvasHolder);
+      if (!slotCanvas.holder) {
+        slotCanvas.holder = document.createElementNS(XHTML_NS, "div");
+        slotCanvas.holder.id = "zia-slot-canvases";
+        slotCanvas.holder.setAttribute("aria-hidden", "true");
+        slotCanvas.holder.style.cssText = "position: fixed; top: 0; left: -10000px; pointer-events: none;";
+        (document.body || document.documentElement).appendChild(slotCanvas.holder);
       }
       canvas = document.createElementNS(XHTML_NS, "canvas");
-      canvas.id = `zia-slot-dashes-${++slotCanvasCount}`;
+      canvas.id = `zia-slot-dashes-${++slotCanvas.count}`;
       canvas.style.display = "block";
-      slotCanvasHolder.appendChild(canvas);
+      slotCanvas.holder.appendChild(canvas);
       canvas.ziaFolder = folder;
       folder.ziaSlotCanvas = canvas;
-      slotCanvases.add(canvas);
+      slotCanvas.all.add(canvas);
       folder.style.setProperty("--zia-slot-dashes-live", `-moz-element(#${canvas.id})`);
     }
     const color = getComputedStyle(container, "::after").stroke;
@@ -186,10 +187,10 @@
   }
 
   function dropGoneSlotCanvases() {
-    for (const canvas of slotCanvases) {
+    for (const canvas of slotCanvas.all) {
       if (!canvas.ziaFolder.isConnected) {
         canvas.remove();
-        slotCanvases.delete(canvas);
+        slotCanvas.all.delete(canvas);
       }
     }
   }
@@ -200,18 +201,16 @@
   // a dragged tab wears is drawn afresh once the width has held still for
   // a moment, swapped in only once it's ready: drawn at every step, each
   // new one blanked the dashes while it loaded.
-  const SLOT_DASHES_SETTLE_MS = 200;
-  let lastSlotDashes = "";
-  let slotDashesTimer = 0;
+  const slotDashes = { last: "", timer: 0 };
   function drawSlotDashes() {
-    clearTimeout(slotDashesTimer);
+    clearTimeout(slotDashes.timer);
     drawSlotDashesNow(true);
     // (a slot not drawn yet, a folder just made or opened, is drawn at once)
     if ([...document.querySelectorAll("zen-folder[zia-empty]")].some((folder) => !folder.ziaSlotDashes)) {
       drawSlotDashesNow();
       return;
     }
-    slotDashesTimer = setTimeout(() => drawSlotDashesNow(), SLOT_DASHES_SETTLE_MS);
+    slotDashes.timer = setTimeout(() => drawSlotDashesNow(), SLOT_DASHES_SETTLE_MS);
   }
 
   function useSlotDashes(target, image) {
@@ -246,8 +245,8 @@
         folder.ziaSlotDashes = key;
         const image = slotDashesImage(width, height, radius, dpr);
         useSlotDashes(folder, image);
-        if (!folder.parentElement?.closest("zen-folder") && image !== lastSlotDashes) {
-          lastSlotDashes = image;
+        if (!folder.parentElement?.closest("zen-folder") && image !== slotDashes.last) {
+          slotDashes.last = image;
           useSlotDashes(root, image);
         }
       }

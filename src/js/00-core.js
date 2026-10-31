@@ -1,4 +1,9 @@
 // Zia: built from src/js by scripts/build.sh. Edit the parts in src/js, not this file.
+
+// The start of Zia's one scope: the once-per-window guard, and the small helpers every part
+// shares (errors noted once, prefs watched, attributes and styles set or removed).
+// Used elsewhere: isLittleZenWindow, root, XHTML_NS, noteError, watchPrefs, setAttr, setStyle,
+// setFlag, urlbarAtBottom, svgSourceOf.
 (() => {
   if (window.__ziaLoaded) {
     return;

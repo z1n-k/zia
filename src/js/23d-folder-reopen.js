@@ -1,7 +1,8 @@
-  // ---------- Folders brought back after being deleted
+  // Folders brought back after being deleted.
   // Firefox keeps a deleted folder as a plain tab group and reopens it as one: it
   // wouldn't collapse, Zia's animations passed it by, and it was named afresh. One
   // back with a deleted folder's id is made a folder again, with its name, icon, colour.
+  // Used elsewhere: wasDeletedFolder, watchReopenedFolders.
   const DELETED_FOLDER_KEEP_MS = 30 * 60 * 1000;
   const deletedFolders = new Map();
 
@@ -44,7 +45,7 @@
       return;
     }
     // (the new folder announces itself too: it isn't named either)
-    window.ziaReopeningUntil = Date.now() + 3000;
+    window.ziaReopeningUntil = Date.now() + REOPEN_NAMING_PAUSE_MS;
     try {
       const label = group.label || saved.label;
       const workspaceId = saved.workspaceId || group.getAttribute("zen-workspace-id") || undefined;
