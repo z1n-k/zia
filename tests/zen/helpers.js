@@ -15,7 +15,8 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const frame = () => new Promise((resolve) => requestAnimationFrame(() => resolve()));
 // Waits for a state rather than a fixed time: resolves with test()'s value as soon as it's
 // truthy (a test that throws counts as not yet), and past `timeout` throws, naming what it
-// waited for (`what`, or else the test's own code). A busy Mac only makes it slower, never wrong.
+// waited for (`what`, which can be a function, to say how things stood then; or else the test's
+// own code). A busy Mac only makes it slower, never wrong.
 async function until(test, { what = "", timeout = 10000, every = 50 } = {}) {
   const end = Date.now() + timeout;
   for (;;) {
@@ -30,7 +31,7 @@ async function until(test, { what = "", timeout = 10000, every = 50 } = {}) {
       return value;
     }
     if (Date.now() >= end) {
-      const named = what || String(test).replace(/\s+/g, " ");
+      const named = (typeof what === "function" ? what() : what) || String(test).replace(/\s+/g, " ");
       throw new Error(`waited ${timeout / 1000}s for ${named}, in vain${threw ? ` (it last threw ${threw})` : ""}`);
     }
     await wait(every);

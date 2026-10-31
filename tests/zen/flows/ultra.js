@@ -143,7 +143,9 @@ music.setAttribute("zia-test", "Music");
 const [other] = await addTabs(["Other"]);
 gBrowser.selectedTab = other;
 const controller = () => music.linkedBrowser.browsingContext?.mediaController;
-await until(() => controller()?.isPlaying, { what: "the tone to play", timeout: 30000 });
+// (saying, if it never does, how the tab stood)
+const tabState = () => `the tone to play (the tab: ${music.linkedBrowser.currentURI.spec.split("/").pop()}, ${["busy", "pending", "activemedia-blocked", "soundplaying", "muted"].filter((name) => music.hasAttribute(name)).join(" ") || "no marks"}, ${controller() ? "a" : "no"} media controller)`;
+await until(() => controller()?.isPlaying, { what: tabState, timeout: 30000 });
 // (Zen's card up, dressed by Zia as in music.js, with its glow in)
 const card = await until(() => {
   const el = document.querySelector("#zen-media-controls-toolbar .zen-media-card");
