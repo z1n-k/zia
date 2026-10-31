@@ -3,90 +3,94 @@
   // Antalik), each where its author places it: a thinking orb for loading, a
   // glow under what's playing, the Library's chosen section springing to the
   // next, and the colour round the open essential drifting.
+  // Used elsewhere: ultraOn, ultraRailSquash, watchUltra.
   const ULTRA_PREF = "zia.ultra";
+  // (how long a tab loads before its orb shows: see watchUltraOrbs)
+  const ULTRA_ORB_WAIT_MS = 300;
+  const ULTRA_SQUASH_MS = 400;
   const ultraOn = () => Services.prefs.getBoolPref(ULTRA_PREF, true);
+  const ultraDark = () => !root.hasAttribute("zia-light");
 
   // A loading tab's spinner as a thinking orb (28r-ultra-orb-engine.js):
   // "connecting" until the page starts arriving, then "searching", the dotted
   // globe. Only once it's been loading a moment, as the orbs' author advises:
   // a quick load keeps its icon rather than flashing an orb.
   function watchUltraOrbs() {
-    const orbs = new Map();
-    const dark = () => !root.hasAttribute("zia-light");
-    const stateFor = (tab) => (tab.hasAttribute("progress") ? "searching" : "connecting");
-
-    const drop = (tab) => {
-      const entry = orbs.get(tab);
-      if (!entry) {
-        return;
-      }
-      clearTimeout(entry.timer);
-      entry.orb?.destroy();
-      entry.orb?.canvas.remove();
-      tab.removeAttribute("zia-orb");
-      orbs.delete(tab);
-    };
-
-    const show = (tab, entry) => {
-      const stack = tab.querySelector(".tab-icon-stack");
-      if (!ultraOn() || !tab.isConnected || !tab.hasAttribute("busy") || !stack) {
-        drop(tab);
-        return;
-      }
-      const canvas = document.createElementNS(XHTML_NS, "canvas");
-      canvas.className = "zia-orb";
-      // (the tab's own name says what's loading)
-      canvas.setAttribute("aria-hidden", "true");
-      stack.append(canvas);
-      // centred on the tab's own icon (its spinner, while loading), which sits in a
-      // wider box with uneven margins: centred in the box, or at its start, the orb
-      // sat a few pixels right, then left, of the icons in the other tabs
-      const icon = [...stack.querySelectorAll(":scope > :is(.tab-icon-image, .tab-throbber, .tab-icon-pending)")]
-        .map((el) => el.getBoundingClientRect())
-        .find((box) => box.width > 0 && box.height > 0);
-      if (icon) {
-        const own = canvas.getBoundingClientRect();
-        canvas.style.translate = `${icon.left + icon.width / 2 - (own.left + own.width / 2)}px ${icon.top + icon.height / 2 - (own.top + own.height / 2)}px`;
-      }
-      entry.orb = ziaOrb(canvas, { state: stateFor(tab), size: 16, dark: dark() });
-      tab.setAttribute("zia-orb", "true");
-    };
-
-    const sync = (tab) => {
-      if (!ultraOn() || !tab.isConnected || !tab.hasAttribute("busy")) {
-        drop(tab);
-        return;
-      }
-      const entry = orbs.get(tab);
-      if (entry) {
-        entry.orb?.setState(stateFor(tab));
-        return;
-      }
-      const waiting = { orb: null, timer: 0 };
-      waiting.timer = setTimeout(() => show(tab, waiting), 300);
-      orbs.set(tab, waiting);
-    };
-
-    const syncAll = () => {
-      for (const tab of new Set([...gBrowser.tabs, ...orbs.keys()])) {
-        sync(tab);
-      }
-    };
-
     gBrowser.tabContainer.addEventListener("TabAttrModified", (event) => {
       const changed = event.detail?.changed || [];
       if (changed.includes("busy") || changed.includes("progress")) {
-        sync(event.target);
+        syncUltraOrb(event.target);
       }
     });
-    gBrowser.tabContainer.addEventListener("TabClose", (event) => drop(event.target));
-    watchPrefs(ULTRA_PREF, syncAll);
+    gBrowser.tabContainer.addEventListener("TabClose", (event) => dropUltraOrb(event.target));
+    watchPrefs(ULTRA_PREF, syncUltraOrbs);
     new MutationObserver(() => {
-      for (const entry of orbs.values()) {
-        entry.orb?.setDark(dark());
+      for (const entry of ultraOrbs.values()) {
+        entry.orb?.setDark(ultraDark());
       }
     }).observe(root, { attributes: true, attributeFilter: ["zia-light"] });
-    syncAll();
+    syncUltraOrbs();
+  }
+
+  const ultraOrbs = new Map();
+  const ultraOrbState = (tab) => (tab.hasAttribute("progress") ? "searching" : "connecting");
+
+  function syncUltraOrbs() {
+    for (const tab of new Set([...gBrowser.tabs, ...ultraOrbs.keys()])) {
+      syncUltraOrb(tab);
+    }
+  }
+
+  function syncUltraOrb(tab) {
+    if (!ultraOn() || !tab.isConnected || !tab.hasAttribute("busy")) {
+      dropUltraOrb(tab);
+      return;
+    }
+    const entry = ultraOrbs.get(tab);
+    if (entry) {
+      entry.orb?.setState(ultraOrbState(tab));
+      return;
+    }
+    const waiting = { orb: null, timer: 0 };
+    waiting.timer = setTimeout(() => showUltraOrb(tab, waiting), ULTRA_ORB_WAIT_MS);
+    ultraOrbs.set(tab, waiting);
+  }
+
+  function showUltraOrb(tab, entry) {
+    const stack = tab.querySelector(".tab-icon-stack");
+    if (!ultraOn() || !tab.isConnected || !tab.hasAttribute("busy") || !stack) {
+      dropUltraOrb(tab);
+      return;
+    }
+    const canvas = document.createElementNS(XHTML_NS, "canvas");
+    canvas.className = "zia-orb";
+    // (the tab's own name says what's loading)
+    canvas.setAttribute("aria-hidden", "true");
+    stack.append(canvas);
+    // centred on the tab's own icon (its spinner, while loading), which sits in a
+    // wider box with uneven margins: centred in the box, or at its start, the orb
+    // sat a few pixels right, then left, of the icons in the other tabs
+    const icon = [...stack.querySelectorAll(":scope > :is(.tab-icon-image, .tab-throbber, .tab-icon-pending)")]
+      .map((el) => el.getBoundingClientRect())
+      .find((box) => box.width > 0 && box.height > 0);
+    if (icon) {
+      const own = canvas.getBoundingClientRect();
+      canvas.style.translate = `${icon.left + icon.width / 2 - (own.left + own.width / 2)}px ${icon.top + icon.height / 2 - (own.top + own.height / 2)}px`;
+    }
+    entry.orb = ziaOrb(canvas, { state: ultraOrbState(tab), size: 16, dark: ultraDark() });
+    tab.setAttribute("zia-orb", "true");
+  }
+
+  function dropUltraOrb(tab) {
+    const entry = ultraOrbs.get(tab);
+    if (!entry) {
+      return;
+    }
+    clearTimeout(entry.timer);
+    entry.orb?.destroy();
+    entry.orb?.canvas.remove();
+    tab.removeAttribute("zia-orb");
+    ultraOrbs.delete(tab);
   }
 
   // A few of a picture's colours for the music player's glow, most present
@@ -172,51 +176,9 @@
   // follows a gentle, music-like level, and sinks and fades out when paused or
   // left. Under the card's text and buttons.
   function watchUltraGlow() {
-    const glows = new Map();
-    const dark = () => !root.hasAttribute("zia-light");
-    const cards = () => document.querySelectorAll("#zen-media-controls-toolbar .zen-media-card");
-
-    const tint = async (card, glow) => {
-      const url = artUrlOf(card);
-      if (card.__ziaGlowArt === url) {
-        return;
-      }
-      card.__ziaGlowArt = url;
-      if (!ultraArtPalettes.has(url)) {
-        ultraArtPalettes.set(url, url ? await readArtPalette(url) : null);
-      }
-      if (card.__ziaGlowArt === url && glows.get(card) === glow) {
-        glow.setColors(ultraArtPalettes.get(url));
-      }
-    };
-
-    const sync = () => {
-      const on = ultraOn();
-      const seen = new Set();
-      for (const card of on ? cards() : []) {
-        seen.add(card);
-        let glow = glows.get(card);
-        if (!glow) {
-          // (the card's squircle, as Zia sets it: it's what the glow is cut to)
-          const cornerShape = getComputedStyle(card).getPropertyValue("--zia-squircle").trim();
-          glow = ziaGlow(card, { dark: dark(), cornerShape });
-          glows.set(card, glow);
-          card.__ziaGlowArt = undefined;
-        }
-        tint(card, glow).catch((err) => noteError("ultra: glow colours", err));
-        glow.setPlaying(card.classList.contains("playing") && card.matches(":hover"));
-      }
-      for (const [card, glow] of glows) {
-        if (!seen.has(card)) {
-          glow.destroy();
-          glows.delete(card);
-        }
-      }
-    };
-
     const toolbar = document.getElementById("zen-media-controls-toolbar");
     if (toolbar) {
-      new MutationObserver(sync).observe(toolbar, {
+      new MutationObserver(syncUltraGlows).observe(toolbar, {
         childList: true,
         subtree: true,
         attributes: true,
@@ -227,19 +189,59 @@
       const later = () => {
         pending ||= requestAnimationFrame(() => {
           pending = 0;
-          sync();
+          syncUltraGlows();
         });
       };
       toolbar.addEventListener("mouseover", later);
       toolbar.addEventListener("mouseout", later);
     }
     new MutationObserver(() => {
-      for (const glow of glows.values()) {
-        glow.setDark(dark());
+      for (const glow of ultraGlows.values()) {
+        glow.setDark(ultraDark());
       }
     }).observe(root, { attributes: true, attributeFilter: ["zia-light"] });
-    watchPrefs(ULTRA_PREF, sync);
-    sync();
+    watchPrefs(ULTRA_PREF, syncUltraGlows);
+    syncUltraGlows();
+  }
+
+  const ultraGlows = new Map();
+
+  function syncUltraGlows() {
+    const on = ultraOn();
+    const seen = new Set();
+    for (const card of on ? document.querySelectorAll("#zen-media-controls-toolbar .zen-media-card") : []) {
+      seen.add(card);
+      let glow = ultraGlows.get(card);
+      if (!glow) {
+        // (the card's squircle, as Zia sets it: it's what the glow is cut to)
+        const cornerShape = getComputedStyle(card).getPropertyValue("--zia-squircle").trim();
+        glow = ziaGlow(card, { dark: ultraDark(), cornerShape });
+        ultraGlows.set(card, glow);
+        card.__ziaGlowArt = undefined;
+      }
+      tintUltraGlow(card, glow).catch((err) => noteError("ultra: glow colours", err));
+      glow.setPlaying(card.classList.contains("playing") && card.matches(":hover"));
+    }
+    for (const [card, glow] of ultraGlows) {
+      if (!seen.has(card)) {
+        glow.destroy();
+        ultraGlows.delete(card);
+      }
+    }
+  }
+
+  async function tintUltraGlow(card, glow) {
+    const url = artUrlOf(card);
+    if (card.__ziaGlowArt === url) {
+      return;
+    }
+    card.__ziaGlowArt = url;
+    if (!ultraArtPalettes.has(url)) {
+      ultraArtPalettes.set(url, url ? await readArtPalette(url) : null);
+    }
+    if (card.__ziaGlowArt === url && ultraGlows.get(card) === glow) {
+      glow.setColors(ultraArtPalettes.get(url));
+    }
   }
 
   // The Library's chosen-section tile (28k-library.js), as it slides to the
@@ -259,7 +261,7 @@
         { scale: "1.02 0.98", offset: 0.7 },
         { scale: "1 1" },
       ],
-      { duration: 400, easing: "ease-out" }
+      { duration: ULTRA_SQUASH_MS, easing: "ease-out" }
     );
   }
 
@@ -287,79 +289,89 @@
   ];
 
   function watchUltraEssentialDrift() {
-    const drifting = new Map();
-    const still = matchMedia("(prefers-reduced-motion: reduce)");
-    const wanted = () => ultraOn() && Services.prefs.getBoolPref("zen.theme.essentials-favicon-bg", false) && !still.matches;
-    const stop = () => {
-      for (const animations of drifting.values()) {
-        for (const animation of animations) {
-          animation.cancel();
-        }
-      }
-      drifting.clear();
-    };
-    const backgroundOf = (tab) => tab.querySelector(":scope > .tab-stack > .tab-background");
-    const halt = (background) => {
-      for (const animation of drifting.get(background) || []) {
+    ultraDrift.still = matchMedia("(prefers-reduced-motion: reduce)");
+    new MutationObserver(onUltraDriftSelect).observe(gNavToolbox, { subtree: true, attributes: true, attributeFilter: ["visuallyselected"] });
+    watchPrefs([ULTRA_PREF, "zen.theme.essentials-favicon-bg"], syncUltraDrift);
+    ultraDrift.still.addEventListener("change", syncUltraDrift);
+    syncUltraDrift();
+  }
+
+  // Each open essential's drift (its animations, by its background), and the reduced-motion
+  // query that stills them
+  const ultraDrift = { animations: new Map(), still: null };
+  const ultraDriftWanted = () =>
+    ultraOn() && Services.prefs.getBoolPref("zen.theme.essentials-favicon-bg", false) && !ultraDrift.still.matches;
+  const ultraDriftBackground = (tab) => tab.querySelector(":scope > .tab-stack > .tab-background");
+
+  function syncUltraDrift() {
+    stopUltraDrift();
+    if (!ultraDriftWanted()) {
+      return;
+    }
+    for (const tab of document.querySelectorAll(".tabbrowser-tab[zen-essential][visuallyselected]")) {
+      startUltraDrift(tab);
+    }
+  }
+
+  function stopUltraDrift() {
+    for (const animations of ultraDrift.animations.values()) {
+      for (const animation of animations) {
         animation.cancel();
       }
-      drifting.delete(background);
-    };
-    const start = (tab) => {
-      const background = backgroundOf(tab);
-      if (!background) {
-        return;
+    }
+    ultraDrift.animations.clear();
+  }
+
+  // (an essential chosen again: its colour is drawn anew, so its drift too. Left,
+  // the drift stops: the same layer is then the fine edge round its tile, which
+  // drifted, swelled and turned out of the tile, as two lines and then gone)
+  function onUltraDriftSelect(records) {
+    if (!ultraDriftWanted()) {
+      return;
+    }
+    for (const { target } of records) {
+      if (!target.hasAttribute("zen-essential")) {
+        continue;
       }
-      halt(background);
-      drifting.set(
-        background,
-        ESSENTIAL_DRIFT.map(([keyframes, timing]) => {
-          const animation = background.animate(keyframes, { ...timing, iterations: Infinity, pseudoElement: "::after" });
-          // (the page's clock: wherever it's started, it's where the others are)
-          animation.startTime = 0;
-          return animation;
-        })
-      );
-    };
-    const sync = () => {
-      stop();
-      if (!wanted()) {
-        return;
-      }
-      for (const tab of document.querySelectorAll(".tabbrowser-tab[zen-essential][visuallyselected]")) {
-        start(tab);
-      }
-    };
-    // (an essential chosen again: its colour is drawn anew, so its drift too. Left,
-    // the drift stops: the same layer is then the fine edge round its tile, which
-    // drifted, swelled and turned out of the tile, as two lines and then gone)
-    new MutationObserver((records) => {
-      if (!wanted()) {
-        return;
-      }
-      for (const { target } of records) {
-        if (!target.hasAttribute("zen-essential")) {
-          continue;
-        }
-        if (target.hasAttribute("visuallyselected")) {
-          start(target);
-        } else {
-          const background = backgroundOf(target);
-          if (background) {
-            halt(background);
-          }
+      if (target.hasAttribute("visuallyselected")) {
+        startUltraDrift(target);
+      } else {
+        const background = ultraDriftBackground(target);
+        if (background) {
+          haltUltraDrift(background);
         }
       }
-      for (const [background, animations] of drifting) {
-        if (!background.isConnected) {
-          animations.forEach((animation) => animation.cancel());
-          drifting.delete(background);
-        }
+    }
+    for (const [background, animations] of ultraDrift.animations) {
+      if (!background.isConnected) {
+        animations.forEach((animation) => animation.cancel());
+        ultraDrift.animations.delete(background);
       }
-    }).observe(gNavToolbox, { subtree: true, attributes: true, attributeFilter: ["visuallyselected"] });
-    watchPrefs([ULTRA_PREF, "zen.theme.essentials-favicon-bg"], sync);
-    still.addEventListener("change", sync);
-    sync();
+    }
+  }
+
+  function startUltraDrift(tab) {
+    const background = ultraDriftBackground(tab);
+    if (!background) {
+      return;
+    }
+    haltUltraDrift(background);
+    ultraDrift.animations.set(
+      background,
+      ESSENTIAL_DRIFT.map(([keyframes, timing]) => {
+        const animation = background.animate(keyframes, { ...timing, iterations: Infinity, pseudoElement: "::after" });
+        // (the page's clock: wherever it's started, it's where the others are)
+        animation.startTime = 0;
+        return animation;
+      })
+    );
+  }
+
+  function haltUltraDrift(background) {
+    for (const animation of ultraDrift.animations.get(background) || []) {
+      animation.cancel();
+    }
+    ultraDrift.animations.delete(background);
   }
 
   function watchUltra() {
