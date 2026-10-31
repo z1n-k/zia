@@ -3,7 +3,7 @@
 | # | Item | Criteria | Attempts | Assistant | Master | Status |
 |---|------|----------|----------|-----------|--------|--------|
 | 1 | Zen test harness (L1) | L1.1–L1.3 | 4 | 6, 9, 8.5, 8 | | judged 4×; last fixes (motion values, retries) verified by own break check; to master judge |
-| 2 | Tab drag split + files 01–06 restructured | B1–B5, B7 | 1 | 8.5 | | fixes queued: timers, hidden 20, drag.width* ownership, thumb object, proxy/stand-in naming |
+| 2 | Tab drag, all 13 files | B1–B5, B7 | 2 | 8.5 (01–06), 8.3 (01–12) | | fixes done: session ownership written down, word glossary, timer note; to master judge |
 | 3 | Tab drag stage 2: essentials drag own file | B1, B2, B4 | 0 | | | queued |
 | 4 | Tab drag stage 3: split-view drag own file | B1, B2, B4 | 0 | | | queued |
 | 5 | Tab drag stage 4: folder hover and room own file | B1, B2, B4 | 0 | | | queued |
