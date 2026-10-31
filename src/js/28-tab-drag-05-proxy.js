@@ -352,7 +352,7 @@
     const copy = trackCopy(tab.cloneNode(true));
     copy.removeAttribute("id");
     for (const name of [
-      "dragtarget", "pending-drag", "multiselected", "zen-pinned-changed", "folder-active", "zen-folder-active",
+      "dragtarget", "pending-drag", "multiselected", "zen-pinned-changed", "folder-active",
       "zia-drop-lock", "zia-landing", "zia-hover-held", "zia-held-pinned", "zia-shift", "zia-dragging", "zia-to-essential",
     ]) {
       copy.removeAttribute(name);
