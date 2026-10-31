@@ -12,5 +12,5 @@
 | 8 | ESLint, Stylelint, unused check in CI | B8 | 0 | | | queued |
 | 9 | Remaining large JS files (06, 08, 28r, 28t, 01, 03 ...) | B2–B5, B7 | 0 | | | queued |
 | 10 | CSS clean-up | B2.2, B9 | 0 | | | queued |
-| 11 | Zen-update early warning | L2 | 0 | | | queued |
-| 12 | Generated code map | L3 | 0 | | | queued |
+| 11 | Zen-update early warning | L2 | 0 | | | built: scripts/check-zen.mjs; on Zia 2.112.6 vs Zen 1.23.4b→1.24b it flags the 4 --input-text-* renames Zia had to follow; to judge |
+| 12 | Generated code map | L3 | 0 | | | built: scripts/map.mjs → docs/MAP.md, CI --check; regenerate after sweep; to judge |
