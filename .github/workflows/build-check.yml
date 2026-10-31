@@ -1,7 +1,8 @@
 name: Build check
 
-# zia.uc.js and chrome.css are built from src/. This fails if they've been
-# edited directly, or src/ changed without rebuilding.
+# zia.uc.js and chrome.css are built from src/: this fails if they've been edited directly,
+# or src/ changed without rebuilding. Then lint (ESLint, Stylelint) and the code map
+# (docs/MAP.md, made from the code by scripts/map.mjs) must be current.
 on:
   push:
   pull_request:
@@ -12,3 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: scripts/build.sh --check
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: scripts/lint.sh
+      - run: node scripts/map.mjs --check

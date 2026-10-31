@@ -1,0 +1,9 @@
+# Names Zia still sets although a newer Zen or Firefox dropped them, on purpose, so older
+# releases keep working (scripts/check-zen.mjs reports these apart and doesn't fail on them).
+# One per line: the name, then why.
+--input-text-background-color  Firefox 158 and older (Zen 1.23); set beside --input-background-color
+--input-text-border             Firefox 158 and older (Zen 1.23); set beside --input-border
+--input-text-border-radius      Firefox 158 and older (Zen 1.23); set beside --input-border-radius
+--input-text-min-height         Firefox 158 and older (Zen 1.23); set beside --input-min-height
+zen-little-window               set by the Little Zen mod, not Zen; Zia leaves its windows alone
+zen-renaming-group              set by the Advanced Tab Groups mod, not Zen; Zia styles its rename field
