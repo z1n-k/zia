@@ -1,8 +1,17 @@
   // An essential dragged: its copy, the tiles shifting, and leftovers swept up.
+  // Used elsewhere: essentialDrag, essentialDropped, ESSENTIAL_MS, sizeCopy, moveCopyTo,
+  // plainTabSize, sweepLeftovers, tapOnTileShift, tapOnNewTile, watchEssentialStart.
 
+  const ESSENTIAL_MS = 140;
+  // (a move with no button held this long after the drag began: it ended unseen)
+  const ESSENTIAL_GRACE_MS = 300;
+  const TAP_AGAIN_MS = 300;
+
+  // the essential being dragged (endEssentialDrag), and the one just dropped (settle)
   let essentialDrag = null;
   let essentialDropped = null;
-  const ESSENTIAL_MS = 140;
+  // the tile the pointer was last over, and where and when it last tapped
+  const tileTap = { under: null, point: null, at: 0 };
 
   // Zen clears the size and place of every essential when a drop lands:
   // a floating copy with none stretches across the window and falls to
@@ -149,8 +158,8 @@
     muteZenHaptics(true);
     // The drag starts on its own tile (which tileUnder skips), so the very
     // first neighbour it moves onto taps too.
-    lastTileUnder = tab;
-    lastTapPoint = null;
+    tileTap.under = tab;
+    tileTap.point = null;
     essentialDrag = {
       tab,
       copy,
@@ -192,86 +201,91 @@
   };
 
   const OVER_GAP = {};
-  let lastTileUnder = null;
-  let lastTapPoint = null;
-  let lastTapAt = 0;
   const tapOnNewTile = (point, skip) => {
     const tile = tileUnder(point, skip);
-    if (tile && tile !== lastTileUnder && lastTileUnder !== null) {
+    if (tile && tile !== tileTap.under && tileTap.under !== null) {
       const box = tile.getBoundingClientRect();
       // half a tile on from the last tap, or long enough after: edge jitter doesn't tap twice,
       // but heading back over the same edge does
       const far =
-        !lastTapPoint ||
-        Math.abs(point.x - lastTapPoint.x) >= box.width / 2 ||
-        Math.abs(point.y - lastTapPoint.y) >= box.height / 2 ||
-        Date.now() - lastTapAt > 300;
+        !tileTap.point ||
+        Math.abs(point.x - tileTap.point.x) >= box.width / 2 ||
+        Math.abs(point.y - tileTap.point.y) >= box.height / 2 ||
+        Date.now() - tileTap.at > TAP_AGAIN_MS;
       if (far) {
         tap();
-        lastTapPoint = { x: point.x, y: point.y };
-        lastTapAt = Date.now();
+        tileTap.point = { x: point.x, y: point.y };
+        tileTap.at = Date.now();
       }
     }
     if (tile) {
-      lastTileUnder = tile;
-      lastTapPoint ||= { x: point.x, y: point.y };
+      tileTap.under = tile;
+      tileTap.point ||= { x: point.x, y: point.y };
     } else if (skip && inBox(window.gZenWorkspaces?.getCurrentEssentialsContainer?.(), point)) {
       // over the essentials but on no tile (the drop's gap, or its own spot): the next tile is
       // a new one, so moving back onto the tile that just slid aside taps again
-      lastTileUnder = OVER_GAP;
+      tileTap.under = OVER_GAP;
     }
   };
 
+  const sweepOnPress = () => {
+    if (!drag && !essentialDrag) {
+      sweepLeftovers();
+    }
+  };
+
+  const removeStrayCopies = (records) => {
+    for (const record of records) {
+      for (const node of record.addedNodes) {
+        if (node.nodeType === 1 && node.hasAttribute("zia-essential-proxy") && !liveCopies.has(node)) {
+          removeCopy(node);
+        }
+      }
+    }
+  };
+
+  // Zen's placeholder for a tab dragged over the essentials is a cell, and Zen sets the
+  // grid's columns by cell count (eight essentials and it went three to a row) but shifts
+  // the tiles by the old columns, past the sidebar's edge: the columns are kept meanwhile.
+  const keepGridColumns = (records) => {
+    for (const { target: grid, oldValue } of records) {
+      const slot = grid.querySelector(":scope > vbox:not(.tabbrowser-tab)");
+      if (!slot) {
+        continue;
+      }
+      if (grid.ziaColumns?.slot !== slot) {
+        grid.ziaColumns = { slot, value: oldValue };
+      }
+      const value = grid.ziaColumns.value;
+      if (grid.getAttribute("data-hack-type") !== value) {
+        if (value === null) {
+          grid.removeAttribute("data-hack-type");
+        } else {
+          grid.setAttribute("data-hack-type", value);
+        }
+      }
+    }
+  };
+
+  const endUnseenEssentialDrag = (event) => {
+    if (essentialDrag && event.buttons === 0 && Date.now() - (essentialDrag.startedAt || 0) > ESSENTIAL_GRACE_MS) {
+      endEssentialDrag();
+    }
+  };
 
   // its listeners and hooks, added by moveTabsLikeDia (28-tab-dragging.js) in order
   function watchEssentialStart() {
-    window.addEventListener("mousedown", () => {
-      if (!drag && !essentialDrag) {
-        sweepLeftovers();
-      }
-    }, true);
-    new MutationObserver((records) => {
-      for (const record of records) {
-        for (const node of record.addedNodes) {
-          if (node.nodeType === 1 && node.hasAttribute("zia-essential-proxy") && !liveCopies.has(node)) {
-            removeCopy(node);
-          }
-        }
-      }
-    }).observe(document.getElementById("navigator-toolbox") || document.documentElement, { childList: true, subtree: true });
-
-    // Zen's placeholder for a tab dragged over the essentials is a cell, and Zen sets the
-    // grid's columns by cell count (eight essentials and it went three to a row) but shifts
-    // the tiles by the old columns, past the sidebar's edge: the columns are kept meanwhile.
-    new MutationObserver((records) => {
-      for (const { target: grid, oldValue } of records) {
-        const slot = grid.querySelector(":scope > vbox:not(.tabbrowser-tab)");
-        if (!slot) {
-          continue;
-        }
-        if (grid.ziaColumns?.slot !== slot) {
-          grid.ziaColumns = { slot, value: oldValue };
-        }
-        const value = grid.ziaColumns.value;
-        if (grid.getAttribute("data-hack-type") !== value) {
-          if (value === null) {
-            grid.removeAttribute("data-hack-type");
-          } else {
-            grid.setAttribute("data-hack-type", value);
-          }
-        }
-      }
-    }).observe(document.getElementById("navigator-toolbox") || document.documentElement, {
+    window.addEventListener("mousedown", sweepOnPress, true);
+    new MutationObserver(removeStrayCopies).observe(document.getElementById("navigator-toolbox") || document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+    new MutationObserver(keepGridColumns).observe(document.getElementById("navigator-toolbox") || document.documentElement, {
       subtree: true,
       attributes: true,
       attributeFilter: ["data-hack-type"],
       attributeOldValue: true,
     });
-
-    window.addEventListener("mousemove", (event) => {
-      if (essentialDrag && event.buttons === 0 && Date.now() - (essentialDrag.startedAt || 0) > 300) {
-        endEssentialDrag();
-      }
-    }, true);
+    window.addEventListener("mousemove", endUnseenEssentialDrag, true);
   }
 

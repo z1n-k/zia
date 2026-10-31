@@ -13850,6 +13850,114 @@
   };
 
   // A drag starting: begin, and the pointer's taps, clicks and folder snaps around it.
+  // Used elsewhere: begin, watchDragStart.
+
+  // (the rows round the folded tabs closing up)
+  const FOLD_CLOSE_MS = 160;
+
+  // An open folder is shut the moment it starts to be dragged (before the drag begins,
+  // its animations jumped to their end so the list is closed at once), and dragged as a
+  // closed folder. A plain click still just closes it.
+  let snapping = null;
+
+  // Several tabs selected: the others fold into the one dragged (out of the list, the
+  // rows closing up, a count on it), as macOS drags several things; Firefox moves them
+  // all on the drop, and they show again there. (Only the dragged one moved, and the
+  // rest jumped across on the drop.)
+  const foldCompanions = (target) => {
+    let companions = 0;
+    // (where the dragged tab was before those above it folded away, for the first move to
+    // measure how far it rose, #396)
+    let foldedFrom = null;
+    const startTop = target.getBoundingClientRect().top;
+    const others = gBrowser.selectedTabs.filter((tab) => tab !== target && !tab.hasAttribute("zen-essential") && tab.isConnected);
+    // (the rows round them close up smoothly as they fold away, rather than at once)
+    const before = new Map();
+    if (others.length) {
+      for (const item of gBrowser.tabContainer.ariaFocusableItems) {
+        const node = nodeToMove(item);
+        if (node && node !== target && !others.includes(item) && !before.has(node)) {
+          before.set(node, node.getBoundingClientRect().top);
+        }
+      }
+    }
+    // (the list let out of its box before they fold: the rows closing up overflow it a
+    // moment, it looked scrollable, stayed clipped, and cut the dragged tab off, #396)
+    unclipAround(target);
+    for (const tab of others) {
+      tab.setAttribute("zia-drag-companion", "true");
+    }
+    if (others.length) {
+      target.setAttribute("zia-drag-count", String(others.length + 1));
+      companions = others.length;
+      foldedFrom = startTop;
+      for (const [node, top] of before) {
+        const now = node.getBoundingClientRect().top;
+        if (Math.abs(top - now) > 0.5) {
+          node.animate([{ translate: `0 ${top - now}px` }, { translate: "0 0" }], { duration: FOLD_CLOSE_MS, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
+        }
+      }
+    }
+    return { companions, foldedFrom };
+  };
+
+  // the separator's top, opened first if it's hidden
+  const openSeparator = (folder) => {
+    const sep = currentSeparator();
+    if (sep && !folder && (sep.hidden || sep.closest?.("[hide-separator]") || !sep.getBoundingClientRect().height)) {
+      sep.setAttribute("zia-sep-open", "true");
+    }
+    return sep ? sep.getBoundingClientRect().top : null;
+  };
+
+  // The step between rows, for the rows to move by: the dragged row's own height unless a
+  // closer pair of rows shows a tighter one
+  const rowPitch = (rows, mine, height, sepTop) => {
+    const side = (top) => (sepTop == null ? 0 : top > sepTop ? 1 : -1);
+    const fits = (gap) => gap > 8 && gap < height * 1.6;
+    // (only between two side-by-side rows in the same list: a folder's name-to-tab gap and
+    // its padding made the step short or long, and everything snapped the rest on the drop)
+    const head = (row) => !!row.node?.classList?.contains("tab-group-label-container");
+    const pair = (a, b) => !head(a) && !head(b) && a.node?.parentElement === b.node?.parentElement && side(a.top) === side(b.top);
+    let best = Infinity;
+    for (const row of rows) {
+      if (Math.abs(row.index - mine.index) !== 1 || !pair(row, mine)) {
+        continue;
+      }
+      const gap = Math.abs(row.top - mine.top);
+      if (fits(gap) && gap < best) {
+        best = gap;
+      }
+    }
+    if (best === Infinity) {
+      const sorted = [...rows].sort((a, b) => a.top - b.top);
+      for (let i = 1; i < sorted.length; i++) {
+        if (!pair(sorted[i - 1], sorted[i])) {
+          continue;
+        }
+        const gap = sorted[i].top - sorted[i - 1].top;
+        if (fits(gap) && gap < best) {
+          best = gap;
+        }
+      }
+    }
+    return best < Infinity ? best : height;
+  };
+
+  const marginsOf = (node) => {
+    const style = node ? getComputedStyle(node) : null;
+    return { start: parseFloat(style?.marginInlineStart) || 0, end: parseFloat(style?.marginInlineEnd) || 0 };
+  };
+
+  // every row but what's dragged, held where it is for the rows' moves to start from
+  const resetRows = (rows, moving, folder) => {
+    for (const row of rows) {
+      if (row.node === moving || (folder && folder.contains(row.node))) {
+        continue;
+      }
+      place(row.node, 0, false);
+    }
+  };
 
   const begin = (target, event) => {
     if (!target || target.hasAttribute?.("zen-essential")) {
@@ -13863,99 +13971,19 @@
     }
     const split = !folder && target.group?.hasAttribute?.("split-view-group") ? target.group : null;
     const moving = folder || split || target;
-    // Several tabs selected: the others fold into the one dragged (out of the list, the
-    // rows closing up, a count on it), as macOS drags several things; Firefox moves them
-    // all on the drop, and they show again there. (Only the dragged one moved, and the
-    // rest jumped across on the drop.)
-    let companions = 0;
-    // (where the dragged tab was before those above it folded away, for the first move to
-    // measure how far it rose, #396)
-    let foldedFrom = null;
-    if (!folder && !split && target.multiselected) {
-      const startTop = target.getBoundingClientRect().top;
-      const others = gBrowser.selectedTabs.filter((tab) => tab !== target && !tab.hasAttribute("zen-essential") && tab.isConnected);
-      // (the rows round them close up smoothly as they fold away, rather than at once)
-      const before = new Map();
-      if (others.length) {
-        for (const item of gBrowser.tabContainer.ariaFocusableItems) {
-          const node = nodeToMove(item);
-          if (node && node !== target && !others.includes(item) && !before.has(node)) {
-            before.set(node, node.getBoundingClientRect().top);
-          }
-        }
-      }
-      // (the list let out of its box before they fold: the rows closing up overflow it a
-      // moment, it looked scrollable, stayed clipped, and cut the dragged tab off, #396)
-      unclipAround(target);
-      for (const tab of others) {
-        tab.setAttribute("zia-drag-companion", "true");
-      }
-      if (others.length) {
-        target.setAttribute("zia-drag-count", String(others.length + 1));
-        companions = others.length;
-        foldedFrom = startTop;
-        for (const [node, top] of before) {
-          const now = node.getBoundingClientRect().top;
-          if (Math.abs(top - now) > 0.5) {
-            node.animate([{ translate: `0 ${top - now}px` }, { translate: "0 0" }], { duration: 160, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
-          }
-        }
-      }
-    }
+    const { companions, foldedFrom } =
+      !folder && !split && target.multiselected ? foldCompanions(target) : { companions: 0, foldedFrom: null };
     const rows = measureRows(folder ? null : target);
     const mine = rows.find((row) => row.item === target || row.node === moving || (folder && folder.contains(row.node)));
     const box = layoutTop(moving);
-    const sep = currentSeparator();
-
-    if (sep && !folder && (sep.hidden || sep.closest?.("[hide-separator]") || !sep.getBoundingClientRect().height)) {
-      sep.setAttribute("zia-sep-open", "true");
-    }
-    const sepTop = sep ? sep.getBoundingClientRect().top : null;
-    const side = (top) => (sepTop == null ? 0 : top > sepTop ? 1 : -1);
-    let pitch = box.height;
-
-    if (!folder && mine) {
-      const fits = (gap) => gap > 8 && gap < box.height * 1.6;
-      // (only between two side-by-side rows in the same list: a folder's name-to-tab gap and
-      // its padding made the step short or long, and everything snapped the rest on the drop)
-      const head = (row) => !!row.node?.classList?.contains("tab-group-label-container");
-      const pair = (a, b) => !head(a) && !head(b) && a.node?.parentElement === b.node?.parentElement && side(a.top) === side(b.top);
-      let best = Infinity;
-      for (const row of rows) {
-        if (Math.abs(row.index - mine.index) !== 1 || !pair(row, mine)) {
-          continue;
-        }
-        const gap = Math.abs(row.top - mine.top);
-        if (fits(gap) && gap < best) {
-          best = gap;
-        }
-      }
-      if (best === Infinity) {
-        const sorted = [...rows].sort((a, b) => a.top - b.top);
-        for (let i = 1; i < sorted.length; i++) {
-          if (!pair(sorted[i - 1], sorted[i])) {
-            continue;
-          }
-          const gap = sorted[i].top - sorted[i - 1].top;
-          if (fits(gap) && gap < best) {
-            best = gap;
-          }
-        }
-      }
-      if (best < Infinity) {
-        pitch = best;
-      }
-    }
+    const sepTop = openSeparator(folder);
+    const pitch = !folder && mine ? rowPitch(rows, mine, box.height, sepTop) : box.height;
     document.documentElement.setAttribute("zia-dragging-tab", "true");
     muteZenHaptics(true);
 
     // a split's row narrows into a folder as a tab does, by its box
     const bg = folder ? null : split ? split.querySelector(":scope > .tab-group-container") : bgOf(target);
     const content = folder || split ? null : contentOf(target);
-    const margins = (node) => {
-      const style = node ? getComputedStyle(node) : null;
-      return { start: parseFloat(style?.marginInlineStart) || 0, end: parseFloat(style?.marginInlineEnd) || 0 };
-    };
     unclipAround(moving);
     noLanding();
     drag = {
@@ -13963,8 +13991,8 @@
       bg,
       content,
       bgBox: bg ? bg.getBoundingClientRect() : null,
-      bgBase: margins(bg),
-      contentBase: margins(content),
+      bgBase: marginsOf(bg),
+      contentBase: marginsOf(content),
       widthKey: target.group && isFolderEl(target.group) ? target.group : "plain",
       tab: target,
       folder,
@@ -13985,18 +14013,9 @@
     };
     dragCore.lastDy = 0;
     lendOut(split || (folder ? null : target));
-    for (const row of rows) {
-      if (row.node === moving || (folder && folder.contains(row.node))) {
-        continue;
-      }
-      place(row.node, 0, false);
-    }
+    resetRows(rows, moving, folder);
   };
 
-  // An open folder is shut the moment it starts to be dragged (before the drag begins,
-  // its animations jumped to their end so the list is closed at once), and dragged as a
-  // closed folder. A plain click still just closes it.
-  let snapping = null;
   const snapShut = (folder) => {
     try {
       folder.collapsed = true;
@@ -14023,61 +14042,71 @@
     }
   };
 
+  const notePress = (event) => {
+    if (event.button !== 0) {
+      return;
+    }
+    const tab = tabFromEvent(event);
+    dragCore.pending = tab ? { tab, clientY: event.clientY, screenY: event.screenY } : null;
+  };
+
+  const noteFolderPress = (event) => {
+    snapping = null;
+    if (event.button !== 0 || !featureOn("dia-tab-drag")) {
+      return;
+    }
+    const label = event.target?.closest?.(".tab-group-label-container");
+    const folder = label?.closest?.("zen-folder");
+    if (!folder || label.parentElement !== folder || isCollapsed(folder)) {
+      return;
+    }
+    snapping = { folder, x: event.screenX, y: event.screenY, shut: false };
+  };
+
+  const snapOnMove = (event) => {
+    if (!snapping || snapping.shut) {
+      return;
+    }
+    if (!(event.buttons & 1)) {
+      snapping = null;
+      return;
+    }
+    if (Math.hypot(event.screenX - snapping.x, event.screenY - snapping.y) < 2) {
+      return;
+    }
+    snapping.shut = true;
+    snapShut(snapping.folder);
+  };
+
+  // shut already: the click that would have shut it isn't let reopen it
+  const swallowSnapClick = (event) => {
+    const shut = snapping?.shut && snapping.folder.contains(event.target);
+    snapping = null;
+    if (shut) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  };
+
   // its listeners and hooks, added by moveTabsLikeDia (28-tab-dragging.js) in order
   function watchDragStart() {
-    window.addEventListener(
-      "mousedown",
-      (event) => {
-        if (event.button !== 0) {
-          return;
-        }
-        const tab = tabFromEvent(event);
-        dragCore.pending = tab ? { tab, clientY: event.clientY, screenY: event.screenY } : null;
-      },
-      true
-    );
-    window.addEventListener("mousedown", (event) => {
-      snapping = null;
-      if (event.button !== 0 || !featureOn("dia-tab-drag")) {
-        return;
-      }
-      const label = event.target?.closest?.(".tab-group-label-container");
-      const folder = label?.closest?.("zen-folder");
-      if (!folder || label.parentElement !== folder || isCollapsed(folder)) {
-        return;
-      }
-      snapping = { folder, x: event.screenX, y: event.screenY, shut: false };
-    }, true);
-    window.addEventListener("mousemove", (event) => {
-      if (!snapping || snapping.shut) {
-        return;
-      }
-      if (!(event.buttons & 1)) {
-        snapping = null;
-        return;
-      }
-      if (Math.hypot(event.screenX - snapping.x, event.screenY - snapping.y) < 2) {
-        return;
-      }
-      snapping.shut = true;
-      snapShut(snapping.folder);
-    }, true);
-    // shut already: the click that would have shut it isn't let reopen it
-    window.addEventListener("click", (event) => {
-      const shut = snapping?.shut && snapping.folder.contains(event.target);
-      snapping = null;
-      if (shut) {
-        event.stopPropagation();
-        event.preventDefault();
-      }
-    }, true);
+    window.addEventListener("mousedown", notePress, true);
+    window.addEventListener("mousedown", noteFolderPress, true);
+    window.addEventListener("mousemove", snapOnMove, true);
+    window.addEventListener("click", swallowSnapClick, true);
     window.addEventListener("dragstart", onStart, true);
     document.getElementById("tabbrowser-tabs")?.addEventListener("dragstart", onStart, true);
-
   }
 
-  // The pointer moving over the sidebar (onOver) and Zen's drop fixed to where Zia shows it
-  // (fixDrop).
+  // The pointer moving over the sidebar (onOver), Zen's drop fixed to where Zia shows it
+  // (fixDrop), and the glide everything let go lands with.
+  // Used elsewhere: onOver, fixDrop, pointerOf, inBox, essentialsGrid, essentialsBottom,
+  // overAnyTile, LAND_MS, LAND_EASE, landEase.
+
+  // Everything let go glides into place the same way: tabs, splits,
+  // folders and essentials
+  const LAND_MS = 180;
+  const LAND_EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 
   const acceptSplitDrop = (event) => {
     event.preventDefault();
@@ -14120,29 +14149,122 @@
     return box.width > 0 && point.x >= box.left && point.x <= box.right && point.y >= box.top && point.y <= tilesBottom(box.bottom, grid) + 6;
   };
 
+  // The other selected tabs folded away above the dragged one moved it up a row each,
+  // and the drag is measured from that much higher, or it hung below the pointer. Read
+  // on the first move, not as they fold: in a scrolled list (compact mode's, often) the
+  // list scrolls back a moment later to keep the tab in view, and it hadn't really moved
+  // (#396). (Less any move already on the tab itself, Firefox's or Zia's.)
+  const measureFoldLift = () => {
+    const style = getComputedStyle(drag.moving);
+    const shifted = new DOMMatrix(style.transform === "none" ? undefined : style.transform).m42 + (parseFloat(style.translate.split(" ")[1]) || 0);
+    const lift = drag.foldedFrom - (drag.moving.getBoundingClientRect().top - shifted);
+    drag.foldedFrom = null;
+    drag.clientY &&= drag.clientY - lift;
+    drag.screenY &&= drag.screenY - lift;
+  };
+
+  // how far the pointer has moved since the drag began, or null if the event can't tell
+  const dragDy = (event) => {
+    if (event.clientY) {
+      return event.clientY - drag.clientY;
+    }
+    if (event.screenY && drag.screenY) {
+      return event.screenY - drag.screenY;
+    }
+    return null;
+  };
+
+  // Out past the sidebar's sides: the page's picture shows in place of the stand-in
+  const trackAway = (over, point) => {
+    const sideBox = document.getElementById("navigator-toolbox")?.getBoundingClientRect();
+    drag.away =
+      !drag.folder && !!point.x && !over?.closest?.("#navigator-toolbox") && !!sideBox?.width &&
+      (point.x < sideBox.left || point.x > sideBox.right);
+
+    if (drag.away) {
+      drag.essentials = false;
+      setFlag("zia-drag-over-essentials", false);
+      hideProxy();
+      if (!drag.folder && !drag.split) {
+        showThumb(point.x, point.y);
+      }
+    }
+    return drag.away;
+  };
+
+  const measureEssentials = (over, point) => {
+    const essentials =
+      document.getElementById("zen-essentials") ||
+      window.gZenWorkspaces?.getCurrentEssentialsContainer?.() ||
+      document.querySelector(".zen-essentials-container");
+    const grid = essentialsGrid();
+    const hasTiles = !!grid?.querySelector(".tabbrowser-tab[zen-essential]:not([zia-essential-proxy])");
+    const promo = over?.closest?.("zen-essentials-promo") || null;
+
+    // (#zen-essentials can measure 0px tall with the tiles drawn above
+    // it, so the space's own grid is measured too)
+    let overEssentials =
+      !!promo || !!over?.closest?.("#zen-essentials, .zen-essentials-container") || inBox(essentials, point) || inBox(grid, point);
+
+    drag.firstTop = drag.rows?.length ? Math.min(...drag.rows.map((row) => row.top)) : null;
+    if (!overEssentials && !hasTiles && drag.firstTop != null) {
+      overEssentials = point.y < drag.firstTop + 4;
+    }
+    drag.hasTiles = hasTiles;
+    return { overEssentials, hasTiles, promo, grid };
+  };
+
+  // A two-site split over the essentials becomes a split essential
+  // (24b-split-essentials.js)
+  const trackSplitEssential = (event, point, overEssentials) => {
+    drag.splitEssential = !!drag.split && overEssentials && canBecomeSplitEssential(drag.tab);
+    if (drag.split && overEssentials && !drag.splitEssential && !drag.splitRefusalNoted) {
+      drag.splitRefusalNoted = true;
+      console.warn(`[Zia] Split essentials: this split can't go in the essentials: ${splitEssentialRefusal(drag.tab)}`);
+    }
+    // Zen turns a split down over the essentials, and without a yes
+    // there'd be no drop at all
+    holdSplitSlot(drag.splitEssential, point);
+    if (drag.splitEssential) {
+      acceptSplitDrop(event);
+      if (point.x) {
+        tapOnNewTile(point, null);
+        showProxy(point.x, point.y);
+      }
+    } else if (drag.split) {
+      hideProxy();
+    }
+  };
+
+  const trackEssentials = (event, over, point) => {
+    const { overEssentials, hasTiles, promo, grid } = measureEssentials(over, point);
+    drag.essentials = !drag.folder && !drag.split && overEssentials && canBeEssential(drag.tab);
+    trackSplitEssential(event, point, overEssentials);
+    // the dragged tab's section stops covering the essentials, so Zen
+    // sees them under the pointer and takes the drop
+    setFlag("zia-drag-over-essentials", !!(drag.essentials || drag.splitEssential));
+    drag.noTiles = drag.essentials && !hasTiles && !promo;
+    makeRoom(drag.noTiles ? document.getElementById("zen-essentials") || grid : null);
+    if (drag.essentials) {
+      fitZenSlot();
+    }
+    if (drag.essentials && point.x) {
+      tapOnTileShift();
+      showProxy(point.x, point.y);
+    } else if (!drag.essentials && !drag.splitEssential) {
+      drag.tileShifts = null;
+      hideProxy();
+    }
+  };
+
   const onOver = (event) => {
     if (!drag?.moving?.isConnected) {
       return;
     }
-    // The other selected tabs folded away above the dragged one moved it up a row each,
-    // and the drag is measured from that much higher, or it hung below the pointer. Read
-    // on the first move, not as they fold: in a scrolled list (compact mode's, often) the
-    // list scrolls back a moment later to keep the tab in view, and it hadn't really moved
-    // (#396). (Less any move already on the tab itself, Firefox's or Zia's.)
     if (drag.foldedFrom != null) {
-      const style = getComputedStyle(drag.moving);
-      const shifted = new DOMMatrix(style.transform === "none" ? undefined : style.transform).m42 + (parseFloat(style.translate.split(" ")[1]) || 0);
-      const lift = drag.foldedFrom - (drag.moving.getBoundingClientRect().top - shifted);
-      drag.foldedFrom = null;
-      drag.clientY &&= drag.clientY - lift;
-      drag.screenY &&= drag.screenY - lift;
+      measureFoldLift();
     }
-    let dy = null;
-    if (event.clientY) {
-      dy = event.clientY - drag.clientY;
-    } else if (event.screenY && drag.screenY) {
-      dy = event.screenY - drag.screenY;
-    }
+    const dy = dragDy(event);
     if (dy === null) {
       return;
     }
@@ -14150,74 +14272,11 @@
     try {
       const over = event.target;
       const point = pointerOf(event);
-      const sideBox = document.getElementById("navigator-toolbox")?.getBoundingClientRect();
-      drag.away =
-        !drag.folder && !!point.x && !over?.closest?.("#navigator-toolbox") && !!sideBox?.width &&
-        (point.x < sideBox.left || point.x > sideBox.right);
-
-      if (drag.away) {
-        drag.essentials = false;
-        setFlag("zia-drag-over-essentials", false);
-        hideProxy();
-        if (!drag.folder && !drag.split) {
-          showThumb(point.x, point.y);
-        }
+      if (trackAway(over, point)) {
         return;
       }
       hideThumb();
-      const essentials =
-        document.getElementById("zen-essentials") ||
-        window.gZenWorkspaces?.getCurrentEssentialsContainer?.() ||
-        document.querySelector(".zen-essentials-container");
-      const grid = essentialsGrid();
-      const hasTiles = !!grid?.querySelector(".tabbrowser-tab[zen-essential]:not([zia-essential-proxy])");
-      const promo = over?.closest?.("zen-essentials-promo") || null;
-
-      // (#zen-essentials can measure 0px tall with the tiles drawn above
-      // it, so the space's own grid is measured too)
-      let overEssentials =
-        !!promo || !!over?.closest?.("#zen-essentials, .zen-essentials-container") || inBox(essentials, point) || inBox(grid, point);
-
-      drag.firstTop = drag.rows?.length ? Math.min(...drag.rows.map((row) => row.top)) : null;
-      if (!overEssentials && !hasTiles && drag.firstTop != null) {
-        overEssentials = point.y < drag.firstTop + 4;
-      }
-      drag.hasTiles = hasTiles;
-      drag.essentials = !drag.folder && !drag.split && overEssentials && canBeEssential(drag.tab);
-      // A two-site split over the essentials becomes a split essential
-      // (24b-split-essentials.js)
-      drag.splitEssential = !!drag.split && overEssentials && canBecomeSplitEssential(drag.tab);
-      if (drag.split && overEssentials && !drag.splitEssential && !drag.splitRefusalNoted) {
-        drag.splitRefusalNoted = true;
-        console.warn(`[Zia] Split essentials: this split can't go in the essentials: ${splitEssentialRefusal(drag.tab)}`);
-      }
-      // Zen turns a split down over the essentials, and without a yes
-      // there'd be no drop at all
-      holdSplitSlot(drag.splitEssential, point);
-      if (drag.splitEssential) {
-        acceptSplitDrop(event);
-        if (point.x) {
-          tapOnNewTile(point, null);
-          showProxy(point.x, point.y);
-        }
-      } else if (drag.split) {
-        hideProxy();
-      }
-      // the dragged tab's section stops covering the essentials, so Zen
-      // sees them under the pointer and takes the drop
-      setFlag("zia-drag-over-essentials", !!(drag.essentials || drag.splitEssential));
-      drag.noTiles = drag.essentials && !hasTiles && !promo;
-      makeRoom(drag.noTiles ? document.getElementById("zen-essentials") || grid : null);
-      if (drag.essentials) {
-        fitZenSlot();
-      }
-      if (drag.essentials && point.x) {
-        tapOnTileShift();
-        showProxy(point.x, point.y);
-      } else if (!drag.essentials && !drag.splitEssential) {
-        drag.tileShifts = null;
-        hideProxy();
-      }
+      trackEssentials(event, over, point);
       apply(dy);
     } catch (err) {
       console.error("[Zia] Tab drag failed:", err);
@@ -14231,6 +14290,43 @@
       });
     }
   };
+
+  // the row the pointer is over, by where Firefox last drew it
+  const rowAtY = (y, tab) => {
+    for (const item of gBrowser.tabContainer.ariaFocusableItems) {
+      if (item === tab || item.hasAttribute?.("zen-essential")) {
+        continue;
+      }
+      const node = nodeToMove(item);
+      if (!node) {
+        continue;
+      }
+      const box = window.windowUtils.getBoundsWithoutFlushing(node);
+      if (y < box.top || y > box.bottom) {
+        continue;
+      }
+      return { item, node, box };
+    }
+    return null;
+  };
+
+  // Over the middle of a folder's name: the drop goes before its first tab
+  const dropOnFolderName = (data, target, y) => {
+    const folder = target.node.closest?.(FOLDER_SELECTOR);
+    const header = folder?.querySelector(":scope > .tab-group-label-container");
+    const headerBox = header ? window.windowUtils.getBoundsWithoutFlushing(header) : null;
+    if (folder && headerBox && y > headerBox.top + headerBox.height * 0.2 && y < headerBox.bottom - headerBox.height * 0.2) {
+      const first = folder.tabs?.[0];
+      if (first) {
+        data.dropElement = first;
+        data.dropBefore = true;
+        data.animDropElementIndex = first.elementIndex;
+        return true;
+      }
+    }
+    return false;
+  };
+
   const fixDrop = (event) => {
     const tab = drag?.tab;
     const data = tab?._dragData;
@@ -14255,36 +14351,9 @@
       return;
     }
     const y = event.clientY;
-    let target = null;
-    for (const item of gBrowser.tabContainer.ariaFocusableItems) {
-      if (item === tab || item.hasAttribute?.("zen-essential")) {
-        continue;
-      }
-      const node = nodeToMove(item);
-      if (!node) {
-        continue;
-      }
-      const box = window.windowUtils.getBoundsWithoutFlushing(node);
-      if (y < box.top || y > box.bottom) {
-        continue;
-      }
-      target = { item, node, box };
-      break;
-    }
-    if (!target) {
+    const target = rowAtY(y, tab);
+    if (!target || dropOnFolderName(data, target, y)) {
       return;
-    }
-    const folder = target.node.closest?.(FOLDER_SELECTOR);
-    const header = folder?.querySelector(":scope > .tab-group-label-container");
-    const headerBox = header ? window.windowUtils.getBoundsWithoutFlushing(header) : null;
-    if (folder && headerBox && y > headerBox.top + headerBox.height * 0.2 && y < headerBox.bottom - headerBox.height * 0.2) {
-      const first = folder.tabs?.[0];
-      if (first) {
-        data.dropElement = first;
-        data.dropBefore = true;
-        data.animDropElementIndex = first.elementIndex;
-        return;
-      }
     }
     data.dropElement = target.item;
     data.dropBefore = y < target.box.top + target.box.height / 2;
@@ -14293,11 +14362,7 @@
     }
   };
 
-  // Everything let go glides into place the same way: tabs, splits,
-  // folders and essentials
-  const LAND_MS = 180;
-  const LAND_EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
-  // that curve, for a glide stepped frame by frame
+  // LAND_EASE's curve, for a glide stepped frame by frame
   const landEase = (t) => {
     const bez = (a, b, u) => 3 * a * u * (1 - u) ** 2 + 3 * b * u * u * (1 - u) + u ** 3;
     let lo = 0;
@@ -14314,10 +14379,19 @@
   };
 
   // An essential dragged: its copy, the tiles shifting, and leftovers swept up.
+  // Used elsewhere: essentialDrag, essentialDropped, ESSENTIAL_MS, sizeCopy, moveCopyTo,
+  // plainTabSize, sweepLeftovers, tapOnTileShift, tapOnNewTile, watchEssentialStart.
 
+  const ESSENTIAL_MS = 140;
+  // (a move with no button held this long after the drag began: it ended unseen)
+  const ESSENTIAL_GRACE_MS = 300;
+  const TAP_AGAIN_MS = 300;
+
+  // the essential being dragged (endEssentialDrag), and the one just dropped (settle)
   let essentialDrag = null;
   let essentialDropped = null;
-  const ESSENTIAL_MS = 140;
+  // the tile the pointer was last over, and where and when it last tapped
+  const tileTap = { under: null, point: null, at: 0 };
 
   // Zen clears the size and place of every essential when a drop lands:
   // a floating copy with none stretches across the window and falls to
@@ -14464,8 +14538,8 @@
     muteZenHaptics(true);
     // The drag starts on its own tile (which tileUnder skips), so the very
     // first neighbour it moves onto taps too.
-    lastTileUnder = tab;
-    lastTapPoint = null;
+    tileTap.under = tab;
+    tileTap.point = null;
     essentialDrag = {
       tab,
       copy,
@@ -14507,90 +14581,101 @@
   };
 
   const OVER_GAP = {};
-  let lastTileUnder = null;
-  let lastTapPoint = null;
-  let lastTapAt = 0;
   const tapOnNewTile = (point, skip) => {
     const tile = tileUnder(point, skip);
-    if (tile && tile !== lastTileUnder && lastTileUnder !== null) {
+    if (tile && tile !== tileTap.under && tileTap.under !== null) {
       const box = tile.getBoundingClientRect();
       // half a tile on from the last tap, or long enough after: edge jitter doesn't tap twice,
       // but heading back over the same edge does
       const far =
-        !lastTapPoint ||
-        Math.abs(point.x - lastTapPoint.x) >= box.width / 2 ||
-        Math.abs(point.y - lastTapPoint.y) >= box.height / 2 ||
-        Date.now() - lastTapAt > 300;
+        !tileTap.point ||
+        Math.abs(point.x - tileTap.point.x) >= box.width / 2 ||
+        Math.abs(point.y - tileTap.point.y) >= box.height / 2 ||
+        Date.now() - tileTap.at > TAP_AGAIN_MS;
       if (far) {
         tap();
-        lastTapPoint = { x: point.x, y: point.y };
-        lastTapAt = Date.now();
+        tileTap.point = { x: point.x, y: point.y };
+        tileTap.at = Date.now();
       }
     }
     if (tile) {
-      lastTileUnder = tile;
-      lastTapPoint ||= { x: point.x, y: point.y };
+      tileTap.under = tile;
+      tileTap.point ||= { x: point.x, y: point.y };
     } else if (skip && inBox(window.gZenWorkspaces?.getCurrentEssentialsContainer?.(), point)) {
       // over the essentials but on no tile (the drop's gap, or its own spot): the next tile is
       // a new one, so moving back onto the tile that just slid aside taps again
-      lastTileUnder = OVER_GAP;
+      tileTap.under = OVER_GAP;
     }
   };
 
+  const sweepOnPress = () => {
+    if (!drag && !essentialDrag) {
+      sweepLeftovers();
+    }
+  };
+
+  const removeStrayCopies = (records) => {
+    for (const record of records) {
+      for (const node of record.addedNodes) {
+        if (node.nodeType === 1 && node.hasAttribute("zia-essential-proxy") && !liveCopies.has(node)) {
+          removeCopy(node);
+        }
+      }
+    }
+  };
+
+  // Zen's placeholder for a tab dragged over the essentials is a cell, and Zen sets the
+  // grid's columns by cell count (eight essentials and it went three to a row) but shifts
+  // the tiles by the old columns, past the sidebar's edge: the columns are kept meanwhile.
+  const keepGridColumns = (records) => {
+    for (const { target: grid, oldValue } of records) {
+      const slot = grid.querySelector(":scope > vbox:not(.tabbrowser-tab)");
+      if (!slot) {
+        continue;
+      }
+      if (grid.ziaColumns?.slot !== slot) {
+        grid.ziaColumns = { slot, value: oldValue };
+      }
+      const value = grid.ziaColumns.value;
+      if (grid.getAttribute("data-hack-type") !== value) {
+        if (value === null) {
+          grid.removeAttribute("data-hack-type");
+        } else {
+          grid.setAttribute("data-hack-type", value);
+        }
+      }
+    }
+  };
+
+  const endUnseenEssentialDrag = (event) => {
+    if (essentialDrag && event.buttons === 0 && Date.now() - (essentialDrag.startedAt || 0) > ESSENTIAL_GRACE_MS) {
+      endEssentialDrag();
+    }
+  };
 
   // its listeners and hooks, added by moveTabsLikeDia (28-tab-dragging.js) in order
   function watchEssentialStart() {
-    window.addEventListener("mousedown", () => {
-      if (!drag && !essentialDrag) {
-        sweepLeftovers();
-      }
-    }, true);
-    new MutationObserver((records) => {
-      for (const record of records) {
-        for (const node of record.addedNodes) {
-          if (node.nodeType === 1 && node.hasAttribute("zia-essential-proxy") && !liveCopies.has(node)) {
-            removeCopy(node);
-          }
-        }
-      }
-    }).observe(document.getElementById("navigator-toolbox") || document.documentElement, { childList: true, subtree: true });
-
-    // Zen's placeholder for a tab dragged over the essentials is a cell, and Zen sets the
-    // grid's columns by cell count (eight essentials and it went three to a row) but shifts
-    // the tiles by the old columns, past the sidebar's edge: the columns are kept meanwhile.
-    new MutationObserver((records) => {
-      for (const { target: grid, oldValue } of records) {
-        const slot = grid.querySelector(":scope > vbox:not(.tabbrowser-tab)");
-        if (!slot) {
-          continue;
-        }
-        if (grid.ziaColumns?.slot !== slot) {
-          grid.ziaColumns = { slot, value: oldValue };
-        }
-        const value = grid.ziaColumns.value;
-        if (grid.getAttribute("data-hack-type") !== value) {
-          if (value === null) {
-            grid.removeAttribute("data-hack-type");
-          } else {
-            grid.setAttribute("data-hack-type", value);
-          }
-        }
-      }
-    }).observe(document.getElementById("navigator-toolbox") || document.documentElement, {
+    window.addEventListener("mousedown", sweepOnPress, true);
+    new MutationObserver(removeStrayCopies).observe(document.getElementById("navigator-toolbox") || document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+    new MutationObserver(keepGridColumns).observe(document.getElementById("navigator-toolbox") || document.documentElement, {
       subtree: true,
       attributes: true,
       attributeFilter: ["data-hack-type"],
       attributeOldValue: true,
     });
-
-    window.addEventListener("mousemove", (event) => {
-      if (essentialDrag && event.buttons === 0 && Date.now() - (essentialDrag.startedAt || 0) > 300) {
-        endEssentialDrag();
-      }
-    }, true);
+    window.addEventListener("mousemove", endUnseenEssentialDrag, true);
   }
 
   // An essential dragged down into the list: the room opened for it and its drop.
+  // Used elsewhere: listRoom, endEssentialDrag, watchEssentialDrop.
+
+  // (the tiles sliding to their new order)
+  const SLIDE_MS = 180;
+  // (leftover copies swept up once Zen's drop has settled)
+  const SWEEP_MS = 400;
 
   const listRoom = { rows: null, pitch: 0, sep: null, sepTop: null, sepDelta: 0, first: undefined, folder: null };
 
@@ -14745,12 +14830,78 @@
     listRoom.first = undefined;
   };
 
+  // Where an essential dropped into the list goes: before the first row below it, into a
+  // folder, or above the separator
+  const placeInList = (node, { first, sep, sepTop, below }) => {
+    if (first && (below || sepTop == null || first.top < sepTop)) {
+      placeBefore(node, topLevel(first));
+    } else if (!below && sep) {
+      placeBefore(node, sep);
+    } else {
+      gBrowser.moveTabToEnd?.(node);
+    }
+  };
+
+  const placeDroppedEssential = (tab, spot) => {
+    const { first, below, folder } = spot;
+    try {
+      if (!tab.isConnected || tab.hasAttribute("zen-essential")) {
+        return;
+      }
+      // A split essential: its split goes straight to the spot
+      if (tab.ziaSplit?.id) {
+        splitBackToList(tab, (group, tabs) => {
+          for (const t of tabs) {
+            pinFor(t, !below);
+          }
+          if (folder) {
+            const inside = first && folder.contains(first.node) ? first : null;
+            splitIntoFolder(group, folder, { first: false, atEnd: !inside, next: inside });
+            return;
+          }
+          placeInList(group, spot);
+        });
+        return;
+      }
+      pinFor(tab, !below);
+      if (folder) {
+        if (isCollapsed(folder)) {
+          parkInFolder(tab, folder);
+        } else if (first && folder.contains(first.node) && gBrowser.isTab(first.node)) {
+          placeBefore(tab, first.node);
+        } else {
+          folder.addTabs?.([tab]);
+        }
+        return;
+      }
+      placeInList(tab, spot);
+    } catch (err) {
+      console.error("[Zia] Placing the essential in the list failed:", err);
+    }
+  };
+
+  // It lands under the pointer, which the browser doesn't see until it next moves: its x
+  // (or -) is kept on, as for a dropped tab (nothing under the pointer at the drop counts)
+  const holdDroppedEssential = (tab) => {
+    if (!tab.isConnected || tab.hasAttribute("zen-essential") || tab.group?.hasAttribute("split-view-group")) {
+      return;
+    }
+    try {
+      clearDropHover();
+      holdFolderHover(tab);
+    } catch (err) {
+      noteError("tab dragging: hold the dropped essential", err);
+    }
+  };
+
   const dropIntoListRoom = (tab, y) => {
-    const first = listRoom.first || null;
-    const sep = listRoom.sep;
-    const sepTop = listRoom.sepTop;
-    const below = sepTop != null && !aboveListSep(listAt(y));
-    const folder = listRoom.folder?.isConnected ? listRoom.folder : null;
+    const spot = {
+      first: listRoom.first || null,
+      sep: listRoom.sep,
+      sepTop: listRoom.sepTop,
+      below: listRoom.sepTop != null && !aboveListSep(listAt(y)),
+      folder: listRoom.folder?.isConnected ? listRoom.folder : null,
+    };
     markListRoomFolder(null);
     listRoom.rows = null;
     listRoom.first = undefined;
@@ -14771,77 +14922,12 @@
             noteError("tab dragging: out of the essentials", err);
           }
         }
-        place();
-        holdDropped();
+        placeDroppedEssential(tab, spot);
+        holdDroppedEssential(tab);
         resolve();
       };
       requestAnimationFrame(whenOut);
     });
-
-    // It lands under the pointer, which the browser doesn't see until it next moves: its x
-    // (or -) is kept on, as for a dropped tab (nothing under the pointer at the drop counts)
-    function holdDropped() {
-      if (!tab.isConnected || tab.hasAttribute("zen-essential") || tab.group?.hasAttribute("split-view-group")) {
-        return;
-      }
-      try {
-        shownAtDrop = { row: null, buttons: [] };
-        heldFolder = null;
-        heldPinned = null;
-        holdFolderHover(tab);
-      } catch (err) {
-        noteError("tab dragging: hold the dropped essential", err);
-      }
-    }
-
-    function place() {
-      try {
-        if (!tab.isConnected || tab.hasAttribute("zen-essential")) {
-          return;
-        }
-        // A split essential: its split goes straight to the spot
-        if (tab.ziaSplit?.id) {
-          splitBackToList(tab, (group, tabs) => {
-            for (const t of tabs) {
-              pinFor(t, !below);
-            }
-            if (folder) {
-              const inside = first && folder.contains(first.node) ? first : null;
-              splitIntoFolder(group, folder, { first: false, atEnd: !inside, next: inside });
-              return;
-            }
-            if (first && (below || sepTop == null || first.top < sepTop)) {
-              placeBefore(group, topLevel(first));
-            } else if (!below && sep) {
-              placeBefore(group, sep);
-            } else {
-              gBrowser.moveTabToEnd?.(group);
-            }
-          });
-          return;
-        }
-        pinFor(tab, !below);
-        if (folder) {
-          if (isCollapsed(folder)) {
-            parkInFolder(tab, folder);
-          } else if (first && folder.contains(first.node) && gBrowser.isTab(first.node)) {
-            placeBefore(tab, first.node);
-          } else {
-            folder.addTabs?.([tab]);
-          }
-          return;
-        }
-        if (first && (below || sepTop == null || first.top < sepTop)) {
-          placeBefore(tab, topLevel(first));
-        } else if (!below && sep) {
-          placeBefore(tab, sep);
-        } else {
-          gBrowser.moveTabToEnd?.(tab);
-        }
-      } catch (err) {
-        console.error("[Zia] Placing the essential in the list failed:", err);
-      }
-    }
   };
 
   // The essentials slide from where they were to where a change puts them
@@ -14859,7 +14945,7 @@
       const dx = from.left - to.left;
       const dy = from.top - to.top;
       if (Math.abs(dx) >= 0.5 || Math.abs(dy) >= 0.5) {
-        t.animate([{ translate: `${dx}px ${dy}px` }, { translate: "0 0" }], { duration: 180, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
+        t.animate([{ translate: `${dx}px ${dy}px` }, { translate: "0 0" }], { duration: SLIDE_MS, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
       }
     }
   };
@@ -14902,6 +14988,47 @@
     }, THUMB_MS);
   };
 
+  // Turned between a tile and a row: resized, moved between the essentials and the list,
+  // and its tile's place given up or taken back
+  const turnEssential = (state, asTab) => {
+    const copy = state.copy;
+    state.asTab = asTab;
+    state.rowFor = undefined;
+    easeSize(copy, ESSENTIAL_MS);
+    // (the others close up behind it out over the list, and open again if it comes back;
+    // the only one keeps its cell: given up, the essentials emptied, the list jumped up under
+    // the pointer and the row flashed over the first tab)
+    const others = [...(essentialsGrid()?.querySelectorAll(".tabbrowser-tab[zen-essential]:not([zia-essential-proxy])") || [])].some((tile) => tile !== state.tab);
+    slideTiles(() => state.tab.toggleAttribute("zia-essential-out", asTab && others));
+    const current = copy.getBoundingClientRect();
+    moveCopyTo(copy, asTab ? document.getElementById("tabbrowser-tabs") || root : root);
+    sizeCopy(copy, current.width, current.height);
+    copy.getBoundingClientRect();
+    for (const name of ["zen-essential", "pinned"]) {
+      if (asTab) {
+        copy.removeAttribute(name);
+      } else {
+        copy.setAttribute(name, "true");
+      }
+    }
+    fadeSplitContent(copy, ESSENTIAL_MS);
+    const size = asTab ? plainTabSize() : state.tile;
+    sizeCopy(copy, size.width, size.height);
+    state.offset = asTab ? { x: 0, y: 0 } : state.offset;
+  };
+
+  // (as a row, the width a tab takes where it would go: over a folder, its
+  // tabs' narrower width, as a dragged tab does; it stayed full width)
+  const fitEssentialRow = (state, point) => {
+    shapeListRoom(point.y);
+    const row = widthFor(listRoom.folder);
+    if (row && state.rowFor !== (listRoom.folder || "plain")) {
+      state.rowFor = listRoom.folder || "plain";
+      sizeCopy(state.copy, row.right - row.left, plainTabSize().height);
+    }
+    return row;
+  };
+
   const onEssentialOver = (event) => {
     const state = essentialDrag;
     if (!state?.copy?.isConnected) {
@@ -14927,40 +15054,11 @@
     const asTab = !overTiles && inBox(document.getElementById("navigator-toolbox"), point) && point.y > state.bottom + 8;
     const copy = state.copy;
     if (asTab !== state.asTab) {
-      state.asTab = asTab;
-      state.rowFor = undefined;
-      easeSize(copy, ESSENTIAL_MS);
-      // (the others close up behind it out over the list, and open again if it comes back;
-      // the only one keeps its cell: given up, the essentials emptied, the list jumped up under
-      // the pointer and the row flashed over the first tab)
-      const others = [...(essentialsGrid()?.querySelectorAll(".tabbrowser-tab[zen-essential]:not([zia-essential-proxy])") || [])].some((tile) => tile !== state.tab);
-      slideTiles(() => state.tab.toggleAttribute("zia-essential-out", asTab && others));
-      const current = copy.getBoundingClientRect();
-      moveCopyTo(copy, asTab ? document.getElementById("tabbrowser-tabs") || root : root);
-      sizeCopy(copy, current.width, current.height);
-      copy.getBoundingClientRect();
-      for (const name of ["zen-essential", "pinned"]) {
-        if (asTab) {
-          copy.removeAttribute(name);
-        } else {
-          copy.setAttribute(name, "true");
-        }
-      }
-      fadeSplitContent(copy, ESSENTIAL_MS);
-      const size = asTab ? plainTabSize() : state.tile;
-      sizeCopy(copy, size.width, size.height);
-      state.offset = asTab ? { x: 0, y: 0 } : state.offset;
+      turnEssential(state, asTab);
     }
-    // (as a row, the width a tab takes where it would go: over a folder, its
-    // tabs' narrower width, as a dragged tab does; it stayed full width)
     let row = null;
     if (asTab) {
-      shapeListRoom(point.y);
-      row = widthFor(listRoom.folder);
-      if (row && state.rowFor !== (listRoom.folder || "plain")) {
-        state.rowFor = listRoom.folder || "plain";
-        sizeCopy(copy, row.right - row.left, plainTabSize().height);
-      }
+      row = fitEssentialRow(state, point);
     } else {
       closeListRoom();
     }
@@ -15002,6 +15100,84 @@
     }, 0);
   };
 
+  const revealEssential = (state, copy, now = false) => {
+    state.tab.style.visibility = "";
+    state.tab.removeAttribute("zia-essential-dragged");
+    state.tab.removeAttribute("zia-essential-out");
+    // (dropped into the list, the tab's already showing in its place:
+    // the copy goes with it, not a frame later)
+    if (now === true) {
+      copy.remove();
+    } else {
+      requestAnimationFrame(() => copy.remove());
+    }
+  };
+
+  // Heads for wherever the tile is on each frame, so it still lands
+  // right while Zen is sliding the tiles into their new order
+  const glideCopyToTile = (state, copy) => {
+    const shift = copy.ziaHostShift || { x: 0, y: 0 };
+    // from where it was last drawn under the pointer (its left and top
+    // are its centre), not wherever Zen's drop may have knocked it
+    const from = copy.getBoundingClientRect();
+    const left = parseFloat(copy.style.getPropertyValue("left"));
+    const top = parseFloat(copy.style.getPropertyValue("top"));
+    const start = Number.isFinite(left) && Number.isFinite(top)
+      ? { x: left + shift.x, y: top + shift.y }
+      : { x: from.left + from.width / 2, y: from.top + from.height / 2 };
+    // the same glide as a dropped tab or folder (LAND_MS, LAND_EASE)
+    const began = performance.now();
+    copy.style.setProperty("transition", "none", "important");
+    const follow = () => {
+      if (!copy.isConnected || !state.tab.isConnected) {
+        revealEssential(state, copy);
+        return;
+      }
+      const box = state.tab.getBoundingClientRect();
+      const drawn = state.tab.querySelector(".tab-background")?.getBoundingClientRect() || box;
+      const to = { x: box.left + box.width / 2, y: drawn.top + drawn.height / 2 };
+      const t = Math.min(1, (performance.now() - began) / LAND_MS);
+      const ease = landEase(t);
+      copy.style.setProperty("left", `${Math.round(start.x + (to.x - start.x) * ease - shift.x)}px`, "important");
+      copy.style.setProperty("top", `${Math.round(start.y + (to.y - start.y) * ease - shift.y)}px`, "important");
+      if (t < 1) {
+        requestAnimationFrame(follow);
+      } else {
+        revealEssential(state, copy);
+      }
+    };
+    requestAnimationFrame(follow);
+  };
+
+  // Dropped among the essentials: the tile glides from where it was let
+  // go into its place (once that's settled) before the real one shows
+  const glideHome = (state, copy, event) => {
+    // dropped into the list: it shows once it's in its place, not first
+    // wherever Zen put it
+    if (state.placing) {
+      state.placing.finally(() => revealEssential(state, copy, true));
+      return;
+    }
+    if (!event || state.asTab || !copy.isConnected || !state.tab.isConnected ||
+        !state.tab.hasAttribute("zen-essential") || matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      revealEssential(state, copy);
+      return;
+    }
+    glideCopyToTile(state, copy);
+  };
+
+  // dropped on the essentials it goes after the last tile it's past; in the list, into its room
+  const dropEssential = (state, event) => {
+    const point = pointerOf(event);
+    const essentials = document.getElementById("zen-essentials");
+    if (inBox(essentials, point) || event.target?.closest?.("#zen-essentials") || overAnyTile(point)) {
+      state.asTab = false;
+      dropPastLast(state.tab, point);
+    } else if (state.asTab && listRoom.rows) {
+      state.placing = dropIntoListRoom(state.tab, point.y);
+    }
+  };
+
   const endEssentialDrag = (event) => {
     const state = essentialDrag;
     essentialDrag = null;
@@ -15013,83 +15189,16 @@
     state.thumb?.remove();
     state.thumb = null;
     if (event?.type === "drop") {
-      const point = pointerOf(event);
-      const essentials = document.getElementById("zen-essentials");
-      if (inBox(essentials, point) || event.target?.closest?.("#zen-essentials") || overAnyTile(point)) {
-        state.asTab = false;
-        dropPastLast(state.tab, point);
-      } else if (state.asTab && listRoom.rows) {
-        state.placing = dropIntoListRoom(state.tab, point.y);
-      }
+      dropEssential(state, event);
     }
     if (listRoom.rows) {
       closeListRoom();
     }
     muteZenHaptics(false);
     essentialDropped = event?.type === "drop" ? state.tab : null;
-    setTimeout(sweepLeftovers, 400);
+    setTimeout(sweepLeftovers, SWEEP_MS);
     const copy = state.copy;
-    const reveal = (now = false) => {
-      state.tab.style.visibility = "";
-      state.tab.removeAttribute("zia-essential-dragged");
-      state.tab.removeAttribute("zia-essential-out");
-      // (dropped into the list, the tab's already showing in its place:
-      // the copy goes with it, not a frame later)
-      if (now === true) {
-        copy.remove();
-      } else {
-        requestAnimationFrame(() => copy.remove());
-      }
-    };
-    // Dropped among the essentials: the tile glides from where it was let
-    // go into its place (once that's settled) before the real one shows
-    const glideHome = () => {
-      // dropped into the list: it shows once it's in its place, not first
-      // wherever Zen put it
-      if (state.placing) {
-        state.placing.finally(() => reveal(true));
-        return;
-      }
-      if (!event || state.asTab || !copy.isConnected || !state.tab.isConnected ||
-          !state.tab.hasAttribute("zen-essential") || matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        reveal();
-        return;
-      }
-      // Heads for wherever the tile is on each frame, so it still lands
-      // right while Zen is sliding the tiles into their new order
-      const shift = copy.ziaHostShift || { x: 0, y: 0 };
-      // from where it was last drawn under the pointer (its left and top
-      // are its centre), not wherever Zen's drop may have knocked it
-      const from = copy.getBoundingClientRect();
-      const left = parseFloat(copy.style.getPropertyValue("left"));
-      const top = parseFloat(copy.style.getPropertyValue("top"));
-      const start = Number.isFinite(left) && Number.isFinite(top)
-        ? { x: left + shift.x, y: top + shift.y }
-        : { x: from.left + from.width / 2, y: from.top + from.height / 2 };
-      // the same glide as a dropped tab or folder (LAND_MS, LAND_EASE)
-      const began = performance.now();
-      copy.style.setProperty("transition", "none", "important");
-      const follow = () => {
-        if (!copy.isConnected || !state.tab.isConnected) {
-          reveal();
-          return;
-        }
-        const box = state.tab.getBoundingClientRect();
-        const drawn = state.tab.querySelector(".tab-background")?.getBoundingClientRect() || box;
-        const to = { x: box.left + box.width / 2, y: drawn.top + drawn.height / 2 };
-        const t = Math.min(1, (performance.now() - began) / LAND_MS);
-        const ease = landEase(t);
-        copy.style.setProperty("left", `${Math.round(start.x + (to.x - start.x) * ease - shift.x)}px`, "important");
-        copy.style.setProperty("top", `${Math.round(start.y + (to.y - start.y) * ease - shift.y)}px`, "important");
-        if (t < 1) {
-          requestAnimationFrame(follow);
-        } else {
-          reveal();
-        }
-      };
-      requestAnimationFrame(follow);
-    };
-    setTimeout(glideHome, 0);
+    setTimeout(() => glideHome(state, copy, event), 0);
   };
 
   // its listeners and hooks, added by moveTabsLikeDia (28-tab-dragging.js) in order
@@ -15098,14 +15207,55 @@
     window.addEventListener("dragover", onEssentialOver, true);
     window.addEventListener("drop", endEssentialDrag, true);
     window.addEventListener("dragend", endEssentialDrag, true);
-
   }
 
   // Zia's drag joined to Zen's: listeners, Zen's tab animations held off, clipping lifted,
   // folders held open.
+  // Used elsewhere: blockAnimUntil, blockAnims, unblockAnims, movesOnly, unclipAround, reclip,
+  // hoverHold, clearDropHover, holdFolderHover, dropFinish, finishDropNow, watchZenHooks.
 
-  let lockTimer = 0;
+  // (a dropped row's hover look let go if the pointer hasn't moved off it by then)
+  const HOVER_HOLD_MS = 4000;
+
+  // Zen's tab animations are held off until then, after a drop (settle)
   let blockAnimUntil = 0;
+  const blockAnims = (ms) => {
+    blockAnimUntil = Date.now() + ms;
+  };
+  const unblockAnims = () => {
+    blockAnimUntil = 0;
+  };
+
+  // What's just dropped keeps its hover look (box, x): the drag's look ends a frame before
+  // the browser sees the pointer still over it, and Firefox forgets what's hovered until the
+  // pointer next moves (Zen shows x and - only on hover), so what showed is noted and kept
+  const hoverHold = {
+    // what showed under the pointer as it dropped
+    shown: { row: null, buttons: [] },
+    // the folder a tab was dropped into, and whether the tab lands pinned
+    folder: null,
+    pinned: null,
+    // the hold's button swap and its end, while it lasts
+    refit: null,
+    release: null,
+  };
+  const clearDropHover = () => {
+    hoverHold.shown = { row: null, buttons: [] };
+    hoverHold.folder = null;
+    hoverHold.pinned = null;
+  };
+
+  // A drop Zia places itself is finished a step later, or by settle as soon as its landing
+  // is set up (finishDropNow)
+  const dropFinish = { pending: false, now: null };
+  const finishDropNow = () => {
+    if (dropFinish.now) {
+      const run = dropFinish.now;
+      dropFinish.now = null;
+      run();
+    }
+  };
+
   const MOVEMENT = new Set(["transform", "translate"]);
   const movesOnly = (anim) => {
     try {
@@ -15169,23 +15319,23 @@
     }
   };
 
-  // What's just dropped keeps its hover look (box, x): the drag's look ends a frame before
-  // the browser sees the pointer still over it, and Firefox forgets what's hovered until the
-  // pointer next moves (Zen shows x and - only on hover), so what showed is noted and kept
-  let shownAtDrop = { row: null, buttons: [] };
-
-  const holdFolderHover = (folder) => {
+  // the dropped row, the folder it went into and the row under the pointer
+  const heldRows = (folder) => {
     const held = [folder];
     // a tab dropped into a folder: the folder keeps its hover box too
-    if (heldFolder?.isConnected && !held.includes(heldFolder)) {
-      held.push(heldFolder);
+    if (hoverHold.folder?.isConnected && !held.includes(hoverHold.folder)) {
+      held.push(hoverHold.folder);
     }
-    heldFolder = null;
-    if (shownAtDrop.row && shownAtDrop.row !== folder && shownAtDrop.row.isConnected) {
-      held.push(shownAtDrop.row);
+    hoverHold.folder = null;
+    if (hoverHold.shown.row && hoverHold.shown.row !== folder && hoverHold.shown.row.isConnected) {
+      held.push(hoverHold.shown.row);
     }
-    let buttons = shownAtDrop.buttons.filter((button) => button.isConnected);
-    shownAtDrop = { row: null, buttons: [] };
+    return held;
+  };
+
+  const heldButtons = (folder) => {
+    const buttons = hoverHold.shown.buttons.filter((button) => button.isConnected);
+    hoverHold.shown = { row: null, buttons: [] };
     // The dragged tab lets the pointer through, so its own button wasn't noted: dropped into
     // a folder it showed nothing until the browser found the pointer on it (a split: both
     // its tabs' x, as it shows both while hovered)
@@ -15198,229 +15348,257 @@
         }
       }
     }
-    for (const node of held) {
-      node.setAttribute("zia-hover-held", "true");
+    return buttons;
+  };
+
+  // A tab dropped into a folder is pinned there and shows a - where it had an x (the other
+  // way pulled out): swapped as soon as it's let go, not when the pointer next moved
+  const refitButtons = (hold, pinned) => {
+    hold.buttons = hold.buttons.map((button) => {
+      const tab = button.closest(".tabbrowser-tab");
+      const want = pinned ?? tab?.pinned;
+      tab?.toggleAttribute("zia-held-pinned", !!want && !tab.pinned);
+      const kind = want ? ".tab-reset-button" : ".tab-close-button";
+      const right = tab?.isConnected && !button.matches(kind) ? tab.querySelector(kind) : null;
+      if (!right) {
+        return button;
+      }
+      button.removeAttribute("zia-held-shown");
+      right.setAttribute("zia-held-shown", "true");
+      return right;
+    });
+  };
+
+  // Over a node by where the pointer is, not :hover: Zen tidies a folder just after a drop
+  // and Firefox forgets the hover, so a move then let go and the folder's box flashed
+  const pointerOn = (node, event) => {
+    if (node.matches(":hover")) {
+      return true;
     }
-    for (const button of buttons) {
-      button.setAttribute("zia-held-shown", "true");
+    if (!event?.clientX && !event?.clientY) {
+      return false;
     }
-    // A tab dropped into a folder is pinned there and shows a - where it had an x (the other
-    // way pulled out): swapped as soon as it's let go, not when the pointer next moved
-    refitHeld = (pinned) => {
-      buttons = buttons.map((button) => {
-        const tab = button.closest(".tabbrowser-tab");
-        const want = pinned ?? tab?.pinned;
-        tab?.toggleAttribute("zia-held-pinned", !!want && !tab.pinned);
-        const kind = want ? ".tab-reset-button" : ".tab-close-button";
-        const right = tab?.isConnected && !button.matches(kind) ? tab.querySelector(kind) : null;
-        if (!right) {
-          return button;
-        }
-        button.removeAttribute("zia-held-shown");
-        right.setAttribute("zia-held-shown", "true");
-        return right;
-      });
-    };
-    if (heldPinned != null) {
-      refitHeld(heldPinned);
-    }
-    heldPinned = null;
-    let timer = 0;
-    // Over a node by where the pointer is, not :hover: Zen tidies a folder just after a drop
-    // and Firefox forgets the hover, so a move then let go and the folder's box flashed
-    const over = (node, event) => {
-      if (node.matches(":hover")) {
+    const box = node.getBoundingClientRect();
+    return event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
+  };
+
+  // a button is held only while the pointer is on its own tab (on to the next tab in the
+  // same folder, both showed their -)
+  const dropButtonsLeft = (hold, event) => {
+    hold.buttons = hold.buttons.filter((button) => {
+      const tab = button.closest(".tabbrowser-tab");
+      // (a split's x's are held while it's hovered, either tab)
+      const host = tab?.closest("tab-group[split-view-group]") || tab;
+      if (host && pointerOn(host, event)) {
         return true;
       }
-      if (!event?.clientX && !event?.clientY) {
-        return false;
+      button.removeAttribute("zia-held-shown");
+      tab?.removeAttribute("zia-held-pinned");
+      if (tab && hold.rows.includes(tab)) {
+        tab.removeAttribute("zia-hover-held");
       }
-      const box = node.getBoundingClientRect();
-      return event.clientX >= box.left && event.clientX <= box.right && event.clientY >= box.top && event.clientY <= box.bottom;
-    };
+      return false;
+    });
+  };
+
+  const unhold = (hold) => {
+    for (const node of hold.rows) {
+      node.removeAttribute("zia-hover-held");
+    }
+    for (const button of hold.buttons) {
+      button.removeAttribute("zia-held-shown");
+      button.closest(".tabbrowser-tab")?.removeAttribute("zia-held-pinned");
+    }
+  };
+
+  const holdFolderHover = (folder) => {
+    const hold = { rows: heldRows(folder), buttons: heldButtons(folder), timer: 0 };
+    for (const node of hold.rows) {
+      node.setAttribute("zia-hover-held", "true");
+    }
+    for (const button of hold.buttons) {
+      button.setAttribute("zia-held-shown", "true");
+    }
+    hoverHold.refit = (pinned) => refitButtons(hold, pinned);
+    if (hoverHold.pinned != null) {
+      hoverHold.refit(hoverHold.pinned);
+    }
+    hoverHold.pinned = null;
     const check = (event) => {
-      if (!held.some((node) => node.isConnected && over(node, event))) {
+      if (!hold.rows.some((node) => node.isConnected && pointerOn(node, event))) {
         release();
         return;
       }
-      // a button is held only while the pointer is on its own tab (on to the next tab in the
-      // same folder, both showed their -)
-      buttons = buttons.filter((button) => {
-        const tab = button.closest(".tabbrowser-tab");
-        // (a split's x's are held while it's hovered, either tab)
-        const host = tab?.closest("tab-group[split-view-group]") || tab;
-        if (host && over(host, event)) {
-          return true;
-        }
-        button.removeAttribute("zia-held-shown");
-        tab?.removeAttribute("zia-held-pinned");
-        if (tab && held.includes(tab)) {
-          tab.removeAttribute("zia-hover-held");
-        }
-        return false;
-      });
+      dropButtonsLeft(hold, event);
     };
     const release = () => {
-      if (releaseHeld === release) {
-        releaseHeld = null;
+      if (hoverHold.release === release) {
+        hoverHold.release = null;
       }
-      refitHeld = null;
-      for (const node of held) {
-        node.removeAttribute("zia-hover-held");
-      }
-      for (const button of buttons) {
-        button.removeAttribute("zia-held-shown");
-        button.closest(".tabbrowser-tab")?.removeAttribute("zia-held-pinned");
-      }
+      hoverHold.refit = null;
+      unhold(hold);
       window.removeEventListener("mousemove", check, true);
-      clearTimeout(timer);
+      clearTimeout(hold.timer);
     };
     window.addEventListener("mousemove", check, true);
-    timer = setTimeout(release, 4000);
-    releaseHeld?.();
-    releaseHeld = release;
+    hold.timer = setTimeout(release, HOVER_HOLD_MS);
+    hoverHold.release?.();
+    hoverHold.release = release;
   };
 
+  // Firefox moves the dragged tab too, after Zia, and stops it at the last tab: under the
+  // list its move won, two of the tab showing. Zia's move is put back after Firefox's go.
+  const keepOwnMove = () => {
+    const moving = drag?.moving;
+    if (!moving?.isConnected || drag.away || drag.essentials || drag.splitEssential) {
+      return;
+    }
+    if (moving.style.getPropertyPriority("transform") !== "important") {
+      place(moving, dragCore.lastDy, true);
+    }
+  };
 
-  // its listeners and hooks, added by moveTabsLikeDia (28-tab-dragging.js) in order
-  function watchZenHooks() {
-    window.addEventListener("dragover", onOver, true);
-    document.getElementById("tabbrowser-tabs")?.addEventListener("dragover", onOver, true);
-    window.addEventListener("dragover", fixDrop);
-    // Firefox moves the dragged tab too, after Zia, and stops it at the last tab: under the
-    // list its move won, two of the tab showing. Zia's move is put back after Firefox's go.
-    window.addEventListener("dragover", () => {
-      const moving = drag?.moving;
-      if (!moving?.isConnected || drag.away || drag.essentials || drag.splitEssential) {
-        return;
+  const dropSplitEssential = (event, tab) => {
+    event.preventDefault();
+    event.stopPropagation();
+    let essential = null;
+    // (it goes where the cell was opened for it)
+    const before = splitSlot?.isConnected ? splitSlot.nextElementSibling : null;
+    try {
+      essential = addSplitToEssentials(tab);
+      if (essential && before?.hasAttribute?.("zen-essential") && before !== essential) {
+        gBrowser.moveTabBefore(essential, before);
       }
-      if (moving.style.getPropertyPriority("transform") !== "important") {
-        place(moving, dragCore.lastDy, true);
+    } catch (err) {
+      console.error("[Zia] Could not make a split essential:", err);
+    }
+    if (essential) {
+      // hidden where it lands until the tile flying to it gets there
+      essential.setAttribute("zia-to-essential", "true");
+      landProxy(essential);
+    } else {
+      hideProxy();
+    }
+  };
+
+  // let go over the essentials, though the last move didn't say so: it goes in them
+  const catchEssentialsDrop = (event) => {
+    const point = pointerOf(event);
+    const over = event.target;
+    if (
+      over?.closest?.("#zen-essentials, .zen-essentials-container") ||
+      inBox(document.getElementById("zen-essentials"), point) ||
+      inBox(window.gZenWorkspaces?.getCurrentEssentialsContainer?.(), point)
+    ) {
+      drag.essentials = true;
+      drag.target = null;
+    }
+  };
+
+  const addFirstEssential = (tab) => {
+    setTimeout(() => {
+      try {
+        window.gZenPinnedTabManager?.addToEssentials?.(tab);
+      } catch (err) {
+        console.error("[Zia] Could not add the first essential:", err);
       }
-    });
+    }, 0);
+  };
 
-    window.addEventListener(
-      "drop",
-      (event) => {
-        const tab = drag?.tab;
-        heldFolder = null;
-        heldPinned = null;
+  const dropFolder = (event) => {
+    const folder = drag.folder;
+    const target = drag.target;
+    // Into a closed folder Zia puts it there, Zen's drop not run: that opened the folder,
+    // the dropped one missing for a frame, and left it open. Into an empty one too: Zen
+    // moved it back out under the folder after Zia had put it in, and the folder, emptied,
+    // shut over the gap
+    if (target.folder && (isCollapsed(target.folder) || target.folder.hasAttribute("zia-empty")) && target.folder !== folder && !folder.contains(target.folder)) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    // (the folder it goes into keeps its hover box too, as for a tab:
+    // it went blank until the pointer next moved)
+    hoverHold.folder = target.folder || null;
+    dropFinish.pending = true;
+    setTimeout(() => {
+      try {
+        finishFolderDrop(folder, target);
+        // (held where it was let go in the same step, as a tab is: a frame showed it at its
+        // new place still shifted by the drag, up and back down)
+        landing.repin?.();
+      } catch (err) {
+        console.error("[Zia] Folder drop failed:", err);
+      }
+      dropFinish.pending = false;
+    }, 0);
+  };
 
-        if (tab && drag.splitEssential) {
-          event.preventDefault();
-          event.stopPropagation();
-          let essential = null;
-          // (it goes where the cell was opened for it)
-          const before = splitSlot?.isConnected ? splitSlot.nextElementSibling : null;
-          try {
-            essential = addSplitToEssentials(tab);
-            if (essential && before?.hasAttribute?.("zen-essential") && before !== essential) {
-              gBrowser.moveTabBefore(essential, before);
-            }
-          } catch (err) {
-            console.error("[Zia] Could not make a split essential:", err);
-          }
-          if (essential) {
-            // hidden where it lands until the tile flying to it gets there
-            essential.setAttribute("zia-to-essential", "true");
-            landProxy(essential);
-          } else {
-            hideProxy();
-          }
-          return;
-        }
-        if (tab && !drag.essentials && !drag.folder && !drag.split) {
-          const point = pointerOf(event);
-          const over = event.target;
-          if (
-            over?.closest?.("#zen-essentials, .zen-essentials-container") ||
-            inBox(document.getElementById("zen-essentials"), point) ||
-            inBox(window.gZenWorkspaces?.getCurrentEssentialsContainer?.(), point)
-          ) {
-            drag.essentials = true;
-            drag.target = null;
-          }
-        }
-        if (tab && drag.essentials) {
-          if (drag.noTiles) {
-            setTimeout(() => {
-              try {
-                window.gZenPinnedTabManager?.addToEssentials?.(tab);
-              } catch (err) {
-                console.error("[Zia] Could not add the first essential:", err);
-              }
-            }, 0);
-          }
-          landProxy(tab);
-        } else if (drag?.folder && !drag.away && drag.target) {
-          const folder = drag.folder;
-          const target = drag.target;
-          // Into a closed folder Zia puts it there, Zen's drop not run: that opened the folder,
-          // the dropped one missing for a frame, and left it open. Into an empty one too: Zen
-          // moved it back out under the folder after Zia had put it in, and the folder, emptied,
-          // shut over the gap
-          if (target.folder && (isCollapsed(target.folder) || target.folder.hasAttribute("zia-empty")) && target.folder !== folder && !folder.contains(target.folder)) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
-          // (the folder it goes into keeps its hover box too, as for a tab:
-          // it went blank until the pointer next moved)
-          heldFolder = target.folder || null;
-          pendingFinish = true;
-          setTimeout(() => {
-            try {
-              finishFolderDrop(folder, target);
-              // (held where it was let go in the same step, as a tab is: a frame showed it at its
-              // new place still shifted by the drag, up and back down)
-              repinLanding?.();
-            } catch (err) {
-              console.error("[Zia] Folder drop failed:", err);
-            }
-            pendingFinish = false;
-          }, 0);
-        } else if (tab && !drag.folder && !drag.away && drag.target?.hand) {
-          const target = drag.target;
-          // Zia places it, Zen's drop not run: told to drop it where it was, Zen still took a tab
-          // in a closed folder out of it for a frame (its favicon flashing left of where it lands).
-          // Several selected go with it (finishDrop), in the order they're in now.
-          const party = tab.multiselected
-            ? gBrowser.selectedTabs.filter((t) => t.isConnected && !t.hasAttribute("zen-essential") && !t.group?.hasAttribute?.("split-view-group"))
-            : null;
-          event.preventDefault();
-          event.stopPropagation();
-          heldFolder = target.folder || null;
-          heldPinned = !target.below;
-          pendingFinish = true;
-          // Put in place as the drop settles, in the same step (see settle): a moment later, the
-          // room made for it in a folder had closed and it showed outside, full width, for a frame
-          const run = () => {
-            try {
-              finishDrop(tab, target, party);
-              // (its width put right as it moves: the row's new width showed
-              // first otherwise, 14px narrower)
-              refitLanding?.();
-              repinLanding?.();
-              refitHeld?.();
-            } catch (err) {
-              console.error("[Zia] Tab drop failed:", err);
-            }
-            pendingFinish = false;
-          };
-          finishNow = run;
-          setTimeout(() => {
-            if (finishNow === run) {
-              finishNow = null;
-              run();
-            }
-          }, 0);
-        }
-        const dnd = gBrowser.tabContainer.tabDragAndDrop;
-        if (dnd) {
-          dnd._dontAnimateTabMove = true;
-        }
-      },
-      true
-    );
+  const dropTab = (event, tab) => {
+    const target = drag.target;
+    // Zia places it, Zen's drop not run: told to drop it where it was, Zen still took a tab
+    // in a closed folder out of it for a frame (its favicon flashing left of where it lands).
+    // Several selected go with it (finishDrop), in the order they're in now.
+    const party = tab.multiselected
+      ? gBrowser.selectedTabs.filter((t) => t.isConnected && !t.hasAttribute("zen-essential") && !t.group?.hasAttribute?.("split-view-group"))
+      : null;
+    event.preventDefault();
+    event.stopPropagation();
+    hoverHold.folder = target.folder || null;
+    hoverHold.pinned = !target.below;
+    dropFinish.pending = true;
+    // Put in place as the drop settles, in the same step (see settle): a moment later, the
+    // room made for it in a folder had closed and it showed outside, full width, for a frame
+    const run = () => {
+      try {
+        finishDrop(tab, target, party);
+        // (its width put right as it moves: the row's new width showed
+        // first otherwise, 14px narrower)
+        landing.refit?.();
+        landing.repin?.();
+        hoverHold.refit?.();
+      } catch (err) {
+        console.error("[Zia] Tab drop failed:", err);
+      }
+      dropFinish.pending = false;
+    };
+    dropFinish.now = run;
+    setTimeout(() => {
+      if (dropFinish.now === run) {
+        dropFinish.now = null;
+        run();
+      }
+    }, 0);
+  };
+
+  const onDrop = (event) => {
+    const tab = drag?.tab;
+    hoverHold.folder = null;
+    hoverHold.pinned = null;
+
+    if (tab && drag.splitEssential) {
+      dropSplitEssential(event, tab);
+      return;
+    }
+    if (tab && !drag.essentials && !drag.folder && !drag.split) {
+      catchEssentialsDrop(event);
+    }
+    if (tab && drag.essentials) {
+      if (drag.noTiles) {
+        addFirstEssential(tab);
+      }
+      landProxy(tab);
+    } else if (drag?.folder && !drag.away && drag.target) {
+      dropFolder(event);
+    } else if (tab && !drag.folder && !drag.away && drag.target?.hand) {
+      dropTab(event, tab);
+    }
+    const dnd = gBrowser.tabContainer.tabDragAndDrop;
+    if (dnd) {
+      dnd._dontAnimateTabMove = true;
+    }
+  };
+
+  const holdOffZenAnimate = () => {
     const ui = window.gZenUIManager;
     if (ui?.elementAnimate && !ui.elementAnimate.ziaTabLock) {
       const originalAnimate = ui.elementAnimate.bind(ui);
@@ -15434,42 +15612,70 @@
       wrappedAnimate.ziaTabLock = true;
       ui.elementAnimate = wrappedAnimate;
     }
-    window.addEventListener("drop", (event) => {
-      shownAtDrop = { row: null, buttons: [] };
-      const point = pointerOf(event);
-      const row = document.elementsFromPoint(point.x, point.y)
-        .map((el) => el.closest?.(".tabbrowser-tab:not([zia-essential-proxy]), zen-folder, tab-group"))
-        .find(Boolean);
-      if (!row) {
-        return;
+  };
+
+  const noteShownAtDrop = (event) => {
+    hoverHold.shown = { row: null, buttons: [] };
+    const point = pointerOf(event);
+    const row = document.elementsFromPoint(point.x, point.y)
+      .map((el) => el.closest?.(".tabbrowser-tab:not([zia-essential-proxy]), zen-folder, tab-group"))
+      .find(Boolean);
+    if (!row) {
+      return;
+    }
+    // a split shows the x of both its tabs while it's hovered
+    const split = row.closest?.("tab-group[split-view-group]");
+    const rows = split ? [...split.querySelectorAll(".tabbrowser-tab")] : [row];
+    const buttons = rows.flatMap((one) => [...one.querySelectorAll(".tab-close-button, .tab-reset-button")]).filter((button) => {
+      if (!rows.includes(button.closest(".tabbrowser-tab, zen-folder, tab-group"))) {
+        return false;
       }
-      // a split shows the x of both its tabs while it's hovered
-      const split = row.closest?.("tab-group[split-view-group]");
-      const rows = split ? [...split.querySelectorAll(".tabbrowser-tab")] : [row];
-      const buttons = rows.flatMap((one) => [...one.querySelectorAll(".tab-close-button, .tab-reset-button")]).filter((button) => {
-        if (!rows.includes(button.closest(".tabbrowser-tab, zen-folder, tab-group"))) {
-          return false;
-        }
-        const box = button.getBoundingClientRect();
-        return box.width > 0 && getComputedStyle(button).display !== "none";
-      });
-      shownAtDrop = { row: row.closest(".tabbrowser-tab") || null, buttons };
-    }, true);
+      const box = button.getBoundingClientRect();
+      return box.width > 0 && getComputedStyle(button).display !== "none";
+    });
+    hoverHold.shown = { row: row.closest(".tabbrowser-tab") || null, buttons };
+  };
+
+  // its listeners and hooks, added by moveTabsLikeDia (28-tab-dragging.js) in order
+  function watchZenHooks() {
+    window.addEventListener("dragover", onOver, true);
+    document.getElementById("tabbrowser-tabs")?.addEventListener("dragover", onOver, true);
+    window.addEventListener("dragover", fixDrop);
+    window.addEventListener("dragover", keepOwnMove);
+    window.addEventListener("drop", onDrop, true);
+    holdOffZenAnimate();
+    window.addEventListener("drop", noteShownAtDrop, true);
   }
 
   // The drag ending: settle, a switch of space followed or handed to Zen.
+  // Used elsewhere: landing, watchSettle.
 
-  let droppedFrom = null;
-  let isRealDrop = false;
-  let pendingFinish = false;
-  let heldFolder = null;
-  let repinLanding = null;
-  let refitLanding = null;
-  let finishNow = null;
-  let refitHeld = null;
-  let heldPinned = null;
-  let dragGen = 0;
-  let releaseHeld = null;
+  // (the folded tabs growing back out under the dropped one)
+  const UNFOLD_MS = 180;
+  // (a landed folder or split keeps its landing look a moment, past Firefox's own drop
+  // animation, or after its glide)
+  const LANDED_MS = 400;
+  const GLIDED_MS = 250;
+  // (Zen's tab animations held off after a drop)
+  const ANIM_BLOCK_MS = 400;
+  // (a stray mouse move tidies a lost drag at most this often)
+  const TIDY_GAP_MS = 500;
+  // (the settling mark left on after the animations' hold: it was stuck)
+  const SETTLING_STUCK_MS = 1000;
+
+  // Where what's dropped was let go, and its pin and width put right as the drop finishes
+  // (dropFolder, dropTab)
+  const landing = { from: null, repin: null, refit: null };
+
+  const settling = {
+    // a drop seen this drag: only a real drop glides into place
+    realDrop: false,
+    // which drag it is: a settle's wipe stops once a new drag starts
+    dragGen: 0,
+    // when a stray mouse move last tidied up
+    lastTidy: 0,
+  };
+
   const releaseToZen = (event) => {
     const tab = drag.split || drag.tab;
     dragImage.zen = true;
@@ -15526,19 +15732,19 @@
     }
   };
 
-  const settle = () => {
-    const droppedTab = drag?.tab || essentialDropped || null;
-    if (drag?.moving && !drag.essentials && !drag.away && droppedFrom === null && isRealDrop) {
+  // where what's dropped was let go, for it to glide from
+  const noteLandingFrom = () => {
+    if (drag?.moving && !drag.essentials && !drag.away && landing.from === null && settling.realDrop) {
       const from = drag.moving.getBoundingClientRect();
       // (and where its background showed: a tab over a folder is drawn
       // narrower, indented like the folder's tabs)
       const bg = drag.bg?.isConnected ? drag.bg : null;
       const bgBox = bg?.getBoundingClientRect();
-      droppedFrom = { node: drag.moving, top: from.top, left: from.left, tab: drag.tab, bg, bgLeft: bgBox?.left, bgWidth: bgBox?.width };
+      landing.from = { node: drag.moving, top: from.top, left: from.left, tab: drag.tab, bg, bgLeft: bgBox?.left, bgWidth: bgBox?.width };
     }
-    essentialDropped = null;
-    // (a folder let go is moved a step later: its folders keep their look till then)
-    const folderLanding = !!drag?.folder && pendingFinish;
+  };
+
+  const unmorphDropped = (droppedTab) => {
     if (drag?.folder) {
       const dropped = drag.folder;
       // (a landing one goes just before its glide, which measures it)
@@ -15551,34 +15757,39 @@
     if (drag?.bg) {
       setTimeout(() => requestAnimationFrame(() => easeOutWidth(droppedTab)), 0);
     }
-    endDrag();
-    document.documentElement.removeAttribute("zia-dragging-tab");
-    // The tabs folded into the dragged one unfold where they've landed, growing out under
-    // it: shown again at once, they showed back where they'd been for a frame and then
-    // jumped across as the drop placed them a step later
+  };
+
+  // The tabs folded into the dragged one unfold where they've landed, growing out under
+  // it: shown again at once, they showed back where they'd been for a frame and then
+  // jumped across as the drop placed them a step later
+  const unfoldCompanions = () => {
     const folded = [...document.querySelectorAll("[zia-drag-companion]")];
-    if (folded.length) {
-      setTimeout(() => {
-        for (const tab of folded) {
-          tab.removeAttribute("zia-drag-companion");
-        }
-        for (const tab of folded) {
-          if (!tab.isConnected) {
-            continue;
-          }
-          const height = tab.getBoundingClientRect().height;
-          if (height > 0) {
-            tab.animate(
-              [
-                { height: "0px", minHeight: "0px", opacity: 0, overflow: "clip" },
-                { height: `${height}px`, minHeight: `${height}px`, opacity: 1, overflow: "clip" },
-              ],
-              { duration: 180, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" }
-            );
-          }
-        }
-      }, 0);
+    if (!folded.length) {
+      return;
     }
+    setTimeout(() => {
+      for (const tab of folded) {
+        tab.removeAttribute("zia-drag-companion");
+      }
+      for (const tab of folded) {
+        if (!tab.isConnected) {
+          continue;
+        }
+        const height = tab.getBoundingClientRect().height;
+        if (height > 0) {
+          tab.animate(
+            [
+              { height: "0px", minHeight: "0px", opacity: 0, overflow: "clip" },
+              { height: `${height}px`, minHeight: `${height}px`, opacity: 1, overflow: "clip" },
+            ],
+            { duration: UNFOLD_MS, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" }
+          );
+        }
+      }
+    }, 0);
+  };
+
+  const clearDragLook = (folderLanding) => {
     for (const tab of document.querySelectorAll("[zia-drag-count]")) {
       tab.removeAttribute("zia-drag-count");
     }
@@ -15608,12 +15819,9 @@
     makeRoom(null);
     holdSplitSlot(false);
     document.querySelectorAll("[zia-sep-open]").forEach((node) => node.removeAttribute("zia-sep-open"));
+  };
 
-    if (dragCore.raf) {
-      cancelAnimationFrame(dragCore.raf);
-      dragCore.raf = 0;
-    }
-    blockAnimUntil = Date.now() + 400;
+  const stopZenDropAnimation = () => {
     const dnd = gBrowser.tabContainer.tabDragAndDrop;
     if (dnd) {
       dnd._dontAnimateTabMove = true;
@@ -15625,73 +15833,104 @@
         dnd.handle_drop_transition = skip;
       }
     }
-    const strip = document.getElementById("tabbrowser-tabs");
+  };
 
-    const landing = droppedFrom;
-    droppedFrom = null;
-    strip?.setAttribute("zia-settling", "true");
+  // the rows the drag moved, put back and locked there until the drop has settled
+  const lockMoved = () => {
     const locked = new Set(dragCore.moved);
     clearMoved();
     for (const node of locked) {
       node.style.removeProperty("transform");
       node.setAttribute("zia-drop-lock", "true");
     }
-    if (landing?.node?.isConnected) {
-      const node = landing.node;
-      holdFolderHover(node);
+    return locked;
+  };
 
-      node.setAttribute("zia-landing", "true");
-      const held = node.getBoundingClientRect();
-      node.style.setProperty("transform", `translate(${landing.left - held.left}px, ${landing.top - held.top}px)`, "important");
-      // Firefox clears every tab's transform as its drag ends, so the tab painted a frame at
-      // its new spot before the glide: it's pinned where let go each frame until the drop moves it
-      const pin = () => {
-        if (!node.isConnected) {
-          return;
-        }
-        node.style.removeProperty("transform");
-        const at = node.getBoundingClientRect();
-        node.style.setProperty("transform", `translate(${landing.left - at.left}px, ${landing.top - at.top}px)`, "important");
-      };
-      repinLanding = pin;
-      refitLanding = landing.bg ? () => settleDroppedWidth(landing.tab, landing.bgWidth) : null;
-      const glideIn = () => {
-        if (pendingFinish) {
-          pin();
-          requestAnimationFrame(glideIn);
-          return;
-        }
-        repinLanding = null;
-        refitLanding = null;
-        refitHeld?.();
-        node.style.removeProperty("transform");
-        // the narrower look goes before the glide, which then starts the background where it
-        // showed (in a folder, it stepped left as the glide began and slid back)
-        if (landing.bg) {
-          settleDroppedWidth(landing.tab, landing.bgWidth);
-        }
-        unmorphFolder(node);
-        const to = node.getBoundingClientRect();
-        const dy = landing.top - to.top;
-        const dx = landing.bg?.isConnected ? landing.bgLeft - landing.bg.getBoundingClientRect().left : landing.left - to.left;
-        if (!node.isConnected || node.hasAttribute("zen-essential") || (Math.abs(dy) < 2 && Math.abs(dx) < 2) || !to.height) {
-          // kept a moment, past Firefox's own drop animation (see chrome.css)
-          setTimeout(() => node.removeAttribute("zia-landing"), gBrowser.isTab(node) ? 0 : 400);
-          return;
-        }
-        const glide = node.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "translate(0, 0)" }], {
-          duration: LAND_MS,
-          easing: LAND_EASE,
-        });
-        glide.id = "zia-land";
-        const end = () => setTimeout(() => node.removeAttribute("zia-landing"), gBrowser.isTab(node) ? 0 : 250);
-        glide.finished.then(end, end);
-      };
-      requestAnimationFrame(glideIn);
+  // From where it was let go into where it's landed
+  const glideFrom = (node, from) => {
+    node.style.removeProperty("transform");
+    // the narrower look goes before the glide, which then starts the background where it
+    // showed (in a folder, it stepped left as the glide began and slid back)
+    if (from.bg) {
+      settleDroppedWidth(from.tab, from.bgWidth);
     }
-    // A new drag started within the settling time is left alone: the wipe undid the offsets
-    // Zen gives the other essentials to open a gap
-    const gen = dragGen;
+    unmorphFolder(node);
+    const to = node.getBoundingClientRect();
+    const dy = from.top - to.top;
+    const dx = from.bg?.isConnected ? from.bgLeft - from.bg.getBoundingClientRect().left : from.left - to.left;
+    if (!node.isConnected || node.hasAttribute("zen-essential") || (Math.abs(dy) < 2 && Math.abs(dx) < 2) || !to.height) {
+      // kept a moment, past Firefox's own drop animation (see chrome.css)
+      setTimeout(() => node.removeAttribute("zia-landing"), gBrowser.isTab(node) ? 0 : LANDED_MS);
+      return;
+    }
+    const glide = node.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "translate(0, 0)" }], {
+      duration: LAND_MS,
+      easing: LAND_EASE,
+    });
+    glide.id = "zia-land";
+    const end = () => setTimeout(() => node.removeAttribute("zia-landing"), gBrowser.isTab(node) ? 0 : GLIDED_MS);
+    glide.finished.then(end, end);
+  };
+
+  const glideLanding = (from) => {
+    const node = from.node;
+    holdFolderHover(node);
+
+    node.setAttribute("zia-landing", "true");
+    const held = node.getBoundingClientRect();
+    node.style.setProperty("transform", `translate(${from.left - held.left}px, ${from.top - held.top}px)`, "important");
+    // Firefox clears every tab's transform as its drag ends, so the tab painted a frame at
+    // its new spot before the glide: it's pinned where let go each frame until the drop moves it
+    const pin = () => {
+      if (!node.isConnected) {
+        return;
+      }
+      node.style.removeProperty("transform");
+      const at = node.getBoundingClientRect();
+      node.style.setProperty("transform", `translate(${from.left - at.left}px, ${from.top - at.top}px)`, "important");
+    };
+    landing.repin = pin;
+    landing.refit = from.bg ? () => settleDroppedWidth(from.tab, from.bgWidth) : null;
+    const glideIn = () => {
+      if (dropFinish.pending) {
+        pin();
+        requestAnimationFrame(glideIn);
+        return;
+      }
+      landing.repin = null;
+      landing.refit = null;
+      hoverHold.refit?.();
+      glideFrom(node, from);
+    };
+    requestAnimationFrame(glideIn);
+  };
+
+  const wipeNode = (node, locked, droppedTab) => {
+    const appearing = node === droppedTab && !node.group;
+    for (const anim of node.getAnimations()) {
+      if (anim.id === "zia-land") {
+        continue;
+      }
+      if (movesOnly(anim) || appearing) {
+        anim.cancel();
+      }
+    }
+    if (node.style.transform && !node.hasAttribute("zia-landing")) {
+      node.style.transform = "";
+    }
+
+    // Firefox hides what's dragged until its own drop animation ends: for a folder, a part
+    // inside it, so the whole folder vanished for a moment after landing
+    if (node.style.visibility === "hidden" && (locked.has(node) || node === droppedTab || droppedTab?.contains?.(node))) {
+      node.style.visibility = "";
+    }
+  };
+
+  // Zen's and Firefox's moves wiped off each frame while the drop settles, then the rows
+  // unlocked. A new drag started within the settling time is left alone: the wipe undid the
+  // offsets Zen gives the other essentials to open a gap
+  const wipeWhileSettling = (strip, locked, droppedTab) => {
+    const gen = settling.dragGen;
     const unlock = () => {
       strip?.removeAttribute("zia-settling");
       for (const node of locked) {
@@ -15700,108 +15939,122 @@
       }
     };
     const wipe = () => {
-      if (gen !== dragGen) {
+      if (gen !== settling.dragGen) {
         unlock();
         return;
       }
-      strip?.querySelectorAll(".tabbrowser-tab, .tab-group-label-container, tab-group, zen-folder").forEach((node) => {
-        const appearing = node === droppedTab && !node.group;
-        for (const anim of node.getAnimations()) {
-          if (anim.id === "zia-land") {
-            continue;
-          }
-          if (movesOnly(anim) || appearing) {
-            anim.cancel();
-          }
-        }
-        if (node.style.transform && !node.hasAttribute("zia-landing")) {
-          node.style.transform = "";
-        }
-
-        // Firefox hides what's dragged until its own drop animation ends: for a folder, a part
-        // inside it, so the whole folder vanished for a moment after landing
-        if (node.style.visibility === "hidden" && (locked.has(node) || node === droppedTab || droppedTab?.contains?.(node))) {
-          node.style.visibility = "";
-        }
-      });
+      strip?.querySelectorAll(".tabbrowser-tab, .tab-group-label-container, tab-group, zen-folder").forEach((node) => wipeNode(node, locked, droppedTab));
       if (Date.now() < blockAnimUntil) {
         requestAnimationFrame(wipe);
       } else {
         unlock();
       }
     };
-    clearTimeout(lockTimer);
     wipe();
-    // the drop's own placing, now its landing is set up
-    if (finishNow) {
-      const run = finishNow;
-      finishNow = null;
-      run();
+  };
+
+  const settle = () => {
+    const droppedTab = drag?.tab || essentialDropped || null;
+    noteLandingFrom();
+    essentialDropped = null;
+    // (a folder let go is moved a step later: its folders keep their look till then)
+    const folderLanding = !!drag?.folder && dropFinish.pending;
+    unmorphDropped(droppedTab);
+    endDrag();
+    document.documentElement.removeAttribute("zia-dragging-tab");
+    unfoldCompanions();
+    clearDragLook(folderLanding);
+
+    if (dragCore.raf) {
+      cancelAnimationFrame(dragCore.raf);
+      dragCore.raf = 0;
     }
+    blockAnims(ANIM_BLOCK_MS);
+    stopZenDropAnimation();
+    const strip = document.getElementById("tabbrowser-tabs");
+
+    const from = landing.from;
+    landing.from = null;
+    strip?.setAttribute("zia-settling", "true");
+    const locked = lockMoved();
+    if (from?.node?.isConnected) {
+      glideLanding(from);
+    }
+    wipeWhileSettling(strip, locked, droppedTab);
+    // the drop's own placing, now its landing is set up
+    finishDropNow();
     holdLent();
   };
 
   // A drag that ends where this window can't see (another window, the desktop, its tab
   // closed) never sends dragend, leaving every tab's x hidden until a restart. No mouse
   // moves arrive during a drag, so a move with no button held means it's over: tidy up.
-  let lastTidy = 0;
+  const tidyLostDrag = (event) => {
+    if (event.buttons || event.timeStamp - settling.lastTidy < TIDY_GAP_MS) {
+      return;
+    }
+    settling.lastTidy = event.timeStamp;
+    if (drag || document.documentElement.hasAttribute("zia-dragging-tab")) {
+      settle();
+    }
+    const strip = document.getElementById("tabbrowser-tabs");
+    if (strip?.hasAttribute("zia-settling") && Date.now() > blockAnimUntil + SETTLING_STUCK_MS) {
+      strip.removeAttribute("zia-settling");
+    }
+    for (const tab of document.querySelectorAll(".tabbrowser-tab[zia-essential-dragged]")) {
+      if (!essentialDrag) {
+        tab.removeAttribute("zia-essential-dragged");
+        tab.style.visibility = "";
+      }
+    }
+  };
+
+  const noteRealDrop = () => {
+    settling.realDrop = true;
+  };
+  const forgetRealDrop = () => {
+    settling.realDrop = false;
+  };
+
+  // Held over a space's icon, Zen switches to that space mid-drag, and the rest of the drag
+  // is Zen's: Zia's moved rows were the space it left, hidden now, and it went on steering the
+  // drop by them (fixDrop), so the tab landed back in that space, pinned there (#488). Zen
+  // announces no switch (ZenWorkspacesUIUpdate only comes at start-up), so it's seen as the
+  // drag goes on, and Zia lets go: its rows put back and its steering stopped, Zen's drop
+  // left as it is. (Not settle(): that turns Zen's drop off, and in 2.113.0 the tab went
+  // back where it was.)
+  const followSpaceSwitch = (event) => {
+    if (drag && drag.space !== window.gZenWorkspaces?.activeWorkspace) {
+      followIntoSpace(event);
+    }
+  };
+
+  const startFresh = () => {
+    // (and what the last drop kept showing: dragged straight back into
+    // the essentials, a tab kept its x on the tile)
+    hoverHold.release?.();
+    settling.dragGen++;
+    unblockAnims();
+  };
+
+  const settleTwice = () => {
+    settle();
+    setTimeout(settle, 0);
+  };
 
   // its listeners and hooks, added by moveTabsLikeDia (28-tab-dragging.js) in order
   function watchSettle() {
-    window.addEventListener("drop", () => (isRealDrop = true), true);
-    window.addEventListener("dragstart", () => (isRealDrop = false), true);
-    // Held over a space's icon, Zen switches to that space mid-drag, and the rest of the drag
-    // is Zen's: Zia's moved rows were the space it left, hidden now, and it went on steering the
-    // drop by them (fixDrop), so the tab landed back in that space, pinned there (#488). Zen
-    // announces no switch (ZenWorkspacesUIUpdate only comes at start-up), so it's seen as the
-    // drag goes on, and Zia lets go: its rows put back and its steering stopped, Zen's drop
-    // left as it is. (Not settle(): that turns Zen's drop off, and in 2.113.0 the tab went
-    // back where it was.)
-    window.addEventListener(
-      "dragover",
-      (event) => {
-        if (drag && drag.space !== window.gZenWorkspaces?.activeWorkspace) {
-          followIntoSpace(event);
-        }
-      },
-      true
-    );
+    window.addEventListener("drop", noteRealDrop, true);
+    window.addEventListener("dragstart", forgetRealDrop, true);
+    window.addEventListener("dragover", followSpaceSwitch, true);
     window.addEventListener("drop", settle, true);
-    window.addEventListener("dragstart", () => {
-      // (and what the last drop kept showing: dragged straight back into
-      // the essentials, a tab kept its x on the tile)
-      releaseHeld?.();
-      dragGen++;
-      blockAnimUntil = 0;
-    }, true);
-    window.addEventListener("dragend", () => {
-      settle();
-      setTimeout(settle, 0);
-    });
-    window.addEventListener(
-      "mousemove",
-      (event) => {
-        if (event.buttons || event.timeStamp - lastTidy < 500) {
-          return;
-        }
-        lastTidy = event.timeStamp;
-        if (drag || document.documentElement.hasAttribute("zia-dragging-tab")) {
-          settle();
-        }
-        const strip = document.getElementById("tabbrowser-tabs");
-        if (strip?.hasAttribute("zia-settling") && Date.now() > blockAnimUntil + 1000) {
-          strip.removeAttribute("zia-settling");
-        }
-        for (const tab of document.querySelectorAll(".tabbrowser-tab[zia-essential-dragged]")) {
-          if (!essentialDrag) {
-            tab.removeAttribute("zia-essential-dragged");
-            tab.style.visibility = "";
-          }
-        }
-      },
-      true
-    );
+    window.addEventListener("dragstart", startFresh, true);
+    window.addEventListener("dragend", settleTwice);
+    window.addEventListener("mousemove", tidyLostDrag, true);
   }
+
+  // The node a dragged item moves as, and the drag's listeners added in order.
+  // Used elsewhere: nodeToMove, moveTabsLikeDia.
 
   function nodeToMove(element) {
     if (!element) {

@@ -2,8 +2,8 @@
 
 | # | Item | Criteria | Attempts | Assistant | Master | Status |
 |---|------|----------|----------|-----------|--------|--------|
-| 1 | Zen test harness (L1) | L1.1–L1.3 | 0 | | | building |
-| 2 | Tab drag stage 1: state into named objects | B1, B3, B5 for 28-tab-dragging | 0 | | | queued |
+| 1 | Zen test harness (L1) | L1.1–L1.3 | 4 | 6, 9, 8.5, 8 | | judged 4×; last fixes (motion values, retries) verified by own break check; to master judge |
+| 2 | Tab drag split + files 01–06 restructured | B1–B5, B7 | 1 | 8.5 | | fixes queued: timers, hidden 20, drag.width* ownership, thumb object, proxy/stand-in naming |
 | 3 | Tab drag stage 2: essentials drag own file | B1, B2, B4 | 0 | | | queued |
 | 4 | Tab drag stage 3: split-view drag own file | B1, B2, B4 | 0 | | | queued |
 | 5 | Tab drag stage 4: folder hover and room own file | B1, B2, B4 | 0 | | | queued |

@@ -1,3 +1,6 @@
+  // The node a dragged item moves as, and the drag's listeners added in order.
+  // Used elsewhere: nodeToMove, moveTabsLikeDia.
+
   function nodeToMove(element) {
     if (!element) {
       return null;
