@@ -1,0 +1,27 @@
+{
+ "checks": {
+  "and clears": true,
+  "let go, it fades": true,
+  "off, no light": true,
+  "pressed, it lights": true
+ },
+ "faded": {
+  "press": null,
+  "vars": {}
+ },
+ "glassOff": {
+  "press": null,
+  "vars": {}
+ },
+ "letGo": "out",
+ "pressed": {
+  "press": "in",
+  "vars": {
+   "--zia-press-light": "rgba(255, 255, 255, 0.15)",
+   "--zia-press-wash": "rgba(255, 255, 255, 0.03)",
+   "--zia-press-x": "8px",
+   "--zia-press-y": "10px"
+  }
+ },
+ "ziaErrors": []
+}

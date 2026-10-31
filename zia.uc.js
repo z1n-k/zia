@@ -5156,6 +5156,10 @@
       true
     );
   }
+  // Split drop cards: a tab dragged over the page brings up two cards, Add left split and Add
+  // right split, the one nearer the pointer pulled towards it, with a picture of the dragged
+  // page following the pointer; dropped on one, the tab is split in on that side.
+  // Used elsewhere: watchSplitDrop, DRAG_PICTURE_W, DRAG_PICTURE_H.
   const TAB_DROP_TYPE = "application/x-moz-tabbrowser-tab";
   const MAGNET_SHARE = 0.32;
   const MAGNET_PULL_X = 0.55;
@@ -5164,6 +5168,14 @@
   const ZONE_EDGE = 44;
   const ZONE_ACTIVE_W = 350;
   const ZONE_ACTIVE_H = 580;
+
+  const PRESS_SELECT_MS = 1500;
+  const DRAG_PICTURE_W = 200;
+  const DRAG_PICTURE_H = 125;
+  // (how often the system's drag image is blanked again while the picture follows)
+  const BLANK_IMAGE_EVERY_MS = 250;
+  // (the tab to split with shown by then, if the picture isn't ready first)
+  const SPLIT_TARGET_SHOW_MS = 450;
 
   const splitDrop = {
     overlay: null,
@@ -5188,8 +5200,6 @@
       return null;
     }
   }
-
-  const PRESS_SELECT_MS = 1500;
 
   function splitTargetFor(tab) {
     const last = splitDrop.lastSelect;
@@ -5272,14 +5282,12 @@
     return overlay;
   }
 
-  const DRAG_PICTURE_W = 200;
-  const DRAG_PICTURE_H = 125;
   let blankDragImage = null;
   const lastCursor = { x: 0, y: 0 };
   let lastBlankAt = 0;
 
   function hideSystemDragImage(dt, force = true) {
-    if (!dt || (!force && Date.now() - lastBlankAt < 250)) {
+    if (!dt || (!force && Date.now() - lastBlankAt < BLANK_IMAGE_EVERY_MS)) {
       return;
     }
     lastBlankAt = Date.now();
@@ -5331,6 +5339,18 @@
     ctx.clip();
     ctx.fillStyle = "#1f1f1f";
     ctx.fillRect(0, 0, width, height);
+    await drawDragPage(ctx, tab, width, height, ratio);
+    ctx.restore();
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.28)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(0.5, 0.5, width - 1, height - 1, 7);
+    ctx.stroke();
+    return canvas;
+  }
+
+  // The page as it's scrolled, cut to the picture's shape, or its icon if it can't be drawn
+  async function drawDragPage(ctx, tab, width, height, ratio) {
     try {
       const browser = tab.linkedBrowser;
       const pageW = browser?.clientWidth;
@@ -5364,13 +5384,6 @@
         ctx.drawImage(icon, width / 2 - 12, height / 2 - 12, 24, 24);
       }
     }
-    ctx.restore();
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.28)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(0.5, 0.5, width - 1, height - 1, 7);
-    ctx.stroke();
-    return canvas;
   }
 
   function showSplitDrop(tab, event) {
@@ -5397,7 +5410,8 @@
       }
     };
     picture.finally(showTarget);
-    setTimeout(showTarget, 450);
+    // (not kept: it does nothing once the picture's in, or once these cards are gone)
+    setTimeout(showTarget, SPLIT_TARGET_SHOW_MS);
     overlay.setAttribute("open", "true");
 
     requestAnimationFrame(() => {
@@ -5716,7 +5730,24 @@
     }
   }
 
+  // Split panes: each pane of a split gets a toolbar of its own (back, forward, reload, the
+  // address as host and title with its loading bar, copy link, site settings, close), coloured
+  // like its page; the focused one holds the extensions' buttons, and the top-right one the
+  // window's buttons, both from the main toolbar a split hides.
+  // Used elsewhere: watchSplitPanes, schedulePanes.
   const ICONS = "chrome://sine/content/zia/icons/";
+  // (how long after a change a pane's colour is read, unless said otherwise)
+  const PANE_COLOR_DELAY_MS = 60;
+  // ...after it goes somewhere else, after it loads, and once more, late
+  const PANE_COLOR_AFTER_MOVE_MS = 150;
+  const PANE_COLOR_AFTER_LOAD_MS = 50;
+  const PANE_COLOR_LATE_MS = 800;
+  // The address's loading bar: how often it creeps on, how long it shows at least, how long
+  // it's held full, and how long it takes to fade
+  const PANE_PROGRESS_TICK_MS = 120;
+  const PANE_LOAD_MIN_MS = 450;
+  const PANE_LOAD_HOLD_MS = 250;
+  const PANE_LOAD_FADE_MS = 320;
   const paneColorTimers = new WeakMap();
 
   function splitContainers() {
@@ -5754,35 +5785,28 @@
     return button;
   }
 
-  function createPaneBar(container) {
-    const bar = document.createElementNS(XHTML_NS, "div");
-    bar.className = "zia-pane-bar";
-    const tabOf = () => gBrowser.getTabForBrowser(paneBrowser(container));
-    const selectPane = () => {
-      const tab = tabOf();
-      if (tab && gBrowser.selectedTab !== tab) {
-        gBrowser.selectedTab = tab;
-      }
-    };
+  function paneTab(container) {
+    return gBrowser.getTabForBrowser(paneBrowser(container));
+  }
 
-    bar.addEventListener("mousedown", selectPane);
-    // (Zen's own sidebar button sits in the toolbar a split hides, and a
-    // hidden button's doCommand does nothing: this goes to Zen's command)
-    bar.appendChild(paneButton("sidebar", "Toggle sidebar", () => document.getElementById("cmd_zenCompactModeToggle")?.doCommand()));
-    bar.appendChild(paneButton("back", "Back", () => paneBrowser(container)?.goBack()));
-    bar.appendChild(paneButton("forward", "Forward", () => paneBrowser(container)?.goForward()));
-    bar.appendChild(
-      paneButton("reload", "Reload", () => {
-        const browser = paneBrowser(container);
-        const tab = tabOf();
-        if (tab?.hasAttribute("busy")) {
-          browser?.stop();
-        } else {
-          browser?.reload();
-        }
-      })
-    );
+  function selectPane(container) {
+    const tab = paneTab(container);
+    if (tab && gBrowser.selectedTab !== tab) {
+      gBrowser.selectedTab = tab;
+    }
+  }
 
+  function reloadPane(container) {
+    const browser = paneBrowser(container);
+    const tab = paneTab(container);
+    if (tab?.hasAttribute("busy")) {
+      browser?.stop();
+    } else {
+      browser?.reload();
+    }
+  }
+
+  function createPaneAddress(container) {
     const address = document.createElementNS(XHTML_NS, "div");
     address.className = "zia-pane-address";
     const host = document.createElementNS(XHTML_NS, "span");
@@ -5791,51 +5815,58 @@
     rest.className = "zia-pane-rest";
     address.append(host, rest);
     address.addEventListener("click", () => {
-      selectPane();
+      selectPane(container);
       requestAnimationFrame(() => {
         placeOpenedAddressBar();
         document.getElementById("Browser:OpenLocation").doCommand();
       });
     });
-    bar.appendChild(address);
+    return address;
+  }
+
+  function copyPaneLink(container, button) {
+    try {
+      copyLink(paneTab(container));
+      showCopied(button);
+    } catch (err) {
+      console.error("[Zia] Copy link failed:", err);
+    }
+  }
+
+  function openPaneSiteSettings(container) {
+    selectPane(container);
+    placeOpenedAddressBar();
+    requestAnimationFrame(() => document.getElementById("zen-site-data-icon-button")?.click());
+  }
+
+  // Closes the pane's tab, as Dia's does (Zen's own only takes it out of
+  // the split, into a tab of its own)
+  function closePane(container) {
+    const tab = paneTab(container);
+    if (tab && !tab.closing) {
+      gBrowser.removeTab(tab);
+    }
+  }
+
+  function createPaneBar(container) {
+    const bar = document.createElementNS(XHTML_NS, "div");
+    bar.className = "zia-pane-bar";
+    bar.addEventListener("mousedown", () => selectPane(container));
+    // (Zen's own sidebar button sits in the toolbar a split hides, and a
+    // hidden button's doCommand does nothing: this goes to Zen's command)
+    bar.appendChild(paneButton("sidebar", "Toggle sidebar", () => document.getElementById("cmd_zenCompactModeToggle")?.doCommand()));
+    bar.appendChild(paneButton("back", "Back", () => paneBrowser(container)?.goBack()));
+    bar.appendChild(paneButton("forward", "Forward", () => paneBrowser(container)?.goForward()));
+    bar.appendChild(paneButton("reload", "Reload", () => reloadPane(container)));
+    bar.appendChild(createPaneAddress(container));
 
     const extensions = document.createElementNS(XHTML_NS, "div");
     extensions.className = "zia-pane-extensions";
     bar.appendChild(extensions);
 
-    bar.appendChild(
-      paneButton(
-        "copy-link",
-        "Copy link",
-        (event, button) => {
-          try {
-            copyLink(tabOf());
-            showCopied(button);
-          } catch (err) {
-            console.error("[Zia] Copy link failed:", err);
-          }
-        },
-        COPY_ICON
-      )
-    );
-    bar.appendChild(
-      paneButton("site-settings", "Site settings and extensions", () => {
-        selectPane();
-        placeOpenedAddressBar();
-        requestAnimationFrame(() => document.getElementById("zen-site-data-icon-button")?.click());
-      })
-    );
-
-    bar.appendChild(
-      // Closes the pane's tab, as Dia's does (Zen's own only takes it out of
-      // the split, into a tab of its own)
-      paneButton("close", "Close", () => {
-        const tab = tabOf();
-        if (tab && !tab.closing) {
-          gBrowser.removeTab(tab);
-        }
-      })
-    );
+    bar.appendChild(paneButton("copy-link", "Copy link", (event, button) => copyPaneLink(container, button), COPY_ICON));
+    bar.appendChild(paneButton("site-settings", "Site settings and extensions", () => openPaneSiteSettings(container)));
+    bar.appendChild(paneButton("close", "Close", () => closePane(container)));
 
     const stack = container.querySelector(".browserStack");
     const holder = stack?.parentNode || container.querySelector(".browserContainer") || container;
@@ -5874,7 +5905,7 @@
       if (state.progress < 0.85) {
         setPaneProgress(container, state.progress + (0.85 - state.progress) * 0.08);
       }
-    }, 120);
+    }, PANE_PROGRESS_TICK_MS);
   }
 
   function finishPaneLoad(container) {
@@ -5887,7 +5918,8 @@
 
     const shownFor = Date.now() - (state?.startedAt || 0);
     const stillThisLoad = () => paneLoads.get(container) === state;
-    setTimeout(() => stillThisLoad() && setPaneProgress(container, 1), Math.max(0, 450 - shownFor));
+    // (not kept: each checks it's still this load's before it does anything)
+    setTimeout(() => stillThisLoad() && setPaneProgress(container, 1), Math.max(0, PANE_LOAD_MIN_MS - shownFor));
     setTimeout(() => {
       if (!stillThisLoad()) {
         return;
@@ -5898,8 +5930,8 @@
           address.style.setProperty("--zia-load-progress", "0");
           paneLoads.delete(container);
         }
-      }, 320);
-    }, 250 + Math.max(0, 450 - shownFor));
+      }, PANE_LOAD_FADE_MS);
+    }, PANE_LOAD_HOLD_MS + Math.max(0, PANE_LOAD_MIN_MS - shownFor));
   }
 
   function updatePaneBar(container) {
@@ -5953,7 +5985,7 @@
     bar.toggleAttribute("light", wantsDarkInk(reading.rgb));
   }
 
-  function colorPaneSoon(container, delay = 60) {
+  function colorPaneSoon(container, delay = PANE_COLOR_DELAY_MS) {
     if (!container || paneColorTimers.get(container)) {
       return;
     }
@@ -6005,8 +6037,8 @@
   }
 
   const PANE_EXTENSION_ITEMS = "#nav-bar-customization-target > .unified-extensions-item";
-  let movedExtensions = [];
-  const extensionHomes = new Map();
+  // The extensions' buttons moved into a pane's toolbar, and where each came from
+  const paneExtensions = { moved: [], homes: new Map() };
 
   function placePaneExtensions(containers) {
     const focused = containers.find((c) => c.classList.contains("deck-selected")) || containers[0];
@@ -6016,12 +6048,12 @@
     }
 
     for (const node of document.querySelectorAll(PANE_EXTENSION_ITEMS)) {
-      if (!extensionHomes.has(node)) {
-        extensionHomes.set(node, { parent: node.parentNode, next: node.nextSibling });
-        movedExtensions.push(node);
+      if (!paneExtensions.homes.has(node)) {
+        paneExtensions.homes.set(node, { parent: node.parentNode, next: node.nextSibling });
+        paneExtensions.moved.push(node);
       }
     }
-    for (const node of movedExtensions) {
+    for (const node of paneExtensions.moved) {
       if (node.parentNode !== slot) {
         slot.appendChild(node);
       }
@@ -6029,16 +6061,16 @@
   }
 
   function restorePaneExtensions() {
-    for (const node of [...movedExtensions].reverse()) {
-      const home = extensionHomes.get(node);
+    for (const node of [...paneExtensions.moved].reverse()) {
+      const home = paneExtensions.homes.get(node);
       if (!home?.parent?.isConnected) {
         continue;
       }
       const next = home.next?.parentNode === home.parent ? home.next : null;
       home.parent.insertBefore(node, next);
     }
-    movedExtensions = [];
-    extensionHomes.clear();
+    paneExtensions.moved = [];
+    paneExtensions.homes.clear();
   }
 
   function placeOpenedAddressBar(containers = splitContainers()) {
@@ -6084,59 +6116,48 @@
     }
   }
 
-  function watchSplitPanes() {
-    const panels = gBrowser.tabpanels;
-    if (!panels) {
-      return;
+  function onPaneTabChanged(event) {
+    const container = paneOfBrowser(event.target.linkedBrowser);
+    if (container) {
+      updatePaneBar(container);
     }
-    new MutationObserver(schedulePanes).observe(panels, {
-      attributes: true,
-      subtree: true,
-      attributeFilter: ["zen-split-view", "zen-split"],
-    });
-    gBrowser.tabContainer.addEventListener("TabSelect", schedulePanes);
-    window.addEventListener("beforecustomization", restorePaneExtensions);
-    window.addEventListener("aftercustomization", schedulePanes);
-    gBrowser.tabContainer.addEventListener("TabAttrModified", (event) => {
-      const container = paneOfBrowser(event.target.linkedBrowser);
+  }
+
+  // Each pane's address, buttons, loading bar and colour follow its page
+  const paneProgressListener = {
+    onProgressChange(browser, webProgress, request, curSelf, maxSelf, curTotal, maxTotal) {
+      const container = paneOfBrowser(browser);
+      if (container && maxTotal > 0) {
+        setPaneProgress(container, 0.12 + (curTotal / maxTotal) * 0.8);
+      }
+    },
+    onLocationChange(browser, webProgress) {
+      const container = webProgress.isTopLevel && paneOfBrowser(browser);
       if (container) {
         updatePaneBar(container);
+        colorPaneSoon(container, PANE_COLOR_AFTER_MOVE_MS);
       }
-    });
-    window.addEventListener("resize", schedulePanes);
+    },
+    onStateChange(browser, webProgress, request, stateFlags) {
+      const container = webProgress.isTopLevel && paneOfBrowser(browser);
+      if (!container) {
+        return;
+      }
+      const { STATE_START, STATE_STOP, STATE_IS_WINDOW } = Ci.nsIWebProgressListener;
+      updatePaneBar(container);
+      if (stateFlags & STATE_START && stateFlags & STATE_IS_WINDOW) {
+        startPaneLoad(container);
+      }
+      if (stateFlags & STATE_STOP && stateFlags & STATE_IS_WINDOW) {
+        finishPaneLoad(container);
+        colorPaneSoon(container, PANE_COLOR_AFTER_LOAD_MS);
+        colorPaneSoon(container, PANE_COLOR_LATE_MS);
+      }
+    },
+  };
 
-    const { STATE_START, STATE_STOP, STATE_IS_WINDOW } = Ci.nsIWebProgressListener;
-    gBrowser.addTabsProgressListener({
-      onProgressChange(browser, webProgress, request, curSelf, maxSelf, curTotal, maxTotal) {
-        const container = paneOfBrowser(browser);
-        if (container && maxTotal > 0) {
-          setPaneProgress(container, 0.12 + (curTotal / maxTotal) * 0.8);
-        }
-      },
-      onLocationChange(browser, webProgress) {
-        const container = webProgress.isTopLevel && paneOfBrowser(browser);
-        if (container) {
-          updatePaneBar(container);
-          colorPaneSoon(container, 150);
-        }
-      },
-      onStateChange(browser, webProgress, request, stateFlags) {
-        const container = webProgress.isTopLevel && paneOfBrowser(browser);
-        if (!container) {
-          return;
-        }
-        updatePaneBar(container);
-        if (stateFlags & STATE_START && stateFlags & STATE_IS_WINDOW) {
-          startPaneLoad(container);
-        }
-        if (stateFlags & STATE_STOP && stateFlags & STATE_IS_WINDOW) {
-          finishPaneLoad(container);
-          colorPaneSoon(container, 50);
-          colorPaneSoon(container, 800);
-        }
-      },
-    });
-
+  // A pane's colour read again as its page scrolls or paints, after what the site colour does
+  function colorPanesWithPage() {
     const onScroll = window.ziaOnPageScroll;
     window.ziaOnPageScroll = (browser, position) => {
       onScroll?.(browser, position);
@@ -6153,10 +6174,27 @@
         colorPaneSoon(container, 0);
       }
     };
-
-    schedulePanes();
   }
 
+  function watchSplitPanes() {
+    const panels = gBrowser.tabpanels;
+    if (!panels) {
+      return;
+    }
+    new MutationObserver(schedulePanes).observe(panels, {
+      attributes: true,
+      subtree: true,
+      attributeFilter: ["zen-split-view", "zen-split"],
+    });
+    gBrowser.tabContainer.addEventListener("TabSelect", schedulePanes);
+    window.addEventListener("beforecustomization", restorePaneExtensions);
+    window.addEventListener("aftercustomization", schedulePanes);
+    gBrowser.tabContainer.addEventListener("TabAttrModified", onPaneTabChanged);
+    window.addEventListener("resize", schedulePanes);
+    gBrowser.addTabsProgressListener(paneProgressListener);
+    colorPanesWithPage();
+    schedulePanes();
+  }
   function updateSpaceColored() {
     let colored = false;
     if (root.getAttribute("zen-default-theme") !== "true") {
@@ -7393,77 +7431,102 @@
       safely(name, fn);
     }
   }
+  // Downloads: a ring on the downloads button showing how far they've got, Zen's first
+  // download flight waiting for that button to show, Zia's own flight of a row to the Library
+  // button, and Firefox's "what should Zen do with this file?" box centred on the page.
+  // Used elsewhere: addDownloadProgress, flyFirstDownloadToButton, watchDownloadDialog,
+  // flyDownloadRows.
+  const DOWNLOAD_RING_RADIUS = 46;
+  const DOWNLOAD_RING_STROKE = 7;
+  const FLIGHT_POP_MS = 120;
+  const FLIGHT_WINDUP_MS = 420;
+  const FLIGHT_LAUNCH_MS = 560;
+  const FLIGHT_SETTLE_MS = 320;
+  // (the glow trails the row by this much, the button's nudge starts this much before it
+  // lands, and the stage goes this much after it's settled)
+  const FLIGHT_BEAM_LAG_MS = 40;
+  const FLIGHT_NUDGE_EARLY_MS = 40;
+  const FLIGHT_CLEAR_LATE_MS = 40;
+  const FLIGHT_NUDGE_MS = 360;
+  // (a download only just started, and a save from that box only just made)
+  const DOWNLOAD_FRESH_MS = 5000;
+  const DIALOG_SAVE_FRESH_MS = 2000;
+  let downloadFlightOn = false;
+  let savedFromDialog = null;
+
+  // The ring: a track and an arc over it, drawn round from the top
+  function makeDownloadRing() {
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.id = "zia-download-ring";
+    svg.setAttribute("viewBox", "0 0 100 100");
+    const track = document.createElementNS(NS, "circle");
+    const arc = document.createElementNS(NS, "circle");
+    for (const circle of [track, arc]) {
+      circle.setAttribute("cx", "50");
+      circle.setAttribute("cy", "50");
+      circle.setAttribute("r", `${DOWNLOAD_RING_RADIUS}`);
+      circle.setAttribute("fill", "none");
+      circle.setAttribute("stroke-width", `${DOWNLOAD_RING_STROKE}`);
+      svg.appendChild(circle);
+    }
+    track.setAttribute("class", "zia-download-ring-track");
+    arc.setAttribute("class", "zia-download-ring-arc");
+    arc.setAttribute("stroke-linecap", "round");
+    arc.setAttribute("transform", "rotate(-90 50 50)");
+    const circumference = 2 * Math.PI * DOWNLOAD_RING_RADIUS;
+    arc.setAttribute("stroke-dasharray", `${circumference}`);
+    arc.setAttribute("stroke-dashoffset", `${circumference}`);
+    return { svg, arc, circumference };
+  }
+
+  function drawDownloadRing(ring, fraction) {
+    ring.arc.setAttribute("stroke-dashoffset", `${ring.circumference * (1 - fraction)}`);
+  }
+
+  function showDownloadProgress(button, ring, downloads) {
+    let done = 0;
+    let total = 0;
+    let running = false;
+    for (const download of downloads) {
+      if (download.succeeded || download.canceled || download.error) {
+        continue;
+      }
+      if (download.hasProgress && download.totalBytes > 0) {
+        done += download.currentBytes || 0;
+        total += download.totalBytes;
+      }
+      running = true;
+    }
+    if (!running || total <= 0) {
+      button.removeAttribute("zia-downloading");
+      drawDownloadRing(ring, 0);
+      return;
+    }
+    button.setAttribute("zia-downloading", "true");
+    drawDownloadRing(ring, Math.min(1, done / total));
+  }
+
   function addDownloadProgress() {
     const button = document.getElementById("downloads-button");
     const commons = window.DownloadsCommon;
     if (!button || !commons?.getData) {
       return;
     }
-
-    const NS = "http://www.w3.org/2000/svg";
-    const ring = document.createElementNS(NS, "svg");
-    ring.id = "zia-download-ring";
-    ring.setAttribute("viewBox", "0 0 100 100");
-    const track = document.createElementNS(NS, "circle");
-    const arc = document.createElementNS(NS, "circle");
-
-    const RADIUS = 46;
-    const STROKE = 7;
-    for (const circle of [track, arc]) {
-      circle.setAttribute("cx", "50");
-      circle.setAttribute("cy", "50");
-      circle.setAttribute("r", `${RADIUS}`);
-      circle.setAttribute("fill", "none");
-      circle.setAttribute("stroke-width", `${STROKE}`);
-      ring.appendChild(circle);
-    }
-    track.setAttribute("class", "zia-download-ring-track");
-    arc.setAttribute("class", "zia-download-ring-arc");
-    arc.setAttribute("stroke-linecap", "round");
-    arc.setAttribute("transform", "rotate(-90 50 50)");
-    const circumference = 2 * Math.PI * RADIUS;
-    arc.setAttribute("stroke-dasharray", `${circumference}`);
-    arc.setAttribute("stroke-dashoffset", `${circumference}`);
-    button.appendChild(ring);
-
-    function draw(fraction) {
-      arc.setAttribute("stroke-dashoffset", `${circumference * (1 - fraction)}`);
-    }
-
-    function update(downloads) {
-      let done = 0;
-      let total = 0;
-      let running = false;
-      for (const download of downloads) {
-        if (download.succeeded || download.canceled || download.error) {
-          continue;
-        }
-        if (download.hasProgress && download.totalBytes > 0) {
-          done += download.currentBytes || 0;
-          total += download.totalBytes;
-        }
-        running = true;
-      }
-      if (!running || total <= 0) {
-        button.removeAttribute("zia-downloading");
-        draw(0);
-        return;
-      }
-      button.setAttribute("zia-downloading", "true");
-      draw(Math.min(1, done / total));
-    }
+    const ring = makeDownloadRing();
+    button.appendChild(ring.svg);
 
     const seen = new Set();
     const keep = (download) => {
       seen.add(download);
-      update(seen);
+      showDownloadProgress(button, ring, seen);
     };
     commons.getData(window).addView({
       onDownloadAdded: keep,
       onDownloadChanged: keep,
       onDownloadRemoved(download) {
         seen.delete(download);
-        update(seen);
+        showDownloadProgress(button, ring, seen);
       },
     });
   }
@@ -7512,12 +7575,6 @@
   // it flies the window dims, a faint glow trailing the row and a soft
   // bloom where it lands. Zen's own switch for its
   // animation turns this off too.
-  let downloadFlightOn = false;
-  const FLIGHT_POP_MS = 120;
-  const FLIGHT_WINDUP_MS = 420;
-  const FLIGHT_LAUNCH_MS = 560;
-  const FLIGHT_SETTLE_MS = 320;
-
   function flightTarget() {
     for (const id of ["zen-library-button", "downloads-button"]) {
       const button = document.getElementById(id);
@@ -7548,11 +7605,9 @@
     return node;
   }
 
-  function flyDownloadRow(download, start) {
-    const target = flightTarget();
-    if (!target) {
-      return;
-    }
+  // The stage the flight plays on: the dim, the glow, the bloom, and the row with the file's
+  // icon and name
+  function makeFlightStage(download) {
     document.getElementById("zia-download-flight")?.remove();
     const stage = flightPart("");
     stage.id = "zia-download-flight";
@@ -7570,7 +7625,10 @@
     label.textContent = name;
     row.append(icon, label);
     root.appendChild(stage);
+    return { stage, dim, beam, bloom, row };
+  }
 
+  function flightPath(start, target, row) {
     const { width, height } = row.getBoundingClientRect();
     const keep = (x, y) => ({
       x: Math.min(window.innerWidth - width / 2 - 8, Math.max(width / 2 + 8, x)),
@@ -7593,9 +7651,11 @@
     const bez = (u, a, b, c, d) => (1 - u) ** 3 * a + 3 * (1 - u) ** 2 * u * b + 3 * (1 - u) * u ** 2 * c + u ** 3 * d;
     const point = (u) => ({ x: bez(u, p0.x, c1.x, c2.x, target.x), y: bez(u, p0.y, c1.y, c2.y, target.y) });
     const at = (x, y, rotate, scale) => `translate(${x - p0.x}px, ${y - p0.y}px) translate(-50%, -50%) rotate(${rotate}deg) scale(${scale})`;
+    return { p0, dx, dy, point, at };
+  }
 
-    row.style.left = `${p0.x}px`;
-    row.style.top = `${p0.y}px`;
+  function flightFrames(start, path) {
+    const { p0, dx, dy, point, at } = path;
     const total = FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
     const o = (ms) => ms / total;
     const frames = [
@@ -7629,11 +7689,12 @@
         opacity: (1 - smooth(0.7, 1, u)).toFixed(4),
       });
     }
-    // (only movement and fading, which Firefox runs on the graphics card:
-    // with a blur in it too, it ran frame by frame alongside everything
-    // else a download starts, and stuttered)
-    const flight = row.animate(frames, { duration: total, easing: "linear", fill: "forwards" });
+    return frames;
+  }
 
+  // The dim, the glow trailing the row and the bloom where it lands
+  function lightFlight({ dim, beam, bloom, row }, frames, target) {
+    const total = FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
     // the dim: in as it winds up, out once it's landed
     const settle = total + FLIGHT_SETTLE_MS;
     const so = (ms) => ms / settle;
@@ -7657,7 +7718,7 @@
         transform: frame.transform.replace(/scale\(([\d.]+)\)/, (_, n) => `scale(${(Number(n) * 1.6).toFixed(3)})`),
         opacity: i < 3 ? 0 : frame.opacity,
       })),
-      { duration: total, delay: 40, easing: "linear", fill: "forwards" }
+      { duration: total, delay: FLIGHT_BEAM_LAG_MS, easing: "linear", fill: "forwards" }
     );
 
     // the bloom where it lands
@@ -7671,14 +7732,34 @@
       ],
       { duration: settle, easing: "linear", fill: "forwards" }
     );
+  }
 
+  function flyDownloadRow(download, start) {
+    const target = flightTarget();
+    if (!target) {
+      return;
+    }
+    const parts = makeFlightStage(download);
+    const { stage, row } = parts;
+    const path = flightPath(start, target, row);
+    row.style.left = `${path.p0.x}px`;
+    row.style.top = `${path.p0.y}px`;
+    const total = FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
+    const frames = flightFrames(start, path);
+    // (only movement and fading, which Firefox runs on the graphics card:
+    // with a blur in it too, it ran frame by frame alongside everything
+    // else a download starts, and stuttered)
+    const flight = row.animate(frames, { duration: total, easing: "linear", fill: "forwards" });
+    lightFlight(parts, frames, target);
+
+    // (not kept: a newer flight takes this stage away itself, and this one's nudge still lands)
     setTimeout(() => {
       target.button.animate(
         [{ transform: "scale(1)" }, { transform: "scale(1.18)", offset: 0.4 }, { transform: "scale(1)" }],
-        { duration: 360, easing: "cubic-bezier(0.3, 1.4, 0.5, 1)" }
+        { duration: FLIGHT_NUDGE_MS, easing: "cubic-bezier(0.3, 1.4, 0.5, 1)" }
       );
-    }, total - 40);
-    setTimeout(() => stage.remove(), settle + 40);
+    }, total - FLIGHT_NUDGE_EARLY_MS);
+    setTimeout(() => stage.remove(), total + FLIGHT_SETTLE_MS + FLIGHT_CLEAR_LATE_MS);
     flight.finished.catch(() => stage.remove());
   }
 
@@ -7686,7 +7767,6 @@
   // system put it, top left of the screen: it's centred on the page of the
   // window it's for, every time, and saving from it sends the download's
   // flight from there.
-  let savedFromDialog = null;
   const DOWNLOAD_DIALOG = "chrome://mozapps/content/downloads/unknownContentType.xhtml";
 
   function pageBoxOnScreen() {
@@ -7748,6 +7828,31 @@
     window.addEventListener("unload", () => Services.ww.unregisterNotification(observer), { once: true });
   }
 
+  function flyNewDownload(download) {
+    try {
+      // (only one just started, here, and not those listed on startup)
+      const fresh = !download.succeeded && Date.now() - (download.startTime?.getTime?.() ?? 0) < DOWNLOAD_FRESH_MS;
+      // (from where Firefox's "what should Zen do with this file?"
+      // box was, if that's where it was saved from, 2s ago at most)
+      const fromDialog = savedFromDialog && Date.now() - savedFromDialog.at < DIALOG_SAVE_FRESH_MS ? savedFromDialog : null;
+      savedFromDialog = null;
+      const start = fromDialog || window.gZenUIManager?._lastClickPosition;
+      if (
+        !fresh ||
+        !start ||
+        !Services.prefs.getBoolPref("zen.downloads.download-animation", true) ||
+        // (this window, the front one, or the one that box came from)
+        (Services.focus.activeWindow !== window && !fromDialog) ||
+        matchMedia("(prefers-reduced-motion: reduce)").matches
+      ) {
+        return;
+      }
+      flyDownloadRow(download, start);
+    } catch (err) {
+      noteError("downloads: flight", err);
+    }
+  }
+
   function flyDownloadRows() {
     const Downloads = window.Downloads;
     if (!Downloads?.getList) {
@@ -7756,32 +7861,7 @@
     Downloads.getList(Downloads.ALL)
       .then((list) => {
         downloadFlightOn = true;
-        list.addView({
-          onDownloadAdded(download) {
-            try {
-              // (only one just started, here, and not those listed on startup)
-              const fresh = !download.succeeded && Date.now() - (download.startTime?.getTime?.() ?? 0) < 5000;
-              // (from where Firefox's "what should Zen do with this file?"
-              // box was, if that's where it was saved from, 2s ago at most)
-              const fromDialog = savedFromDialog && Date.now() - savedFromDialog.at < 2000 ? savedFromDialog : null;
-              savedFromDialog = null;
-              const start = fromDialog || window.gZenUIManager?._lastClickPosition;
-              if (
-                !fresh ||
-                !start ||
-                !Services.prefs.getBoolPref("zen.downloads.download-animation", true) ||
-                // (this window, the front one, or the one that box came from)
-                (Services.focus.activeWindow !== window && !fromDialog) ||
-                matchMedia("(prefers-reduced-motion: reduce)").matches
-              ) {
-                return;
-              }
-              flyDownloadRow(download, start);
-            } catch (err) {
-              noteError("downloads: flight", err);
-            }
-          },
-        });
+        list.addView({ onDownloadAdded: flyNewDownload });
       })
       .catch((err) => noteError("downloads: flight list", err));
   }
@@ -10508,10 +10588,16 @@
   // of the split and both go, until the tile is clicked again. It's all
   // behind zia.essentials.split, and turned off, every split essential goes
   // back to being a plain essential and its split an ordinary one.
+  // Used elsewhere: dressSplitProxy, dressSplitCopy, splitCardSource, splitEssentialRefusal,
+  // canBecomeSplitEssential, addSplitToEssentials, splitBackToList, watchSplitEssentials.
   const SPLIT_PREF = "zia.essentials.split";
   const SPLIT_DATA = "zia-split";
   const SPLIT_OF = "zia-split-of";
   const SPLIT_SIDE = "zia-split-side";
+  // (how long a split essential taken out of the essentials waits for a drag to place it,
+  // and how long after a drag anything missed is tidied)
+  const SPLIT_RELEASE_WAIT_MS = 120;
+  const SPLIT_SWEEP_AFTER_DRAG_MS = 400;
 
   const splitEssentialsOn = () => Services.prefs.getBoolPref(SPLIT_PREF, true);
 
@@ -10923,167 +11009,180 @@
     }
   }
 
-  function watchSplitEssentials() {
-    const container = gBrowser.tabContainer;
-
-    // Clicking the tile shows its split, at the half that was clicked. The
-    // press itself only keeps Zen from selecting the essential (so it can
-    // still be dragged); the split opens on the click.
-    const tileUnder = (event) => {
-      if (event.button !== 0 || !splitEssentialsOn()) {
-        return null;
-      }
-      const essential = event.target.closest?.(".tabbrowser-tab[zen-essential][zia-split-tile]");
-      if (!essential || event.target.closest(".tab-close-button, .tab-reset-button, .tab-icon-overlay, .tab-audio-button")) {
-        return null;
-      }
-      return essential;
-    };
-    container.addEventListener("mousedown", (event) => {
-      if (tileUnder(event)) {
-        event.stopPropagation();
-      }
-    }, true);
-    container.addEventListener("click", (event) => {
-      const essential = tileUnder(event);
-      if (!essential) {
-        return;
-      }
-      event.stopPropagation();
-      const box = essential.getBoundingClientRect();
-      openSplitEssential(essential, event.clientX > box.left + box.width / 2 ? "b" : "a");
-    }, true);
-
-    // Reached some other way (a shortcut, a restored selection): the split
-    // shows instead of the essential by itself.
-    container.addEventListener("TabSelect", (event) => {
-      const tab = event.target;
-      setTimeout(sweepReleased, 0);
-      if (splitEssentialsOn() && splitDataOf(tab)) {
-        setTimeout(() => {
-          if (gBrowser.selectedTab === tab) {
-            openSplitEssential(tab, "a");
-          }
-        }, 0);
-        return;
-      }
-      syncSplitSelection();
-    });
-
-    container.addEventListener("TabClose", (event) => {
-      const tab = event.target;
-      if (tab.ziaSplit?.id) {
-        releaseSplit(tab);
-        return;
-      }
-      // One half closed: the whole split goes, until the tile's clicked again
-      const id = tab.getAttribute(SPLIT_OF);
-      if (id) {
-        const { a, b } = pairOf(id);
-        for (const other of [a, b]) {
-          if (other && other !== tab) {
-            untagPairTab(other);
-            gBrowser.removeTab(other, { animate: false });
-          }
-        }
-        setTimeout(syncSplitSelection, 0);
-      }
-    });
-
-    // Taken out of the essentials (dragged back to the list, or Remove from
-    // Essentials): its split takes its place there, and the essential goes.
-    // A drag places the essential first, so this waits a moment for that;
-    // and after any drag, or on switching tabs, anything missed is tidied.
-    const sweepReleased = () => {
-      clearDeadRows();
-      for (const tab of gBrowser.tabs) {
-        if (tab.ziaSplit?.id && !tab.closing && !tab.hasAttribute("zen-essential")) {
-          splitBackToList(tab);
-        }
-      }
-    };
-    new MutationObserver((records) => {
-      for (const { target } of records) {
-        if (target.ziaSplit?.id && !target.hasAttribute("zen-essential")) {
-          setTimeout(() => splitBackToList(target), 120);
-        }
-      }
-    }).observe(container, { subtree: true, attributes: true, attributeFilter: ["zen-essential", "pinned"] });
-    window.addEventListener("dragend", () => setTimeout(sweepReleased, 400), true);
-    window.addEventListener("drop", () => setTimeout(sweepReleased, 400), true);
-
-    // Each half's icon follows its site
-    container.addEventListener("TabAttrModified", (event) => {
-      const tab = event.target;
-      const side = tab.getAttribute(SPLIT_SIDE);
-      if (!side || !event.detail?.changed?.includes("image")) {
-        return;
-      }
-      const essential = essentialFor(tab);
-      const data = essential && splitDataOf(essential);
-      if (data && tabIcon(tab) && data[side]?.icon !== tabIcon(tab)) {
-        saveSplitData(essential, { ...data, [side]: { ...data[side], icon: tabIcon(tab) } });
-        drawSplitTile(essential);
-      }
-    });
-
-    // Right-click a tab in a two-site split: Add Split to Essentials
-    const menu = document.getElementById("tabContextMenu");
-    if (menu) {
-      const item = document.createXULElement("menuitem");
-      item.id = "zia-context-split-essential";
-      item.setAttribute("label", "Add Split to Essentials");
-      item.addEventListener("command", () => addSplitToEssentials(window.TabContextMenu?.contextTab));
-      (document.getElementById("context_zen-add-essential") || menu.lastElementChild)?.after(item);
-      menu.addEventListener("popupshowing", (event) => {
-        if (event.target !== menu) {
-          return;
-        }
-        const tab = window.TabContextMenu?.contextTab;
-        item.hidden = !canBecomeSplitEssential(tab);
-        // Zen's own Add to Essentials can't take a tab in a split: it made
-        // the one tab half an essential and stranded the other
-        if (tab?.group?.hasAttribute?.("split-view-group")) {
-          const zens = document.getElementById("context_zen-add-essential");
-          if (zens) {
-            zens.hidden = true;
-          }
-        }
-      });
+  // Clicking the tile shows its split, at the half that was clicked. The
+  // press itself only keeps Zen from selecting the essential (so it can
+  // still be dragged); the split opens on the click.
+  function splitTileUnder(event) {
+    if (event.button !== 0 || !splitEssentialsOn()) {
+      return null;
     }
-
-    // After a restart: tags back on from the session; orphans let go
-    const restore = () => {
-      const on = splitEssentialsOn();
-      const ids = new Set();
-      for (const tab of gBrowser.tabs) {
-        const data = splitDataOf(tab);
-        if (data && on) {
-          ids.add(data.id);
-        } else if (data) {
-          releaseSplit(tab);
-        }
-        drawSplitTile(tab);
-      }
-      for (const tab of gBrowser.tabs) {
-        const id = tab.getAttribute(SPLIT_OF) || sessionValue(tab, SPLIT_OF);
-        if (!id) {
-          continue;
-        }
-        if (ids.has(id)) {
-          tab.setAttribute(SPLIT_OF, id);
-          tab.setAttribute(SPLIT_SIDE, sessionValue(tab, SPLIT_SIDE) || tab.getAttribute(SPLIT_SIDE) || "a");
-        } else {
-          untagPairTab(tab);
-        }
-      }
-      syncSplitSelection();
-    };
-    window.SessionStore?.promiseAllWindowsRestored?.then(restore, restore);
-    container.addEventListener("TabAddedToEssentials", (event) => drawSplitTile(event.target));
-    watchPrefs(SPLIT_PREF, restore);
+    const essential = event.target.closest?.(".tabbrowser-tab[zen-essential][zia-split-tile]");
+    if (!essential || event.target.closest(".tab-close-button, .tab-reset-button, .tab-icon-overlay, .tab-audio-button")) {
+      return null;
+    }
+    return essential;
   }
 
+  function holdSplitTilePress(event) {
+    if (splitTileUnder(event)) {
+      event.stopPropagation();
+    }
+  }
+
+  function openClickedSplitTile(event) {
+    const essential = splitTileUnder(event);
+    if (!essential) {
+      return;
+    }
+    event.stopPropagation();
+    const box = essential.getBoundingClientRect();
+    openSplitEssential(essential, event.clientX > box.left + box.width / 2 ? "b" : "a");
+  }
+
+  // Reached some other way (a shortcut, a restored selection): the split
+  // shows instead of the essential by itself.
+  function onSplitEssentialSelect(event) {
+    const tab = event.target;
+    setTimeout(sweepReleasedSplits, 0);
+    if (splitEssentialsOn() && splitDataOf(tab)) {
+      setTimeout(() => {
+        if (gBrowser.selectedTab === tab) {
+          openSplitEssential(tab, "a");
+        }
+      }, 0);
+      return;
+    }
+    syncSplitSelection();
+  }
+
+  function onSplitTabClose(event) {
+    const tab = event.target;
+    if (tab.ziaSplit?.id) {
+      releaseSplit(tab);
+      return;
+    }
+    // One half closed: the whole split goes, until the tile's clicked again
+    const id = tab.getAttribute(SPLIT_OF);
+    if (id) {
+      const { a, b } = pairOf(id);
+      for (const other of [a, b]) {
+        if (other && other !== tab) {
+          untagPairTab(other);
+          gBrowser.removeTab(other, { animate: false });
+        }
+      }
+      setTimeout(syncSplitSelection, 0);
+    }
+  }
+
+  // Taken out of the essentials (dragged back to the list, or Remove from
+  // Essentials): its split takes its place there, and the essential goes.
+  // A drag places the essential first, so this waits a moment for that;
+  // and after any drag, or on switching tabs, anything missed is tidied.
+  function sweepReleasedSplits() {
+    clearDeadRows();
+    for (const tab of gBrowser.tabs) {
+      if (tab.ziaSplit?.id && !tab.closing && !tab.hasAttribute("zen-essential")) {
+        splitBackToList(tab);
+      }
+    }
+  }
+
+  function onSplitEssentialMarks(records) {
+    for (const { target } of records) {
+      if (target.ziaSplit?.id && !target.hasAttribute("zen-essential")) {
+        // (not kept, nor the sweeps after a drag: splitBackToList checks the tab again first)
+        setTimeout(() => splitBackToList(target), SPLIT_RELEASE_WAIT_MS);
+      }
+    }
+  }
+
+  // Each half's icon follows its site
+  function followSplitHalfIcon(event) {
+    const tab = event.target;
+    const side = tab.getAttribute(SPLIT_SIDE);
+    if (!side || !event.detail?.changed?.includes("image")) {
+      return;
+    }
+    const essential = essentialFor(tab);
+    const data = essential && splitDataOf(essential);
+    if (data && tabIcon(tab) && data[side]?.icon !== tabIcon(tab)) {
+      saveSplitData(essential, { ...data, [side]: { ...data[side], icon: tabIcon(tab) } });
+      drawSplitTile(essential);
+    }
+  }
+
+  // Right-click a tab in a two-site split: Add Split to Essentials
+  function addSplitEssentialMenuItem() {
+    const menu = document.getElementById("tabContextMenu");
+    if (!menu) {
+      return;
+    }
+    const item = document.createXULElement("menuitem");
+    item.id = "zia-context-split-essential";
+    item.setAttribute("label", "Add Split to Essentials");
+    item.addEventListener("command", () => addSplitToEssentials(window.TabContextMenu?.contextTab));
+    (document.getElementById("context_zen-add-essential") || menu.lastElementChild)?.after(item);
+    menu.addEventListener("popupshowing", (event) => {
+      if (event.target !== menu) {
+        return;
+      }
+      const tab = window.TabContextMenu?.contextTab;
+      item.hidden = !canBecomeSplitEssential(tab);
+      // Zen's own Add to Essentials can't take a tab in a split: it made
+      // the one tab half an essential and stranded the other
+      if (tab?.group?.hasAttribute?.("split-view-group")) {
+        const zens = document.getElementById("context_zen-add-essential");
+        if (zens) {
+          zens.hidden = true;
+        }
+      }
+    });
+  }
+
+  // After a restart: tags back on from the session; orphans let go
+  function restoreSplitEssentials() {
+    const on = splitEssentialsOn();
+    const ids = new Set();
+    for (const tab of gBrowser.tabs) {
+      const data = splitDataOf(tab);
+      if (data && on) {
+        ids.add(data.id);
+      } else if (data) {
+        releaseSplit(tab);
+      }
+      drawSplitTile(tab);
+    }
+    for (const tab of gBrowser.tabs) {
+      const id = tab.getAttribute(SPLIT_OF) || sessionValue(tab, SPLIT_OF);
+      if (!id) {
+        continue;
+      }
+      if (ids.has(id)) {
+        tab.setAttribute(SPLIT_OF, id);
+        tab.setAttribute(SPLIT_SIDE, sessionValue(tab, SPLIT_SIDE) || tab.getAttribute(SPLIT_SIDE) || "a");
+      } else {
+        untagPairTab(tab);
+      }
+    }
+    syncSplitSelection();
+  }
+
+  function watchSplitEssentials() {
+    const container = gBrowser.tabContainer;
+    container.addEventListener("mousedown", holdSplitTilePress, true);
+    container.addEventListener("click", openClickedSplitTile, true);
+    container.addEventListener("TabSelect", onSplitEssentialSelect);
+    container.addEventListener("TabClose", onSplitTabClose);
+    new MutationObserver(onSplitEssentialMarks).observe(container, { subtree: true, attributes: true, attributeFilter: ["zen-essential", "pinned"] });
+    window.addEventListener("dragend", () => setTimeout(sweepReleasedSplits, SPLIT_SWEEP_AFTER_DRAG_MS), true);
+    window.addEventListener("drop", () => setTimeout(sweepReleasedSplits, SPLIT_SWEEP_AFTER_DRAG_MS), true);
+    container.addEventListener("TabAttrModified", followSplitHalfIcon);
+    addSplitEssentialMenuItem();
+    window.SessionStore?.promiseAllWindowsRestored?.then(restoreSplitEssentials, restoreSplitEssentials);
+    container.addEventListener("TabAddedToEssentials", (event) => drawSplitTile(event.target));
+    watchPrefs(SPLIT_PREF, restoreSplitEssentials);
+  }
   function resolveColor(text) {
     if (!text) {
       return null;
@@ -16821,88 +16920,96 @@
   }
   // A page glanced at from an essential: a small card springs out from behind its
   // icon (CSS) and, as Zen takes the tab away at once, a stand-in is sucked back in.
-  function suckInEssentialGlances() {
-    const SUCK_MS = 220;
-    const OUT_MS = 400;
-    const sprung = new WeakSet();
+  // Used elsewhere: suckInEssentialGlances.
+  const ESSENTIAL_GLANCE_SUCK_MS = 220;
+  const ESSENTIAL_GLANCE_OUT_MS = 400;
+  // (the stand-in fades over the end of its suck)
+  const ESSENTIAL_GLANCE_FADE_MS = 100;
+  const sprungGlances = new WeakSet();
 
-    // Out: once per glance. Zen restyles the tab more than once as it opens
-    // it, which would replay a CSS animation, so it's played from here.
-    const springOut = (tab) => {
-      if (sprung.has(tab) || !tab.hasAttribute("zen-glance-tab") ||
-          !tab.parentElement?.closest(".tabbrowser-tab[zen-essential]")) {
-        return;
-      }
-      sprung.add(tab);
-      tab.setAttribute("zia-glance-shown", "true");
-      if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        return;
-      }
-      tab.animate(
-        [
-          { translate: "-26px 0", scale: 0.12, rotate: "0deg", opacity: 0 },
-          { opacity: 1, offset: 0.2 },
-          { translate: "0 0", scale: 1, rotate: "6deg", opacity: 1 },
-        ],
-        { duration: OUT_MS, easing: "cubic-bezier(0.3, 1.4, 0.5, 1)" }
-      );
-    };
+  // Out: once per glance. Zen restyles the tab more than once as it opens
+  // it, which would replay a CSS animation, so it's played from here.
+  function springOutGlance(tab) {
+    if (sprungGlances.has(tab) || !tab.hasAttribute("zen-glance-tab") ||
+        !tab.parentElement?.closest(".tabbrowser-tab[zen-essential]")) {
+      return;
+    }
+    sprungGlances.add(tab);
+    tab.setAttribute("zia-glance-shown", "true");
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+    tab.animate(
+      [
+        { translate: "-26px 0", scale: 0.12, rotate: "0deg", opacity: 0 },
+        { opacity: 1, offset: 0.2 },
+        { translate: "0 0", scale: 1, rotate: "6deg", opacity: 1 },
+      ],
+      { duration: ESSENTIAL_GLANCE_OUT_MS, easing: "cubic-bezier(0.3, 1.4, 0.5, 1)" }
+    );
+  }
+
+  function suckInGlance(event) {
+    const glanceTab = event.target;
+    const content = glanceTab?.parentElement;
+    const essential = content?.closest(".tabbrowser-tab[zen-essential]");
+    if (!essential || !content.classList.contains("tab-content")) {
+      return;
+    }
+    glanceTab.style.visibility = "hidden";
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+    const ghost = document.createXULElement("hbox");
+    ghost.className = "zia-glance-ghost";
+    const icon = document.createXULElement("image");
+    icon.className = "zia-glance-ghost-icon";
+    const src = glanceTab.querySelector(".tab-icon-image")?.getAttribute("src");
+    if (src) {
+      icon.setAttribute("src", src);
+    }
+    ghost.append(icon);
+    content.append(ghost);
+    const easing = "cubic-bezier(0.55, 0, 0.8, 0.2)";
+    ghost.animate(
+      [
+        { translate: "0 0", scale: 1, rotate: "6deg" },
+        { translate: "-26px 0", scale: 0.12, rotate: "0deg" },
+      ],
+      { duration: ESSENTIAL_GLANCE_SUCK_MS, easing, fill: "forwards" }
+    );
+    ghost
+      .animate([{ opacity: 1 }, { opacity: 0 }], { duration: ESSENTIAL_GLANCE_FADE_MS, delay: ESSENTIAL_GLANCE_SUCK_MS - ESSENTIAL_GLANCE_FADE_MS, fill: "forwards" })
+      .finished.catch(() => {})
+      .then(() => ghost.remove());
+  }
+
+  function suckInEssentialGlances() {
     new MutationObserver((records) => {
       for (const record of records) {
-        springOut(record.target);
+        springOutGlance(record.target);
       }
     }).observe(gBrowser.tabContainer, { subtree: true, attributes: true, attributeFilter: ["zen-glance-tab"] });
     // any glance already open when Zia starts just shows
     for (const tab of gBrowser.tabContainer.querySelectorAll(".tabbrowser-tab[zen-glance-tab]")) {
-      sprung.add(tab);
+      sprungGlances.add(tab);
       tab.setAttribute("zia-glance-shown", "true");
     }
 
-    gBrowser.tabContainer.addEventListener("GlanceClose", (event) => {
-      const glanceTab = event.target;
-      const content = glanceTab?.parentElement;
-      const essential = content?.closest(".tabbrowser-tab[zen-essential]");
-      if (!essential || !content.classList.contains("tab-content")) {
-        return;
-      }
-      glanceTab.style.visibility = "hidden";
-      if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        return;
-      }
-      const ghost = document.createXULElement("hbox");
-      ghost.className = "zia-glance-ghost";
-      const icon = document.createXULElement("image");
-      icon.className = "zia-glance-ghost-icon";
-      const src = glanceTab.querySelector(".tab-icon-image")?.getAttribute("src");
-      if (src) {
-        icon.setAttribute("src", src);
-      }
-      ghost.append(icon);
-      content.append(ghost);
-      const easing = "cubic-bezier(0.55, 0, 0.8, 0.2)";
-      ghost.animate(
-        [
-          { translate: "0 0", scale: 1, rotate: "6deg" },
-          { translate: "-26px 0", scale: 0.12, rotate: "0deg" },
-        ],
-        { duration: SUCK_MS, easing, fill: "forwards" }
-      );
-      ghost
-        .animate([{ opacity: 1 }, { opacity: 0 }], { duration: 100, delay: SUCK_MS - 100, fill: "forwards" })
-        .finished.catch(() => {})
-        .then(() => ghost.remove());
-    });
+    gBrowser.tabContainer.addEventListener("GlanceClose", suckInGlance);
   }
-
   // Extension icons: right-click an extension's button (in the toolbar or
   // the extensions panel) to give it an icon of your own, an SVG from your
   // computer or one of Zia's icons. An SVG takes the toolbar's colour, as
   // Zia's own icons do, unless it keeps its own colours. Extensions that
   // change their icon themselves (on or off, per site) are noted, since a
   // custom icon hides that.
+  // Used elsewhere: watchExtensionIcons.
   const EXT_ICONS_PREF = "zia.extensionIcons";
   const EXT_CHANGING_PREF = "zia.extensionIcons.changing";
   const EXT_SVG_MAX = 300 * 1024;
+  // (the extensions' buttons looked over once more, after the window's settled)
+  const EXT_BUTTONS_LATE_MS = 3000;
   let extIcons = null;
   let extChanging = null;
   let extSheet = null;
@@ -17385,7 +17492,8 @@
       noteError("extension icons: listen", err);
     }
     document.getElementById("unified-extensions-panel")?.addEventListener("popupshowing", watchExtButtons);
-    setTimeout(watchExtButtons, 3000);
+    // (not kept: a button already watched is passed over)
+    setTimeout(watchExtButtons, EXT_BUTTONS_LATE_MS);
   }
 
   // Folders and spaces: Zen's "Change icon" becomes a menu like the
@@ -17433,6 +17541,77 @@
     };
   }
 
+  function makeOwnIconMenu() {
+    const item = document.createXULElement("menu");
+    item.className = "zia-own-icon-menu";
+    item.setAttribute("label", "Change icon");
+    const popup = document.createXULElement("menupopup");
+    const upload = menuItem("Choose an SVG…");
+    const choose = menuItem("Pick from Zia's icons…");
+    const keepSeparator = document.createXULElement("menuseparator");
+    const keep = menuItem("Keep the SVG's own colours");
+    keep.setAttribute("type", "checkbox");
+    const remove = menuItem("Remove icon");
+    popup.append(upload, choose, keepSeparator, keep, remove);
+    item.append(popup);
+    return { item, upload, choose, keep, remove };
+  }
+
+  // The menu set for the folder or space it's opened on, and its items acting on that one
+  function wireOwnIconMenu(menu, zens, target, { item, upload, choose, keep, remove }) {
+    let subject = null;
+    menu.addEventListener("popupshowing", (event) => {
+      if (event.target !== menu) {
+        return;
+      }
+      subject = null;
+      try {
+        subject = target.find(menu);
+      } catch (err) {
+        noteError("own icons: find", err);
+      }
+      // Zen's item stays hidden either way: ours takes its place
+      zens.hidden = true;
+      item.hidden = !subject;
+      if (!subject) {
+        zens.hidden = false;
+        return;
+      }
+      const icon = target.icon(subject);
+      keep.hidden = !isOwnIcon(icon);
+      keep.setAttribute("checked", String(ownColoursOf(icon)));
+      remove.disabled = !icon;
+    });
+    const run = (what) => async () => {
+      const at = subject;
+      if (at === null) {
+        return;
+      }
+      try {
+        await what(at);
+      } catch (err) {
+        console.error("[Zia] Could not change the icon:", err);
+      }
+    };
+    upload.addEventListener("command", run(async (at) => {
+      const url = await chooseOwnSvg();
+      if (url) {
+        await target.set(at, url);
+      }
+    }));
+    choose.addEventListener("command", run((at) => target.pick(at)));
+    keep.addEventListener("command", run(async (at) => {
+      const icon = target.icon(at);
+      if (!isOwnIcon(icon)) {
+        return;
+      }
+      const own = keep.getAttribute("checked") === "true";
+      const url = own ? icon.replace(/\.tinted\.svg$/, ".svg") : icon.replace(/(?<!\.tinted)\.svg$/, ".tinted.svg");
+      await target.set(at, url);
+    }));
+    remove.addEventListener("command", run((at) => target.set(at, null)));
+  }
+
   function addOwnIconMenus() {
     for (const target of Object.values(iconTargets())) {
       const menu = document.getElementById(target.menuId);
@@ -17440,71 +17619,9 @@
       if (!menu || !zens || menu.querySelector(".zia-own-icon-menu")) {
         continue;
       }
-      const item = document.createXULElement("menu");
-      item.className = "zia-own-icon-menu";
-      item.setAttribute("label", "Change icon");
-      const popup = document.createXULElement("menupopup");
-      const upload = menuItem("Choose an SVG…");
-      const choose = menuItem("Pick from Zia's icons…");
-      const keepSeparator = document.createXULElement("menuseparator");
-      const keep = menuItem("Keep the SVG's own colours");
-      keep.setAttribute("type", "checkbox");
-      const remove = menuItem("Remove icon");
-      popup.append(upload, choose, keepSeparator, keep, remove);
-      item.append(popup);
-      zens.before(item);
-
-      let subject = null;
-      menu.addEventListener("popupshowing", (event) => {
-        if (event.target !== menu) {
-          return;
-        }
-        subject = null;
-        try {
-          subject = target.find(menu);
-        } catch (err) {
-          noteError("own icons: find", err);
-        }
-        // Zen's item stays hidden either way: ours takes its place
-        zens.hidden = true;
-        item.hidden = !subject;
-        if (!subject) {
-          zens.hidden = false;
-          return;
-        }
-        const icon = target.icon(subject);
-        keep.hidden = !isOwnIcon(icon);
-        keep.setAttribute("checked", String(ownColoursOf(icon)));
-        remove.disabled = !icon;
-      });
-      const run = (what) => async () => {
-        const at = subject;
-        if (at === null) {
-          return;
-        }
-        try {
-          await what(at);
-        } catch (err) {
-          console.error("[Zia] Could not change the icon:", err);
-        }
-      };
-      upload.addEventListener("command", run(async (at) => {
-        const url = await chooseOwnSvg();
-        if (url) {
-          await target.set(at, url);
-        }
-      }));
-      choose.addEventListener("command", run((at) => target.pick(at)));
-      keep.addEventListener("command", run(async (at) => {
-        const icon = target.icon(at);
-        if (!isOwnIcon(icon)) {
-          return;
-        }
-        const own = keep.getAttribute("checked") === "true";
-        const url = own ? icon.replace(/\.tinted\.svg$/, ".svg") : icon.replace(/(?<!\.tinted)\.svg$/, ".tinted.svg");
-        await target.set(at, url);
-      }));
-      remove.addEventListener("command", run((at) => target.set(at, null)));
+      const parts = makeOwnIconMenu();
+      zens.before(parts.item);
+      wireOwnIconMenu(menu, zens, target, parts);
     }
   }
   // Tab numbers: hold Cmd (Ctrl elsewhere) and a key shows on every visible tab and
@@ -17883,6 +18000,7 @@
   // taken while the glance is on screen (Zia can only photograph a page
   // that's showing), when it opens, as it loads, and every few seconds
   // after, and kept when you switch away.
+  // Used elsewhere: watchGlanceThumbs, glanceOnTab.
   const GLANCE_THUMB_PREF = "zia.glance.thumbnail";
   const GLANCE_THUMB_W = 36;
   const GLANCE_THUMB_H = 42;
@@ -17890,6 +18008,12 @@
   // the sink in chrome.css; the hover tip eases home first
   const GLANCE_THUMB_SINK_MS = 300;
   const GLANCE_THUMB_UNTIP_MS = 450;
+  // (the copy goes this long after the sink should have ended, if its end was missed)
+  const GLANCE_THUMB_SINK_SLACK_MS = 80;
+  // (photographed this long after a glance opens, after a tab's chosen, and after it's loaded)
+  const GLANCE_PHOTO_AFTER_OPEN_MS = [150, 600, 1500];
+  const GLANCE_PHOTO_AFTER_SELECT_MS = 300;
+  const GLANCE_PHOTO_AFTER_LOAD_MS = 200;
   const GLANCE_CUTS = ["--zia-glance-cut-top", "--zia-glance-cut-right", "--zia-glance-cut-bottom"];
   const glanceHost = new WeakMap();
   // A close is marked as soon as the picture starts sinking, so the glance
@@ -17981,6 +18105,31 @@
       glanceClosing.add(glanceTab);
     }
 
+    const sink = makeGlanceSink(glanceTab, canvas);
+    content.querySelector(":scope > .zia-glance-thumb-exit")?.remove();
+
+    // hovering tips the card further and dims it; that eases back, then
+    // the card sinks
+    const fromHover = parent.matches(":hover");
+    if (fromHover) {
+      sink.card.style.rotate = "-16deg";
+      sink.copy.style.filter = "brightness(0.4)";
+      sink.card.style.animationDelay = `${GLANCE_THUMB_UNTIP_MS}ms`;
+    }
+    const play = () => playGlanceSink(parent, sink, fromHover);
+    // held off the tab until the strip has finished moving, so the sink
+    // starts after that work instead of during it
+    clearGlanceThumb(glanceTab);
+    if (defer) {
+      requestAnimationFrame(() => requestAnimationFrame(play));
+    } else {
+      play();
+    }
+    return true;
+  }
+
+  // A copy of the picture, in a card in a box cut where the tab ends, to sink
+  function makeGlanceSink(glanceTab, canvas) {
     const copy = document.createElementNS(XHTML_NS, "canvas");
     copy.className = "zia-glance-thumb";
     copy.width = canvas.width;
@@ -18000,49 +18149,33 @@
       }
     }
     exit.append(card);
-    content.querySelector(":scope > .zia-glance-thumb-exit")?.remove();
+    return { exit, card, copy };
+  }
 
-    // hovering tips the card further and dims it; that eases back, then
-    // the card sinks
-    const fromHover = parent.matches(":hover");
-    if (fromHover) {
-      card.style.rotate = "-16deg";
-      copy.style.filter = "brightness(0.4)";
-      card.style.animationDelay = `${GLANCE_THUMB_UNTIP_MS}ms`;
-    }
+  function playGlanceSink(parent, { exit, card, copy }, fromHover) {
     const drop = () => exit.remove();
-    const play = () => {
-      const live = parent.querySelector(":scope > .tab-stack > .tab-content");
-      if (!live?.isConnected) {
-        return;
-      }
-      live.querySelector(":scope > .zia-glance-thumb-exit")?.remove();
-      card.style.animationPlayState = "running";
-      live.append(exit);
-      if (fromHover) {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            card.style.rotate = "";
-            copy.style.filter = "";
-          });
-        });
-      }
-      card.addEventListener("animationend", (event) => {
-        if (event.animationName === "zia-glance-sink") {
-          drop();
-        }
-      });
-      setTimeout(drop, GLANCE_THUMB_SINK_MS + (fromHover ? GLANCE_THUMB_UNTIP_MS : 0) + 80);
-    };
-    // held off the tab until the strip has finished moving, so the sink
-    // starts after that work instead of during it
-    clearGlanceThumb(glanceTab);
-    if (defer) {
-      requestAnimationFrame(() => requestAnimationFrame(play));
-    } else {
-      play();
+    const live = parent.querySelector(":scope > .tab-stack > .tab-content");
+    if (!live?.isConnected) {
+      return;
     }
-    return true;
+    live.querySelector(":scope > .zia-glance-thumb-exit")?.remove();
+    card.style.animationPlayState = "running";
+    live.append(exit);
+    if (fromHover) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          card.style.rotate = "";
+          copy.style.filter = "";
+        });
+      });
+    }
+    card.addEventListener("animationend", (event) => {
+      if (event.animationName === "zia-glance-sink") {
+        drop();
+      }
+    });
+    // (not kept: it's only in case animationend never comes, and removing it twice is harmless)
+    setTimeout(drop, GLANCE_THUMB_SINK_MS + (fromHover ? GLANCE_THUMB_UNTIP_MS : 0) + GLANCE_THUMB_SINK_SLACK_MS);
   }
 
   // The canvas that sits over a glance tab's tile
@@ -18115,144 +18248,157 @@
     }
   }
 
-  function watchGlanceThumbs() {
-    const on = () => Services.prefs.getBoolPref(GLANCE_THUMB_PREF, true);
-    // on unless switched off: the styles look for this mark, not the setting
-    const markOff = () => setFlag("zia-glance-thumb-off", !on());
-    markOff();
-    watchPrefs(GLANCE_THUMB_PREF, markOff);
-    gBrowser.tabContainer.addEventListener(
-      "GlanceClose",
-      (event) => {
-        if (event.target?.classList?.contains("tabbrowser-tab")) {
-          glanceClosing.add(event.target);
-        }
-      },
-      true
-    );
-    // Zen's close flies the page back into the tab and hides the picture
-    // immediately. The picture sinks while that flight plays. A first click
-    // that only asks for confirmation does not hide the tab, so it does not sink.
-    const manager = window.gZenGlanceManager;
-    if (manager?.closeGlance && !manager.closeGlance.ziaGlanceSink) {
-      const originalClose = manager.closeGlance;
-      const closeGlance = function (options) {
-        const glanceTab = options?.noAnimation
-          ? null
-          : glanceTabsOnNormalTabs().find((tab) => tab.selected || glanceHost.get(tab)?.selected);
-        const result = originalClose.call(this, options);
-        if (glanceTab?.style.display === "none") {
-          sinkGlanceThumb(glanceTab, true);
-        }
-        return result;
-      };
-      closeGlance.ziaGlanceSink = true;
-      manager.closeGlance = closeGlance;
+  const glanceThumbsOn = () => Services.prefs.getBoolPref(GLANCE_THUMB_PREF, true);
+
+  function onGlanceCloseEvent(event) {
+    if (event.target?.classList?.contains("tabbrowser-tab")) {
+      glanceClosing.add(event.target);
     }
-    if (manager?.fullyOpenGlance && !manager.fullyOpenGlance.ziaGlanceSink) {
-      const originalOpen = manager.fullyOpenGlance;
-      const fullyOpenGlance = function (options) {
-        const splitting = !!options?.forSplit;
-        if (splitting) {
-          glanceSplitOpen = true;
-        }
-        try {
-          return originalOpen.call(this, options);
-        } finally {
-          if (splitting) {
-            queueMicrotask(() => {
-              glanceSplitOpen = false;
-            });
-          }
-        }
-      };
-      fullyOpenGlance.ziaGlanceSink = true;
-      manager.fullyOpenGlance = fullyOpenGlance;
+  }
+
+  // Zen's close flies the page back into the tab and hides the picture
+  // immediately. The picture sinks while that flight plays. A first click
+  // that only asks for confirmation does not hide the tab, so it does not sink.
+  function sinkOnGlanceClose(manager) {
+    if (!manager?.closeGlance || manager.closeGlance.ziaGlanceSink) {
+      return;
     }
-    const photographShowing = () => {
-      if (!on() || document.hidden) {
-        return;
+    const originalClose = manager.closeGlance;
+    const closeGlance = function (options) {
+      const glanceTab = options?.noAnimation
+        ? null
+        : glanceTabsOnNormalTabs().find((tab) => tab.selected || glanceHost.get(tab)?.selected);
+      const result = originalClose.call(this, options);
+      if (glanceTab?.style.display === "none") {
+        sinkGlanceThumb(glanceTab, true);
       }
-      for (const glanceTab of glanceTabsOnNormalTabs()) {
-        const parent = glanceTab.parentElement?.closest(".tabbrowser-tab");
-        // only a glance that's on screen: while it's open Zen selects the
-        // glance's own tab, not the one it came from
-        if (glanceTab.selected || parent?.selected) {
-          photographGlance(glanceTab);
-        } else {
-          glanceThumbParts(glanceTab);
+      return result;
+    };
+    closeGlance.ziaGlanceSink = true;
+    manager.closeGlance = closeGlance;
+  }
+
+  // (opening a glance into a split marks it, for the sink to wait out the strip's rebuild)
+  function markGlanceSplitOpen(manager) {
+    if (!manager?.fullyOpenGlance || manager.fullyOpenGlance.ziaGlanceSink) {
+      return;
+    }
+    const originalOpen = manager.fullyOpenGlance;
+    const fullyOpenGlance = function (options) {
+      const splitting = !!options?.forSplit;
+      if (splitting) {
+        glanceSplitOpen = true;
+      }
+      try {
+        return originalOpen.call(this, options);
+      } finally {
+        if (splitting) {
+          queueMicrotask(() => {
+            glanceSplitOpen = false;
+          });
         }
       }
     };
+    fullyOpenGlance.ziaGlanceSink = true;
+    manager.fullyOpenGlance = fullyOpenGlance;
+  }
 
-    // A glance opening: photographed as it appears, as it loads, and after.
-    // Opening it into a normal tab takes the mark off the same tab; the
-    // picture sinks back into the tab it came from.
-    new MutationObserver((records) => {
-      let opened = false;
-      for (const record of records) {
-        const tab = record.target;
-        if (!tab.classList?.contains("tabbrowser-tab")) {
-          continue;
-        }
-        if (tab.hasAttribute("zen-glance-tab")) {
-          opened = true;
-        } else {
-          const splitting = glanceSplitOpen;
-          glanceSplitOpen = false;
-          sinkGlanceThumb(tab, false, splitting);
-        }
+  function photographShowingGlances() {
+    if (!glanceThumbsOn() || document.hidden) {
+      return;
+    }
+    for (const glanceTab of glanceTabsOnNormalTabs()) {
+      const parent = glanceTab.parentElement?.closest(".tabbrowser-tab");
+      // only a glance that's on screen: while it's open Zen selects the
+      // glance's own tab, not the one it came from
+      if (glanceTab.selected || parent?.selected) {
+        photographGlance(glanceTab);
+      } else {
+        glanceThumbParts(glanceTab);
       }
-      if (opened) {
-        // cut where the tab ends before it's first drawn, not after
-        glanceTabsOnNormalTabs().forEach(cutGlanceAtTab);
-        [150, 600, 1500].forEach((ms) => setTimeout(photographShowing, ms));
+    }
+  }
+
+  // A glance opening: photographed as it appears, as it loads, and after.
+  // Opening it into a normal tab takes the mark off the same tab; the
+  // picture sinks back into the tab it came from.
+  function onGlanceMarks(records) {
+    let opened = false;
+    for (const record of records) {
+      const tab = record.target;
+      if (!tab.classList?.contains("tabbrowser-tab")) {
+        continue;
       }
-    }).observe(gBrowser.tabContainer, { subtree: true, attributes: true, attributeFilter: ["zen-glance-tab"] });
-    gBrowser.tabContainer.addEventListener("TabSelect", () => setTimeout(photographShowing, 300));
+      if (tab.hasAttribute("zen-glance-tab")) {
+        opened = true;
+      } else {
+        const splitting = glanceSplitOpen;
+        glanceSplitOpen = false;
+        sinkGlanceThumb(tab, false, splitting);
+      }
+    }
+    if (opened) {
+      // cut where the tab ends before it's first drawn, not after
+      glanceTabsOnNormalTabs().forEach(cutGlanceAtTab);
+      // (not kept: each photographs whatever's showing then)
+      GLANCE_PHOTO_AFTER_OPEN_MS.forEach((ms) => setTimeout(photographShowingGlances, ms));
+    }
+  }
+
+  // A tab with a glance: its close button, which sits over the picture,
+  // closes the glance first, and only then the tab
+  function glanceUnderClose(event) {
+    if (!glanceThumbsOn() || event.button !== 0) {
+      return null;
+    }
+    const close = event.target?.closest?.(".tab-close-button");
+    const tab = close?.closest(".tabbrowser-tab");
+    return close?.parentElement?.parentElement?.parentElement === tab ? glanceOnTab(tab) : null;
+  }
+
+  function closeGlanceFromTab(event) {
+    const glanceTab = glanceUnderClose(event);
+    if (glanceTab) {
+      event.preventDefault();
+      event.stopPropagation();
+      closeGlanceOn(glanceTab);
+    }
+  }
+
+  function keepGlancePressFromTab(event) {
+    if (glanceUnderClose(event)) {
+      event.stopPropagation();
+    }
+  }
+
+  function watchGlanceThumbs() {
+    // on unless switched off: the styles look for this mark, not the setting
+    const markOff = () => setFlag("zia-glance-thumb-off", !glanceThumbsOn());
+    markOff();
+    watchPrefs(GLANCE_THUMB_PREF, markOff);
+    gBrowser.tabContainer.addEventListener("GlanceClose", onGlanceCloseEvent, true);
+    const manager = window.gZenGlanceManager;
+    sinkOnGlanceClose(manager);
+    markGlanceSplitOpen(manager);
+
+    new MutationObserver(onGlanceMarks).observe(gBrowser.tabContainer, { subtree: true, attributes: true, attributeFilter: ["zen-glance-tab"] });
+    // (not kept, these and the one after a load: each photographs whatever's showing then)
+    gBrowser.tabContainer.addEventListener("TabSelect", () => setTimeout(photographShowingGlances, GLANCE_PHOTO_AFTER_SELECT_MS));
     gBrowser.addTabsProgressListener({
       onStateChange(browser, webProgress, request, flags) {
         if (webProgress?.isTopLevel && flags & Ci.nsIWebProgressListener.STATE_STOP &&
             gBrowser.getTabForBrowser(browser)?.hasAttribute("zen-glance-tab")) {
-          setTimeout(photographShowing, 200);
+          setTimeout(photographShowingGlances, GLANCE_PHOTO_AFTER_LOAD_MS);
         }
       },
     });
-    setInterval(photographShowing, GLANCE_THUMB_EVERY);
-    photographShowing();
+    // (for as long as the window's open)
+    setInterval(photographShowingGlances, GLANCE_THUMB_EVERY);
+    photographShowingGlances();
 
-    // A tab with a glance: its close button, which sits over the picture,
-    // closes the glance first, and only then the tab
-    const glanceUnderClose = (event) => {
-      if (!on() || event.button !== 0) {
-        return null;
-      }
-      const close = event.target?.closest?.(".tab-close-button");
-      const tab = close?.closest(".tabbrowser-tab");
-      return close?.parentElement?.parentElement?.parentElement === tab ? glanceOnTab(tab) : null;
-    };
-    gBrowser.tabContainer.addEventListener(
-      "click",
-      (event) => {
-        const glanceTab = glanceUnderClose(event);
-        if (glanceTab) {
-          event.preventDefault();
-          event.stopPropagation();
-          closeGlanceOn(glanceTab);
-        }
-      },
-      true
-    );
+    gBrowser.tabContainer.addEventListener("click", closeGlanceFromTab, true);
     for (const type of ["mousedown", "mouseup"]) {
-      gBrowser.tabContainer.addEventListener(
-        type,
-        (event) => {
-          if (glanceUnderClose(event)) {
-            event.stopPropagation();
-          }
-        },
-        true
-      );
+      gBrowser.tabContainer.addEventListener(type, keepGlancePressFromTab, true);
     }
   }
   // Firefox's own sidebar panels (Bookmarks, History, Synced Tabs) are
@@ -19242,7 +19388,12 @@
   // ---------- Zen's Library: Clear in Downloads, and rows measured off the tabs
   // Off with "Zen's own Library look" (zia.library.zen-look): Zia leaves the
   // Library as Zen draws it (24-library.css is off then too).
+  // Used elsewhere: dressLibrary, clearLibraryBadgeSoon.
   const LIBRARY_ZEN_LOOK_PREF = "zia.library.zen-look";
+  // (the page's overlap measured as the Library opens and as Zen's opening slide settles)
+  const LIBRARY_MEASURE_AT_MS = [0, 350, 700];
+  // (how long the Library button's picture of the last download stays)
+  const LIBRARY_BADGE_MS = 4000;
   const libraryZenLook = () => Services.prefs.getBoolPref(LIBRARY_ZEN_LOOK_PREF, false);
 
   // The Library's rows (and the downloads that fan out above its button)
@@ -19304,10 +19455,6 @@
     });
   }
 
-  // ---------- The chosen section's tile slides between sections
-  // One lit tile behind the section buttons, moved to the chosen one, so
-  // choosing another slides it there along the column, with Zia's spring,
-  // rather than one going out and the other coming on (24-library.css).
   // Each space's card in the Library light or dark as that space makes the window (Zen's own
   // call for it, from its colour), whatever the space now open: a light space's card had white
   // text in a dark one, and the other way round, its tabs too (24-library.css, #514)
@@ -19339,12 +19486,17 @@
       const overlap = Math.max(0, Math.ceil(onRight ? page.right - box.left : box.right - page.left));
       setStyle(library, "--zia-lib-page-overlap", overlap ? `${overlap}px` : null);
     };
-    // (once Zen's opening slide has settled, the page with it)
-    for (const ms of [0, 350, 700]) {
+    // (once Zen's opening slide has settled, the page with it; not kept: each only reads the
+    // page as it is then)
+    for (const ms of LIBRARY_MEASURE_AT_MS) {
       setTimeout(measure, ms);
     }
   }
 
+  // ---------- The chosen section's tile slides between sections
+  // One lit tile behind the section buttons, moved to the chosen one, so
+  // choosing another slides it there along the column, with Zia's spring,
+  // rather than one going out and the other coming on (24-library.css).
   function railLibrarySections(library) {
     const column = library.querySelector("#zen-library-sidebar-tabs");
     if (!column) {
@@ -19411,7 +19563,7 @@
         if (!badge?.hasAttribute("downloading") && !foot.hasAttribute("zen-library-stack-open")) {
           foot.removeAttribute("zen-library-badge");
         }
-      }, 4000);
+      }, LIBRARY_BADGE_MS);
     };
     new MutationObserver(check).observe(foot, { attributes: true, attributeFilter: ["zen-library-badge"] });
     check();
@@ -19422,100 +19574,104 @@
   // Clear Downloads does (finished ones leave the list and history, the files stay).
   // Zen redraws the section, so it's put back whenever missing. History's Clear
   // opens Firefox's Clear browsing data dialog.
+  function clearLibraryDownloads() {
+    try {
+      window.DownloadsCommon.getData(window, true).removeFinished();
+    } catch (err) {
+      console.warn("[Zia] Couldn't clear the downloads:", err);
+    }
+    if (!window.PrivateBrowsingUtils?.isWindowPrivate(window)) {
+      PlacesUtils.history
+        .removeVisitsByFilter({ transition: PlacesUtils.history.TRANSITIONS.DOWNLOAD })
+        .catch((err) => console.warn("[Zia] Couldn't clear the downloads' history:", err));
+    }
+  }
+
+  function clearLibraryHistory() {
+    try {
+      if (window.Sanitizer?.showUI) {
+        window.Sanitizer.showUI(window);
+      } else {
+        document.getElementById("Tools:Sanitize")?.doCommand();
+      }
+    } catch (err) {
+      console.warn("[Zia] Couldn't open Clear browsing data:", err);
+    }
+  }
+
+  const LIBRARY_CLEARS = [
+    ["zen-library-downloads-section", "Clear downloads", "Clear downloads (the files stay)", clearLibraryDownloads],
+    ["zen-library-history-section", "Clear history", "Clear history…", clearLibraryHistory],
+  ];
+
+  function addLibraryClears(library) {
+    if (libraryZenLook()) {
+      for (const button of library.querySelectorAll(".zia-library-clear")) {
+        button.remove();
+      }
+      return;
+    }
+    for (const [section, label, title, clear] of LIBRARY_CLEARS) {
+      for (const header of library.querySelectorAll(`${section} .zen-library-search-header`)) {
+        if (header.querySelector(".zia-library-clear")) {
+          continue;
+        }
+        const button = document.createElementNS(XHTML_NS, "button");
+        button.className = "zen-library-filter-button zia-library-clear";
+        button.setAttribute("aria-label", label);
+        button.title = title;
+        button.addEventListener("click", clear);
+        header.appendChild(button);
+      }
+    }
+  }
+
+  // The Library being watched (it's only made the first time it's opened) and the watch on it
+  const libraryWatch = { library: null, observer: null };
+
+  function onLibraryChanged(records) {
+    const watched = libraryWatch.library;
+    addLibraryClears(watched);
+    safely("library: space inks", () => inkLibrarySpaces(watched));
+    if (!records.every((record) => record.target.classList?.contains("zia-library-rail"))) {
+      safely("library: rail", () => railLibrarySections(watched));
+    }
+    if (records.some((record) => record.target === watched && record.attributeName === "open") && watched.hasAttribute("open")) {
+      safely("library: rows", matchLibraryRowsToTabs);
+      safely("library: page overlap", () => fitLibraryToPage(watched));
+    }
+  }
+
+  function watchLibraryElement() {
+    const library = document.querySelector("zen-library");
+    if (!library || library === libraryWatch.library) {
+      return;
+    }
+    libraryWatch.library = library;
+    libraryWatch.observer.disconnect();
+    libraryWatch.observer.observe(library, { childList: true, subtree: true, attributes: true, attributeFilter: ["open", "active"] });
+    addLibraryClears(library);
+    safely("library: lift media", () => liftMediaUnderCursor(library));
+  }
+
   function dressLibrary() {
-    const clearDownloads = () => {
-      try {
-        window.DownloadsCommon.getData(window, true).removeFinished();
-      } catch (err) {
-        console.warn("[Zia] Couldn't clear the downloads:", err);
-      }
-      if (!window.PrivateBrowsingUtils?.isWindowPrivate(window)) {
-        PlacesUtils.history
-          .removeVisitsByFilter({ transition: PlacesUtils.history.TRANSITIONS.DOWNLOAD })
-          .catch((err) => console.warn("[Zia] Couldn't clear the downloads' history:", err));
-      }
-    };
-
-    const clearHistory = () => {
-      try {
-        if (window.Sanitizer?.showUI) {
-          window.Sanitizer.showUI(window);
-        } else {
-          document.getElementById("Tools:Sanitize")?.doCommand();
-        }
-      } catch (err) {
-        console.warn("[Zia] Couldn't open Clear browsing data:", err);
-      }
-    };
-
-    const CLEARS = [
-      ["zen-library-downloads-section", "Clear downloads", "Clear downloads (the files stay)", clearDownloads],
-      ["zen-library-history-section", "Clear history", "Clear history…", clearHistory],
-    ];
-
-    const addButtons = (library) => {
-      if (libraryZenLook()) {
-        for (const button of library.querySelectorAll(".zia-library-clear")) {
-          button.remove();
-        }
-        return;
-      }
-      for (const [section, label, title, clear] of CLEARS) {
-        for (const header of library.querySelectorAll(`${section} .zen-library-search-header`)) {
-          if (header.querySelector(".zia-library-clear")) {
-            continue;
-          }
-          const button = document.createElementNS(XHTML_NS, "button");
-          button.className = "zen-library-filter-button zia-library-clear";
-          button.setAttribute("aria-label", label);
-          button.title = title;
-          button.addEventListener("click", clear);
-          header.appendChild(button);
-        }
-      }
-    };
-
-    // the Library is only made the first time it's opened
-    let watched = null;
-    const sectionWatcher = new MutationObserver((records) => {
-      addButtons(watched);
-      safely("library: space inks", () => inkLibrarySpaces(watched));
-      if (!records.every((record) => record.target.classList?.contains("zia-library-rail"))) {
-        safely("library: rail", () => railLibrarySections(watched));
-      }
-      if (records.some((record) => record.target === watched && record.attributeName === "open") && watched.hasAttribute("open")) {
-        safely("library: rows", matchLibraryRowsToTabs);
-        safely("library: page overlap", () => fitLibraryToPage(watched));
-      }
-    });
-    const watchLibrary = () => {
-      const library = document.querySelector("zen-library");
-      if (!library || library === watched) {
-        return;
-      }
-      watched = library;
-      sectionWatcher.disconnect();
-      sectionWatcher.observe(library, { childList: true, subtree: true, attributes: true, attributeFilter: ["open", "active"] });
-      addButtons(library);
-      safely("library: lift media", () => liftMediaUnderCursor(library));
-    };
+    libraryWatch.observer = new MutationObserver(onLibraryChanged);
     const toolbox = document.getElementById("navigator-toolbox");
     if (toolbox?.parentNode) {
-      new MutationObserver(watchLibrary).observe(toolbox.parentNode, { childList: true });
+      new MutationObserver(watchLibraryElement).observe(toolbox.parentNode, { childList: true });
     }
-    watchLibrary();
-    window.addEventListener("resize", () => watched && safely("library: page overlap", () => fitLibraryToPage(watched)));
+    watchLibraryElement();
+    window.addEventListener("resize", () => libraryWatch.library && safely("library: page overlap", () => fitLibraryToPage(libraryWatch.library)));
     // (and before the downloads fan out above the Library button)
     document.getElementById("zen-library-button")?.addEventListener("mouseenter", () => safely("library: rows", matchLibraryRowsToTabs));
     safely("library: rows", matchLibraryRowsToTabs);
     watchPrefs(LIBRARY_ZEN_LOOK_PREF, () => {
-      if (watched) {
-        addButtons(watched);
-        safely("library: rail", () => railLibrarySections(watched));
+      if (libraryWatch.library) {
+        addLibraryClears(libraryWatch.library);
+        safely("library: rail", () => railLibrarySections(libraryWatch.library));
       }
     });
   }
-
   // ---------- Rename finished downloads with AI (Tidy Downloads, by Bxthesda and
   // Zylaah, in tidy-downloads/ with their permission). Loaded here, only with the
   // option on: as the mod's own scripts, they ran only after Sine installed Zia.
@@ -19536,134 +19692,148 @@
   }
 
   // ---------- Zia's glass: the light where it's pressed
+  // Pressed: a soft light under the pointer, fading once let go
+  // (27-liquid-glass.css), on what has the glass. Marked on the
+  // essential or button, with where the press is inside the box
+  // that lights up.
+  // Used elsewhere: watchLiquidGlass.
+  const GLASS_PRESSABLE = [
+    // (essentials, not the plain tabs, which have no glass)
+    [".tabbrowser-tab[zen-essential]", (hit) => hit, (owner) => owner.querySelector(":scope > .tab-stack > .tab-background")],
+    // (not Clear, whose icon is its background picture)
+    ["zen-library :is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip):not(.zia-library-clear)", (hit) => hit, (owner) => owner],
+    // (the chosen Library section lights the tile that slides behind it,
+    // so it shines too; another lights its own hover tile, as the sliding
+    // one's still behind the old section until the press is let go)
+    ["zen-library .zen-library-tab", (hit) => (hit.hasAttribute("active") ? hit.parentNode.querySelector(":scope > .zia-library-rail") : hit), (owner, hit) => hit],
+  ];
+  const GLASS_SHINE_IN_MS = 60;
+  const GLASS_SHINE_OUT_MS = 280;
+  // (a quick click still lights up for this long before it fades)
+  const GLASS_LIT_MS = 120;
+
+  // What's pressed (the element marked), the box that lights up, and when
+  const glassPress = { owner: null, box: null, at: 0 };
+  // The light's strength, eased here rather than by a CSS transition: that
+  // needs the colours registered with @property, which Zen's stylesheets
+  // for mods don't take, so the light only ever snapped off.
+  const glassShines = new Map();
+
+  function glassColour(name) {
+    const parts = getComputedStyle(root).getPropertyValue(name).match(/[\d.]+/g)?.map(Number) || [255, 255, 255, 0];
+    return parts.length > 3 ? parts : [...parts, 1];
+  }
+
+  function shineGlass(owner, to, ms, done) {
+    const run = glassShines.get(owner) || { level: 0, frame: 0 };
+    cancelAnimationFrame(run.frame);
+    glassShines.set(owner, run);
+    const light = glassColour("--zia-glass-press-light");
+    const wash = glassColour("--zia-glass-press-wash");
+    const from = run.level;
+    const start = performance.now();
+    const step = (now) => {
+      const t = Math.min(1, (now - start) / ms);
+      // (ease out)
+      run.level = from + (to - from) * (1 - (1 - t) ** 3);
+      const paint = ([r, g, b, a]) => `rgba(${r}, ${g}, ${b}, ${a * run.level})`;
+      owner.style.setProperty("--zia-press-light", paint(light));
+      owner.style.setProperty("--zia-press-wash", paint(wash));
+      if (t < 1) {
+        run.frame = requestAnimationFrame(step);
+      } else {
+        run.frame = 0;
+        done?.();
+      }
+    };
+    run.frame = requestAnimationFrame(step);
+  }
+
+  function placeGlassLight(event) {
+    const box = glassPress.box?.getBoundingClientRect();
+    if (box) {
+      glassPress.owner.style.setProperty("--zia-press-x", `${event.clientX - box.left}px`);
+      glassPress.owner.style.setProperty("--zia-press-y", `${event.clientY - box.top}px`);
+    }
+  }
+
+  // (held, the light follows the pointer, even off the button, and on
+  // through a drag: holding and moving a tab or essential starts one,
+  // which cancels the pointer, so the light waits for the real release)
+  function followGlassPress(event) {
+    if (glassPress.owner && (event.clientX || event.clientY)) {
+      placeGlassLight(event);
+    }
+  }
+
+  function pressGlass(event) {
+    // (only with Zia's glass on, an option)
+    if (event.button !== 0 || !Services.prefs.getBoolPref("zia.glass", false)) {
+      return;
+    }
+    for (const node of event.composedPath()) {
+      if (node.nodeType !== Node.ELEMENT_NODE) {
+        continue;
+      }
+      const match = GLASS_PRESSABLE.find(([selector]) => node.matches(selector));
+      if (!match) {
+        continue;
+      }
+      const owner = match[1](node);
+      const lit = owner && match[2](owner, node);
+      if (!lit) {
+        return;
+      }
+      glassPress.owner = owner;
+      glassPress.box = lit;
+      placeGlassLight(event);
+      owner.setAttribute("zia-glass-press", "in");
+      glassPress.at = performance.now();
+      shineGlass(owner, 1, GLASS_SHINE_IN_MS);
+      return;
+    }
+  }
+
+  function letGoGlass() {
+    const owner = glassPress.owner;
+    glassPress.owner = null;
+    glassPress.box = null;
+    if (!owner) {
+      return;
+    }
+    const lit = Math.max(0, GLASS_LIT_MS - (performance.now() - glassPress.at));
+    // (not kept: it checks the press is still this one's before it fades)
+    setTimeout(() => fadeGlassPress(owner), lit);
+  }
+
+  function fadeGlassPress(owner) {
+    if (owner.getAttribute("zia-glass-press") !== "in" || glassPress.owner === owner) {
+      return;
+    }
+    owner.setAttribute("zia-glass-press", "out");
+    shineGlass(owner, 0, GLASS_SHINE_OUT_MS, () => {
+      if (owner.getAttribute("zia-glass-press") === "out") {
+        owner.removeAttribute("zia-glass-press");
+        for (const name of ["--zia-press-x", "--zia-press-y", "--zia-press-light", "--zia-press-wash"]) {
+          owner.style.removeProperty(name);
+        }
+        glassShines.delete(owner);
+      }
+    });
+  }
+
   function watchLiquidGlass() {
-    // Pressed: a soft light under the pointer, fading once let go
-    // (27-liquid-glass.css), on what has the glass. Marked on the
-    // essential or button, with where the press is inside the box
-    // that lights up.
-    const PRESSABLE = [
-      // (essentials, not the plain tabs, which have no glass)
-      [".tabbrowser-tab[zen-essential]", (hit) => hit, (owner) => owner.querySelector(":scope > .tab-stack > .tab-background")],
-      // (not Clear, whose icon is its background picture)
-      ["zen-library :is(.zen-library-filter-button, .zen-library-filter-done, .zen-library-filter-chip):not(.zia-library-clear)", (hit) => hit, (owner) => owner],
-      // (the chosen Library section lights the tile that slides behind it,
-      // so it shines too; another lights its own hover tile, as the sliding
-      // one's still behind the old section until the press is let go)
-      ["zen-library .zen-library-tab", (hit) => (hit.hasAttribute("active") ? hit.parentNode.querySelector(":scope > .zia-library-rail") : hit), (owner, hit) => hit],
-    ];
-    let pressed = null;
-    let pressedBox = null;
-    let pressedAt = 0;
-    // The light's strength, eased here rather than by a CSS transition: that
-    // needs the colours registered with @property, which Zen's stylesheets
-    // for mods don't take, so the light only ever snapped off.
-    const shines = new Map();
-    const rgba = (name) => {
-      const parts = getComputedStyle(root).getPropertyValue(name).match(/[\d.]+/g)?.map(Number) || [255, 255, 255, 0];
-      return parts.length > 3 ? parts : [...parts, 1];
-    };
-    const shine = (owner, to, ms, done) => {
-      const run = shines.get(owner) || { level: 0, frame: 0 };
-      cancelAnimationFrame(run.frame);
-      shines.set(owner, run);
-      const light = rgba("--zia-glass-press-light");
-      const wash = rgba("--zia-glass-press-wash");
-      const from = run.level;
-      const start = performance.now();
-      const step = (now) => {
-        const t = Math.min(1, (now - start) / ms);
-        // (ease out)
-        run.level = from + (to - from) * (1 - (1 - t) ** 3);
-        const paint = ([r, g, b, a]) => `rgba(${r}, ${g}, ${b}, ${a * run.level})`;
-        owner.style.setProperty("--zia-press-light", paint(light));
-        owner.style.setProperty("--zia-press-wash", paint(wash));
-        if (t < 1) {
-          run.frame = requestAnimationFrame(step);
-        } else {
-          run.frame = 0;
-          done?.();
-        }
-      };
-      run.frame = requestAnimationFrame(step);
-    };
-    const placeLight = (event) => {
-      const box = pressedBox?.getBoundingClientRect();
-      if (box) {
-        pressed.style.setProperty("--zia-press-x", `${event.clientX - box.left}px`);
-        pressed.style.setProperty("--zia-press-y", `${event.clientY - box.top}px`);
-      }
-    };
-    // (held, the light follows the pointer, even off the button, and on
-    // through a drag: holding and moving a tab or essential starts one,
-    // which cancels the pointer, so the light waits for the real release)
-    const follow = (event) => {
-      if (pressed && (event.clientX || event.clientY)) {
-        placeLight(event);
-      }
-    };
-    const press = (event) => {
-      // (only with Zia's glass on, an option)
-      if (event.button !== 0 || !Services.prefs.getBoolPref("zia.glass", false)) {
-        return;
-      }
-      for (const node of event.composedPath()) {
-        if (node.nodeType !== Node.ELEMENT_NODE) {
-          continue;
-        }
-        const match = PRESSABLE.find(([selector]) => node.matches(selector));
-        if (!match) {
-          continue;
-        }
-        const owner = match[1](node);
-        const lit = owner && match[2](owner, node);
-        if (!lit) {
-          return;
-        }
-        pressed = owner;
-        pressedBox = lit;
-        placeLight(event);
-        owner.setAttribute("zia-glass-press", "in");
-        pressedAt = performance.now();
-        shine(owner, 1, 60);
-        return;
-      }
-    };
-    const letGo = () => {
-      const owner = pressed;
-      pressed = null;
-      pressedBox = null;
-      if (!owner) {
-        return;
-      }
-      // (a quick click still lights up for a moment before it fades)
-      const lit = Math.max(0, 120 - (performance.now() - pressedAt));
-      setTimeout(() => {
-        if (owner.getAttribute("zia-glass-press") !== "in" || pressed === owner) {
-          return;
-        }
-        owner.setAttribute("zia-glass-press", "out");
-        shine(owner, 0, 280, () => {
-          if (owner.getAttribute("zia-glass-press") === "out") {
-            owner.removeAttribute("zia-glass-press");
-            for (const name of ["--zia-press-x", "--zia-press-y", "--zia-press-light", "--zia-press-wash"]) {
-              owner.style.removeProperty(name);
-            }
-            shines.delete(owner);
-          }
-        });
-      }, lit);
-    };
     const PRESS_EVENTS = [
-      ["pointerdown", press],
-      ["pointermove", follow],
-      ["mousemove", follow],
-      ["dragover", follow],
-      ["pointerup", letGo],
-      ["mouseup", letGo],
-      ["dragend", letGo],
-      ["drop", letGo],
+      ["pointerdown", pressGlass],
+      ["pointermove", followGlassPress],
+      ["mousemove", followGlassPress],
+      ["dragover", followGlassPress],
+      ["pointerup", letGoGlass],
+      ["mouseup", letGoGlass],
+      ["dragend", letGoGlass],
+      ["drop", letGoGlass],
       // (the window losing focus mid-press; not a field inside it)
-      ["blur", (event) => event.target === window && letGo()],
+      ["blur", (event) => event.target === window && letGoGlass()],
     ];
     for (const [type, handler] of PRESS_EVENTS) {
       window.addEventListener(type, handler, true);
@@ -19672,6 +19842,31 @@
   // ---------- Zia's settings: rows shown only with the setting they belong to
   // Sine's first check of a row's conditions (preferences.json) runs before the row
   // is on the page, so every row showed; Zia applies them as its rows arrive.
+  // Used elsewhere: fixSettingsConditions.
+  function settingPrefValue({ property, value }) {
+    if (typeof value === "boolean") {
+      return Services.prefs.getBoolPref(property, false);
+    }
+    if (typeof value === "number") {
+      return Services.prefs.getIntPref(property, 0);
+    }
+    return Services.prefs.getStringPref(property, "");
+  }
+
+  // (Sine's rules: "if" or "not", nested lists with their own "operator",
+  // and a row's own list "OR" unless it says otherwise)
+  function settingConditionsHold(conditions, operator) {
+    const list = Array.isArray(conditions) ? conditions : [conditions];
+    const results = list.map((cond) => {
+      if (cond.if || cond.not) {
+        const test = cond.if || cond.not;
+        return (settingPrefValue(test) === test.value) === !cond.not;
+      }
+      return cond.conditions ? settingConditionsHold(cond.conditions, cond.operator || "AND") : false;
+    });
+    return operator === "OR" ? results.some(Boolean) : results.every(Boolean);
+  }
+
   function fixSettingsConditions() {
     let rows = null;
     const loadRows = async () => {
@@ -19682,35 +19877,12 @@
       return rows;
     };
 
-    const prefValue = ({ property, value }) => {
-      if (typeof value === "boolean") {
-        return Services.prefs.getBoolPref(property, false);
-      }
-      if (typeof value === "number") {
-        return Services.prefs.getIntPref(property, 0);
-      }
-      return Services.prefs.getStringPref(property, "");
-    };
-    // (Sine's rules: "if" or "not", nested lists with their own "operator",
-    // and a row's own list "OR" unless it says otherwise)
-    const holds = (conditions, operator) => {
-      const list = Array.isArray(conditions) ? conditions : [conditions];
-      const results = list.map((cond) => {
-        if (cond.if || cond.not) {
-          const test = cond.if || cond.not;
-          return (prefValue(test) === test.value) === !cond.not;
-        }
-        return cond.conditions ? holds(cond.conditions, cond.operator || "AND") : false;
-      });
-      return operator === "OR" ? results.some(Boolean) : results.every(Boolean);
-    };
-
     const apply = async (doc) => {
       const known = await loadRows();
       for (const [id, pref] of known) {
         const row = doc.getElementById(id);
         if (row) {
-          row.style.display = holds(pref.conditions, pref.operator || "OR") ? "flex" : "none";
+          row.style.display = settingConditionsHold(pref.conditions, pref.operator || "OR") ? "flex" : "none";
         }
       }
     };
@@ -19738,7 +19910,6 @@
     Services.obs.addObserver(onDocument, "document-element-inserted");
     window.addEventListener("unload", () => Services.obs.removeObserver(onDocument, "document-element-inserted"), { once: true });
   }
-
   // Tips: what a tab's buttons say they do, and the cards shown in place of the tips of
   // the spaces and add-ons.
   // Used elsewhere: watchButtonTooltips, watchTipCards.
@@ -20493,6 +20664,7 @@
   // them). They're drawn inside the element, out of reach of chrome.css, so
   // their look is put in there as each one appears. Full page, Firefox's
   // primary button, is a tile like the other rather than a bright one.
+  // Used elsewhere: watchScreenshotButtons.
   const SCREENSHOT_BUTTON_RULES = `
     moz-button-group {
       gap: 6px !important;
@@ -20530,48 +20702,72 @@
     }
   `;
 
+  // The preview of a shot, with its Retry, Close, Copy and Download, is a page of its own
+  // in a dialog over the tab, which chrome.css doesn't reach: Zia's look is put in as it's
+  // made (zia-screenshots.css; a sheet put in this way isn't held back by the page's rules)
+  const SCREENSHOT_PREVIEW_URL = "chrome://browser/content/screenshots/screenshots-preview.html";
+  // (how long after the overlay comes or goes the toolbar's colour is read again)
+  const SCREENSHOT_SAMPLE_MS = 100;
+  let screenshotSheet = null;
+
+  function styleScreenshotButtons(el) {
+    const shadow = el?.shadowRoot;
+    if (!shadow || shadow.ziaStyled) {
+      return;
+    }
+    try {
+      if (!screenshotSheet) {
+        screenshotSheet = new window.CSSStyleSheet();
+        screenshotSheet.replaceSync(SCREENSHOT_BUTTON_RULES);
+      }
+      shadow.adoptedStyleSheets = [...shadow.adoptedStyleSheets, screenshotSheet];
+      shadow.ziaStyled = true;
+    } catch (err) {
+      noteError("screenshots: buttons", err);
+    }
+  }
+
+  // (each put in the window as a screenshot starts, over the page or, in older
+  // Firefox, in the window's pop-ups; drawn inside as it goes in, so styled after)
+  function findScreenshotButtons(node) {
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+      return;
+    }
+    if (node.localName === "screenshots-buttons") {
+      styleScreenshotButtons(node);
+    } else if (node.firstElementChild) {
+      node.querySelectorAll("screenshots-buttons").forEach(styleScreenshotButtons);
+    }
+  }
+
+  // The toolbar's colour read again as a screenshot starts and ends, as on a scroll:
+  // its overlay darkens the page, and the toolbar kept the page's colour (#477).
+  // (Firefox shows and hides the buttons' panel, and the overlay with it)
+  function onScreenshotRecords(records) {
+    for (const record of records) {
+      record.addedNodes.forEach(findScreenshotButtons);
+      const panels = record.type === "childList" ? [...record.addedNodes] : [record.target];
+      if (panels.some((node) => node.classList?.contains("screenshotsPagePanel"))) {
+        // (not kept: reading the colour once more is harmless)
+        setTimeout(requestScrollSample, SCREENSHOT_SAMPLE_MS);
+      }
+    }
+  }
+
+  function styleScreenshotPreview(doc) {
+    const win = doc?.defaultView;
+    if (!doc?.documentURI?.startsWith(SCREENSHOT_PREVIEW_URL) || win?.browsingContext?.topChromeWindow !== window) {
+      return;
+    }
+    try {
+      win.windowUtils.loadSheetUsingURIString("chrome://sine/content/zia/zia-screenshots.css", win.windowUtils.AUTHOR_SHEET);
+    } catch (err) {
+      noteError("screenshots: preview", err);
+    }
+  }
+
   function watchScreenshotButtons() {
-    let sheet = null;
-    const style = (el) => {
-      const shadow = el?.shadowRoot;
-      if (!shadow || shadow.ziaStyled) {
-        return;
-      }
-      try {
-        if (!sheet) {
-          sheet = new window.CSSStyleSheet();
-          sheet.replaceSync(SCREENSHOT_BUTTON_RULES);
-        }
-        shadow.adoptedStyleSheets = [...shadow.adoptedStyleSheets, sheet];
-        shadow.ziaStyled = true;
-      } catch (err) {
-        noteError("screenshots: buttons", err);
-      }
-    };
-    // (each put in the window as a screenshot starts, over the page or, in older
-    // Firefox, in the window's pop-ups; drawn inside as it goes in, so styled after)
-    const find = (node) => {
-      if (node.nodeType !== Node.ELEMENT_NODE) {
-        return;
-      }
-      if (node.localName === "screenshots-buttons") {
-        style(node);
-      } else if (node.firstElementChild) {
-        node.querySelectorAll("screenshots-buttons").forEach(style);
-      }
-    };
-    // The toolbar's colour read again as a screenshot starts and ends, as on a scroll:
-    // its overlay darkens the page, and the toolbar kept the page's colour (#477).
-    // (Firefox shows and hides the buttons' panel, and the overlay with it)
-    const observer = new MutationObserver((records) => {
-      for (const record of records) {
-        record.addedNodes.forEach(find);
-        const panels = record.type === "childList" ? [...record.addedNodes] : [record.target];
-        if (panels.some((node) => node.classList?.contains("screenshotsPagePanel"))) {
-          setTimeout(requestScrollSample, 100);
-        }
-      }
-    });
+    const observer = new MutationObserver(onScreenshotRecords);
     for (const id of ["tabbrowser-tabpanels", "mainPopupSet"]) {
       const where = document.getElementById(id);
       if (where) {
@@ -20579,25 +20775,10 @@
       }
     }
     window.addEventListener("unload", () => observer.disconnect());
-    document.querySelectorAll("screenshots-buttons").forEach(style);
+    document.querySelectorAll("screenshots-buttons").forEach(styleScreenshotButtons);
 
-    // The preview of a shot, with its Retry, Close, Copy and Download, is a page of its own
-    // in a dialog over the tab, which chrome.css doesn't reach: Zia's look is put in as it's
-    // made (zia-screenshots.css; a sheet put in this way isn't held back by the page's rules)
-    const PREVIEW_URL = "chrome://browser/content/screenshots/screenshots-preview.html";
-    const onDocument = (doc) => {
-      const win = doc?.defaultView;
-      if (!doc?.documentURI?.startsWith(PREVIEW_URL) || win?.browsingContext?.topChromeWindow !== window) {
-        return;
-      }
-      try {
-        win.windowUtils.loadSheetUsingURIString("chrome://sine/content/zia/zia-screenshots.css", win.windowUtils.AUTHOR_SHEET);
-      } catch (err) {
-        noteError("screenshots: preview", err);
-      }
-    };
-    Services.obs.addObserver(onDocument, "document-element-inserted");
-    window.addEventListener("unload", () => Services.obs.removeObserver(onDocument, "document-element-inserted"), { once: true });
+    Services.obs.addObserver(styleScreenshotPreview, "document-element-inserted");
+    window.addEventListener("unload", () => Services.obs.removeObserver(styleScreenshotPreview, "document-element-inserted"), { once: true });
   }
   // ---------- Thinking orbs: a small dotted 3D orb on a 2D canvas
   // A framework-free port of the canvas engine in thinking-orbs 0.3.2

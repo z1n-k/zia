@@ -1,0 +1,42 @@
+{
+ "checks": {
+  "and is gone after": true,
+  "it sinks into its tab on close": true,
+  "the glance shows its picture": true,
+  "the setting marks the window": true
+ },
+ "closed": {
+  "exits": 0,
+  "glances": 0,
+  "tabs": [
+   "A",
+   "New Tab"
+  ]
+ },
+ "closing": {
+  "copy": [
+   "zia-glance-thumb-exit-card",
+   "zia-glance-thumb"
+  ],
+  "exitOn": "A"
+ },
+ "flags": [
+  false,
+  true,
+  false
+ ],
+ "open": {
+  "canvas": [
+   36,
+   42
+  ],
+  "cuts": {
+   "--zia-glance-cut-bottom": "-2px",
+   "--zia-glance-cut-right": "1px",
+   "--zia-glance-cut-top": "-2px"
+  },
+  "on": "A",
+  "thumb": "true"
+ },
+ "ziaErrors": []
+}

@@ -1,74 +1,99 @@
+  // Downloads: a ring on the downloads button showing how far they've got, Zen's first
+  // download flight waiting for that button to show, Zia's own flight of a row to the Library
+  // button, and Firefox's "what should Zen do with this file?" box centred on the page.
+  // Used elsewhere: addDownloadProgress, flyFirstDownloadToButton, watchDownloadDialog,
+  // flyDownloadRows.
+  const DOWNLOAD_RING_RADIUS = 46;
+  const DOWNLOAD_RING_STROKE = 7;
+  const FLIGHT_POP_MS = 120;
+  const FLIGHT_WINDUP_MS = 420;
+  const FLIGHT_LAUNCH_MS = 560;
+  const FLIGHT_SETTLE_MS = 320;
+  // (the glow trails the row by this much, the button's nudge starts this much before it
+  // lands, and the stage goes this much after it's settled)
+  const FLIGHT_BEAM_LAG_MS = 40;
+  const FLIGHT_NUDGE_EARLY_MS = 40;
+  const FLIGHT_CLEAR_LATE_MS = 40;
+  const FLIGHT_NUDGE_MS = 360;
+  // (a download only just started, and a save from that box only just made)
+  const DOWNLOAD_FRESH_MS = 5000;
+  const DIALOG_SAVE_FRESH_MS = 2000;
+  let downloadFlightOn = false;
+  let savedFromDialog = null;
+
+  // The ring: a track and an arc over it, drawn round from the top
+  function makeDownloadRing() {
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.id = "zia-download-ring";
+    svg.setAttribute("viewBox", "0 0 100 100");
+    const track = document.createElementNS(NS, "circle");
+    const arc = document.createElementNS(NS, "circle");
+    for (const circle of [track, arc]) {
+      circle.setAttribute("cx", "50");
+      circle.setAttribute("cy", "50");
+      circle.setAttribute("r", `${DOWNLOAD_RING_RADIUS}`);
+      circle.setAttribute("fill", "none");
+      circle.setAttribute("stroke-width", `${DOWNLOAD_RING_STROKE}`);
+      svg.appendChild(circle);
+    }
+    track.setAttribute("class", "zia-download-ring-track");
+    arc.setAttribute("class", "zia-download-ring-arc");
+    arc.setAttribute("stroke-linecap", "round");
+    arc.setAttribute("transform", "rotate(-90 50 50)");
+    const circumference = 2 * Math.PI * DOWNLOAD_RING_RADIUS;
+    arc.setAttribute("stroke-dasharray", `${circumference}`);
+    arc.setAttribute("stroke-dashoffset", `${circumference}`);
+    return { svg, arc, circumference };
+  }
+
+  function drawDownloadRing(ring, fraction) {
+    ring.arc.setAttribute("stroke-dashoffset", `${ring.circumference * (1 - fraction)}`);
+  }
+
+  function showDownloadProgress(button, ring, downloads) {
+    let done = 0;
+    let total = 0;
+    let running = false;
+    for (const download of downloads) {
+      if (download.succeeded || download.canceled || download.error) {
+        continue;
+      }
+      if (download.hasProgress && download.totalBytes > 0) {
+        done += download.currentBytes || 0;
+        total += download.totalBytes;
+      }
+      running = true;
+    }
+    if (!running || total <= 0) {
+      button.removeAttribute("zia-downloading");
+      drawDownloadRing(ring, 0);
+      return;
+    }
+    button.setAttribute("zia-downloading", "true");
+    drawDownloadRing(ring, Math.min(1, done / total));
+  }
+
   function addDownloadProgress() {
     const button = document.getElementById("downloads-button");
     const commons = window.DownloadsCommon;
     if (!button || !commons?.getData) {
       return;
     }
-
-    const NS = "http://www.w3.org/2000/svg";
-    const ring = document.createElementNS(NS, "svg");
-    ring.id = "zia-download-ring";
-    ring.setAttribute("viewBox", "0 0 100 100");
-    const track = document.createElementNS(NS, "circle");
-    const arc = document.createElementNS(NS, "circle");
-
-    const RADIUS = 46;
-    const STROKE = 7;
-    for (const circle of [track, arc]) {
-      circle.setAttribute("cx", "50");
-      circle.setAttribute("cy", "50");
-      circle.setAttribute("r", `${RADIUS}`);
-      circle.setAttribute("fill", "none");
-      circle.setAttribute("stroke-width", `${STROKE}`);
-      ring.appendChild(circle);
-    }
-    track.setAttribute("class", "zia-download-ring-track");
-    arc.setAttribute("class", "zia-download-ring-arc");
-    arc.setAttribute("stroke-linecap", "round");
-    arc.setAttribute("transform", "rotate(-90 50 50)");
-    const circumference = 2 * Math.PI * RADIUS;
-    arc.setAttribute("stroke-dasharray", `${circumference}`);
-    arc.setAttribute("stroke-dashoffset", `${circumference}`);
-    button.appendChild(ring);
-
-    function draw(fraction) {
-      arc.setAttribute("stroke-dashoffset", `${circumference * (1 - fraction)}`);
-    }
-
-    function update(downloads) {
-      let done = 0;
-      let total = 0;
-      let running = false;
-      for (const download of downloads) {
-        if (download.succeeded || download.canceled || download.error) {
-          continue;
-        }
-        if (download.hasProgress && download.totalBytes > 0) {
-          done += download.currentBytes || 0;
-          total += download.totalBytes;
-        }
-        running = true;
-      }
-      if (!running || total <= 0) {
-        button.removeAttribute("zia-downloading");
-        draw(0);
-        return;
-      }
-      button.setAttribute("zia-downloading", "true");
-      draw(Math.min(1, done / total));
-    }
+    const ring = makeDownloadRing();
+    button.appendChild(ring.svg);
 
     const seen = new Set();
     const keep = (download) => {
       seen.add(download);
-      update(seen);
+      showDownloadProgress(button, ring, seen);
     };
     commons.getData(window).addView({
       onDownloadAdded: keep,
       onDownloadChanged: keep,
       onDownloadRemoved(download) {
         seen.delete(download);
-        update(seen);
+        showDownloadProgress(button, ring, seen);
       },
     });
   }
@@ -117,12 +142,6 @@
   // it flies the window dims, a faint glow trailing the row and a soft
   // bloom where it lands. Zen's own switch for its
   // animation turns this off too.
-  let downloadFlightOn = false;
-  const FLIGHT_POP_MS = 120;
-  const FLIGHT_WINDUP_MS = 420;
-  const FLIGHT_LAUNCH_MS = 560;
-  const FLIGHT_SETTLE_MS = 320;
-
   function flightTarget() {
     for (const id of ["zen-library-button", "downloads-button"]) {
       const button = document.getElementById(id);
@@ -153,11 +172,9 @@
     return node;
   }
 
-  function flyDownloadRow(download, start) {
-    const target = flightTarget();
-    if (!target) {
-      return;
-    }
+  // The stage the flight plays on: the dim, the glow, the bloom, and the row with the file's
+  // icon and name
+  function makeFlightStage(download) {
     document.getElementById("zia-download-flight")?.remove();
     const stage = flightPart("");
     stage.id = "zia-download-flight";
@@ -175,7 +192,10 @@
     label.textContent = name;
     row.append(icon, label);
     root.appendChild(stage);
+    return { stage, dim, beam, bloom, row };
+  }
 
+  function flightPath(start, target, row) {
     const { width, height } = row.getBoundingClientRect();
     const keep = (x, y) => ({
       x: Math.min(window.innerWidth - width / 2 - 8, Math.max(width / 2 + 8, x)),
@@ -198,9 +218,11 @@
     const bez = (u, a, b, c, d) => (1 - u) ** 3 * a + 3 * (1 - u) ** 2 * u * b + 3 * (1 - u) * u ** 2 * c + u ** 3 * d;
     const point = (u) => ({ x: bez(u, p0.x, c1.x, c2.x, target.x), y: bez(u, p0.y, c1.y, c2.y, target.y) });
     const at = (x, y, rotate, scale) => `translate(${x - p0.x}px, ${y - p0.y}px) translate(-50%, -50%) rotate(${rotate}deg) scale(${scale})`;
+    return { p0, dx, dy, point, at };
+  }
 
-    row.style.left = `${p0.x}px`;
-    row.style.top = `${p0.y}px`;
+  function flightFrames(start, path) {
+    const { p0, dx, dy, point, at } = path;
     const total = FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
     const o = (ms) => ms / total;
     const frames = [
@@ -234,11 +256,12 @@
         opacity: (1 - smooth(0.7, 1, u)).toFixed(4),
       });
     }
-    // (only movement and fading, which Firefox runs on the graphics card:
-    // with a blur in it too, it ran frame by frame alongside everything
-    // else a download starts, and stuttered)
-    const flight = row.animate(frames, { duration: total, easing: "linear", fill: "forwards" });
+    return frames;
+  }
 
+  // The dim, the glow trailing the row and the bloom where it lands
+  function lightFlight({ dim, beam, bloom, row }, frames, target) {
+    const total = FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
     // the dim: in as it winds up, out once it's landed
     const settle = total + FLIGHT_SETTLE_MS;
     const so = (ms) => ms / settle;
@@ -262,7 +285,7 @@
         transform: frame.transform.replace(/scale\(([\d.]+)\)/, (_, n) => `scale(${(Number(n) * 1.6).toFixed(3)})`),
         opacity: i < 3 ? 0 : frame.opacity,
       })),
-      { duration: total, delay: 40, easing: "linear", fill: "forwards" }
+      { duration: total, delay: FLIGHT_BEAM_LAG_MS, easing: "linear", fill: "forwards" }
     );
 
     // the bloom where it lands
@@ -276,14 +299,34 @@
       ],
       { duration: settle, easing: "linear", fill: "forwards" }
     );
+  }
 
+  function flyDownloadRow(download, start) {
+    const target = flightTarget();
+    if (!target) {
+      return;
+    }
+    const parts = makeFlightStage(download);
+    const { stage, row } = parts;
+    const path = flightPath(start, target, row);
+    row.style.left = `${path.p0.x}px`;
+    row.style.top = `${path.p0.y}px`;
+    const total = FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
+    const frames = flightFrames(start, path);
+    // (only movement and fading, which Firefox runs on the graphics card:
+    // with a blur in it too, it ran frame by frame alongside everything
+    // else a download starts, and stuttered)
+    const flight = row.animate(frames, { duration: total, easing: "linear", fill: "forwards" });
+    lightFlight(parts, frames, target);
+
+    // (not kept: a newer flight takes this stage away itself, and this one's nudge still lands)
     setTimeout(() => {
       target.button.animate(
         [{ transform: "scale(1)" }, { transform: "scale(1.18)", offset: 0.4 }, { transform: "scale(1)" }],
-        { duration: 360, easing: "cubic-bezier(0.3, 1.4, 0.5, 1)" }
+        { duration: FLIGHT_NUDGE_MS, easing: "cubic-bezier(0.3, 1.4, 0.5, 1)" }
       );
-    }, total - 40);
-    setTimeout(() => stage.remove(), settle + 40);
+    }, total - FLIGHT_NUDGE_EARLY_MS);
+    setTimeout(() => stage.remove(), total + FLIGHT_SETTLE_MS + FLIGHT_CLEAR_LATE_MS);
     flight.finished.catch(() => stage.remove());
   }
 
@@ -291,7 +334,6 @@
   // system put it, top left of the screen: it's centred on the page of the
   // window it's for, every time, and saving from it sends the download's
   // flight from there.
-  let savedFromDialog = null;
   const DOWNLOAD_DIALOG = "chrome://mozapps/content/downloads/unknownContentType.xhtml";
 
   function pageBoxOnScreen() {
@@ -353,6 +395,31 @@
     window.addEventListener("unload", () => Services.ww.unregisterNotification(observer), { once: true });
   }
 
+  function flyNewDownload(download) {
+    try {
+      // (only one just started, here, and not those listed on startup)
+      const fresh = !download.succeeded && Date.now() - (download.startTime?.getTime?.() ?? 0) < DOWNLOAD_FRESH_MS;
+      // (from where Firefox's "what should Zen do with this file?"
+      // box was, if that's where it was saved from, 2s ago at most)
+      const fromDialog = savedFromDialog && Date.now() - savedFromDialog.at < DIALOG_SAVE_FRESH_MS ? savedFromDialog : null;
+      savedFromDialog = null;
+      const start = fromDialog || window.gZenUIManager?._lastClickPosition;
+      if (
+        !fresh ||
+        !start ||
+        !Services.prefs.getBoolPref("zen.downloads.download-animation", true) ||
+        // (this window, the front one, or the one that box came from)
+        (Services.focus.activeWindow !== window && !fromDialog) ||
+        matchMedia("(prefers-reduced-motion: reduce)").matches
+      ) {
+        return;
+      }
+      flyDownloadRow(download, start);
+    } catch (err) {
+      noteError("downloads: flight", err);
+    }
+  }
+
   function flyDownloadRows() {
     const Downloads = window.Downloads;
     if (!Downloads?.getList) {
@@ -361,32 +428,7 @@
     Downloads.getList(Downloads.ALL)
       .then((list) => {
         downloadFlightOn = true;
-        list.addView({
-          onDownloadAdded(download) {
-            try {
-              // (only one just started, here, and not those listed on startup)
-              const fresh = !download.succeeded && Date.now() - (download.startTime?.getTime?.() ?? 0) < 5000;
-              // (from where Firefox's "what should Zen do with this file?"
-              // box was, if that's where it was saved from, 2s ago at most)
-              const fromDialog = savedFromDialog && Date.now() - savedFromDialog.at < 2000 ? savedFromDialog : null;
-              savedFromDialog = null;
-              const start = fromDialog || window.gZenUIManager?._lastClickPosition;
-              if (
-                !fresh ||
-                !start ||
-                !Services.prefs.getBoolPref("zen.downloads.download-animation", true) ||
-                // (this window, the front one, or the one that box came from)
-                (Services.focus.activeWindow !== window && !fromDialog) ||
-                matchMedia("(prefers-reduced-motion: reduce)").matches
-              ) {
-                return;
-              }
-              flyDownloadRow(download, start);
-            } catch (err) {
-              noteError("downloads: flight", err);
-            }
-          },
-        });
+        list.addView({ onDownloadAdded: flyNewDownload });
       })
       .catch((err) => noteError("downloads: flight list", err));
   }

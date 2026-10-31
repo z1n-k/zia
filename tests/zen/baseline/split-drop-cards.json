@@ -1,0 +1,143 @@
+{
+ "after": {
+  "following": false,
+  "list": [
+   "B",
+   "A",
+   "New Tab"
+  ],
+  "open": false
+ },
+ "checks": {
+  "the cards come up": true,
+  "the left one is lit": true,
+  "the picture follows": true,
+  "they go after": true
+ },
+ "steps": [
+  {
+   "overlay": null,
+   "picture": null,
+   "step": 0,
+   "zones": null
+  },
+  {
+   "overlay": null,
+   "picture": null,
+   "step": 1,
+   "zones": null
+  },
+  {
+   "overlay": null,
+   "picture": null,
+   "step": 2,
+   "zones": null
+  },
+  {
+   "overlay": null,
+   "picture": null,
+   "step": 3,
+   "zones": null
+  },
+  {
+   "overlay": "has-side open shown",
+   "picture": "following 200pxx125px at 158px 233px",
+   "step": 4,
+   "zones": [
+    "left active -105.1px -31.1px",
+    "right 0px 0px"
+   ]
+  },
+  {
+   "overlay": "has-side open shown",
+   "picture": "following 200pxx125px at 186px 250px",
+   "step": 5,
+   "zones": [
+    "left active -89.7px -25.2px",
+    "right 0px 0px"
+   ]
+  },
+  {
+   "overlay": "has-side open shown",
+   "picture": "following 200pxx125px at 215px 268px",
+   "step": 6,
+   "zones": [
+    "left active -73.7px -18.9px",
+    "right 0px 0px"
+   ]
+  },
+  {
+   "overlay": "has-side open shown",
+   "picture": "following 200pxx125px at 243px 286px",
+   "step": 7,
+   "zones": [
+    "left active -58.3px -12.6px",
+    "right 0px 0px"
+   ]
+  },
+  {
+   "overlay": "has-side open shown",
+   "picture": "following 200pxx125px at 272px 304px",
+   "step": 8,
+   "zones": [
+    "left active -42.4px -6.3px",
+    "right 0px 0px"
+   ]
+  },
+  {
+   "overlay": "has-side open shown",
+   "picture": "following 200pxx125px at 300px 322px",
+   "step": 9,
+   "zones": [
+    "left active -27.0px 0.0px",
+    "right 0px 0px"
+   ]
+  },
+  {
+   "overlay": "has-side open shown",
+   "picture": "following 200pxx125px at 300px 322px",
+   "step": 10,
+   "zones": [
+    "left active -27.0px 0.0px",
+    "right 0px 0px"
+   ]
+  },
+  {
+   "overlay": "has-side open shown",
+   "picture": "following 200pxx125px at 300px 322px",
+   "step": 11,
+   "zones": [
+    "left active -27.0px 0.0px",
+    "right 0px 0px"
+   ]
+  },
+  {
+   "overlay": "has-side open shown",
+   "picture": "following 200pxx125px at 300px 322px",
+   "step": 12,
+   "zones": [
+    "left active -27.0px 0.0px",
+    "right 0px 0px"
+   ]
+  },
+  {
+   "overlay": "has-side open shown",
+   "picture": "following 200pxx125px at 300px 322px",
+   "step": 13,
+   "zones": [
+    "left active -27.0px 0.0px",
+    "right 0px 0px"
+   ]
+  },
+  {
+   "overlay": "has-side open shown",
+   "picture": "following 200pxx125px at 300px 322px",
+   "step": 14,
+   "zones": [
+    "left active -27.0px 0.0px",
+    "right 0px 0px"
+   ]
+  }
+ ],
+ "ziaErrors": []
+}
