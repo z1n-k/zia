@@ -1,6 +1,6 @@
 // docs/MAP.md, made from the code: every part of zia.uc.js and chrome.css with what its first
 // comment says it owns, what other parts use from it, the Zen and Firefox methods it replaces
-// (patchMethod) and the settings it reads. Run it after changing src/; CI runs it with --check
+// (patchMethod, patchDefined) and the settings it reads. Run it after changing src/; CI runs it with --check
 // and fails if the map is out of date.
 //
 //   node scripts/map.mjs            write docs/MAP.md
@@ -44,7 +44,7 @@ const unique = (list) => [...new Set(list)].sort();
 function jsPart(file) {
   const source = fs.readFileSync(path.join(ROOT, "src/js", file), "utf8");
   const { owns, used } = header(source);
-  const patches = unique([...source.matchAll(/patchMethod\(\s*([\w.$?]+)\s*,\s*"([\w$]+)"/g)].map((m) => `${m[1]}.${m[2]}`));
+  const patches = unique([...source.matchAll(/patch(?:Method|Defined)\(\s*([\w.$?]+)\s*,\s*"([\w$]+)"/g)].map((m) => `${m[1]}.${m[2]}`));
   const prefs = unique([...source.matchAll(/"((?:zia|zen|browser|sine|ui|layout|extensions)\.[a-z0-9.-]+[a-z0-9])"/g)].map((m) => m[1]));
   return { file, owns, used, patches, prefs };
 }
