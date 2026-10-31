@@ -9,7 +9,8 @@
   comment that's unclear, wrong, or far from the code it explains.
 - Release flow: one "Release X.Y.Z" commit per PR, no Claude attribution anywhere.
 - Behaviour is frozen during the clean-up: no new features, no look changes.
-- The tab drag's `drag` record is one drag session shared by the 28-tab-drag-* files, which are
+- The tab drag's `drag` record, and `dragCore` beside it (what outlives one drag: the press, the
+  frame pending, the rows moved), are one drag session shared by the 28-tab-drag-* files, which are
   one module: each field is set only by the files listed in 01's comment, rather than through
   setter functions (decided under Olly's go-ahead to judge what's best, 2026-10-31).
 - Code ported or taken from others stays close to its source, so updates from upstream stay easy,
