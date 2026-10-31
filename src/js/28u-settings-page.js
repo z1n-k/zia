@@ -551,6 +551,7 @@
     for (const property of page.watched) {
       Services.prefs.removeObserver(property, page.onPref);
     }
+    // (not kept: a page opened meanwhile removes this one itself)
     setTimeout(() => {
       try {
         overlay.hidePopover?.();

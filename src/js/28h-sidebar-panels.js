@@ -536,6 +536,7 @@
     if (sidePanel.slides) {
       setFlag("zia-panel-sliding", true);
     } else {
+      // (not kept: it checks no slide has started since)
       setTimeout(() => !sidePanel.slides && setFlag("zia-panel-sliding", false), PANEL_SLIDING_HOLD_MS);
     }
   }

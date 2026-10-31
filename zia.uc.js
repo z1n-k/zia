@@ -18184,6 +18184,7 @@
     if (sidePanel.slides) {
       setFlag("zia-panel-sliding", true);
     } else {
+      // (not kept: it checks no slide has started since)
       setTimeout(() => !sidePanel.slides && setFlag("zia-panel-sliding", false), PANEL_SLIDING_HOLD_MS);
     }
   }
@@ -23177,6 +23178,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     for (const property of page.watched) {
       Services.prefs.removeObserver(property, page.onPref);
     }
+    // (not kept: a page opened meanwhile removes this one itself)
     setTimeout(() => {
       try {
         overlay.hidePopover?.();
