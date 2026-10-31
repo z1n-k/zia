@@ -1,9 +1,15 @@
 // A folder's extras: its glass icon holds a sheet per tab and turns into a box past three, its
 // menu gives it a colour, Show Icon on Folder and Bookmark Folder, its header gets a delete
 // button, and an empty folder shows a dashed slot drawn to its size
+// (waits on what it's waiting for, polled, up to a limit)
+const pollFor = async (ok, ms = 4000) => {
+  for (let waited = 0; waited < ms && !ok(); waited += 50) {
+    await wait(50);
+  }
+};
 const [x, y, z, w, v] = await addTabs(["X", "Y", "Z", "W", "V"]);
 const folder = gZenFolders.createFolder([x, y], { label: "F", renameFolder: false });
-await wait(1000);
+await pollFor(() => folder.hasAttribute("zia-fi-count"));
 const icon = () => ({
   count: folder.getAttribute("zia-fi-count"),
   full: folder.hasAttribute("zia-fi-full"),
@@ -12,15 +18,19 @@ const icon = () => ({
 });
 const two = icon();
 folder.addTabs([z]);
-await wait(1200);
+await pollFor(() => folder.ziaFolderItems === 3);
+// (the sheet's drop plays out)
+await wait(700);
 const three = icon();
 folder.addTabs([w, v]);
-await wait(2000);
+await pollFor(() => folder.ziaFolderItems === 5 && folder.hasAttribute("zia-fi-full"));
+// (the box's sheets, which drop in one after another, settle)
+await wait(1000);
 const five = icon();
 // the folder's menu
 const menu = document.getElementById("zenFolderActions");
 EU.synthesizeMouseAtCenter(folder.labelElement, { type: "contextmenu", button: 2 }, window);
-await wait(600);
+await pollFor(() => menu.state === "open");
 const colorMenu = document.getElementById("zia-folder-color-menu");
 const items = {
   state: menu.state,
@@ -30,12 +40,14 @@ const items = {
 };
 colorMenu.querySelector("menuitem[zia-color='blue']").doCommand();
 menu.hidePopup();
-await wait(500);
+await pollFor(() => menu.state === "closed" && folder.getAttribute("zia-folder-color") === "blue");
 const colored = { attr: folder.getAttribute("zia-folder-color"), kept: JSON.parse(Services.prefs.getStringPref("zia.folder-colors", "{}"))[folder.id] };
 // an empty folder: its slot, and the dashes drawn to it
 const empty = gZenFolders.createFolder([], { label: "E", renameFolder: false });
-await wait(1500);
 const root = document.documentElement;
+// (the picture of the dashes is put on once it has loaded, and the page's too)
+await pollFor(() => !!empty.style.getPropertyValue("--zia-slot-dashes-image") && !!root.style.getPropertyValue("--zia-slot-dashes-image"));
+await wait(300);
 const slot = {
   empty: empty.hasAttribute("zia-empty"),
   collapsed: empty.hasAttribute("collapsed"),
@@ -47,13 +59,15 @@ const slot = {
 };
 // moved out of the first folder, a tab fills the empty one
 empty.addTabs([v]);
-await wait(1200);
+await pollFor(() => !empty.hasAttribute("zia-empty") && folder.ziaFolderItems === 4);
+await wait(300);
 const filled = { empty: empty.hasAttribute("zia-empty"), first: icon() };
 // the delete button on the header
 const close = folder.querySelector(":scope > .tab-group-label-container > .zia-folder-close");
 const button = close ? { tooltip: close.getAttribute("tooltiptext") } : null;
 EU.synthesizeMouseAtCenter(close, {}, window);
-await wait(1500);
+await pollFor(() => !named("X"));
+await wait(300);
 const deleted = { connected: folder.isConnected, list: listOrder() };
 Services.prefs.clearUserPref("zia.folder-colors");
 done({

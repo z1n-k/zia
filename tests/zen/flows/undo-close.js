@@ -1,16 +1,26 @@
 // Tabs closed together come back together with Cmd/Ctrl+Z, into the folder they were in; and a
 // tab added to the essentials from its menu springs in
+// (waits on what it's waiting for, polled, up to a limit)
+const pollFor = async (ok, ms = 4000) => {
+  for (let waited = 0; waited < ms && !ok(); waited += 50) {
+    await wait(50);
+  }
+};
 const [a, b, c, d] = await addTabs(["A", "B", "C", "D"]);
 const folder = gZenFolders.createFolder([c, d], { label: "F", renameFolder: false });
-await wait(800);
+await pollFor(() => c.group === folder && d.group === folder);
+await wait(300);
 gBrowser.selectedTab = a;
 await wait(300);
 gBrowser.removeTabs([b, c, d]);
-await wait(1200);
+await pollFor(() => ![b, c, d].some((tab) => tab.isConnected));
+await wait(300);
 const closed = { list: listOrder(), folder: folder.isConnected };
 const accel = AppConstants.platform === "macosx" ? { metaKey: true } : { ctrlKey: true };
 EU.synthesizeKey("z", accel, window);
-await wait(2500);
+const inFolder = () => [...document.querySelectorAll("zen-folder")].some((f) => f.label === "F" && ["C", "D"].every((name) => f.tabs.some((t) => nameOf(t) === name)));
+await pollFor(() => ["B", "C", "D"].every((name) => named(name)) && inFolder(), 6000);
+await wait(500);
 const back = {
   list: listOrder(),
   // (sorted: SessionStore brings them back in either order)
@@ -30,7 +40,7 @@ const watch = (event) => {
 };
 window.addEventListener("TabAddedToEssentials", watch);
 gZenPinnedTabManager.addToEssentials();
-await wait(1200);
+await pollFor(() => springs !== null);
 window.removeEventListener("TabAddedToEssentials", watch);
 done({
   closed,

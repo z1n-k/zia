@@ -13,9 +13,27 @@ const v = document.getElementById("v");
 v.srcObject = c.captureStream(25);
 v.play();
 </script>`);
+// (waits on what it's waiting for, polled, up to a limit; the window's moves as well, till
+// it's been still for a few looks)
+const pollFor = async (ok, ms = 4000) => {
+  for (let waited = 0; waited < ms && !ok(); waited += 50) {
+    await wait(50);
+  }
+};
+const settled = async (ok) => {
+  const seen = [];
+  for (let waited = 0; waited < 4000; waited += 100) {
+    seen.push(`${player.screenX},${player.screenY}`);
+    if (ok() && seen.length >= 3 && seen.slice(-3).every((at) => at === seen.at(-1))) {
+      return;
+    }
+    await wait(100);
+  }
+};
 const tab = gBrowser.addTab(page, { triggeringPrincipal: SYSTEM });
 gBrowser.selectedTab = tab;
-await wait(2500);
+await pollFor(() => tab.label === "Video" && !tab.hasAttribute("busy"));
+await wait(1000);
 tab.linkedBrowser.focus();
 await wait(300);
 document.getElementById("View:PictureInPicture").doCommand();
@@ -42,48 +60,50 @@ const opened = {
 };
 const tuckButton = doc.querySelector(".zia-pip-tuck-button");
 tuckButton.click();
-await wait(1000);
+await settled(() => proot.hasAttribute("zia-tucked"));
 const tucked = look();
 // a click on the strip: out again
 EU.synthesizeMouseAtCenter(doc.querySelector(".zia-pip-sliver"), {}, player);
-await wait(1000);
+await settled(() => !proot.hasAttribute("zia-tucked"));
 const out = look();
 // the picker, from a right-click on the tuck button
 tuckButton.dispatchEvent(new player.MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
-await wait(300);
+await pollFor(() => proot.hasAttribute("zia-picking"));
 const picking = { ...look(), disabled: [...doc.querySelectorAll(".zia-pip-spot")].filter((b) => b.disabled).map((b) => b.dataset.spot) };
 doc.querySelector(".zia-pip-spot[data-spot='left']").click();
-await wait(1000);
+await settled(() => proot.getAttribute("zia-tucked") === "left");
 const left = look();
 // tucked, a spot picked with "Make this the default" only becomes the default
 tuckButton.dispatchEvent(new player.MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
-await wait(300);
+await pollFor(() => proot.hasAttribute("zia-picking"));
 doc.querySelector(".zia-pip-picker-row input").checked = true;
 doc.querySelector(".zia-pip-spot[data-spot='bottom']").click();
-await wait(600);
+await pollFor(() => Services.prefs.getStringPref("zia.pip.tuck-spot", "") === "bottom" && !proot.hasAttribute("zia-picking"));
 const defaulted = { ...look(), spot: Services.prefs.getStringPref("zia.pip.tuck-spot", "") };
 // a right-click anywhere else brings it out
 doc.querySelector(".zia-pip-sliver").dispatchEvent(new player.MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
-await wait(1000);
+await settled(() => !proot.hasAttribute("zia-tucked"));
 const broughtOut = look();
 // thrown past the right side (moved as a drag would), it tucks itself there once still
 player.moveTo(1366 - 140, 300);
+// (fixed waits here: the first catches it on its way, before it tucks; the second lets the
+// strip's nudge, under the pointer, land too)
 await wait(150);
 const leaving = look();
 await wait(1200);
 const thrown = look();
 // the tuck button tucks into the default spot now
 EU.synthesizeMouseAtCenter(doc.querySelector(".zia-pip-sliver"), {}, player);
-await wait(1000);
+await settled(() => !proot.hasAttribute("zia-tucked"));
 tuckButton.click();
-await wait(1000);
+await settled(() => proot.getAttribute("zia-tucked") === "bottom");
 const bottom = look();
 Services.prefs.clearUserPref("zia.pip.tuck-spot");
 Services.prefs.setBoolPref("zia.pip.dia-style", false);
-await wait(300);
+await pollFor(() => !proot.hasAttribute("zia-dia"));
 const plain = { ...look(), sound: [...doc.querySelectorAll(".zia-pip-sound > *")].map((el) => el.id) };
 Services.prefs.clearUserPref("zia.pip.dia-style");
-await wait(300);
+await pollFor(() => proot.hasAttribute("zia-dia"));
 const dia = { ...look(), sound: [...doc.querySelectorAll(".zia-pip-sound > *")].map((el) => el.id) };
 player.close();
 await wait(500);
