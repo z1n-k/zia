@@ -1,3 +1,20 @@
+  // Zia's start: every feature wired up in turn once the window is ready, each on its own so
+  // one failing leaves the rest working. Also here: Zen's haptics muted for a drag, the pinned
+  // tabs' line, tabs that can't unload, the sidebar kept from scrolling sideways, and the
+  // selected tab's edge glow.
+  // Used elsewhere: safely, zenHaptic, HAPTIC_PREF, hapticsWereOn, muteZenHaptics, canUnload,
+  // currentSeparator.
+
+  // (a drag's haptics put back this long after the pointer's let go, if it never finished)
+  const HAPTICS_SETTLE_MS = 800;
+  const EDGE_GLOW_RECHECK_MS = 250;
+  const EDGE_GLOW_AFTER_DRAG_MS = 450;
+  const EDGE_GLOW_POLL_MS = 1000;
+  const SELECT_COLOR_CHECKS_MS = [60, 400];
+  const LOADED_COLOR_CHECKS_MS = [50, 800, 2000, 4500];
+  const SAME_PAGE_COLOR_CHECK_MS = 150;
+  const CLOSED_TEXT_FIRST_MS = 800;
+
   function safely(name, fn) {
     try {
       fn();
@@ -78,7 +95,7 @@
         if (hapticsWereOn !== null && !dragging) {
           muteZenHaptics(false);
         }
-      }, 800);
+      }, HAPTICS_SETTLE_MS);
     };
     for (const type of ["dragend", "drop", "mouseup"]) {
       window.addEventListener(type, settle, true);
@@ -174,17 +191,7 @@
         window.gZenWorkspaces?.activeWorkspaceStrip,
       ].filter(Boolean);
       if (sections.length) {
-        const rows = [];
-        for (const section of sections) {
-          for (const row of section.querySelectorAll(
-            ".tabbrowser-tab:not([zen-essential], [zen-empty-tab], [hidden]), .tab-group-label-container"
-          )) {
-            const box = row.getBoundingClientRect();
-            if (box.height > 4 && row.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) !== false) {
-              rows.push(row);
-            }
-          }
-        }
+        const rows = shownRowsIn(sections);
         if (rows[0] === tab || (split && split.contains(rows[0]))) {
           glowing.setAttribute("zia-no-glow", "true");
         }
@@ -194,23 +201,7 @@
       if (!mine.height) {
         return;
       }
-      let above = false;
-      for (const row of document.querySelectorAll(
-        "#tabbrowser-tabs .tabbrowser-tab:not([zen-essential], [zen-empty-tab], [hidden]), #tabbrowser-tabs .tab-group-label-container"
-      )) {
-        if (row === tab || (split && split.contains(row))) {
-          continue;
-        }
-        const box = row.getBoundingClientRect();
-        if (!box.height || !box.width || box.right <= mine.left || box.left >= mine.right) {
-          continue;
-        }
-        if (row.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) === false) {
-          continue;
-        }
-        above ||= box.bottom <= mine.top + 1;
-      }
-      if (!above) {
+      if (!hasRowAbove(tab, split, mine)) {
         glowing.setAttribute("zia-no-glow", "true");
       }
     };
@@ -219,7 +210,7 @@
       if (!pending) {
         pending = requestAnimationFrame(update);
       }
-      setTimeout(update, 250);
+      setTimeout(update, EDGE_GLOW_RECHECK_MS);
     };
     for (const type of [
       "TabSelect", "TabOpen", "TabClose", "TabMove", "TabPinned", "TabUnpinned", "TabGrouped",
@@ -227,18 +218,70 @@
     ]) {
       gBrowser.tabContainer.addEventListener(type, soon);
     }
-    window.addEventListener("dragend", () => setTimeout(soon, 450), true);
+    window.addEventListener("dragend", () => setTimeout(soon, EDGE_GLOW_AFTER_DRAG_MS), true);
 
-    setInterval(update, 1000);
+    setInterval(update, EDGE_GLOW_POLL_MS);
     soon();
   }
 
+  function shownRowsIn(sections) {
+    const rows = [];
+    for (const section of sections) {
+      for (const row of section.querySelectorAll(
+        ".tabbrowser-tab:not([zen-essential], [zen-empty-tab], [hidden]), .tab-group-label-container"
+      )) {
+        const box = row.getBoundingClientRect();
+        if (box.height > 4 && row.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) !== false) {
+          rows.push(row);
+        }
+      }
+    }
+    return rows;
+  }
+
+  function hasRowAbove(tab, split, mine) {
+    let above = false;
+    for (const row of document.querySelectorAll(
+      "#tabbrowser-tabs .tabbrowser-tab:not([zen-essential], [zen-empty-tab], [hidden]), #tabbrowser-tabs .tab-group-label-container"
+    )) {
+      if (row === tab || (split && split.contains(row))) {
+        continue;
+      }
+      const box = row.getBoundingClientRect();
+      if (!box.height || !box.width || box.right <= mine.left || box.left >= mine.right) {
+        continue;
+      }
+      if (row.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) === false) {
+        continue;
+      }
+      above ||= box.bottom <= mine.top + 1;
+    }
+    return above;
+  }
+
+  // Each phase starts its features in the order they've always started (applyZenDefaults
+  // first of all: the others read the defaults it sets)
   function start() {
     if (isLittleZenWindow()) {
       return;
     }
     const urlbar = gURLBar.textbox || document.getElementById("urlbar");
 
+    startSettingsAndPages();
+    startTabsAndFolders();
+    startMediaAndSplits();
+    startPanelsAndAddressBar();
+    startIconsFoldersAndEssentials();
+    watchTabSwitch();
+    watchPageLoads();
+    watchUrlbarText(urlbar);
+    startRemainingFeatures(urlbar);
+
+    updateColor();
+    updateTitle();
+  }
+
+  function startSettingsAndPages() {
     safely("applyZenDefaults", applyZenDefaults);
     safely("setupIconPack", setupIconPack);
     safely("watchOptions", watchOptions);
@@ -247,6 +290,9 @@
     safely("watchMultiview", watchMultiview);
     safely("watchNewTabPage", watchNewTabPage);
     safely("createWorkspaceSlot", createWorkspaceSlot);
+  }
+
+  function startTabsAndFolders() {
     safely("watchTabAnimations", watchTabAnimations);
     safely("closeSplitTabsInPlace", closeSplitTabsInPlace);
     safely("moveTabsLikeDia", moveTabsLikeDia);
@@ -266,6 +312,9 @@
     safely("addSettingsMenuItem", addSettingsMenuItem);
     safely("hideWwwInUrlbar", hideWwwInUrlbar);
     safely("watchRightEdges", watchRightEdges);
+  }
+
+  function startMediaAndSplits() {
     ifOn("media-player", "watchMediaGlow", watchMediaGlow);
     ifOn("media-player", "cardForPositionlessMedia", cardForPositionlessMedia);
     safely("keepMediaCardsInPlace", keepMediaCardsInPlace);
@@ -278,6 +327,9 @@
     safely("animateEssentialsAdds", animateEssentialsAdds);
     ifOn("undo-close", "watchUndoClose", watchUndoClose);
     ifOn("tab-numbers", "watchTabNumbers", watchTabNumbers);
+  }
+
+  function startPanelsAndAddressBar() {
     safely("watchWelcome", watchWelcome);
     safely("watchGlanceThumbs", watchGlanceThumbs);
     safely("watchButtonTooltips", watchButtonTooltips);
@@ -298,6 +350,9 @@
     safely("flyFirstDownloadToButton", flyFirstDownloadToButton);
     safely("flyDownloadRows", flyDownloadRows);
     safely("watchDownloadDialog", watchDownloadDialog);
+  }
+
+  function startIconsFoldersAndEssentials() {
     ifOn("icon-picker", "addIconPicker", addIconPicker);
     safely("watchCompactTopRow", watchCompactTopRow);
     safely("watchOldIcons", watchOldIcons);
@@ -316,7 +371,9 @@
     safely("watchSidebarPaint", watchSidebarPaint);
     safely("watchWindowButtonsSide", watchWindowButtonsSide);
     safely("addTabHoverCards", addTabHoverCards);
+  }
 
+  function watchTabSwitch() {
     gBrowser.tabContainer.addEventListener("TabSelect", () => {
       const browser = gBrowser.selectedBrowser;
       if (isLoading(browser) && !isErrorPage(browser)) {
@@ -325,8 +382,9 @@
         cancelLoader();
       }
       snapColorForTab(browser);
-      scheduleColor(60);
-      scheduleColor(400);
+      for (const ms of SELECT_COLOR_CHECKS_MS) {
+        scheduleColor(ms);
+      }
       updateTitle();
     });
 
@@ -335,39 +393,11 @@
         updateTitle();
       }
     });
+  }
 
-    const { STATE_START, STATE_STOP, STATE_IS_WINDOW } = Ci.nsIWebProgressListener;
-    const { LOCATION_CHANGE_SAME_DOCUMENT, LOCATION_CHANGE_ERROR_PAGE } = Ci.nsIWebProgressListener;
-
+  function watchPageLoads() {
     gBrowser.addTabsProgressListener({
-      onStateChange(browser, webProgress, request, stateFlags) {
-        if (webProgress.isTopLevel && stateFlags & STATE_START) {
-          blankLoadingNewTabAddress(browser, request);
-        }
-        if (!webProgress.isTopLevel || !(stateFlags & STATE_IS_WINDOW)) {
-          return;
-        }
-        if (browser !== gBrowser.selectedBrowser) {
-          return;
-        }
-        if (stateFlags & STATE_START) {
-          scrollPositions.delete(browser);
-          startLoader();
-          colorRequestId++;
-        } else if (stateFlags & STATE_STOP) {
-          if (isErrorPage(browser)) {
-            cancelLoader();
-            showColor(ERROR_PAGE_COLOR);
-          } else {
-            finishLoader();
-            scheduleColor(50);
-            scheduleColor(800);
-            scheduleColor(2000);
-            scheduleColor(4500);
-          }
-          updateTitle();
-        }
-      },
+      onStateChange: onPageStateChange,
 
       onProgressChange(browser, webProgress, request, curSelf, maxSelf, curTotal, maxTotal) {
         if (browser === gBrowser.selectedBrowser && maxTotal > 0) {
@@ -375,37 +405,71 @@
         }
       },
 
-      onLocationChange(browser, webProgress, request, location, flags) {
-        if (!webProgress.isTopLevel) {
-          return;
-        }
-        redirectBlankNewTab(browser, location, flags);
-        keepNewTabAddressEmpty(browser, location);
-
-        if (flags & LOCATION_CHANGE_ERROR_PAGE) {
-          errorBrowsers.add(browser);
-        } else if (!(flags & LOCATION_CHANGE_SAME_DOCUMENT)) {
-          errorBrowsers.delete(browser);
-          scrollPositions.delete(browser);
-        }
-        if (browser !== gBrowser.selectedBrowser) {
-          return;
-        }
-        if (flags & LOCATION_CHANGE_ERROR_PAGE) {
-          cancelLoader();
-          showColor(ERROR_PAGE_COLOR);
-        } else if (flags & LOCATION_CHANGE_SAME_DOCUMENT) {
-          scheduleColor(150);
-        } else {
-          const known = rememberedSiteColor(browser);
-          if (known) {
-            applyColor(known);
-          }
-        }
-        updateTitle();
-      },
+      onLocationChange: onPageLocationChange,
     });
+  }
 
+  function onPageStateChange(browser, webProgress, request, stateFlags) {
+    const { STATE_START, STATE_STOP, STATE_IS_WINDOW } = Ci.nsIWebProgressListener;
+    if (webProgress.isTopLevel && stateFlags & STATE_START) {
+      blankLoadingNewTabAddress(browser, request);
+    }
+    if (!webProgress.isTopLevel || !(stateFlags & STATE_IS_WINDOW)) {
+      return;
+    }
+    if (browser !== gBrowser.selectedBrowser) {
+      return;
+    }
+    if (stateFlags & STATE_START) {
+      scrollPositions.delete(browser);
+      startLoader();
+      colorRequestId++;
+    } else if (stateFlags & STATE_STOP) {
+      if (isErrorPage(browser)) {
+        cancelLoader();
+        showColor(ERROR_PAGE_COLOR);
+      } else {
+        finishLoader();
+        for (const ms of LOADED_COLOR_CHECKS_MS) {
+          scheduleColor(ms);
+        }
+      }
+      updateTitle();
+    }
+  }
+
+  function onPageLocationChange(browser, webProgress, request, location, flags) {
+    const { LOCATION_CHANGE_SAME_DOCUMENT, LOCATION_CHANGE_ERROR_PAGE } = Ci.nsIWebProgressListener;
+    if (!webProgress.isTopLevel) {
+      return;
+    }
+    redirectBlankNewTab(browser, location, flags);
+    keepNewTabAddressEmpty(browser, location);
+
+    if (flags & LOCATION_CHANGE_ERROR_PAGE) {
+      errorBrowsers.add(browser);
+    } else if (!(flags & LOCATION_CHANGE_SAME_DOCUMENT)) {
+      errorBrowsers.delete(browser);
+      scrollPositions.delete(browser);
+    }
+    if (browser !== gBrowser.selectedBrowser) {
+      return;
+    }
+    if (flags & LOCATION_CHANGE_ERROR_PAGE) {
+      cancelLoader();
+      showColor(ERROR_PAGE_COLOR);
+    } else if (flags & LOCATION_CHANGE_SAME_DOCUMENT) {
+      scheduleColor(SAME_PAGE_COLOR_CHECK_MS);
+    } else {
+      const known = rememberedSiteColor(browser);
+      if (known) {
+        applyColor(known);
+      }
+    }
+    updateTitle();
+  }
+
+  function watchUrlbarText(urlbar) {
     new MutationObserver(updateTitle).observe(urlbar, {
       attributes: true,
       attributeFilter: ["pageproxystate"],
@@ -422,13 +486,16 @@
     );
     gBrowser.tabContainer.addEventListener("TabSelect", () => requestAnimationFrame(rememberClosedText));
     window.addEventListener("resize", () => requestAnimationFrame(rememberClosedText));
-    setTimeout(rememberClosedText, 800);
+    setTimeout(rememberClosedText, CLOSED_TEXT_FIRST_MS);
     new MutationObserver(alignOpenedUrlbarSoon).observe(urlbar, {
       attributes: true,
       attributeFilter: ["breakout-extend"],
     });
     window.addEventListener("resize", alignOpenedUrlbarSoon);
+  }
 
+  // (after the tab and page listeners above, as they always have)
+  function startRemainingFeatures(urlbar) {
     safely("keepWholeUrlSelected", () => keepWholeUrlSelected(urlbar));
     safely("addCopyLinkButton", addCopyLinkButton);
     safely("addToastCloseButtons", addToastCloseButtons);
@@ -454,9 +521,6 @@
     safely("watchLiquidGlass", watchLiquidGlass);
     safely("fixSettingsConditions", fixSettingsConditions);
     safely("watchInstallCount", watchInstallCount);
-
-    updateColor();
-    updateTitle();
   }
 
   if (window.gBrowserInit?.delayedStartupFinished) {

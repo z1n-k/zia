@@ -1939,6 +1939,11 @@
     button.addEventListener("mouseleave", () => go(0));
     button.ziaReloadCut = go;
   }
+  // The space's name and icon moved up beside the window buttons (#zia-workspace-slot), drawn as
+  // Zia's own label, with the space's pinned-tab marks mirrored onto the slot.
+  // Used elsewhere: createWorkspaceSlot, placeWorkspaceIndicator.
+
+  const INDICATOR_RECHECK_MS = [500, 2000];
   let workspaceSlot = null;
   let movedIndicator = null;
   let movedFromSpace = null;
@@ -1974,8 +1979,9 @@
     watchPrefs("zen.workspaces.active", onSpaceSwitch);
     gBrowser.tabContainer.addEventListener("TabSelect", onSpaceSwitch);
     placeWorkspaceIndicator();
-    setTimeout(placeWorkspaceIndicator, 500);
-    setTimeout(placeWorkspaceIndicator, 2000);
+    for (const ms of INDICATOR_RECHECK_MS) {
+      setTimeout(placeWorkspaceIndicator, ms);
+    }
   }
 
   function syncSpaceLabel(indicator) {
@@ -2003,6 +2009,11 @@
     const hasIcon = visibleIcon !== "";
     const icon = hasIcon ? rawIcon.trim() : "";
 
+    syncSpaceName(label, workspace);
+    syncSpaceIcon(label, hasIcon, icon);
+  }
+
+  function syncSpaceName(label, workspace) {
     const blank = /^[\ufe00-\ufe0f\s\u200b-\u200f\u2060]+|[\ufe00-\ufe0f\s\u200b-\u200f\u2060]+$/gu;
     let text = label.querySelector(".zia-space-name");
     if (!text) {
@@ -2012,7 +2023,9 @@
       label.appendChild(text);
     }
     text.textContent = (workspace.name || "").replace(blank, "");
+  }
 
+  function syncSpaceIcon(label, hasIcon, icon) {
     const mark = label.querySelector(".zia-space-svg");
     for (const name of ["zia-icon", "zia-has-icon", "zia-has-svg"]) {
       label.removeAttribute(name);
@@ -2045,6 +2058,10 @@
     }
     svgSlot.dataset.src = icon;
     svgSlot.replaceChildren();
+    drawSpaceSvg(svgSlot, icon);
+  }
+
+  function drawSpaceSvg(svgSlot, icon) {
     fetch(icon)
       .then((response) => response.text())
       .then((source) => {
@@ -3637,12 +3654,20 @@
     }
   }
 
-  let edgeFrame = null;
-  let edgeRetryTimer = null;
-  let edgeRetries = 0;
+  // The tabs' and folders' edges lined up with the essentials' (measured, and set as --zia-*-fix
+  // variables, tried again while things are still sliding), and the tab list's scrollbar hidden.
+  // Used elsewhere: watchRightEdges, hideTabListScrollbars.
+
   const EDGE_MAX_FIX = 24;
   const EDGE_RETRY_MS = 100;
   const EDGE_MAX_RETRIES = 30;
+  const EDGE_AFTER_SWITCH_MS = [350, 800];
+  const EDGE_AFTER_START_MS = [600, 2000];
+  const edgeAlign = {
+    frame: null,
+    retryTimer: null,
+    retries: 0,
+  };
 
   function visibleRect(el) {
     const rect = el?.getBoundingClientRect();
@@ -3666,12 +3691,12 @@
   }
 
   function retryEdgeAlignSoon() {
-    if (edgeRetryTimer || edgeRetries >= EDGE_MAX_RETRIES) {
+    if (edgeAlign.retryTimer || edgeAlign.retries >= EDGE_MAX_RETRIES) {
       return;
     }
-    edgeRetries++;
-    edgeRetryTimer = setTimeout(() => {
-      edgeRetryTimer = null;
+    edgeAlign.retries++;
+    edgeAlign.retryTimer = setTimeout(() => {
+      edgeAlign.retryTimer = null;
       scheduleEdgeAlign(true);
     }, EDGE_RETRY_MS);
   }
@@ -3679,27 +3704,14 @@
   const halfPx = (value) => `${Math.round(value * 2) / 2}px`;
 
   function alignRightEdges() {
-    edgeFrame = null;
+    edgeAlign.frame = null;
     const sidebar = document.getElementById("navigator-toolbox");
     if (!sidebar || document.documentElement.getAttribute("zen-sidebar-expanded") !== "true") {
       return;
     }
 
-    let essentialsRight = null;
-    let essentialsLeft = null;
-    let essentialTile = null;
-    // only the essentials on screen: other spaces' are kept too, some shifted
-    // aside, and measuring those pushed the tabs out past the sidebar's edge
-    const grid = window.gZenWorkspaces?.getCurrentEssentialsContainer?.() || document.getElementById("zen-essentials");
-    for (const bg of grid?.querySelectorAll(".tabbrowser-tab[zen-essential] > .tab-stack > .tab-background") || []) {
-      const rect = bg.checkVisibility?.({ visibilityProperty: true, opacityProperty: true }) === false ? null : visibleRect(bg);
-      if (rect) {
-        essentialTile ||= bg;
-        essentialsRight = Math.max(essentialsRight ?? -Infinity, rect.right);
-        essentialsLeft = Math.min(essentialsLeft ?? Infinity, rect.left);
-      }
-    }
-    if (essentialsRight === null) {
+    const essentials = essentialsEdges();
+    if (essentials.right === null) {
       for (const name of ["--zia-tab-right-fix", "--zia-folder-right-fix", "--zia-folder-left-fix"]) {
         root.style.removeProperty(name);
       }
@@ -3708,11 +3720,10 @@
     }
 
     const space = gZenWorkspaces?.activeWorkspaceElement || sidebar;
-    if ((isSliding(space) || isSliding(essentialTile)) && edgeRetries < EDGE_MAX_RETRIES) {
+    if ((isSliding(space) || isSliding(essentials.tile)) && edgeAlign.retries < EDGE_MAX_RETRIES) {
       retryEdgeAlignSoon();
       return;
     }
-    const currentFix = (name) => parseFloat(root.style.getPropertyValue(name)) || 0;
     let suspicious = false;
     const tab = [...space.querySelectorAll(".tabbrowser-tab:not([zen-essential])")].find(
       (t) => !t.closest(FOLDER_SELECTOR) && visibleRect(t.querySelector(".tab-background"))
@@ -3720,33 +3731,16 @@
     // (a tab still opening is measured once it's in place: measured as it
     // came in, the tabs kept a wrong right edge until the sidebar was
     // resized)
-    if (tab && (isSliding(tab) || tab.getAnimations().length) && edgeRetries < EDGE_MAX_RETRIES) {
+    if (tab && (isSliding(tab) || tab.getAnimations().length) && edgeAlign.retries < EDGE_MAX_RETRIES) {
       retryEdgeAlignSoon();
       return;
     }
-    if (tab) {
-      const rect = visibleRect(tab.querySelector(".tab-background"));
-      const fix = rect.right + currentFix("--zia-tab-right-fix") - essentialsRight;
-      if (Math.abs(fix) <= EDGE_MAX_FIX) {
-        root.style.setProperty("--zia-tab-right-fix", halfPx(fix));
-      } else {
-        suspicious = true;
-      }
+    if (tab && !alignTabEdge(tab, essentials)) {
+      suspicious = true;
     }
-
-    const folder = [...space.querySelectorAll(FOLDER_SELECTOR)].find((f) => !f.parentElement?.closest(FOLDER_SELECTOR) && visibleRect(f));
-    if (folder) {
-      const rect = visibleRect(folder);
-      const rightFix = rect.right - essentialsRight;
-      const leftFix = essentialsLeft - rect.left;
-      if (Math.abs(rightFix) <= EDGE_MAX_FIX && Math.abs(leftFix) <= EDGE_MAX_FIX) {
-        root.style.setProperty("--zia-folder-right-fix", halfPx(rightFix));
-        root.style.setProperty("--zia-folder-left-fix", halfPx(leftFix));
-      } else {
-        suspicious = true;
-      }
+    if (!alignFolderEdges(space, essentials)) {
+      suspicious = true;
     }
-
     if (!alignFolderBottoms(space)) {
       suspicious = true;
     }
@@ -3754,8 +3748,55 @@
     if (suspicious) {
       retryEdgeAlignSoon();
     } else {
-      edgeRetries = 0;
+      edgeAlign.retries = 0;
     }
+  }
+
+  // The essentials' outer edges, and the first tile, of those on screen
+  function essentialsEdges() {
+    let right = null;
+    let left = null;
+    let tile = null;
+    // only the essentials on screen: other spaces' are kept too, some shifted
+    // aside, and measuring those pushed the tabs out past the sidebar's edge
+    const grid = window.gZenWorkspaces?.getCurrentEssentialsContainer?.() || document.getElementById("zen-essentials");
+    for (const bg of grid?.querySelectorAll(".tabbrowser-tab[zen-essential] > .tab-stack > .tab-background") || []) {
+      const rect = bg.checkVisibility?.({ visibilityProperty: true, opacityProperty: true }) === false ? null : visibleRect(bg);
+      if (rect) {
+        tile ||= bg;
+        right = Math.max(right ?? -Infinity, rect.right);
+        left = Math.min(left ?? Infinity, rect.left);
+      }
+    }
+    return { right, left, tile };
+  }
+
+  // false where the fix is too big to trust (measured mid-move)
+  function alignTabEdge(tab, essentials) {
+    const rect = visibleRect(tab.querySelector(".tab-background"));
+    const currentFix = parseFloat(root.style.getPropertyValue("--zia-tab-right-fix")) || 0;
+    const fix = rect.right + currentFix - essentials.right;
+    if (Math.abs(fix) <= EDGE_MAX_FIX) {
+      root.style.setProperty("--zia-tab-right-fix", halfPx(fix));
+      return true;
+    }
+    return false;
+  }
+
+  function alignFolderEdges(space, essentials) {
+    const folder = [...space.querySelectorAll(FOLDER_SELECTOR)].find((f) => !f.parentElement?.closest(FOLDER_SELECTOR) && visibleRect(f));
+    if (!folder) {
+      return true;
+    }
+    const rect = visibleRect(folder);
+    const rightFix = rect.right - essentials.right;
+    const leftFix = essentials.left - rect.left;
+    if (Math.abs(rightFix) <= EDGE_MAX_FIX && Math.abs(leftFix) <= EDGE_MAX_FIX) {
+      root.style.setProperty("--zia-folder-right-fix", halfPx(rightFix));
+      root.style.setProperty("--zia-folder-left-fix", halfPx(leftFix));
+      return true;
+    }
+    return false;
   }
 
   function alignFolderBottoms(space) {
@@ -3798,17 +3839,18 @@
 
   function scheduleEdgeAlign(isRetry = false) {
     if (isRetry !== true) {
-      edgeRetries = 0;
+      edgeAlign.retries = 0;
     }
-    if (!edgeFrame) {
-      edgeFrame = requestAnimationFrame(alignRightEdges);
+    if (!edgeAlign.frame) {
+      edgeAlign.frame = requestAnimationFrame(alignRightEdges);
     }
   }
 
   function scheduleEdgeAlignAfterSwitch() {
     scheduleEdgeAlign();
-    setTimeout(scheduleEdgeAlign, 350);
-    setTimeout(scheduleEdgeAlign, 800);
+    for (const ms of EDGE_AFTER_SWITCH_MS) {
+      setTimeout(scheduleEdgeAlign, ms);
+    }
   }
 
   function watchRightEdges() {
@@ -3845,8 +3887,9 @@
     watchPrefs("zen.workspaces.active", onSpaceSwitch);
     window.addEventListener("ZenWorkspacesUIUpdate", onSpaceSwitch);
     scheduleEdgeAlign();
-    setTimeout(scheduleEdgeAlign, 600);
-    setTimeout(scheduleEdgeAlign, 2000);
+    for (const ms of EDGE_AFTER_START_MS) {
+      setTimeout(scheduleEdgeAlign, ms);
+    }
   }
 
   // No scrollbar down the tab list: Zen gives each space's list its own
@@ -6575,30 +6618,42 @@
     }
   }
 
+  // The defaults Zia gives its own settings and some of Zen's and Firefox's, and the old values
+  // it puts right once.
+  // Used elsewhere: applyZenDefaults.
+
   function applyZenDefaults() {
-    const defaults = Services.prefs.getDefaultBranch("");
-    const set = (name, value) => {
-      try {
-        defaults.setBoolPref(name, value);
-      } catch (err) {
-        console.error(`[Zia] Could not set default for ${name}:`, err);
-      }
-    };
     // The icon names cached for the Phosphor icons (before 2.42.0) aren't
     // used any more; the Tabler ones have their own file.
     IOUtils.remove(PathUtils.join(PathUtils.profileDir, "zia-icon-vectors.json"), { ignoreAbsent: true }).catch(() => {});
-    set("zen.widget.mac.mono-window-controls", false);
-    set("zen.urlbar.replace-newtab", !Services.prefs.getBoolPref("zia.newtab.real-tab", true));
-    set("zen.splitView.enable-tab-drop", !Services.prefs.getBoolPref("zia.split.drop-cards", true));
+    setZenAndUrlbarDefaults();
+    setFeatureDefaults();
+    undoOldDefaultsOnce();
+    keepPipSettingInStep();
+    setLookDefaults();
+  }
+
+  function setDefault(name, value) {
+    try {
+      Services.prefs.getDefaultBranch("").setBoolPref(name, value);
+    } catch (err) {
+      console.error(`[Zia] Could not set default for ${name}:`, err);
+    }
+  }
+
+  function setZenAndUrlbarDefaults() {
+    setDefault("zen.widget.mac.mono-window-controls", false);
+    setDefault("zen.urlbar.replace-newtab", !Services.prefs.getBoolPref("zia.newtab.real-tab", true));
+    setDefault("zen.splitView.enable-tab-drop", !Services.prefs.getBoolPref("zia.split.drop-cards", true));
     // (not with "Full address" on, which shows the address as it is, #519; a choice of your own
     // in about:config stays)
-    const trimHttps = () => set("browser.urlbar.trimHttps", !Services.prefs.getBoolPref("zia.urlbar.full-url", false));
+    const trimHttps = () => setDefault("browser.urlbar.trimHttps", !Services.prefs.getBoolPref("zia.urlbar.full-url", false));
     trimHttps();
     watchPrefs("zia.urlbar.full-url", trimHttps);
     // answers in the address bar: maths, and units and time zones (Firefox's own)
-    set("browser.urlbar.suggest.calculator", true);
-    set("browser.urlbar.unitConversion.enabled", true);
-    set("browser.urlbar.untrimOnUserInteraction.featureGate", false);
+    setDefault("browser.urlbar.suggest.calculator", true);
+    setDefault("browser.urlbar.unitConversion.enabled", true);
+    setDefault("browser.urlbar.untrimOnUserInteraction.featureGate", false);
     try {
       Services.prefs.setBoolPref("browser.urlbar.untrimOnUserInteraction", false);
       // (trimHttps was written as your own choice at every start, which outranked the default
@@ -6611,24 +6666,30 @@
     } catch (err) {
       noteError("zen defaults: set", err);
     }
-    set("zia.install-count", true);
+  }
+
+  function setFeatureDefaults() {
+    setDefault("zia.install-count", true);
     for (const feature of FEATURES) {
-      set(`zia.features.${feature}`, true);
+      setDefault(`zia.features.${feature}`, true);
     }
     // Ultra's effects, on unless switched off (the stylesheet reads it too)
-    set("zia.ultra", true);
+    setDefault("zia.ultra", true);
     // Downloads a model the first time, so it's something to opt into
-    set("zia.features.folder-icon-suggest", false);
+    setDefault("zia.features.folder-icon-suggest", false);
 
     for (const name of ZIA_OPTIONS) {
-      set(name, true);
+      setDefault(name, true);
     }
-    set("zia.tabs.favicon-glow", false);
-    set("zia.tabs.no-pin-slash", false);
-    set("zia.swipe.dia-arrow", true);
+    setDefault("zia.tabs.favicon-glow", false);
+    setDefault("zia.tabs.no-pin-slash", false);
+    setDefault("zia.swipe.dia-arrow", true);
+  }
+
+  function undoOldDefaultsOnce() {
     // Dimming asleep tabs was on by default for a few releases and is now
     // off: switched off once for anyone who had it from then.
-    set("zia.tabs.dim-asleep", false);
+    setDefault("zia.tabs.dim-asleep", false);
     try {
       if (!Services.prefs.getBoolPref("zia.tabs.dim-asleep-reset", false)) {
         Services.prefs.clearUserPref("zia.tabs.dim-asleep");
@@ -6649,20 +6710,26 @@
     } catch (err) {
       noteError("zen defaults: acrylic", err);
     }
-    // Optional: a playing video goes picture-in-picture as its tab is left (Firefox's own).
-    // Zia's setting starts as Firefox's is and passes on a change made in Zia's settings,
-    // so one made in Firefox's own stays.
+  }
+
+  // Optional: a playing video goes picture-in-picture as its tab is left (Firefox's own).
+  // Zia's setting starts as Firefox's is and passes on a change made in Zia's settings,
+  // so one made in Firefox's own stays.
+  function keepPipSettingInStep() {
     const FIREFOX_FOR_ZIA = {
       "zia.pip.auto-on-tab-switch": ["media.videocontrols.picture-in-picture.enable-when-switching-tabs.enabled", false],
     };
     for (const [zia, [firefox, fallback]] of Object.entries(FIREFOX_FOR_ZIA)) {
-      set(zia, Services.prefs.getBoolPref(firefox, fallback));
+      setDefault(zia, Services.prefs.getBoolPref(firefox, fallback));
     }
     watchPrefs(Object.keys(FIREFOX_FOR_ZIA), (_subject, _topic, zia) => {
       Services.prefs.setBoolPref(FIREFOX_FOR_ZIA[zia][0], Services.prefs.getBoolPref(zia));
     });
-    set("zia.urlbar.zia-look", true);
-    set("zia.glass", false);
+  }
+
+  function setLookDefaults() {
+    setDefault("zia.urlbar.zia-look", true);
+    setDefault("zia.glass", false);
     // 2.95.11's "Zen's own address bar" is now "Zia's address bar", the other
     // way round, as the other options are: anyone who'd turned Zen's on
     // keeps it
@@ -6675,17 +6742,17 @@
       noteError("zen defaults: address bar look", err);
     }
     // the ⋯ menu at the end of the toolbar, shown unless it's been switched off
-    set("zia.toolbar.menu-button", true);
-    set("zia.essentials.fill-row", false);
-    set("zia.essentials.split", true);
-    set("zia.pip.dia-style", true);
-    set("zia.pip.tuck", true);
-    set("zia.multiview", true);
+    setDefault("zia.toolbar.menu-button", true);
+    setDefault("zia.essentials.fill-row", false);
+    setDefault("zia.essentials.split", true);
+    setDefault("zia.pip.dia-style", true);
+    setDefault("zia.pip.tuck", true);
+    setDefault("zia.multiview", true);
     // Dia's picture-in-picture has skip buttons and a progress line, which
     // Firefox only shows with its improved controls.
-    set("media.videocontrols.picture-in-picture.improved-video-controls.enabled", true);
+    setDefault("media.videocontrols.picture-in-picture.improved-video-controls.enabled", true);
     try {
-      defaults.setStringPref("zia.urlbar.position", "top");
+      Services.prefs.getDefaultBranch("").setStringPref("zia.urlbar.position", "top");
     } catch (err) {
       noteError("zen defaults: set (2)", err);
     }
@@ -8138,102 +8205,28 @@
     };
   }
 
+  // Compact mode: the sidebar's top row (and macOS's window buttons) moved up into the title bar,
+  // the panel marked open while the sidebar's out, and the top bar cut away under the sidebar.
+  // Used elsewhere: watchCompactTopRow.
+
+  const SIDEBAR_SHOWN_ATTRS = ["zen-has-hover", "zen-user-show", "zen-has-empty-tab", "flash-popup", "has-popup-menu", "movingtab", "zen-compact-mode-active"];
+  const compactTop = {
+    toolbox: null,
+    coverFrame: 0,
+    coverStill: 0,
+    coverLast: "",
+  };
+  const inCompactMode = () => root.getAttribute("zen-compact-mode") === "true";
+
   function watchCompactTopRow() {
     const navBar = document.getElementById("nav-bar");
     if (!navBar) {
       return;
     }
-    const inCompactMode = () => root.getAttribute("zen-compact-mode") === "true";
-
-    function moveTopRow() {
-      if (!inCompactMode()) {
-        return;
-      }
-      const titlebar = document.getElementById("titlebar");
-      const topButtons = document.getElementById("zen-sidebar-top-buttons");
-      if (!titlebar || !topButtons) {
-        return;
-      }
-      if (topButtons.parentElement !== titlebar) {
-        titlebar.prepend(topButtons);
-      }
-      // Windows' minimise, maximise and close stay top right, where Zen puts
-      // them; only macOS's traffic lights join the sidebar's top row.
-      if (window.gZenVerticalTabsManager?.isWindowsStyledButtons) {
-        return;
-      }
-      const buttons = window.gZenVerticalTabsManager?.actualWindowButtons;
-      if (buttons && buttons.parentElement !== topButtons) {
-        topButtons.prepend(buttons);
-      }
-    }
-
     new MutationObserver(moveTopRow).observe(navBar, { childList: true });
 
     const toolbox = document.getElementById("navigator-toolbox");
-    const SIDEBAR_SHOWN_ATTRS = ["zen-has-hover", "zen-user-show", "zen-has-empty-tab", "flash-popup", "has-popup-menu", "movingtab", "zen-compact-mode-active"];
-
-    function syncPanelOpen() {
-      const shown = inCompactMode() && !!toolbox && SIDEBAR_SHOWN_ATTRS.some((name) => toolbox.hasAttribute(name));
-      setFlag("zia-panel-open", shown);
-      followCover();
-    }
-
-    // The top toolbar stays up while the sidebar is out, cut away only where
-    // the sidebar covers it (see-through, the address showed through it).
-    // It follows the sidebar as it slides, frame by frame, until it settles.
-    const covered = () => [
-      document.getElementById("zen-appcontent-navbar-container"),
-      document.getElementById("urlbar"),
-    ].filter((el) => el && !toolbox?.contains(el));
-    function cutUnder(el, over) {
-      let start = 0;
-      let end = 0;
-      if (over && el.getAttribute("breakout-extend") !== "true") {
-        const box = el.getBoundingClientRect();
-        const across = over.bottom > box.top && over.top < box.bottom && over.right > box.left && over.left < box.right;
-        if (across) {
-          const onLeft = over.left + over.width / 2 < window.innerWidth / 2;
-          start = onLeft ? Math.min(box.width, Math.max(0, over.right - box.left)) : 0;
-          end = onLeft ? 0 : Math.min(box.width, Math.max(0, box.right - over.left));
-        }
-      }
-      const clip = start || end ? `inset(0 ${Math.ceil(end)}px 0 ${Math.ceil(start)}px)` : "";
-      if (el.style.clipPath !== clip) {
-        el.style.clipPath = clip;
-      }
-      return clip;
-    }
-    let coverFrame = 0;
-    let coverStill = 0;
-    let coverLast = "";
-    function cover() {
-      coverFrame = 0;
-      // (shown, or sliding in or out: hidden, it's off screen and unseen)
-      const out = inCompactMode() && toolbox && getComputedStyle(toolbox).visibility !== "hidden";
-      let over = null;
-      if (out) {
-        // (the sidebar's own card: the toolbox's padding round it is clear)
-        const box = toolbox.getBoundingClientRect();
-        const style = getComputedStyle(toolbox);
-        const left = box.left + (parseFloat(style.paddingLeft) || 0);
-        const right = box.right - (parseFloat(style.paddingRight) || 0);
-        over = { left, right, top: box.top, bottom: box.bottom, width: Math.max(0, right - left) };
-      }
-      const now = covered().map((el) => cutUnder(el, over && over.width ? over : null)).join("|");
-      coverStill = now === coverLast ? coverStill + 1 : 0;
-      coverLast = now;
-      if (coverStill < 8) {
-        coverFrame = requestAnimationFrame(cover);
-      }
-    }
-    function followCover() {
-      coverStill = 0;
-      if (!coverFrame) {
-        coverFrame = requestAnimationFrame(cover);
-      }
-    }
-
+    compactTop.toolbox = toolbox;
     if (toolbox) {
       new MutationObserver(syncPanelOpen).observe(toolbox, { attributes: true, attributeFilter: SIDEBAR_SHOWN_ATTRS });
     }
@@ -8251,6 +8244,95 @@
 
     moveTopRow();
     syncPanelOpen();
+  }
+
+  function moveTopRow() {
+    if (!inCompactMode()) {
+      return;
+    }
+    const titlebar = document.getElementById("titlebar");
+    const topButtons = document.getElementById("zen-sidebar-top-buttons");
+    if (!titlebar || !topButtons) {
+      return;
+    }
+    if (topButtons.parentElement !== titlebar) {
+      titlebar.prepend(topButtons);
+    }
+    // Windows' minimise, maximise and close stay top right, where Zen puts
+    // them; only macOS's traffic lights join the sidebar's top row.
+    if (window.gZenVerticalTabsManager?.isWindowsStyledButtons) {
+      return;
+    }
+    const buttons = window.gZenVerticalTabsManager?.actualWindowButtons;
+    if (buttons && buttons.parentElement !== topButtons) {
+      topButtons.prepend(buttons);
+    }
+  }
+
+  function syncPanelOpen() {
+    const { toolbox } = compactTop;
+    const shown = inCompactMode() && !!toolbox && SIDEBAR_SHOWN_ATTRS.some((name) => toolbox.hasAttribute(name));
+    setFlag("zia-panel-open", shown);
+    followCover();
+  }
+
+  // The top toolbar stays up while the sidebar is out, cut away only where
+  // the sidebar covers it (see-through, the address showed through it).
+  // It follows the sidebar as it slides, frame by frame, until it settles.
+  function coveredBars() {
+    const { toolbox } = compactTop;
+    return [
+      document.getElementById("zen-appcontent-navbar-container"),
+      document.getElementById("urlbar"),
+    ].filter((el) => el && !toolbox?.contains(el));
+  }
+
+  function cutUnderSidebar(el, over) {
+    let start = 0;
+    let end = 0;
+    if (over && el.getAttribute("breakout-extend") !== "true") {
+      const box = el.getBoundingClientRect();
+      const across = over.bottom > box.top && over.top < box.bottom && over.right > box.left && over.left < box.right;
+      if (across) {
+        const onLeft = over.left + over.width / 2 < window.innerWidth / 2;
+        start = onLeft ? Math.min(box.width, Math.max(0, over.right - box.left)) : 0;
+        end = onLeft ? 0 : Math.min(box.width, Math.max(0, box.right - over.left));
+      }
+    }
+    const clip = start || end ? `inset(0 ${Math.ceil(end)}px 0 ${Math.ceil(start)}px)` : "";
+    if (el.style.clipPath !== clip) {
+      el.style.clipPath = clip;
+    }
+    return clip;
+  }
+
+  function cutCoveredBars() {
+    const { toolbox } = compactTop;
+    compactTop.coverFrame = 0;
+    // (shown, or sliding in or out: hidden, it's off screen and unseen)
+    const out = inCompactMode() && toolbox && getComputedStyle(toolbox).visibility !== "hidden";
+    let over = null;
+    if (out) {
+      // (the sidebar's own card: the toolbox's padding round it is clear)
+      const box = toolbox.getBoundingClientRect();
+      const style = getComputedStyle(toolbox);
+      const left = box.left + (parseFloat(style.paddingLeft) || 0);
+      const right = box.right - (parseFloat(style.paddingRight) || 0);
+      over = { left, right, top: box.top, bottom: box.bottom, width: Math.max(0, right - left) };
+    }
+    const now = coveredBars().map((el) => cutUnderSidebar(el, over && over.width ? over : null)).join("|");
+    compactTop.coverStill = now === compactTop.coverLast ? compactTop.coverStill + 1 : 0;
+    compactTop.coverLast = now;
+    if (compactTop.coverStill < 8) {
+      compactTop.coverFrame = requestAnimationFrame(cutCoveredBars);
+    }
+  }
+
+  function followCover() {
+    compactTop.coverStill = 0;
+    if (!compactTop.coverFrame) {
+      compactTop.coverFrame = requestAnimationFrame(cutCoveredBars);
+    }
   }
 
   const ICON_SYNONYMS = {
@@ -23118,6 +23200,23 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     setTimeout(countInstallToday, 60 * 1000);
     setInterval(countInstallToday, 4 * 60 * 60 * 1000);
   }
+  // Zia's start: every feature wired up in turn once the window is ready, each on its own so
+  // one failing leaves the rest working. Also here: Zen's haptics muted for a drag, the pinned
+  // tabs' line, tabs that can't unload, the sidebar kept from scrolling sideways, and the
+  // selected tab's edge glow.
+  // Used elsewhere: safely, zenHaptic, HAPTIC_PREF, hapticsWereOn, muteZenHaptics, canUnload,
+  // currentSeparator.
+
+  // (a drag's haptics put back this long after the pointer's let go, if it never finished)
+  const HAPTICS_SETTLE_MS = 800;
+  const EDGE_GLOW_RECHECK_MS = 250;
+  const EDGE_GLOW_AFTER_DRAG_MS = 450;
+  const EDGE_GLOW_POLL_MS = 1000;
+  const SELECT_COLOR_CHECKS_MS = [60, 400];
+  const LOADED_COLOR_CHECKS_MS = [50, 800, 2000, 4500];
+  const SAME_PAGE_COLOR_CHECK_MS = 150;
+  const CLOSED_TEXT_FIRST_MS = 800;
+
   function safely(name, fn) {
     try {
       fn();
@@ -23198,7 +23297,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
         if (hapticsWereOn !== null && !dragging) {
           muteZenHaptics(false);
         }
-      }, 800);
+      }, HAPTICS_SETTLE_MS);
     };
     for (const type of ["dragend", "drop", "mouseup"]) {
       window.addEventListener(type, settle, true);
@@ -23294,17 +23393,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
         window.gZenWorkspaces?.activeWorkspaceStrip,
       ].filter(Boolean);
       if (sections.length) {
-        const rows = [];
-        for (const section of sections) {
-          for (const row of section.querySelectorAll(
-            ".tabbrowser-tab:not([zen-essential], [zen-empty-tab], [hidden]), .tab-group-label-container"
-          )) {
-            const box = row.getBoundingClientRect();
-            if (box.height > 4 && row.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) !== false) {
-              rows.push(row);
-            }
-          }
-        }
+        const rows = shownRowsIn(sections);
         if (rows[0] === tab || (split && split.contains(rows[0]))) {
           glowing.setAttribute("zia-no-glow", "true");
         }
@@ -23314,23 +23403,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
       if (!mine.height) {
         return;
       }
-      let above = false;
-      for (const row of document.querySelectorAll(
-        "#tabbrowser-tabs .tabbrowser-tab:not([zen-essential], [zen-empty-tab], [hidden]), #tabbrowser-tabs .tab-group-label-container"
-      )) {
-        if (row === tab || (split && split.contains(row))) {
-          continue;
-        }
-        const box = row.getBoundingClientRect();
-        if (!box.height || !box.width || box.right <= mine.left || box.left >= mine.right) {
-          continue;
-        }
-        if (row.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) === false) {
-          continue;
-        }
-        above ||= box.bottom <= mine.top + 1;
-      }
-      if (!above) {
+      if (!hasRowAbove(tab, split, mine)) {
         glowing.setAttribute("zia-no-glow", "true");
       }
     };
@@ -23339,7 +23412,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
       if (!pending) {
         pending = requestAnimationFrame(update);
       }
-      setTimeout(update, 250);
+      setTimeout(update, EDGE_GLOW_RECHECK_MS);
     };
     for (const type of [
       "TabSelect", "TabOpen", "TabClose", "TabMove", "TabPinned", "TabUnpinned", "TabGrouped",
@@ -23347,18 +23420,70 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     ]) {
       gBrowser.tabContainer.addEventListener(type, soon);
     }
-    window.addEventListener("dragend", () => setTimeout(soon, 450), true);
+    window.addEventListener("dragend", () => setTimeout(soon, EDGE_GLOW_AFTER_DRAG_MS), true);
 
-    setInterval(update, 1000);
+    setInterval(update, EDGE_GLOW_POLL_MS);
     soon();
   }
 
+  function shownRowsIn(sections) {
+    const rows = [];
+    for (const section of sections) {
+      for (const row of section.querySelectorAll(
+        ".tabbrowser-tab:not([zen-essential], [zen-empty-tab], [hidden]), .tab-group-label-container"
+      )) {
+        const box = row.getBoundingClientRect();
+        if (box.height > 4 && row.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) !== false) {
+          rows.push(row);
+        }
+      }
+    }
+    return rows;
+  }
+
+  function hasRowAbove(tab, split, mine) {
+    let above = false;
+    for (const row of document.querySelectorAll(
+      "#tabbrowser-tabs .tabbrowser-tab:not([zen-essential], [zen-empty-tab], [hidden]), #tabbrowser-tabs .tab-group-label-container"
+    )) {
+      if (row === tab || (split && split.contains(row))) {
+        continue;
+      }
+      const box = row.getBoundingClientRect();
+      if (!box.height || !box.width || box.right <= mine.left || box.left >= mine.right) {
+        continue;
+      }
+      if (row.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) === false) {
+        continue;
+      }
+      above ||= box.bottom <= mine.top + 1;
+    }
+    return above;
+  }
+
+  // Each phase starts its features in the order they've always started (applyZenDefaults
+  // first of all: the others read the defaults it sets)
   function start() {
     if (isLittleZenWindow()) {
       return;
     }
     const urlbar = gURLBar.textbox || document.getElementById("urlbar");
 
+    startSettingsAndPages();
+    startTabsAndFolders();
+    startMediaAndSplits();
+    startPanelsAndAddressBar();
+    startIconsFoldersAndEssentials();
+    watchTabSwitch();
+    watchPageLoads();
+    watchUrlbarText(urlbar);
+    startRemainingFeatures(urlbar);
+
+    updateColor();
+    updateTitle();
+  }
+
+  function startSettingsAndPages() {
     safely("applyZenDefaults", applyZenDefaults);
     safely("setupIconPack", setupIconPack);
     safely("watchOptions", watchOptions);
@@ -23367,6 +23492,9 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     safely("watchMultiview", watchMultiview);
     safely("watchNewTabPage", watchNewTabPage);
     safely("createWorkspaceSlot", createWorkspaceSlot);
+  }
+
+  function startTabsAndFolders() {
     safely("watchTabAnimations", watchTabAnimations);
     safely("closeSplitTabsInPlace", closeSplitTabsInPlace);
     safely("moveTabsLikeDia", moveTabsLikeDia);
@@ -23386,6 +23514,9 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     safely("addSettingsMenuItem", addSettingsMenuItem);
     safely("hideWwwInUrlbar", hideWwwInUrlbar);
     safely("watchRightEdges", watchRightEdges);
+  }
+
+  function startMediaAndSplits() {
     ifOn("media-player", "watchMediaGlow", watchMediaGlow);
     ifOn("media-player", "cardForPositionlessMedia", cardForPositionlessMedia);
     safely("keepMediaCardsInPlace", keepMediaCardsInPlace);
@@ -23398,6 +23529,9 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     safely("animateEssentialsAdds", animateEssentialsAdds);
     ifOn("undo-close", "watchUndoClose", watchUndoClose);
     ifOn("tab-numbers", "watchTabNumbers", watchTabNumbers);
+  }
+
+  function startPanelsAndAddressBar() {
     safely("watchWelcome", watchWelcome);
     safely("watchGlanceThumbs", watchGlanceThumbs);
     safely("watchButtonTooltips", watchButtonTooltips);
@@ -23418,6 +23552,9 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     safely("flyFirstDownloadToButton", flyFirstDownloadToButton);
     safely("flyDownloadRows", flyDownloadRows);
     safely("watchDownloadDialog", watchDownloadDialog);
+  }
+
+  function startIconsFoldersAndEssentials() {
     ifOn("icon-picker", "addIconPicker", addIconPicker);
     safely("watchCompactTopRow", watchCompactTopRow);
     safely("watchOldIcons", watchOldIcons);
@@ -23436,7 +23573,9 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     safely("watchSidebarPaint", watchSidebarPaint);
     safely("watchWindowButtonsSide", watchWindowButtonsSide);
     safely("addTabHoverCards", addTabHoverCards);
+  }
 
+  function watchTabSwitch() {
     gBrowser.tabContainer.addEventListener("TabSelect", () => {
       const browser = gBrowser.selectedBrowser;
       if (isLoading(browser) && !isErrorPage(browser)) {
@@ -23445,8 +23584,9 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
         cancelLoader();
       }
       snapColorForTab(browser);
-      scheduleColor(60);
-      scheduleColor(400);
+      for (const ms of SELECT_COLOR_CHECKS_MS) {
+        scheduleColor(ms);
+      }
       updateTitle();
     });
 
@@ -23455,39 +23595,11 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
         updateTitle();
       }
     });
+  }
 
-    const { STATE_START, STATE_STOP, STATE_IS_WINDOW } = Ci.nsIWebProgressListener;
-    const { LOCATION_CHANGE_SAME_DOCUMENT, LOCATION_CHANGE_ERROR_PAGE } = Ci.nsIWebProgressListener;
-
+  function watchPageLoads() {
     gBrowser.addTabsProgressListener({
-      onStateChange(browser, webProgress, request, stateFlags) {
-        if (webProgress.isTopLevel && stateFlags & STATE_START) {
-          blankLoadingNewTabAddress(browser, request);
-        }
-        if (!webProgress.isTopLevel || !(stateFlags & STATE_IS_WINDOW)) {
-          return;
-        }
-        if (browser !== gBrowser.selectedBrowser) {
-          return;
-        }
-        if (stateFlags & STATE_START) {
-          scrollPositions.delete(browser);
-          startLoader();
-          colorRequestId++;
-        } else if (stateFlags & STATE_STOP) {
-          if (isErrorPage(browser)) {
-            cancelLoader();
-            showColor(ERROR_PAGE_COLOR);
-          } else {
-            finishLoader();
-            scheduleColor(50);
-            scheduleColor(800);
-            scheduleColor(2000);
-            scheduleColor(4500);
-          }
-          updateTitle();
-        }
-      },
+      onStateChange: onPageStateChange,
 
       onProgressChange(browser, webProgress, request, curSelf, maxSelf, curTotal, maxTotal) {
         if (browser === gBrowser.selectedBrowser && maxTotal > 0) {
@@ -23495,37 +23607,71 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
         }
       },
 
-      onLocationChange(browser, webProgress, request, location, flags) {
-        if (!webProgress.isTopLevel) {
-          return;
-        }
-        redirectBlankNewTab(browser, location, flags);
-        keepNewTabAddressEmpty(browser, location);
-
-        if (flags & LOCATION_CHANGE_ERROR_PAGE) {
-          errorBrowsers.add(browser);
-        } else if (!(flags & LOCATION_CHANGE_SAME_DOCUMENT)) {
-          errorBrowsers.delete(browser);
-          scrollPositions.delete(browser);
-        }
-        if (browser !== gBrowser.selectedBrowser) {
-          return;
-        }
-        if (flags & LOCATION_CHANGE_ERROR_PAGE) {
-          cancelLoader();
-          showColor(ERROR_PAGE_COLOR);
-        } else if (flags & LOCATION_CHANGE_SAME_DOCUMENT) {
-          scheduleColor(150);
-        } else {
-          const known = rememberedSiteColor(browser);
-          if (known) {
-            applyColor(known);
-          }
-        }
-        updateTitle();
-      },
+      onLocationChange: onPageLocationChange,
     });
+  }
 
+  function onPageStateChange(browser, webProgress, request, stateFlags) {
+    const { STATE_START, STATE_STOP, STATE_IS_WINDOW } = Ci.nsIWebProgressListener;
+    if (webProgress.isTopLevel && stateFlags & STATE_START) {
+      blankLoadingNewTabAddress(browser, request);
+    }
+    if (!webProgress.isTopLevel || !(stateFlags & STATE_IS_WINDOW)) {
+      return;
+    }
+    if (browser !== gBrowser.selectedBrowser) {
+      return;
+    }
+    if (stateFlags & STATE_START) {
+      scrollPositions.delete(browser);
+      startLoader();
+      colorRequestId++;
+    } else if (stateFlags & STATE_STOP) {
+      if (isErrorPage(browser)) {
+        cancelLoader();
+        showColor(ERROR_PAGE_COLOR);
+      } else {
+        finishLoader();
+        for (const ms of LOADED_COLOR_CHECKS_MS) {
+          scheduleColor(ms);
+        }
+      }
+      updateTitle();
+    }
+  }
+
+  function onPageLocationChange(browser, webProgress, request, location, flags) {
+    const { LOCATION_CHANGE_SAME_DOCUMENT, LOCATION_CHANGE_ERROR_PAGE } = Ci.nsIWebProgressListener;
+    if (!webProgress.isTopLevel) {
+      return;
+    }
+    redirectBlankNewTab(browser, location, flags);
+    keepNewTabAddressEmpty(browser, location);
+
+    if (flags & LOCATION_CHANGE_ERROR_PAGE) {
+      errorBrowsers.add(browser);
+    } else if (!(flags & LOCATION_CHANGE_SAME_DOCUMENT)) {
+      errorBrowsers.delete(browser);
+      scrollPositions.delete(browser);
+    }
+    if (browser !== gBrowser.selectedBrowser) {
+      return;
+    }
+    if (flags & LOCATION_CHANGE_ERROR_PAGE) {
+      cancelLoader();
+      showColor(ERROR_PAGE_COLOR);
+    } else if (flags & LOCATION_CHANGE_SAME_DOCUMENT) {
+      scheduleColor(SAME_PAGE_COLOR_CHECK_MS);
+    } else {
+      const known = rememberedSiteColor(browser);
+      if (known) {
+        applyColor(known);
+      }
+    }
+    updateTitle();
+  }
+
+  function watchUrlbarText(urlbar) {
     new MutationObserver(updateTitle).observe(urlbar, {
       attributes: true,
       attributeFilter: ["pageproxystate"],
@@ -23542,13 +23688,16 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     );
     gBrowser.tabContainer.addEventListener("TabSelect", () => requestAnimationFrame(rememberClosedText));
     window.addEventListener("resize", () => requestAnimationFrame(rememberClosedText));
-    setTimeout(rememberClosedText, 800);
+    setTimeout(rememberClosedText, CLOSED_TEXT_FIRST_MS);
     new MutationObserver(alignOpenedUrlbarSoon).observe(urlbar, {
       attributes: true,
       attributeFilter: ["breakout-extend"],
     });
     window.addEventListener("resize", alignOpenedUrlbarSoon);
+  }
 
+  // (after the tab and page listeners above, as they always have)
+  function startRemainingFeatures(urlbar) {
     safely("keepWholeUrlSelected", () => keepWholeUrlSelected(urlbar));
     safely("addCopyLinkButton", addCopyLinkButton);
     safely("addToastCloseButtons", addToastCloseButtons);
@@ -23574,9 +23723,6 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     safely("watchLiquidGlass", watchLiquidGlass);
     safely("fixSettingsConditions", fixSettingsConditions);
     safely("watchInstallCount", watchInstallCount);
-
-    updateColor();
-    updateTitle();
   }
 
   if (window.gBrowserInit?.delayedStartupFinished) {

@@ -1,3 +1,8 @@
+  // The space's name and icon moved up beside the window buttons (#zia-workspace-slot), drawn as
+  // Zia's own label, with the space's pinned-tab marks mirrored onto the slot.
+  // Used elsewhere: createWorkspaceSlot, placeWorkspaceIndicator.
+
+  const INDICATOR_RECHECK_MS = [500, 2000];
   let workspaceSlot = null;
   let movedIndicator = null;
   let movedFromSpace = null;
@@ -33,8 +38,9 @@
     watchPrefs("zen.workspaces.active", onSpaceSwitch);
     gBrowser.tabContainer.addEventListener("TabSelect", onSpaceSwitch);
     placeWorkspaceIndicator();
-    setTimeout(placeWorkspaceIndicator, 500);
-    setTimeout(placeWorkspaceIndicator, 2000);
+    for (const ms of INDICATOR_RECHECK_MS) {
+      setTimeout(placeWorkspaceIndicator, ms);
+    }
   }
 
   function syncSpaceLabel(indicator) {
@@ -62,6 +68,11 @@
     const hasIcon = visibleIcon !== "";
     const icon = hasIcon ? rawIcon.trim() : "";
 
+    syncSpaceName(label, workspace);
+    syncSpaceIcon(label, hasIcon, icon);
+  }
+
+  function syncSpaceName(label, workspace) {
     const blank = /^[\ufe00-\ufe0f\s\u200b-\u200f\u2060]+|[\ufe00-\ufe0f\s\u200b-\u200f\u2060]+$/gu;
     let text = label.querySelector(".zia-space-name");
     if (!text) {
@@ -71,7 +82,9 @@
       label.appendChild(text);
     }
     text.textContent = (workspace.name || "").replace(blank, "");
+  }
 
+  function syncSpaceIcon(label, hasIcon, icon) {
     const mark = label.querySelector(".zia-space-svg");
     for (const name of ["zia-icon", "zia-has-icon", "zia-has-svg"]) {
       label.removeAttribute(name);
@@ -104,6 +117,10 @@
     }
     svgSlot.dataset.src = icon;
     svgSlot.replaceChildren();
+    drawSpaceSvg(svgSlot, icon);
+  }
+
+  function drawSpaceSvg(svgSlot, icon) {
     fetch(icon)
       .then((response) => response.text())
       .then((source) => {

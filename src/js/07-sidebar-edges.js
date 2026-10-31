@@ -1,9 +1,17 @@
-  let edgeFrame = null;
-  let edgeRetryTimer = null;
-  let edgeRetries = 0;
+  // The tabs' and folders' edges lined up with the essentials' (measured, and set as --zia-*-fix
+  // variables, tried again while things are still sliding), and the tab list's scrollbar hidden.
+  // Used elsewhere: watchRightEdges, hideTabListScrollbars.
+
   const EDGE_MAX_FIX = 24;
   const EDGE_RETRY_MS = 100;
   const EDGE_MAX_RETRIES = 30;
+  const EDGE_AFTER_SWITCH_MS = [350, 800];
+  const EDGE_AFTER_START_MS = [600, 2000];
+  const edgeAlign = {
+    frame: null,
+    retryTimer: null,
+    retries: 0,
+  };
 
   function visibleRect(el) {
     const rect = el?.getBoundingClientRect();
@@ -27,12 +35,12 @@
   }
 
   function retryEdgeAlignSoon() {
-    if (edgeRetryTimer || edgeRetries >= EDGE_MAX_RETRIES) {
+    if (edgeAlign.retryTimer || edgeAlign.retries >= EDGE_MAX_RETRIES) {
       return;
     }
-    edgeRetries++;
-    edgeRetryTimer = setTimeout(() => {
-      edgeRetryTimer = null;
+    edgeAlign.retries++;
+    edgeAlign.retryTimer = setTimeout(() => {
+      edgeAlign.retryTimer = null;
       scheduleEdgeAlign(true);
     }, EDGE_RETRY_MS);
   }
@@ -40,27 +48,14 @@
   const halfPx = (value) => `${Math.round(value * 2) / 2}px`;
 
   function alignRightEdges() {
-    edgeFrame = null;
+    edgeAlign.frame = null;
     const sidebar = document.getElementById("navigator-toolbox");
     if (!sidebar || document.documentElement.getAttribute("zen-sidebar-expanded") !== "true") {
       return;
     }
 
-    let essentialsRight = null;
-    let essentialsLeft = null;
-    let essentialTile = null;
-    // only the essentials on screen: other spaces' are kept too, some shifted
-    // aside, and measuring those pushed the tabs out past the sidebar's edge
-    const grid = window.gZenWorkspaces?.getCurrentEssentialsContainer?.() || document.getElementById("zen-essentials");
-    for (const bg of grid?.querySelectorAll(".tabbrowser-tab[zen-essential] > .tab-stack > .tab-background") || []) {
-      const rect = bg.checkVisibility?.({ visibilityProperty: true, opacityProperty: true }) === false ? null : visibleRect(bg);
-      if (rect) {
-        essentialTile ||= bg;
-        essentialsRight = Math.max(essentialsRight ?? -Infinity, rect.right);
-        essentialsLeft = Math.min(essentialsLeft ?? Infinity, rect.left);
-      }
-    }
-    if (essentialsRight === null) {
+    const essentials = essentialsEdges();
+    if (essentials.right === null) {
       for (const name of ["--zia-tab-right-fix", "--zia-folder-right-fix", "--zia-folder-left-fix"]) {
         root.style.removeProperty(name);
       }
@@ -69,11 +64,10 @@
     }
 
     const space = gZenWorkspaces?.activeWorkspaceElement || sidebar;
-    if ((isSliding(space) || isSliding(essentialTile)) && edgeRetries < EDGE_MAX_RETRIES) {
+    if ((isSliding(space) || isSliding(essentials.tile)) && edgeAlign.retries < EDGE_MAX_RETRIES) {
       retryEdgeAlignSoon();
       return;
     }
-    const currentFix = (name) => parseFloat(root.style.getPropertyValue(name)) || 0;
     let suspicious = false;
     const tab = [...space.querySelectorAll(".tabbrowser-tab:not([zen-essential])")].find(
       (t) => !t.closest(FOLDER_SELECTOR) && visibleRect(t.querySelector(".tab-background"))
@@ -81,33 +75,16 @@
     // (a tab still opening is measured once it's in place: measured as it
     // came in, the tabs kept a wrong right edge until the sidebar was
     // resized)
-    if (tab && (isSliding(tab) || tab.getAnimations().length) && edgeRetries < EDGE_MAX_RETRIES) {
+    if (tab && (isSliding(tab) || tab.getAnimations().length) && edgeAlign.retries < EDGE_MAX_RETRIES) {
       retryEdgeAlignSoon();
       return;
     }
-    if (tab) {
-      const rect = visibleRect(tab.querySelector(".tab-background"));
-      const fix = rect.right + currentFix("--zia-tab-right-fix") - essentialsRight;
-      if (Math.abs(fix) <= EDGE_MAX_FIX) {
-        root.style.setProperty("--zia-tab-right-fix", halfPx(fix));
-      } else {
-        suspicious = true;
-      }
+    if (tab && !alignTabEdge(tab, essentials)) {
+      suspicious = true;
     }
-
-    const folder = [...space.querySelectorAll(FOLDER_SELECTOR)].find((f) => !f.parentElement?.closest(FOLDER_SELECTOR) && visibleRect(f));
-    if (folder) {
-      const rect = visibleRect(folder);
-      const rightFix = rect.right - essentialsRight;
-      const leftFix = essentialsLeft - rect.left;
-      if (Math.abs(rightFix) <= EDGE_MAX_FIX && Math.abs(leftFix) <= EDGE_MAX_FIX) {
-        root.style.setProperty("--zia-folder-right-fix", halfPx(rightFix));
-        root.style.setProperty("--zia-folder-left-fix", halfPx(leftFix));
-      } else {
-        suspicious = true;
-      }
+    if (!alignFolderEdges(space, essentials)) {
+      suspicious = true;
     }
-
     if (!alignFolderBottoms(space)) {
       suspicious = true;
     }
@@ -115,8 +92,55 @@
     if (suspicious) {
       retryEdgeAlignSoon();
     } else {
-      edgeRetries = 0;
+      edgeAlign.retries = 0;
     }
+  }
+
+  // The essentials' outer edges, and the first tile, of those on screen
+  function essentialsEdges() {
+    let right = null;
+    let left = null;
+    let tile = null;
+    // only the essentials on screen: other spaces' are kept too, some shifted
+    // aside, and measuring those pushed the tabs out past the sidebar's edge
+    const grid = window.gZenWorkspaces?.getCurrentEssentialsContainer?.() || document.getElementById("zen-essentials");
+    for (const bg of grid?.querySelectorAll(".tabbrowser-tab[zen-essential] > .tab-stack > .tab-background") || []) {
+      const rect = bg.checkVisibility?.({ visibilityProperty: true, opacityProperty: true }) === false ? null : visibleRect(bg);
+      if (rect) {
+        tile ||= bg;
+        right = Math.max(right ?? -Infinity, rect.right);
+        left = Math.min(left ?? Infinity, rect.left);
+      }
+    }
+    return { right, left, tile };
+  }
+
+  // false where the fix is too big to trust (measured mid-move)
+  function alignTabEdge(tab, essentials) {
+    const rect = visibleRect(tab.querySelector(".tab-background"));
+    const currentFix = parseFloat(root.style.getPropertyValue("--zia-tab-right-fix")) || 0;
+    const fix = rect.right + currentFix - essentials.right;
+    if (Math.abs(fix) <= EDGE_MAX_FIX) {
+      root.style.setProperty("--zia-tab-right-fix", halfPx(fix));
+      return true;
+    }
+    return false;
+  }
+
+  function alignFolderEdges(space, essentials) {
+    const folder = [...space.querySelectorAll(FOLDER_SELECTOR)].find((f) => !f.parentElement?.closest(FOLDER_SELECTOR) && visibleRect(f));
+    if (!folder) {
+      return true;
+    }
+    const rect = visibleRect(folder);
+    const rightFix = rect.right - essentials.right;
+    const leftFix = essentials.left - rect.left;
+    if (Math.abs(rightFix) <= EDGE_MAX_FIX && Math.abs(leftFix) <= EDGE_MAX_FIX) {
+      root.style.setProperty("--zia-folder-right-fix", halfPx(rightFix));
+      root.style.setProperty("--zia-folder-left-fix", halfPx(leftFix));
+      return true;
+    }
+    return false;
   }
 
   function alignFolderBottoms(space) {
@@ -159,17 +183,18 @@
 
   function scheduleEdgeAlign(isRetry = false) {
     if (isRetry !== true) {
-      edgeRetries = 0;
+      edgeAlign.retries = 0;
     }
-    if (!edgeFrame) {
-      edgeFrame = requestAnimationFrame(alignRightEdges);
+    if (!edgeAlign.frame) {
+      edgeAlign.frame = requestAnimationFrame(alignRightEdges);
     }
   }
 
   function scheduleEdgeAlignAfterSwitch() {
     scheduleEdgeAlign();
-    setTimeout(scheduleEdgeAlign, 350);
-    setTimeout(scheduleEdgeAlign, 800);
+    for (const ms of EDGE_AFTER_SWITCH_MS) {
+      setTimeout(scheduleEdgeAlign, ms);
+    }
   }
 
   function watchRightEdges() {
@@ -206,8 +231,9 @@
     watchPrefs("zen.workspaces.active", onSpaceSwitch);
     window.addEventListener("ZenWorkspacesUIUpdate", onSpaceSwitch);
     scheduleEdgeAlign();
-    setTimeout(scheduleEdgeAlign, 600);
-    setTimeout(scheduleEdgeAlign, 2000);
+    for (const ms of EDGE_AFTER_START_MS) {
+      setTimeout(scheduleEdgeAlign, ms);
+    }
   }
 
   // No scrollbar down the tab list: Zen gives each space's list its own
