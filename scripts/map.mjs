@@ -1,7 +1,7 @@
 // docs/MAP.md, made from the code: every part of zia.uc.js and chrome.css with what its first
 // comment says it owns, what other parts use from it, the Zen and Firefox methods it replaces
-// (patchMethod, patchDefined) and the settings it reads. Run it after changing src/; CI runs it with --check
-// and fails if the map is out of date.
+// (patchMethod, patchDefined) and the settings it reads. Run it after changing src/; CI runs it
+// with --check and fails if the map is out of date.
 //
 //   node scripts/map.mjs            write docs/MAP.md
 //   node scripts/map.mjs --check    fail if docs/MAP.md isn't what the code says
