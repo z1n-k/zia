@@ -2464,6 +2464,25 @@
     window.addEventListener("unload", () => Services.obs.removeObserver(applyNewTabPage, "browser-search-engine-modified"));
   }
 
+  // Tabs opening and closing, and Zen's folder slides turned into Zia's spring: every animation
+  // the window starts goes through addFolderBounce's Element.prototype.animate.
+  // Used elsewhere: closeSplitTabsInPlace, watchTabAnimations, addFolderBounce, FOLDER_SELECTOR,
+  // isFolder, cubicBezier, animateFolderHeight.
+
+  const TAB_OPENING_MS = 350;
+  const ESSENTIAL_ENTER_MS = 450;
+  // Zen's even 0.18s folder slide becomes a spring: quick in, a pixel or two past (the
+  // same whatever the folder's size), then back. Opening, the box stretches past;
+  // closing, what's below bounces up. Only the slide of the folder's start changes.
+  const FOLDER_SPRING_MS = 420;
+  const FOLDER_OVERSHOOT_PX = 2;
+  const FOLDER_CLOSE_BOUNCE_PX = 1.5;
+  const FOLDER_SELECTOR = "zen-folder, tab-group:not([split-view-group])";
+  // (closing, the tabs in it fading out in place)
+  const FOLDER_FADE_MS = 220;
+  // (a close stopped this recently left the height to reopen from)
+  const KEPT_HEIGHT_MS = 100;
+
   // Closing one of a split's two tabs: Zen unsplits first, so the closing one shrank
   // as a row and the other slid up from under it, a jump. It goes at once instead.
   function closeSplitTabsInPlace() {
@@ -2487,7 +2506,7 @@
         return;
       }
       tab.setAttribute("zia-opening", "true");
-      setTimeout(() => tab.removeAttribute("zia-opening"), 350);
+      setTimeout(() => tab.removeAttribute("zia-opening"), TAB_OPENING_MS);
     });
 
     const essentials = document.getElementById("zen-essentials");
@@ -2506,19 +2525,11 @@
             continue;
           }
           node.setAttribute("zia-essential-enter", "true");
-          setTimeout(() => node.removeAttribute("zia-essential-enter"), 450);
+          setTimeout(() => node.removeAttribute("zia-essential-enter"), ESSENTIAL_ENTER_MS);
         }
       }
     }).observe(essentials, { childList: true, subtree: true });
   }
-
-  // Zen's even 0.18s folder slide becomes a spring: quick in, a pixel or two past (the
-  // same whatever the folder's size), then back. Opening, the box stretches past;
-  // closing, what's below bounces up. Only the slide of the folder's start changes.
-  const FOLDER_SPRING_MS = 420;
-  const FOLDER_OVERSHOOT_PX = 2;
-  const FOLDER_CLOSE_BOUNCE_PX = 1.5;
-  const FOLDER_SELECTOR = "zen-folder, tab-group:not([split-view-group])";
 
   // The spring moved by fractions of a pixel, and the box's 1px outline fades for a
   // frame between pixels, so its bottom edge flickered: the motion is held steps,
@@ -2602,7 +2613,8 @@
   const isFolder = (el) =>
     el?.localName === "zen-folder" || (el?.localName === "tab-group" && !el.hasAttribute("split-view-group"));
 
-  function springFolderAnimation(element, keyframes, options) {
+  // The folder (or space) whose start this slide moves, or null for any other animation
+  function slidingFolder(element, keyframes, options) {
     // (a space's pinned tabs, hidden by clicking its name, are a folder to Zen too:
     // the same start and slide, so the tabs below spring the same way)
     const spaceStart = element.classList?.contains("space-fake-collapsible-start");
@@ -2616,25 +2628,10 @@
     // Clicked open and shut quickly, Zen's ends go stale (opening "from 0 to 0"): the
     // way comes from the folder, and the ends from where open (0) and shut really are
     const folder = spaceStart ? element.closest("zen-workspace") : element.parentElement.parentElement;
-    if (!folder) {
-      return null;
-    }
-    // With a tab selected inside, Zen shows just that tab and the other tabs' own
-    // animations carry the motion (springFolderItem), so Zen's slide is left as it was.
-    // The same for a space's pinned tabs holding the selected tab (or one kept showing):
-    // Zen's slide goes nowhere then, and Zia's slid the whole section up out of sight,
-    // that tab with it, for it to snap back once done (and opening, down from nothing)
-    const holdsShown = spaceStart
-      ? folder.collapsiblePins?.hasAttribute("has-active") || element.parentElement.contains(gBrowser.selectedTab)
-      : folder.hasAttribute("has-active") || folder.contains(gBrowser.selectedTab);
-    if (holdsShown) {
-      element.parentElement.ziaHold?.();
-      return null;
-    }
-    const closing = spaceStart ? folder.hasAttribute("collapsedpinnedtabs") : folder.hasAttribute("collapsed");
-    // (a folder whose one showing tab was just dragged out of it already
-    // looks shut: its room closes, without the bounce, 28-tab-dragging)
-    const lentOut = (folder.ziaLentUntil || 0) > Date.now();
+    return folder ? { folder, spaceStart } : null;
+  }
+
+  function slideEnds(element, spaceStart, keyframes, closing) {
     const zenFrom = parseFloat(keyframes[0]?.marginTop);
     const zenTo = parseFloat(keyframes[1]?.marginTop);
     // (a space's pinned section keeps its bottom line when hidden: shut by its whole
@@ -2651,6 +2648,32 @@
     // else, the tabs below jumped the difference as Zen's took over)
     const zenShut = Number.isFinite(zenTo) && zenTo < 0;
     const to = closing ? (spaceStart && zenShut ? zenTo : zenShut ? Math.min(zenTo, shut) : shut) : 0;
+    return { from, to };
+  }
+
+  function springFolderAnimation(element, keyframes, options) {
+    const sliding = slidingFolder(element, keyframes, options);
+    if (!sliding) {
+      return null;
+    }
+    const { folder, spaceStart } = sliding;
+    // With a tab selected inside, Zen shows just that tab and the other tabs' own
+    // animations carry the motion (springFolderItem), so Zen's slide is left as it was.
+    // The same for a space's pinned tabs holding the selected tab (or one kept showing):
+    // Zen's slide goes nowhere then, and Zia's slid the whole section up out of sight,
+    // that tab with it, for it to snap back once done (and opening, down from nothing)
+    const holdsShown = spaceStart
+      ? folder.collapsiblePins?.hasAttribute("has-active") || element.parentElement.contains(gBrowser.selectedTab)
+      : folder.hasAttribute("has-active") || folder.contains(gBrowser.selectedTab);
+    if (holdsShown) {
+      element.parentElement.ziaHold?.();
+      return null;
+    }
+    const closing = spaceStart ? folder.hasAttribute("collapsedpinnedtabs") : folder.hasAttribute("collapsed");
+    // (a folder whose one showing tab was just dragged out of it already
+    // looks shut: its room closes, without the bounce, 28-tab-dragging)
+    const lentOut = (folder.ziaLentUntil || 0) > Date.now();
+    const { from, to } = slideEnds(element, spaceStart, keyframes, closing);
     // Spring off: Zen's own timing, but still the folder opening over its
     // tabs (holdFolderContents); the setting is for the bounce only
     // (a folder just dropped into it opens it, its room already made by the drag: at
@@ -2707,10 +2730,37 @@
     // kept when that close was stopped a moment ago
     const kept = container.ziaShown;
     container.ziaShown = null;
-    const fromHeight = kept && performance.now() - kept.at < 100 ? kept.height : container.getBoundingClientRect().height;
+    const fromHeight = kept && performance.now() - kept.at < KEPT_HEIGHT_MS ? kept.height : container.getBoundingClientRect().height;
     container.ziaHold?.();
-    // to the measured height open or shut, not the margin's: Zen's ends go stale, and an
-    // empty folder's margin moves just a few pixels, which stepped the height
+    const { openHeight, toHeight } = measureFolderHeights(start, container, closing);
+    // Shut, the margin takes everything in the folder out of sight (Zen's
+    // own end can fall short when it's turned round part way)
+    const shut = Math.min(to, -openHeight);
+    // Already there: nothing moves (Zen's own slide would move the tabs)
+    if (!(Math.abs(toHeight - fromHeight) > 0.5)) {
+      const still = `${closing ? shut : 0}px`;
+      return [{ marginTop: still }, { marginTop: still }];
+    }
+    const heights = folderHeightSteps(spring, fromHeight, toHeight);
+    const margin = closing
+      ? [{ marginTop: "0px" }, { marginTop: "0px", offset: 0.999 }, { marginTop: `${shut}px` }]
+      : [{ marginTop: "0px" }, { marginTop: "0px" }];
+
+    const items = [...container.children].filter((child) => child !== start);
+    const fades = closing
+      ? items.map((item) =>
+          animate.call(item, [{ opacity: 1 }, { opacity: 0 }], { duration: FOLDER_FADE_MS, easing: "ease-in", fill: "forwards" })
+        )
+      : [];
+    container.setAttribute("zia-folder-holding", "true");
+    const growing = animate.call(container, heights, { duration: spring.options.duration, easing: spring.options.easing || "linear" });
+    holdUntilSettled({ container, start, shut, closing, animate, fades, growing, done: false });
+    return margin;
+  }
+
+  // to the measured height open or shut, not the margin's: Zen's ends go stale, and an
+  // empty folder's margin moves just a few pixels, which stepped the height
+  function measureFolderHeights(start, container, closing) {
     const saved = start.style.marginTop;
     start.style.marginTop = "0px";
     const openHeight = container.getBoundingClientRect().height;
@@ -2720,15 +2770,11 @@
       toHeight = container.getBoundingClientRect().height;
     }
     start.style.marginTop = saved;
-    // Shut, the margin takes everything in the folder out of sight (Zen's
-    // own end can fall short when it's turned round part way)
-    const shut = Math.min(to, -openHeight);
-    // Already there: nothing moves (Zen's own slide would move the tabs)
-    if (!(Math.abs(toHeight - fromHeight) > 0.5)) {
-      const still = `${closing ? shut : 0}px`;
-      return [{ marginTop: still }, { marginTop: still }];
-    }
-    const heights = spring.plain
+    return { openHeight, toHeight };
+  }
+
+  function folderHeightSteps(spring, fromHeight, toHeight) {
+    return spring.plain
       ? [{ height: `${fromHeight}px` }, { height: `${toHeight}px` }]
       : pixelSteps(
           "height",
@@ -2740,99 +2786,101 @@
           spring.options.duration,
           toHeight
         );
-    const margin = closing
-      ? [{ marginTop: "0px" }, { marginTop: "0px", offset: 0.999 }, { marginTop: `${shut}px` }]
-      : [{ marginTop: "0px" }, { marginTop: "0px" }];
+  }
 
-    const items = [...container.children].filter((child) => child !== start);
-    const fades = closing
-      ? items.map((item) =>
-          animate.call(item, [{ opacity: 1 }, { opacity: 0 }], { duration: 220, easing: "ease-in", fill: "forwards" })
-        )
-      : [];
-    container.setAttribute("zia-folder-holding", "true");
-    const growing = animate.call(container, heights, { duration: spring.options.duration, easing: spring.options.easing || "linear" });
-    let done = false;
-    const unfade = () => {
-      for (const fade of fades) {
-        fade.cancel();
-      }
-      gBrowser.tabContainer.removeEventListener("TabSelect", onSelect);
-      window.removeEventListener("TabGroupExpand", onOpen, true);
-    };
+  // The folder held at its moving height until the move is done, or let go sooner
+  // (container.ziaHold) when another move takes over
+  function holdUntilSettled(hold) {
+    const { container, closing, growing } = hold;
     // (however it's opened: not every opening comes through here)
-    const onOpen = (event) => {
-      if (event.target !== container.parentElement) {
-        return;
-      }
-      // Opened again part way through closing: it grows back from where it got to, not
-      // snapping open (Zen doesn't animate it, its margin never having got to closed)
-      const midway = growing.playState === "running";
-      const shown = container.getBoundingClientRect().height;
-      // (for Zen's opening animation, which comes just after)
-      container.ziaShown = { height: shown, at: performance.now() };
-      stop();
-      if (!midway) {
-        return;
-      }
-      requestAnimationFrame(() => {
-        if (container.ziaHold || !container.isConnected) {
-          return;
-        }
-        const full = container.getBoundingClientRect().height;
-        if (Math.abs(full - shown) < 1) {
-          return;
-        }
-        animateFolderHeight(container, shown, full, { duration: FOLDER_SPRING_MS, easing: "cubic-bezier(0.25, 1, 0.5, 1)" }, animate);
-      });
-    };
+    hold.onOpen = (event) => reopenHeldFolder(hold, event);
     // A tab selected inside the closed folder is shown by Zen: it can't
     // stay faded out
-    const onSelect = () => {
+    hold.onSelect = () => {
       if (container.contains(gBrowser.selectedTab)) {
-        unfade();
+        unfadeHeldFolder(hold);
       }
     };
-    const stop = () => {
-      if (done) {
-        return;
-      }
-      done = true;
-      if (container.ziaHold === stop) {
-        container.ziaHold = null;
-      }
-      container.removeAttribute("zia-folder-holding");
-      growing.cancel();
-      unfade();
-    };
-    container.ziaHold = stop;
+    hold.stop = () => stopHoldingFolder(hold);
+    container.ziaHold = hold.stop;
     // Closing, it's watched for opening again: that opening needn't come back through
     // here, and the tabs were left faded out in an open folder
     if (closing) {
-      window.addEventListener("TabGroupExpand", onOpen, true);
+      window.addEventListener("TabGroupExpand", hold.onOpen, true);
     }
-    growing.finished.then(() => {
-      if (!closing || !container.parentElement?.hasAttribute("collapsed")) {
-        stop();
+    growing.finished.then(() => settleHeldFolder(hold), () => {});
+  }
+
+  function unfadeHeldFolder(hold) {
+    for (const fade of hold.fades) {
+      fade.cancel();
+    }
+    gBrowser.tabContainer.removeEventListener("TabSelect", hold.onSelect);
+    window.removeEventListener("TabGroupExpand", hold.onOpen, true);
+  }
+
+  function stopHoldingFolder(hold) {
+    if (hold.done) {
+      return;
+    }
+    hold.done = true;
+    const { container } = hold;
+    if (container.ziaHold === hold.stop) {
+      container.ziaHold = null;
+    }
+    container.removeAttribute("zia-folder-holding");
+    hold.growing.cancel();
+    unfadeHeldFolder(hold);
+  }
+
+  function reopenHeldFolder(hold, event) {
+    const { container, growing, animate } = hold;
+    if (event.target !== container.parentElement) {
+      return;
+    }
+    // Opened again part way through closing: it grows back from where it got to, not
+    // snapping open (Zen doesn't animate it, its margin never having got to closed)
+    const midway = growing.playState === "running";
+    const shown = container.getBoundingClientRect().height;
+    // (for Zen's opening animation, which comes just after)
+    container.ziaShown = { height: shown, at: performance.now() };
+    stopHoldingFolder(hold);
+    if (!midway) {
+      return;
+    }
+    requestAnimationFrame(() => {
+      if (container.ziaHold || !container.isConnected) {
         return;
       }
-      // Closed, the tabs stay faded out: Zen leaves them just above the folder, where they
-      // flashed over the rows above. They come back as it opens again or one is selected.
-      // It's shut all the way whatever end Zen keeps: Zen writes its own (short, turned
-      // round part way) just after, so this waits a frame, before anything's drawn.
-      requestAnimationFrame(() => {
-        if (done || !container.parentElement?.hasAttribute("collapsed")) {
-          return;
-        }
-        if (parseFloat(getComputedStyle(start).marginTop) > shut + 0.5) {
-          start.style.marginTop = `${shut}px`;
-        }
-        container.removeAttribute("zia-folder-holding");
-        growing.cancel();
-      });
-      gBrowser.tabContainer.addEventListener("TabSelect", onSelect);
-    }, () => {});
-    return margin;
+      const full = container.getBoundingClientRect().height;
+      if (Math.abs(full - shown) < 1) {
+        return;
+      }
+      animateFolderHeight(container, shown, full, { duration: FOLDER_SPRING_MS, easing: "cubic-bezier(0.25, 1, 0.5, 1)" }, animate);
+    });
+  }
+
+  function settleHeldFolder(hold) {
+    const { container, start, shut, closing, growing } = hold;
+    if (!closing || !container.parentElement?.hasAttribute("collapsed")) {
+      stopHoldingFolder(hold);
+      return;
+    }
+    // Closed, the tabs stay faded out: Zen leaves them just above the folder, where they
+    // flashed over the rows above. They come back as it opens again or one is selected.
+    // It's shut all the way whatever end Zen keeps: Zen writes its own (short, turned
+    // round part way) just after, so this waits a frame, before anything's drawn.
+    requestAnimationFrame(() => {
+      if (hold.done || !container.parentElement?.hasAttribute("collapsed")) {
+        return;
+      }
+      if (parseFloat(getComputedStyle(start).marginTop) > shut + 0.5) {
+        start.style.marginTop = `${shut}px`;
+      }
+      container.removeAttribute("zia-folder-holding");
+      growing.cancel();
+    });
+    gBrowser.tabContainer.addEventListener("TabSelect", hold.onSelect);
   }
 
   // With a tab selected inside, Zen shrinks the other tabs away (or grows them back)
@@ -2884,11 +2932,25 @@
     if (!props.includes("height")) {
       return null;
     }
-    const scale = window.devicePixelRatio || 1;
-    // Growing back to its own size ("auto"): to the size it has open, measured,
-    // and handed back to auto at the end. Held at the size it started at till
-    // then, the tabs faded in squashed onto one row and popped to their height
-    // once done.
+    const tracks = itemTracks(props, a, b, naturalSize(element, a, b));
+    if (!tracks || !bounceOn()) {
+      return null;
+    }
+    const frames = itemSpringFrames(tracks);
+    const bounce = motion.bounced ? null : { container, keyframes: itemBounce(motion) };
+    motion.bounced = true;
+    return {
+      bounce,
+      keyframes: frames,
+      options: { ...options, duration: FOLDER_SPRING_MS, easing: "linear" },
+    };
+  }
+
+  // Growing back to its own size ("auto"): to the size it has open, measured,
+  // and handed back to auto at the end. Held at the size it started at till
+  // then, the tabs faded in squashed onto one row and popped to their height
+  // once done.
+  function naturalSize(element, a, b) {
     const natural = {};
     if (Number.isFinite(parseFloat(a?.height)) && !Number.isFinite(parseFloat(b.height))) {
       const style = element.style;
@@ -2899,6 +2961,12 @@
       natural.minHeight = parseFloat(getComputedStyle(element).minHeight);
       [style.height, style.minHeight] = saved;
     }
+    return natural;
+  }
+
+  // Each property's way from Zen's first keyframe to its last, or null where the
+  // height doesn't move
+  function itemTracks(props, a, b, natural) {
     const tracks = [];
     for (const prop of props) {
       const from = parseFloat(a?.[prop]);
@@ -2922,9 +2990,11 @@
         tracks.push({ prop, hold: b[prop], end: b[prop] });
       }
     }
-    if (!bounceOn()) {
-      return null;
-    }
+    return tracks;
+  }
+
+  function itemSpringFrames(tracks) {
+    const scale = window.devicePixelRatio || 1;
     const count = Math.max(2, Math.ceil((FOLDER_SPRING_MS / 1000) * STEPS_PER_SECOND));
     const frames = [];
     for (let i = 0; i <= count; i++) {
@@ -2949,43 +3019,21 @@
       frames.push(frame);
     }
     delete frames.at(-1).easing;
-    const bounce = motion.bounced
-      ? null
-      : {
-          container,
-          keyframes: pixelSteps(
-            "marginBottom",
-            [
-              [0, 0, EASE_OUT],
-              [FOLDER_ARRIVE, motion.closing ? -FOLDER_CLOSE_BOUNCE_PX : FOLDER_OVERSHOOT_PX, EASE_IN_OUT],
-              [1, 0],
-            ],
-            FOLDER_SPRING_MS,
-            0
-          ),
-        };
-    motion.bounced = true;
-    return {
-      bounce,
-      keyframes: frames,
-      options: { ...options, duration: FOLDER_SPRING_MS, easing: "linear" },
-    };
+    return frames;
   }
 
-  function allowEmojiFolderIcons() {
-    const picker = window.gZenEmojiPicker;
-    if (!picker || typeof picker.open !== "function" || picker.open.__zia) {
-      return;
-    }
-    const original = picker.open;
-    const patched = function (anchor, options = {}) {
-      if (options?.onlySvgIcons && anchor?.closest?.("zen-folder")) {
-        options = { ...options, onlySvgIcons: false, emojiAsSVG: true };
-      }
-      return original.call(this, anchor, options);
-    };
-    patched.__zia = true;
-    picker.open = patched;
+  // The contents stretch past (opening) or pull up past (closing), then settle
+  function itemBounce(motion) {
+    return pixelSteps(
+      "marginBottom",
+      [
+        [0, 0, EASE_OUT],
+        [FOLDER_ARRIVE, motion.closing ? -FOLDER_CLOSE_BOUNCE_PX : FOLDER_OVERSHOOT_PX, EASE_IN_OUT],
+        [1, 0],
+      ],
+      FOLDER_SPRING_MS,
+      0
+    );
   }
 
   // Opening a folder that showed just its open tab, Zen restores the other tabs'
@@ -3095,27 +3143,19 @@
     window.addEventListener("TabGroupExpand", noteFolderMotion, true);
   }
 
-  function hideWwwInUrlbar() {
-    const original = gURLBar?._zenTrimURL;
-    if (typeof original !== "function" || original.__zia) {
-      return;
-    }
-    const wrapped = function (url) {
-      const trimmed = original.call(this, url);
-      return typeof trimmed === "string" ? plainAddress(trimmed) : trimmed;
-    };
-    wrapped.__zia = true;
-    gURLBar._zenTrimURL = wrapped;
-    try {
-      gURLBar.setURI();
-    } catch (err) {
-      noteError("tab animations and folder bounce: hideWwwInUrlbar", err);
-    }
-  }
+  // A closed folder showing its open tab: the other tabs kept out of sight as it lets go of
+  // that tab, folders inside it opened where they are, and open inner folders revealed.
+  // Used elsewhere: keepTabsHiddenAfterActiveLeaves, openKeptFolderNames, revealOpenSubfolders.
 
-  // A collapsed space keeps the names of folders its open tab is in
-  // (06-folders-and-sidebar.css), from collapsing until it has finished opening.
-  const SPACE_OPEN_MS = 700;
+  const OPEN_IN_CLOSED = "zia-open-in-closed";
+  // (while one shuts: its tabs still let show, for the shrink)
+  const CLOSING_IN_CLOSED = "zia-closing-in-closed";
+  const IN_CLOSED_MS = 200;
+  const IN_CLOSED_SETTLE_MS = IN_CLOSED_MS + 40;
+  // (the other tabs' fade, before the folder lets go of them)
+  const WAS_ACTIVE_MS = 170;
+  const REVEALING_MS = 500;
+  const FOLDER_RESIZE_MS = 220;
 
   // A closed folder showing its selected tab keeps the other tabs see-through. When Zen
   // stops showing the tab (unloaded, or a tab chosen elsewhere), they showed piled on one
@@ -3125,90 +3165,94 @@
     if (!tabs) {
       return;
     }
-    // (which tab it shows, and which folders in it keep their names: Zen
-    // may clear its own marks for them as it lets go)
-    const unmark = (folder) => {
-      for (const el of folder.querySelectorAll("[zia-kept-tab], [zia-keeps-name]")) {
-        el.removeAttribute("zia-kept-tab");
-        el.removeAttribute("zia-keeps-name");
+    new MutationObserver(onFolderActiveChange).observe(tabs, { subtree: true, attributes: true, attributeFilter: ["has-active"], attributeOldValue: true });
+    window.addEventListener("TabGroupExpand", onFolderShowingTabExpand, true);
+  }
+
+  // (which tab it shows, and which folders in it keep their names: Zen
+  // may clear its own marks for them as it lets go)
+  function unmarkKeptTab(folder) {
+    for (const el of folder.querySelectorAll("[zia-kept-tab], [zia-keeps-name]")) {
+      el.removeAttribute("zia-kept-tab");
+      el.removeAttribute("zia-keeps-name");
+    }
+  }
+
+  function markKeptTab(folder) {
+    unmarkKeptTab(folder);
+    for (const tab of folder.querySelectorAll('.tabbrowser-tab:is([selected], [folder-active="true"])')) {
+      tab.setAttribute("zia-kept-tab", "true");
+      for (let el = tab.parentElement?.closest(FOLDER_SELECTOR); el && el !== folder; el = el.parentElement?.closest(FOLDER_SELECTOR)) {
+        el.setAttribute("zia-keeps-name", "true");
       }
-    };
-    const mark = (folder) => {
-      unmark(folder);
-      for (const tab of folder.querySelectorAll('.tabbrowser-tab:is([selected], [folder-active="true"])')) {
-        tab.setAttribute("zia-kept-tab", "true");
-        for (let el = tab.parentElement?.closest(FOLDER_SELECTOR); el && el !== folder; el = el.parentElement?.closest(FOLDER_SELECTOR)) {
-          el.setAttribute("zia-keeps-name", "true");
-        }
+    }
+  }
+
+  function clearWasActive(folder) {
+    clearTimeout(folder.ziaWasActiveTimer);
+    folder.removeAttribute("zia-was-active");
+    unmarkKeptTab(folder);
+  }
+
+  // Faded out, the folder lets go of them: Zen had already pulled them
+  // out of sight, all at once, and the folder's box shrinks to match
+  function settleAfterActiveLeaves(folder) {
+    const container = folder.groupContainer;
+    const before = container?.getBoundingClientRect().height ?? 0;
+    clearWasActive(folder);
+    if (!container || container.ziaHold || !folder.hasAttribute("collapsed")) {
+      return;
+    }
+    const after = container.getBoundingClientRect().height;
+    if (before - after < 0.5) {
+      return;
+    }
+    animateFolderHeight(container, before, after, { duration: FOLDER_RESIZE_MS, easing: "cubic-bezier(0.42, 0, 0.58, 1)" });
+  }
+
+  function onFolderActiveChange(records) {
+    for (const { target, oldValue } of records) {
+      if (!isFolder(target)) {
+        continue;
       }
-    };
-    const clear = (folder) => {
-      clearTimeout(folder.ziaWasActiveTimer);
-      folder.removeAttribute("zia-was-active");
-      unmark(folder);
-    };
-    // Faded out, the folder lets go of them: Zen had already pulled them
-    // out of sight, all at once, and the folder's box shrinks to match
-    const settle = (folder) => {
-      const container = folder.groupContainer;
-      const before = container?.getBoundingClientRect().height ?? 0;
-      clear(folder);
-      if (!container || container.ziaHold || !folder.hasAttribute("collapsed")) {
-        return;
+      if (target.hasAttribute("has-active")) {
+        if (target.hasAttribute("collapsed")) {
+          clearWasActive(target);
+          markKeptTab(target);
+        }
+        continue;
       }
-      const after = container.getBoundingClientRect().height;
-      if (before - after < 0.5) {
-        return;
+      if (oldValue === null || !target.hasAttribute("collapsed")) {
+        // (opening, the names stay while it does: gone at once, the tab
+        // under one jumped up and back down)
+        if (!target.hasAttribute("zia-revealing")) {
+          unmarkKeptTab(target);
+        }
+        continue;
       }
-      animateFolderHeight(container, before, after, { duration: 220, easing: "cubic-bezier(0.42, 0, 0.58, 1)" });
-    };
-    new MutationObserver((records) => {
-      for (const { target, oldValue } of records) {
-        if (!isFolder(target)) {
-          continue;
+      target.setAttribute("zia-was-active", "true");
+      clearTimeout(target.ziaWasActiveTimer);
+      target.ziaWasActiveTimer = setTimeout(() => settleAfterActiveLeaves(target), WAS_ACTIVE_MS);
+    }
+  }
+
+  function onFolderShowingTabExpand(event) {
+    const folder = event.target;
+    if (folder?.hasAttribute?.("zia-was-active")) {
+      clearWasActive(folder);
+    }
+    // Opening a folder that showed just its open tab, it's marked for a
+    // moment, so the inner folder names it kept stay while it opens
+    if (isFolder(folder) && folder.hasAttribute("has-active")) {
+      folder.setAttribute("zia-revealing", "true");
+      clearTimeout(folder.ziaRevealTimer);
+      folder.ziaRevealTimer = setTimeout(() => {
+        folder.removeAttribute("zia-revealing");
+        if (!folder.hasAttribute("has-active")) {
+          unmarkKeptTab(folder);
         }
-        if (target.hasAttribute("has-active")) {
-          if (target.hasAttribute("collapsed")) {
-            clear(target);
-            mark(target);
-          }
-          continue;
-        }
-        if (oldValue === null || !target.hasAttribute("collapsed")) {
-          // (opening, the names stay while it does: gone at once, the tab
-          // under one jumped up and back down)
-          if (!target.hasAttribute("zia-revealing")) {
-            unmark(target);
-          }
-          continue;
-        }
-        target.setAttribute("zia-was-active", "true");
-        clearTimeout(target.ziaWasActiveTimer);
-        target.ziaWasActiveTimer = setTimeout(() => settle(target), 170);
-      }
-    }).observe(tabs, { subtree: true, attributes: true, attributeFilter: ["has-active"], attributeOldValue: true });
-    window.addEventListener(
-      "TabGroupExpand",
-      (event) => {
-        const folder = event.target;
-        if (folder?.hasAttribute?.("zia-was-active")) {
-          clear(folder);
-        }
-        // Opening a folder that showed just its open tab, it's marked for a
-        // moment, so the inner folder names it kept stay while it opens
-        if (isFolder(folder) && folder.hasAttribute("has-active")) {
-          folder.setAttribute("zia-revealing", "true");
-          clearTimeout(folder.ziaRevealTimer);
-          folder.ziaRevealTimer = setTimeout(() => {
-            folder.removeAttribute("zia-revealing");
-            if (!folder.hasAttribute("has-active")) {
-              unmark(folder);
-            }
-          }, 500);
-        }
-      },
-      true
-    );
+      }, REVEALING_MS);
+    }
   }
 
   // Clicking the name of a folder kept inside a closed folder (it holds the tab the
@@ -3216,226 +3260,249 @@
   // of the closed folder stays hidden (zia-open-in-closed, 06-folders-and-sidebar.css).
   // The folders round it had opened too, bringing back every other folder in them.
   // Clicked again, it closes back to the tab it shows.
-  const OPEN_IN_CLOSED = "zia-open-in-closed";
-  // (while one shuts: its tabs still let show, for the shrink)
-  const CLOSING_IN_CLOSED = "zia-closing-in-closed";
-  const IN_CLOSED_MS = 200;
-
   function openKeptFolderNames() {
-    const inShowingClosedFolder = (folder) => {
-      for (let el = folder.parentElement?.closest(FOLDER_SELECTOR); el; el = el.parentElement?.closest(FOLDER_SELECTOR)) {
-        if (el.hasAttribute("collapsed") && el.hasAttribute("has-active")) {
-          return true;
-        }
-      }
-      return false;
-    };
-    const unmarkWithin = (folder) => {
-      for (const el of folder.querySelectorAll(`[${OPEN_IN_CLOSED}]`)) {
-        el.removeAttribute(OPEN_IN_CLOSED);
-      }
-    };
-
-    // Its tabs come and go as it opens and shuts (all but the one it keeps showing).
-    // Zen's grow and shrink go nowhere for them, as it's the closed folder's rules
-    // that hide them, not Zen: shutting, they dropped to nothing at once and faded on
-    // top of the tab shown; opening again, they were there at once. So Zia moves them,
-    // each tab's height and fade together, measured now and started before the next
-    // paint, over whatever Zen starts.
-    const passing = (folder) =>
-      [...(folder.groupContainer?.children || [])].filter(
-        (item) =>
-          (item.matches(".tabbrowser-tab:not([zen-empty-tab])") || item.matches("tab-group[split-view-group]")) &&
-          !item.matches('[selected], [visuallyselected], [folder-active="true"], [zia-kept-tab]') &&
-          !item.querySelector?.('.tabbrowser-tab:is([selected], [folder-active="true"])')
-      );
-    const swing = (folder, opening) => {
-      const items = passing(folder).map((item) => {
-        const style = item.style;
-        const saved = [style.height, style.minHeight];
-        style.height = "";
-        style.minHeight = "";
-        const height = item.getBoundingClientRect().height;
-        [style.height, style.minHeight] = saved;
-        return { item, height };
-      });
-      const moving = [];
-      requestAnimationFrame(() => {
-        for (const { item, height } of items) {
-          if (!height) {
-            continue;
-          }
-          // (opening, from under whatever hid them shut, below)
-          if (opening) {
-            for (const prop of ["height", "min-height", "opacity"]) {
-              item.style.removeProperty(prop);
-            }
-          }
-          const open = { height: `${height}px`, minHeight: `${height}px`, opacity: 1 };
-          const shut = { height: "0px", minHeight: "0px", opacity: 0 };
-          moving.push(item.animate(opening ? [shut, open] : [open, shut], { duration: IN_CLOSED_MS, easing: "ease-in-out", fill: opening ? "none" : "forwards" }));
-        }
-      });
-      return moving;
-    };
-
-    window.addEventListener(
-      "click",
-      (event) => {
-        if (event.button !== 0) {
-          return;
-        }
-        const label = event.target?.closest?.(".tab-group-label-container");
-        const folder = label?.parentElement;
-        if (!isFolder(folder) || folder.hasAttribute(OPEN_IN_CLOSED) || !folder.querySelector('.tabbrowser-tab:is([selected], [folder-active="true"])')) {
-          return;
-        }
-        if (event.target.closest(".tab-group-label-container toolbarbutton, .tab-close-button, .tab-reset-button, [anonid], button")) {
-          return;
-        }
-        if (!inShowingClosedFolder(folder)) {
-          return;
-        }
-        const box = folder.groupContainer;
-        const before = box?.getBoundingClientRect().height ?? 0;
-        folder.setAttribute(OPEN_IN_CLOSED, "true");
-        // (open already, hidden with the rest as the folder round it closed: shown as
-        // it is, rather than Zen closing it, growing to its height)
-        if (!folder.hasAttribute("collapsed")) {
-          event.stopPropagation();
-          event.preventDefault();
-          const hidden = (folder.allItems || []).filter((item) => item.style.height === "0px" || item.style.opacity === "0");
-          if (hidden.length) {
-            window.gZenFolders?.styleCleanup?.(hidden);
-          }
-          const after = box?.getBoundingClientRect().height ?? 0;
-          if (Math.abs(after - before) > 0.5) {
-            animateFolderHeight(box, before, after, { duration: 220, easing: "cubic-bezier(0.42, 0, 0.58, 1)" });
-          }
-        }
-      },
-      true
-    );
-
+    window.addEventListener("click", onKeptFolderNameClick, true);
     // Closed again, or a folder round it opened or closed, or the closed folder no
     // longer showing a tab, it's back to how Zen has it
-    window.addEventListener(
-      "TabGroupCollapse",
-      (event) => {
-        const folder = event.target;
-        if (!isFolder(folder)) {
-          return;
-        }
-        unmarkWithin(folder);
-        if (!folder.hasAttribute(OPEN_IN_CLOSED)) {
-          return;
-        }
-        // (the closed folder's rules take them once they've shrunk away)
-        folder.setAttribute(CLOSING_IN_CLOSED, "true");
-        const moving = swing(folder, false);
-        clearTimeout(folder.ziaClosingTimer);
-        folder.ziaClosingTimer = setTimeout(() => {
-          folder.removeAttribute(CLOSING_IN_CLOSED);
-          if (folder.hasAttribute("collapsed")) {
-            folder.removeAttribute(OPEN_IN_CLOSED);
-          }
-          // shut as Zen leaves the tabs it hides, held so in their own style: left to
-          // the closed folder's rules alone, they sprang back to full height for a
-          // moment as the folder round it next opened, the tab shown dropping down
-          for (const animation of moving) {
-            try {
-              animation.commitStyles();
-            } catch (err) {}
-            animation.cancel();
-          }
-        }, IN_CLOSED_MS + 40);
-      },
-      true
-    );
-    window.addEventListener(
-      "TabGroupExpand",
-      (event) => {
-        const folder = event.target;
-        if (!isFolder(folder)) {
-          return;
-        }
-        unmarkWithin(folder);
-        if (folder.hasAttribute(OPEN_IN_CLOSED)) {
-          clearTimeout(folder.ziaClosingTimer);
-          folder.removeAttribute(CLOSING_IN_CLOSED);
-          swing(folder, true);
-        }
-      },
-      true
-    );
+    window.addEventListener("TabGroupCollapse", onOpenInClosedCollapse, true);
+    window.addEventListener("TabGroupExpand", onOpenInClosedExpand, true);
     const tabs = gBrowser.tabContainer;
     if (tabs) {
       new MutationObserver((records) => {
         for (const { target } of records) {
           if (isFolder(target) && !target.hasAttribute("has-active")) {
-            unmarkWithin(target);
+            unmarkOpenInClosed(target);
           }
         }
       }).observe(tabs, { subtree: true, attributes: true, attributeFilter: ["has-active"] });
     }
   }
 
+  function inShowingClosedFolder(folder) {
+    for (let el = folder.parentElement?.closest(FOLDER_SELECTOR); el; el = el.parentElement?.closest(FOLDER_SELECTOR)) {
+      if (el.hasAttribute("collapsed") && el.hasAttribute("has-active")) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function unmarkOpenInClosed(folder) {
+    for (const el of folder.querySelectorAll(`[${OPEN_IN_CLOSED}]`)) {
+      el.removeAttribute(OPEN_IN_CLOSED);
+    }
+  }
+
+  // Its tabs come and go as it opens and shuts (all but the one it keeps showing).
+  // Zen's grow and shrink go nowhere for them, as it's the closed folder's rules
+  // that hide them, not Zen: shutting, they dropped to nothing at once and faded on
+  // top of the tab shown; opening again, they were there at once. So Zia moves them,
+  // each tab's height and fade together, measured now and started before the next
+  // paint, over whatever Zen starts.
+  function passingItems(folder) {
+    return [...(folder.groupContainer?.children || [])].filter(
+      (item) =>
+        (item.matches(".tabbrowser-tab:not([zen-empty-tab])") || item.matches("tab-group[split-view-group]")) &&
+        !item.matches('[selected], [visuallyselected], [folder-active="true"], [zia-kept-tab]') &&
+        !item.querySelector?.('.tabbrowser-tab:is([selected], [folder-active="true"])')
+    );
+  }
+
+  function swingKeptFolder(folder, opening) {
+    const items = passingItems(folder).map((item) => {
+      const style = item.style;
+      const saved = [style.height, style.minHeight];
+      style.height = "";
+      style.minHeight = "";
+      const height = item.getBoundingClientRect().height;
+      [style.height, style.minHeight] = saved;
+      return { item, height };
+    });
+    const moving = [];
+    requestAnimationFrame(() => {
+      for (const { item, height } of items) {
+        if (!height) {
+          continue;
+        }
+        // (opening, from under whatever hid them shut, below)
+        if (opening) {
+          for (const prop of ["height", "min-height", "opacity"]) {
+            item.style.removeProperty(prop);
+          }
+        }
+        const open = { height: `${height}px`, minHeight: `${height}px`, opacity: 1 };
+        const shut = { height: "0px", minHeight: "0px", opacity: 0 };
+        moving.push(item.animate(opening ? [shut, open] : [open, shut], { duration: IN_CLOSED_MS, easing: "ease-in-out", fill: opening ? "none" : "forwards" }));
+      }
+    });
+    return moving;
+  }
+
+  function onKeptFolderNameClick(event) {
+    if (event.button !== 0) {
+      return;
+    }
+    const label = event.target?.closest?.(".tab-group-label-container");
+    const folder = label?.parentElement;
+    if (!isFolder(folder) || folder.hasAttribute(OPEN_IN_CLOSED) || !folder.querySelector('.tabbrowser-tab:is([selected], [folder-active="true"])')) {
+      return;
+    }
+    if (event.target.closest(".tab-group-label-container toolbarbutton, .tab-close-button, .tab-reset-button, [anonid], button")) {
+      return;
+    }
+    if (!inShowingClosedFolder(folder)) {
+      return;
+    }
+    const box = folder.groupContainer;
+    const before = box?.getBoundingClientRect().height ?? 0;
+    folder.setAttribute(OPEN_IN_CLOSED, "true");
+    // (open already, hidden with the rest as the folder round it closed: shown as
+    // it is, rather than Zen closing it, growing to its height)
+    if (!folder.hasAttribute("collapsed")) {
+      event.stopPropagation();
+      event.preventDefault();
+      const hidden = (folder.allItems || []).filter((item) => item.style.height === "0px" || item.style.opacity === "0");
+      if (hidden.length) {
+        window.gZenFolders?.styleCleanup?.(hidden);
+      }
+      const after = box?.getBoundingClientRect().height ?? 0;
+      if (Math.abs(after - before) > 0.5) {
+        animateFolderHeight(box, before, after, { duration: FOLDER_RESIZE_MS, easing: "cubic-bezier(0.42, 0, 0.58, 1)" });
+      }
+    }
+  }
+
+  function onOpenInClosedCollapse(event) {
+    const folder = event.target;
+    if (!isFolder(folder)) {
+      return;
+    }
+    unmarkOpenInClosed(folder);
+    if (!folder.hasAttribute(OPEN_IN_CLOSED)) {
+      return;
+    }
+    // (the closed folder's rules take them once they've shrunk away)
+    folder.setAttribute(CLOSING_IN_CLOSED, "true");
+    const moving = swingKeptFolder(folder, false);
+    clearTimeout(folder.ziaClosingTimer);
+    folder.ziaClosingTimer = setTimeout(() => {
+      folder.removeAttribute(CLOSING_IN_CLOSED);
+      if (folder.hasAttribute("collapsed")) {
+        folder.removeAttribute(OPEN_IN_CLOSED);
+      }
+      // shut as Zen leaves the tabs it hides, held so in their own style: left to
+      // the closed folder's rules alone, they sprang back to full height for a
+      // moment as the folder round it next opened, the tab shown dropping down
+      for (const animation of moving) {
+        try {
+          animation.commitStyles();
+        } catch (err) {}
+        animation.cancel();
+      }
+    }, IN_CLOSED_SETTLE_MS);
+  }
+
+  function onOpenInClosedExpand(event) {
+    const folder = event.target;
+    if (!isFolder(folder)) {
+      return;
+    }
+    unmarkOpenInClosed(folder);
+    if (folder.hasAttribute(OPEN_IN_CLOSED)) {
+      clearTimeout(folder.ziaClosingTimer);
+      folder.removeAttribute(CLOSING_IN_CLOSED);
+      swingKeptFolder(folder, true);
+    }
+  }
+
+  // A folder opening round an open inner folder: Zen reveals only its own rows, so
+  // the inner folder's tabs stayed hidden until tidied, then snapped in.
+  function revealOpenSubfolders() {
+    window.addEventListener(
+      "TabGroupExpand",
+      (event) => {
+        const folder = event.target;
+        if (folder?.localName !== "zen-folder") {
+          return;
+        }
+        for (const inner of folder.querySelectorAll("zen-folder:not([collapsed]):not([has-active])")) {
+          const hidden = (inner.allItems || []).filter((item) => item.style.height === "0px" || item.style.opacity === "0");
+          if (hidden.length) {
+            window.gZenFolders?.styleCleanup?.(hidden);
+          }
+        }
+      },
+      true
+    );
+  }
+
+  // Pinned tabs tucked away by clicking the space's name: shut once a tab outside is chosen,
+  // their line kept in place, and the names of folders holding the open tab kept meanwhile.
+  // Used elsewhere: tuckAwayUnopenedPins, keepSeparatorWhenPinsTuck,
+  // keepFolderNamesInCollapsedSpaces.
+
+  // A collapsed space keeps the names of folders its open tab is in
+  // (06-folders-and-sidebar.css), from collapsing until it has finished opening.
+  const SPACE_OPEN_MS = 700;
+
   // Pinned tabs tucked away keep showing the open tab among them, as a closed folder
   // does. Once a tab outside is chosen they all shut at the name's speed, and folders
   // that were showing the tab are closed properly once out of sight.
   function tuckAwayUnopenedPins() {
-    gBrowser.tabContainer.addEventListener("TabSelect", async (event) => {
-      const tab = event.target;
-      if (!tab || (tab.pinned && !tab.hasAttribute("zen-essential"))) {
+    gBrowser.tabContainer.addEventListener("TabSelect", tuckAwayOnSelect);
+  }
+
+  async function tuckAwayOnSelect(event) {
+    const tab = event.target;
+    if (!tab || (tab.pinned && !tab.hasAttribute("zen-essential"))) {
+      return;
+    }
+    const pins = window.gZenWorkspaces?.activeWorkspaceElement?.collapsiblePins;
+    const zen = window.gZenFolders;
+    if (!zen || !pins?.collapsed || !pins.hasAttribute("has-active") || pins.contains(tab)) {
+      return;
+    }
+    try {
+      // As its "-" does (the tab left open): the tab shown goes, its folder
+      // and the pinned tabs shutting round it together
+      const shown = [...(pins.groupContainer?.querySelectorAll?.(".tabbrowser-tab[folder-active]") || [])];
+      if (shown.length && zen.animateUnload) {
+        await Promise.all(
+          shown.map((one) => {
+            const folder = one.group?.hasAttribute("split-view-group") ? one.group.group : one.group;
+            return zen.animateUnload(folder || pins, one);
+          })
+        );
         return;
       }
-      const pins = window.gZenWorkspaces?.activeWorkspaceElement?.collapsiblePins;
-      const zen = window.gZenFolders;
-      if (!zen || !pins?.collapsed || !pins.hasAttribute("has-active") || pins.contains(tab)) {
+      const folders = pins.childActiveGroups || [];
+      pins.removeAttribute("has-active");
+      pins.activeTabs = [];
+      await zen.animateCollapse(pins);
+      if (!pins.collapsed || pins.hasAttribute("has-active")) {
         return;
       }
-      try {
-        // As its "-" does (the tab left open): the tab shown goes, its folder
-        // and the pinned tabs shutting round it together
-        const shown = [...(pins.groupContainer?.querySelectorAll?.(".tabbrowser-tab[folder-active]") || [])];
-        if (shown.length && zen.animateUnload) {
-          await Promise.all(
-            shown.map((one) => {
-              const folder = one.group?.hasAttribute("split-view-group") ? one.group.group : one.group;
-              return zen.animateUnload(folder || pins, one);
-            })
-          );
-          return;
+      for (const folder of folders) {
+        if (!folder.isConnected || !folder.hasAttribute("has-active")) {
+          continue;
         }
-        const folders = pins.childActiveGroups || [];
-        pins.removeAttribute("has-active");
-        pins.activeTabs = [];
-        await zen.animateCollapse(pins);
-        if (!pins.collapsed || pins.hasAttribute("has-active")) {
-          return;
+        folder.removeAttribute("has-active");
+        folder.activeTabs = [];
+        for (const shown of folder.querySelectorAll("[folder-active]")) {
+          shown.removeAttribute("folder-active");
+          (shown.group?.hasAttribute("split-view-group") ? shown.group : shown).style.removeProperty("--zen-folder-indent");
         }
-        for (const folder of folders) {
-          if (!folder.isConnected || !folder.hasAttribute("has-active")) {
-            continue;
-          }
-          folder.removeAttribute("has-active");
-          folder.activeTabs = [];
-          for (const shown of folder.querySelectorAll("[folder-active]")) {
-            shown.removeAttribute("folder-active");
-            (shown.group?.hasAttribute("split-view-group") ? shown.group : shown).style.removeProperty("--zen-folder-indent");
-          }
-          zen.styleCleanup(folder.allItemsRecursive || folder.allItems || []);
-          if (folder.collapsed) {
-            folder.groupContainer?.setAttribute("hidden", "true");
-            if (folder.groupStartElement) {
-              folder.groupStartElement.style.marginTop = "-4px";
-            }
+        zen.styleCleanup(folder.allItemsRecursive || folder.allItems || []);
+        if (folder.collapsed) {
+          folder.groupContainer?.setAttribute("hidden", "true");
+          if (folder.groupStartElement) {
+            folder.groupStartElement.style.marginTop = "-4px";
           }
         }
-      } catch (err) {
-        noteError("tuck away pins", err);
       }
-    });
+    } catch (err) {
+      noteError("tuck away pins", err);
+    }
   }
 
   // Pinned tabs tucked away with none shown any more: Zen measured the push while the
@@ -3497,27 +3564,6 @@
     });
   }
 
-  // A folder opening round an open inner folder: Zen reveals only its own rows, so
-  // the inner folder's tabs stayed hidden until tidied, then snapped in.
-  function revealOpenSubfolders() {
-    window.addEventListener(
-      "TabGroupExpand",
-      (event) => {
-        const folder = event.target;
-        if (folder?.localName !== "zen-folder") {
-          return;
-        }
-        for (const inner of folder.querySelectorAll("zen-folder:not([collapsed]):not([has-active])")) {
-          const hidden = (inner.allItems || []).filter((item) => item.style.height === "0px" || item.style.opacity === "0");
-          if (hidden.length) {
-            window.gZenFolders?.styleCleanup?.(hidden);
-          }
-        }
-      },
-      true
-    );
-  }
-
   function keepFolderNamesInCollapsedSpaces() {
     const timers = new WeakMap();
     const update = (space) => {
@@ -3549,6 +3595,48 @@
       update(space);
     }
   }
+
+  // Emoji as folder icons: Zen's picker offers folders only its own icons, so Zia opens it with
+  // emoji too, drawn as an icon (gZenEmojiPicker.open patched).
+  // Used elsewhere: allowEmojiFolderIcons.
+
+  function allowEmojiFolderIcons() {
+    const picker = window.gZenEmojiPicker;
+    if (!picker || typeof picker.open !== "function" || picker.open.__zia) {
+      return;
+    }
+    const original = picker.open;
+    const patched = function (anchor, options = {}) {
+      if (options?.onlySvgIcons && anchor?.closest?.("zen-folder")) {
+        options = { ...options, onlySvgIcons: false, emojiAsSVG: true };
+      }
+      return original.call(this, anchor, options);
+    };
+    patched.__zia = true;
+    picker.open = patched;
+  }
+
+  // The address shown without its www. (Zen's own trimmed address, gURLBar._zenTrimURL patched).
+  // Used elsewhere: hideWwwInUrlbar.
+
+  function hideWwwInUrlbar() {
+    const original = gURLBar?._zenTrimURL;
+    if (typeof original !== "function" || original.__zia) {
+      return;
+    }
+    const wrapped = function (url) {
+      const trimmed = original.call(this, url);
+      return typeof trimmed === "string" ? plainAddress(trimmed) : trimmed;
+    };
+    wrapped.__zia = true;
+    gURLBar._zenTrimURL = wrapped;
+    try {
+      gURLBar.setURI();
+    } catch (err) {
+      noteError("tab animations and folder bounce: hideWwwInUrlbar", err);
+    }
+  }
+
   let edgeFrame = null;
   let edgeRetryTimer = null;
   let edgeRetries = 0;
