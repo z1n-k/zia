@@ -1,6 +1,7 @@
 // Zia: spots Firefox's PDF viewer and gives it Dia's look (ZiaPdf.sys.mjs,
 // zia-pdf.css). Registered by zia.uc.js with a query string that changes
 // every session, so Firefox never runs a cached copy of an older version.
+// Used elsewhere: ZiaPdfChild (as the actor's child).
 
 export class ZiaPdfChild extends JSWindowActorChild {
   handleEvent(event) {

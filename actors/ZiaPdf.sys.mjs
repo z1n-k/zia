@@ -9,6 +9,7 @@
 // signature, image, comment). Zia adds only what PDF.js doesn't have (the
 // title, "/ 2", the zoom percentage, fit, rotate, the pen and undo/redo),
 // and each drives PDF.js itself.
+// Used elsewhere: diaPdf (ZiaPdfChild.sys.mjs).
 
 // Same session-changing query as this module, so a Zia update is never
 // shown with last session's styles.

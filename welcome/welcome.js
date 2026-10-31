@@ -1,4 +1,6 @@
-// Zia's welcome tour (index.html)
+// Zia's welcome tour (index.html, opened over the window by 28f-welcome.js): a card per
+// feature, each with a small animated scene.
+// Used elsewhere: nothing (it talks to the window through its document's data-zia-welcome).
 (() => {
   const rows = (n, colors = ["#ececef", "#9d9da3", "#c9c9ce", "#7f7f86", "#b4b4ba"], extra = () => "") =>
     Array.from({ length: n }, (_, i) => `<div class="w-row ${extra(i)}"><span class="w-ico" style="--c:${colors[i % colors.length]}"></span><span class="w-line"></span>${i < 9 ? `<span class="w-key">${i + 1}</span>` : ""}</div>`).join("");
@@ -107,6 +109,7 @@
 
   // Numbered tabs and undo step through a little story, over and over
   const PAGE_COLORS = ["#2a2a2e", "#36363b", "#26303b", "#303035", "#3b3b40"];
+  // (the scenes are scripts of beats, so each wait's length stays in its line, read in order)
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const ROW = 7.8; // row pitch in cqw
 

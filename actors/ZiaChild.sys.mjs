@@ -1,4 +1,8 @@
-
+// Zia: the page side of Zia's actor (registered by zia.uc.js, 01-site-colour.js). It tells
+// the window when a page has painted and how far it has scrolled (for the toolbar's site
+// colour), and asks the page itself for what the music player shows: a YouTube stream's LIVE
+// badge, its channel's picture, a Kick channel's picture.
+// Used elsewhere: ZiaChild (as the actor's child).
 
 const THROTTLE_MS = 50;
 const SETTLE_MS = 80;

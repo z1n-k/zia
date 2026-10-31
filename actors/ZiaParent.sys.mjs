@@ -1,4 +1,6 @@
-
+// Zia: the window side of Zia's actor. It hands a page's paints and scrolls to the browser
+// window it's in (ziaOnPagePainted and ziaOnPageScroll, 01-site-colour.js and 11-split-panes.js).
+// Used elsewhere: ZiaParent (as the actor's parent).
 
 export class ZiaParent extends JSWindowActorParent {
   receiveMessage(message) {
