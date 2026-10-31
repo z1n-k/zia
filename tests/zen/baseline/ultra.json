@@ -1,0 +1,173 @@
+{
+ "checks": {
+  "a loading tab shows an orb, but not at once": true,
+  "no glow with Ultra off": true,
+  "the card glows while pointed at": true,
+  "the drift stops with Ultra off": true,
+  "the open essential drifts": true,
+  "the orb goes when it's loaded": true
+ },
+ "drifts": {
+  "E1": {
+   "E1": [
+    "37000 normal Infinity start 0 running | easing:linear offset:null simulateComputeValuesFailure:false rotate:0deg | easing:linear offset:null simulateComputeValuesFailure:false rotate:360deg",
+    "23000 alternate Infinity start 0 running | easing:ease-in-out offset:null simulateComputeValuesFailure:false translate:-6% -4% | easing:ease-in-out offset:0.3 simulateComputeValuesFailure:false translate:5% -2% | easing:ease-in-out offset:0.55 simulateComputeValuesFailure:false translate:-2% 6% | easing:ease-in-out offset:0.8 simulateComputeValuesFailure:false translate:6% 3% | easing:linear offset:null simulateComputeValuesFailure:false translate:-4% 5%",
+    "16999.999999999996 alternate Infinity start 0 running | easing:ease-in-out offset:null simulateComputeValuesFailure:false scale:1.1 | easing:linear offset:null simulateComputeValuesFailure:false scale:1.35"
+   ],
+   "E2": []
+  },
+  "E2": {
+   "E1": [],
+   "E2": [
+    "37000 normal Infinity start 0 running | easing:linear offset:null simulateComputeValuesFailure:false rotate:0deg | easing:linear offset:null simulateComputeValuesFailure:false rotate:360deg",
+    "23000 alternate Infinity start 0 running | easing:ease-in-out offset:null simulateComputeValuesFailure:false translate:-6% -4% | easing:ease-in-out offset:0.3 simulateComputeValuesFailure:false translate:5% -2% | easing:ease-in-out offset:0.55 simulateComputeValuesFailure:false translate:-2% 6% | easing:ease-in-out offset:0.8 simulateComputeValuesFailure:false translate:6% 3% | easing:linear offset:null simulateComputeValuesFailure:false translate:-4% 5%",
+    "16999.999999999996 alternate Infinity start 0 running | easing:ease-in-out offset:null simulateComputeValuesFailure:false scale:1.1 | easing:linear offset:null simulateComputeValuesFailure:false scale:1.35"
+   ]
+  },
+  "ultraOff": {
+   "E1": [],
+   "E2": []
+  },
+  "ultraOn": {
+   "E1": [],
+   "E2": [
+    "37000 normal Infinity start 0 running | easing:linear offset:null simulateComputeValuesFailure:false rotate:0deg | easing:linear offset:null simulateComputeValuesFailure:false rotate:360deg",
+    "23000 alternate Infinity start 0 running | easing:ease-in-out offset:null simulateComputeValuesFailure:false translate:-6% -4% | easing:ease-in-out offset:0.3 simulateComputeValuesFailure:false translate:5% -2% | easing:ease-in-out offset:0.55 simulateComputeValuesFailure:false translate:-2% 6% | easing:ease-in-out offset:0.8 simulateComputeValuesFailure:false translate:6% 3% | easing:linear offset:null simulateComputeValuesFailure:false translate:-4% 5%",
+    "16999.999999999996 alternate Infinity start 0 running | easing:ease-in-out offset:null simulateComputeValuesFailure:false scale:1.1 | easing:linear offset:null simulateComputeValuesFailure:false scale:1.35"
+   ]
+  },
+  "zenColourOff": {
+   "E1": [],
+   "E2": []
+  }
+ },
+ "glows": {
+  "left": {
+   "allValues": "c4fb6dee",
+   "attributes": [
+    "aria-hidden=true",
+    "class=zia-glow",
+    "data-warp-off="
+   ],
+   "canvas": "218x124 f8516550",
+   "layers": [
+    "div.zia-glow-layer.zia-glow-inner 553d4eb1",
+    "div.zia-glow-layer.zia-glow-inner.zia-glow-warp 7a2b6791",
+    "div.zia-glow-layer.zia-glow-stroke 39dba210",
+    "div.zia-glow-layer.zia-glow-bloom a95b727d",
+    "div.zia-glow-layer.zia-glow-bloom.zia-glow-warp 1afdf5f4",
+    "canvas.zia-glow-layer.zia-glow-band 811c9dc5",
+    "div.zia-glow-layer.zia-glow-core 811c9dc5",
+    "svg.zia-glow-defs 811c9dc5"
+   ],
+   "values": {
+    "--zg-glow": "0.548",
+    "--zg-h": "1.062",
+    "--zg-hue": "0.00deg",
+    "--zg-l3": "0.563",
+    "--zg-w": "1.342",
+    "--zg-x3": "-35.5px"
+   }
+  },
+  "playing": {
+   "allValues": "811c9dc5",
+   "attributes": [
+    "aria-hidden=true",
+    "class=zia-glow",
+    "data-warp-off="
+   ],
+   "canvas": "300x150 8227766b",
+   "layers": [
+    "div.zia-glow-layer.zia-glow-inner 811c9dc5",
+    "div.zia-glow-layer.zia-glow-inner.zia-glow-warp dd2cd3c7",
+    "div.zia-glow-layer.zia-glow-stroke 811c9dc5",
+    "div.zia-glow-layer.zia-glow-bloom 811c9dc5",
+    "div.zia-glow-layer.zia-glow-bloom.zia-glow-warp 929603d0",
+    "canvas.zia-glow-layer.zia-glow-band 811c9dc5",
+    "div.zia-glow-layer.zia-glow-core 811c9dc5",
+    "svg.zia-glow-defs 811c9dc5"
+   ],
+   "values": {
+    "--zg-glow": "",
+    "--zg-h": "",
+    "--zg-hue": "",
+    "--zg-l3": "",
+    "--zg-w": "",
+    "--zg-x3": ""
+   }
+  },
+  "pointedAt": {
+   "allValues": "c4fb6dee",
+   "attributes": [
+    "aria-hidden=true",
+    "class=zia-glow",
+    "data-on=",
+    "data-warp-off="
+   ],
+   "canvas": "218x124 f8516550",
+   "layers": [
+    "div.zia-glow-layer.zia-glow-inner 553d4eb1",
+    "div.zia-glow-layer.zia-glow-inner.zia-glow-warp 7a2b6791",
+    "div.zia-glow-layer.zia-glow-stroke 39dba210",
+    "div.zia-glow-layer.zia-glow-bloom a95b727d",
+    "div.zia-glow-layer.zia-glow-bloom.zia-glow-warp 1afdf5f4",
+    "canvas.zia-glow-layer.zia-glow-band 811c9dc5",
+    "div.zia-glow-layer.zia-glow-core 811c9dc5",
+    "svg.zia-glow-defs 811c9dc5"
+   ],
+   "values": {
+    "--zg-glow": "0.548",
+    "--zg-h": "1.062",
+    "--zg-hue": "0.00deg",
+    "--zg-l3": "0.563",
+    "--zg-w": "1.342",
+    "--zg-x3": "-35.5px"
+   }
+  },
+  "ultraOff": null
+ },
+ "orbs": {
+  "a moment in": {
+   "canvas": null,
+   "tab": null
+  },
+  "dark": {
+   "canvas": "in tab-icon-stack class=zia-orb aria-hidden=true style=translate: 3px; width: 16px; height: 16px; display: block; width=16 height=16 16x16",
+   "pixels": "9616039b",
+   "tab": "true"
+  },
+  "light": {
+   "canvas": "in tab-icon-stack class=zia-orb aria-hidden=true style=translate: 3px; width: 16px; height: 16px; display: block; width=16 height=16 16x16",
+   "pixels": "3fb19538",
+   "tab": "true"
+  },
+  "loaded": {
+   "canvas": null,
+   "tab": null
+  },
+  "loading": {
+   "canvas": "in tab-icon-stack class=zia-orb aria-hidden=true style=translate: 3px; width: 16px; height: 16px; display: block; width=16 height=16 16x16",
+   "tab": "true"
+  },
+  "searching": {
+   "canvas": "in tab-icon-stack class=zia-orb aria-hidden=true style=translate: 3px; width: 16px; height: 16px; display: block; width=16 height=16 16x16",
+   "pixels": "9616039b",
+   "tab": "true"
+  },
+  "still": {
+   "canvas": "in tab-icon-stack class=zia-orb aria-hidden=true style=translate: 3px; width: 16px; height: 16px; display: block; width=16 height=16 16x16",
+   "pixels": "a0c6071e",
+   "tab": "true"
+  },
+  "ultraOff": {
+   "canvas": null,
+   "tab": null
+  },
+  "ultraOn": {
+   "canvas": "in tab-icon-stack class=zia-orb aria-hidden=true style=translate: 3px; width: 16px; height: 16px; display: block; width=16 height=16 16x16",
+   "pixels": "9616039b",
+   "tab": "true"
+  }
+ },
+ "ziaErrors": []
+}

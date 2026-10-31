@@ -1,0 +1,167 @@
+{
+ "checks": {
+  "Zen showed a card": true,
+  "Zia put the artwork on it": true,
+  "it paused": true,
+  "the bars mute the tab": true,
+  "the tab shows its sound bars": true
+ },
+ "muted": {
+  "card": {
+   "artist": "Zia Test",
+   "attributes": {
+    "zia-glow-ready": "true"
+   },
+   "button": {
+    "attributes": {
+     "zia-art": "the artwork"
+    },
+    "vars": {
+     "--zia-media-art": "url(\"the artwork\")"
+    }
+   },
+   "classes": [
+    "playing",
+    "zen-media-card"
+   ],
+   "ring": [
+    "defs ",
+    "linearGradient id=zia-ring-gradient-n",
+    "stop offset=n style=stop-color: var(--zia-media-glow-a)",
+    "stop offset=n style=stop-color: var(--zia-media-glow-b)",
+    "path class=zia-ring-track stroke-width=n pathLength=n fill=none",
+    "path class=zia-ring-fill stroke=url(#zia-ring-gradient-1) stroke-linecap=round stroke-width=n pathLength=n fill=none"
+   ],
+   "size": "218x64",
+   "timeLeft": true,
+   "title": "Zia Song",
+   "vars": {
+    "--zia-media-glow-a": "rgb(255, 2, 18)",
+    "--zia-media-glow-b": "rgb(0, 60, 255)",
+    "--zia-sound-muted": "4cdb6bba numbered",
+    "--zia-sound-still": "5dcf94a7",
+    "--zia-sound-wave": "3ffb82db numbered"
+   }
+  },
+  "tab": {
+   "bars": "span.zia-tab-sound role=button title=Unmute tab after tab-audio-button",
+   "muted": true,
+   "soundplaying": true,
+   "vars": {
+    "--zia-sound-muted": "83ebd4f0 numbered",
+    "--zia-sound-wave": "86d8b209 numbered"
+   }
+  }
+ },
+ "paused": {
+  "card": {
+   "artist": "Zia Test",
+   "attributes": {
+    "zia-glow-ready": "true"
+   },
+   "button": {
+    "attributes": {
+     "zia-art": "the artwork"
+    },
+    "vars": {
+     "--zia-media-art": "url(\"the artwork\")"
+    }
+   },
+   "classes": [
+    "zen-media-card"
+   ],
+   "ring": [
+    "defs ",
+    "linearGradient id=zia-ring-gradient-n",
+    "stop offset=n style=stop-color: var(--zia-media-glow-a)",
+    "stop offset=n style=stop-color: var(--zia-media-glow-b)",
+    "path class=zia-ring-track stroke-width=n pathLength=n fill=none",
+    "path class=zia-ring-fill stroke=url(#zia-ring-gradient-1) stroke-linecap=round stroke-width=n pathLength=n fill=none"
+   ],
+   "size": "218x64",
+   "timeLeft": true,
+   "title": "Zia Song",
+   "vars": {
+    "--zia-media-glow-a": "rgb(255, 2, 18)",
+    "--zia-media-glow-b": "rgb(0, 60, 255)",
+    "--zia-sound-muted": "4cdb6bba numbered",
+    "--zia-sound-still": "5dcf94a7",
+    "--zia-sound-wave": "3ffb82db numbered"
+   }
+  },
+  "tab": {
+   "bars": "span.zia-tab-sound role=button title=Mute tab after tab-audio-button",
+   "muted": false,
+   "soundplaying": true,
+   "vars": {
+    "--zia-sound-muted": "83ebd4f0 numbered",
+    "--zia-sound-wave": "86d8b209 numbered"
+   }
+  }
+ },
+ "playing": {
+  "card": {
+   "artist": "Zia Test",
+   "attributes": {
+    "zia-glow-ready": "true"
+   },
+   "button": {
+    "attributes": {
+     "zia-art": "the artwork"
+    },
+    "vars": {
+     "--zia-media-art": "url(\"the artwork\")"
+    }
+   },
+   "classes": [
+    "playing",
+    "zen-media-card"
+   ],
+   "ring": [
+    "defs ",
+    "linearGradient id=zia-ring-gradient-n",
+    "stop offset=n style=stop-color: var(--zia-media-glow-a)",
+    "stop offset=n style=stop-color: var(--zia-media-glow-b)",
+    "path class=zia-ring-track stroke-width=n pathLength=n fill=none",
+    "path class=zia-ring-fill stroke=url(#zia-ring-gradient-1) stroke-linecap=round stroke-width=n pathLength=n fill=none"
+   ],
+   "size": "218x64",
+   "timeLeft": true,
+   "title": "Zia Song",
+   "vars": {
+    "--zia-media-glow-a": "rgb(255, 2, 18)",
+    "--zia-media-glow-b": "rgb(0, 60, 255)",
+    "--zia-sound-muted": "4cdb6bba numbered",
+    "--zia-sound-still": "5dcf94a7",
+    "--zia-sound-wave": "3ffb82db numbered"
+   }
+  },
+  "otherTab": {
+   "bars": null,
+   "muted": false,
+   "soundplaying": false,
+   "vars": {}
+  },
+  "tab": {
+   "bars": "span.zia-tab-sound role=button title=Mute tab after tab-audio-button",
+   "muted": false,
+   "soundplaying": true,
+   "vars": {
+    "--zia-sound-muted": "83ebd4f0 numbered",
+    "--zia-sound-wave": "86d8b209 numbered"
+   }
+  }
+ },
+ "unmuted": {
+  "tab": {
+   "bars": "span.zia-tab-sound role=button title=Mute tab after tab-audio-button",
+   "muted": false,
+   "soundplaying": true,
+   "vars": {
+    "--zia-sound-muted": "83ebd4f0 numbered",
+    "--zia-sound-wave": "86d8b209 numbered"
+   }
+  }
+ },
+ "ziaErrors": []
+}

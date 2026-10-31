@@ -1,0 +1,363 @@
+{
+ "built": [
+  "div.zia-glow aria-hidden=true data-warp-off=",
+  "  div.zia-glow-layer.zia-glow-inner",
+  "  div.zia-glow-layer.zia-glow-inner.zia-glow-warp",
+  "  div.zia-glow-layer.zia-glow-stroke",
+  "  div.zia-glow-layer.zia-glow-bloom",
+  "  div.zia-glow-layer.zia-glow-bloom.zia-glow-warp",
+  "  canvas.zia-glow-layer.zia-glow-band",
+  "  div.zia-glow-layer.zia-glow-core",
+  "    div",
+  "  svg.zia-glow-defs width=0 height=0",
+  "    filter id=zia-glow-distort-1 x=-20% y=-20% width=140% height=140% color-interpolation-filters=sRGB",
+  "      feTurbulence type=fractalNoise baseFrequency=0.04 0.17 numOctaves=2 seed=7 result=noise",
+  "      feOffset in=noise dx=0 dy=0 result=moved",
+  "      feColorMatrix in=moved type=matrix values=1 0 0 0 0  0 0 0 0 0.5  0 0 0 0 0  0 0 0 0 1 result=map",
+  "      feDisplacementMap in=SourceGraphic in2=map scale=0 xChannelSelector=R yChannelSelector=G"
+ ],
+ "checks": {
+  "destroy took it away": true,
+  "it drew while playing": true,
+  "it stopped after the fade": true
+ },
+ "seen": [
+  {
+   "allValues": "811c9dc5",
+   "attributes": [
+    "data-warp-off"
+   ],
+   "canvas": "300x150 8227766b",
+   "displace": "0",
+   "filter": "id=zia-glow-distort-1 x=-20% y=-20% width=140% height=140% color-interpolation-filters=sRGB",
+   "label": "made",
+   "layers": [
+    "div.zia-glow-layer.zia-glow-inner 811c9dc5",
+    "div.zia-glow-layer.zia-glow-inner.zia-glow-warp dd2cd3c7",
+    "div.zia-glow-layer.zia-glow-stroke 811c9dc5",
+    "div.zia-glow-layer.zia-glow-bloom 811c9dc5",
+    "div.zia-glow-layer.zia-glow-bloom.zia-glow-warp 929603d0",
+    "canvas.zia-glow-layer.zia-glow-band 811c9dc5",
+    "div.zia-glow-layer.zia-glow-core 811c9dc5",
+    "svg.zia-glow-defs 811c9dc5"
+   ],
+   "queued": 0,
+   "values": {
+    "--zg-cx": "",
+    "--zg-glow": "",
+    "--zg-h": "",
+    "--zg-hue": "",
+    "--zg-l0": "",
+    "--zg-w": "",
+    "--zg-x0": ""
+   }
+  },
+  {
+   "allValues": "821e0dee",
+   "attributes": [
+    "data-on"
+   ],
+   "canvas": "300x90 4fed13f",
+   "displace": "33.0267143249512",
+   "filter": "id=zia-glow-distort-1 x=-10% y=85% width=120% height=28.3% color-interpolation-filters=sRGB",
+   "label": "playing half a second",
+   "layers": [
+    "div.zia-glow-layer.zia-glow-inner 74808235",
+    "div.zia-glow-layer.zia-glow-inner.zia-glow-warp b7803b15",
+    "div.zia-glow-layer.zia-glow-stroke 80dca518",
+    "div.zia-glow-layer.zia-glow-bloom ef88a035",
+    "div.zia-glow-layer.zia-glow-bloom.zia-glow-warp a8ebb34a",
+    "canvas.zia-glow-layer.zia-glow-band 811c9dc5",
+    "div.zia-glow-layer.zia-glow-core 811c9dc5",
+    "svg.zia-glow-defs 811c9dc5"
+   ],
+   "queued": 1,
+   "values": {
+    "--zg-cx": "0.0px",
+    "--zg-glow": "0.555",
+    "--zg-h": "1.072",
+    "--zg-hue": "-23.24deg",
+    "--zg-l0": "0.874",
+    "--zg-w": "1.350",
+    "--zg-x0": "6.1px"
+   }
+  },
+  {
+   "allValues": "bcd24789",
+   "attributes": [
+    "data-on"
+   ],
+   "canvas": "300x90 fb2d7012",
+   "displace": "38.483528137207",
+   "filter": "id=zia-glow-distort-1 x=-10% y=80% width=120% height=33.3% color-interpolation-filters=sRGB",
+   "label": "on a slow device for over a second",
+   "layers": [
+    "div.zia-glow-layer.zia-glow-inner 74808235",
+    "div.zia-glow-layer.zia-glow-inner.zia-glow-warp b7803b15",
+    "div.zia-glow-layer.zia-glow-stroke 80dca518",
+    "div.zia-glow-layer.zia-glow-bloom ef88a035",
+    "div.zia-glow-layer.zia-glow-bloom.zia-glow-warp a8ebb34a",
+    "canvas.zia-glow-layer.zia-glow-band 811c9dc5",
+    "div.zia-glow-layer.zia-glow-core 811c9dc5",
+    "svg.zia-glow-defs 811c9dc5"
+   ],
+   "queued": 1,
+   "values": {
+    "--zg-cx": "0.0px",
+    "--zg-glow": "0.647",
+    "--zg-h": "1.201",
+    "--zg-hue": "-16.14deg",
+    "--zg-l0": "0.846",
+    "--zg-w": "1.463",
+    "--zg-x0": "30.2px"
+   }
+  },
+  {
+   "allValues": "4c4c8e1a",
+   "attributes": [
+    "data-on"
+   ],
+   "canvas": "300x90 a49ad930",
+   "displace": "30.8898220062256",
+   "filter": "id=zia-glow-distort-1 x=-10% y=85% width=120% height=28.3% color-interpolation-filters=sRGB",
+   "label": "five seconds on",
+   "layers": [
+    "div.zia-glow-layer.zia-glow-inner 74808235",
+    "div.zia-glow-layer.zia-glow-inner.zia-glow-warp b7803b15",
+    "div.zia-glow-layer.zia-glow-stroke 80dca518",
+    "div.zia-glow-layer.zia-glow-bloom ef88a035",
+    "div.zia-glow-layer.zia-glow-bloom.zia-glow-warp a8ebb34a",
+    "canvas.zia-glow-layer.zia-glow-band 811c9dc5",
+    "div.zia-glow-layer.zia-glow-core 811c9dc5",
+    "svg.zia-glow-defs 811c9dc5"
+   ],
+   "queued": 1,
+   "values": {
+    "--zg-cx": "0.0px",
+    "--zg-glow": "0.519",
+    "--zg-h": "1.021",
+    "--zg-hue": "23.19deg",
+    "--zg-l0": "0.375",
+    "--zg-w": "1.306",
+    "--zg-x0": "-67.4px"
+   }
+  },
+  {
+   "allValues": "d862cf6",
+   "attributes": [
+    "data-on"
+   ],
+   "canvas": "300x90 23c07a2e",
+   "displace": "31.171407699585",
+   "filter": "id=zia-glow-distort-1 x=-10% y=85% width=120% height=28.3% color-interpolation-filters=sRGB",
+   "label": "the artwork's colours",
+   "layers": [
+    "div.zia-glow-layer.zia-glow-inner 53cedbe4",
+    "div.zia-glow-layer.zia-glow-inner.zia-glow-warp fab092c4",
+    "div.zia-glow-layer.zia-glow-stroke fe7abf1d",
+    "div.zia-glow-layer.zia-glow-bloom 604c4c78",
+    "div.zia-glow-layer.zia-glow-bloom.zia-glow-warp 4a7e8b6d",
+    "canvas.zia-glow-layer.zia-glow-band 811c9dc5",
+    "div.zia-glow-layer.zia-glow-core 811c9dc5",
+    "svg.zia-glow-defs 811c9dc5"
+   ],
+   "queued": 1,
+   "values": {
+    "--zg-cx": "0.0px",
+    "--zg-glow": "0.524",
+    "--zg-h": "1.028",
+    "--zg-hue": "9.84deg",
+    "--zg-l0": "0.411",
+    "--zg-w": "1.312",
+    "--zg-x0": "-64.7px"
+   }
+  },
+  {
+   "allValues": "890efa4e",
+   "attributes": [
+    "data-core",
+    "data-on"
+   ],
+   "canvas": "300x90 f8f3ddec",
+   "displace": "32.6522674560547",
+   "filter": "id=zia-glow-distort-1 x=-10% y=80% width=120% height=33.3% color-interpolation-filters=sRGB",
+   "label": "light",
+   "layers": [
+    "div.zia-glow-layer.zia-glow-inner 53cedbe4",
+    "div.zia-glow-layer.zia-glow-inner.zia-glow-warp fab092c4",
+    "div.zia-glow-layer.zia-glow-stroke b1531e4b",
+    "div.zia-glow-layer.zia-glow-bloom d7da4752",
+    "div.zia-glow-layer.zia-glow-bloom.zia-glow-warp 74601ab3",
+    "canvas.zia-glow-layer.zia-glow-band 811c9dc5",
+    "div.zia-glow-layer.zia-glow-core 811c9dc5",
+    "svg.zia-glow-defs 811c9dc5"
+   ],
+   "queued": 1,
+   "values": {
+    "--zg-cx": "0.0px",
+    "--zg-glow": "0.549",
+    "--zg-h": "1.344",
+    "--zg-hue": "3.97deg",
+    "--zg-l0": "0.457",
+    "--zg-w": "1.225",
+    "--zg-x0": "-61.9px"
+   }
+  },
+  {
+   "allValues": "56579b28",
+   "attributes": [
+    "data-core",
+    "data-on",
+    "data-warp-off"
+   ],
+   "canvas": "300x90 865098cb",
+   "displace": "1.36762821674347",
+   "filter": "id=zia-glow-distort-1 x=-10% y=80% width=120% height=33.3% color-interpolation-filters=sRGB",
+   "label": "gathered",
+   "layers": [
+    "div.zia-glow-layer.zia-glow-inner 53cedbe4",
+    "div.zia-glow-layer.zia-glow-inner.zia-glow-warp fab092c4",
+    "div.zia-glow-layer.zia-glow-stroke b1531e4b",
+    "div.zia-glow-layer.zia-glow-bloom d7da4752",
+    "div.zia-glow-layer.zia-glow-bloom.zia-glow-warp 74601ab3",
+    "canvas.zia-glow-layer.zia-glow-band 811c9dc5",
+    "div.zia-glow-layer.zia-glow-core 811c9dc5",
+    "svg.zia-glow-defs 811c9dc5"
+   ],
+   "queued": 1,
+   "values": {
+    "--zg-cx": "25.7px",
+    "--zg-glow": "0.580",
+    "--zg-h": "1.410",
+    "--zg-hue": "1.71deg",
+    "--zg-l0": "0.544",
+    "--zg-w": "1.556",
+    "--zg-x0": "-29.1px"
+   }
+  },
+  {
+   "allValues": "ecc04cd",
+   "attributes": [
+    "data-core",
+    "data-on",
+    "data-warp-off"
+   ],
+   "canvas": "300x90 846f2e2a",
+   "displace": "1.36762821674347",
+   "filter": "id=zia-glow-distort-1 x=-10% y=80% width=120% height=33.3% color-interpolation-filters=sRGB",
+   "label": "motion from a function",
+   "layers": [
+    "div.zia-glow-layer.zia-glow-inner 53cedbe4",
+    "div.zia-glow-layer.zia-glow-inner.zia-glow-warp fab092c4",
+    "div.zia-glow-layer.zia-glow-stroke b1531e4b",
+    "div.zia-glow-layer.zia-glow-bloom d7da4752",
+    "div.zia-glow-layer.zia-glow-bloom.zia-glow-warp 74601ab3",
+    "canvas.zia-glow-layer.zia-glow-band 811c9dc5",
+    "div.zia-glow-layer.zia-glow-core 811c9dc5",
+    "svg.zia-glow-defs 811c9dc5"
+   ],
+   "queued": 1,
+   "values": {
+    "--zg-cx": "-34.3px",
+    "--zg-glow": "0.617",
+    "--zg-h": "1.488",
+    "--zg-hue": "-0.65deg",
+    "--zg-l0": "0.643",
+    "--zg-w": "1.289",
+    "--zg-x0": "-46.3px"
+   }
+  },
+  {
+   "allValues": "6b32547a",
+   "attributes": [
+    "data-on"
+   ],
+   "canvas": "200x90 5ee5c57a",
+   "displace": "15.2730236053467",
+   "filter": "id=zia-glow-distort-1 x=-10% y=85% width=120% height=28.3% color-interpolation-filters=sRGB",
+   "label": "narrower, theme colours, dark",
+   "layers": [
+    "div.zia-glow-layer.zia-glow-inner d326bb64",
+    "div.zia-glow-layer.zia-glow-inner.zia-glow-warp 14800b44",
+    "div.zia-glow-layer.zia-glow-stroke 4da17054",
+    "div.zia-glow-layer.zia-glow-bloom 2fcc043c",
+    "div.zia-glow-layer.zia-glow-bloom.zia-glow-warp 479d320f",
+    "canvas.zia-glow-layer.zia-glow-band 811c9dc5",
+    "div.zia-glow-layer.zia-glow-core 811c9dc5",
+    "svg.zia-glow-defs 811c9dc5"
+   ],
+   "queued": 1,
+   "values": {
+    "--zg-cx": "0.0px",
+    "--zg-glow": "0.634",
+    "--zg-h": "1.184",
+    "--zg-hue": "22.01deg",
+    "--zg-l0": "0.911",
+    "--zg-w": "1.448",
+    "--zg-x0": "11.0px"
+   }
+  },
+  {
+   "allValues": "7240eb13",
+   "attributes": [],
+   "canvas": "200x90 30729147",
+   "displace": "17.5368022918701",
+   "filter": "id=zia-glow-distort-1 x=-10% y=90% width=120% height=23.3% color-interpolation-filters=sRGB",
+   "label": "paused a moment",
+   "layers": [
+    "div.zia-glow-layer.zia-glow-inner d326bb64",
+    "div.zia-glow-layer.zia-glow-inner.zia-glow-warp 14800b44",
+    "div.zia-glow-layer.zia-glow-stroke 4da17054",
+    "div.zia-glow-layer.zia-glow-bloom 2fcc043c",
+    "div.zia-glow-layer.zia-glow-bloom.zia-glow-warp 479d320f",
+    "canvas.zia-glow-layer.zia-glow-band 811c9dc5",
+    "div.zia-glow-layer.zia-glow-core 811c9dc5",
+    "svg.zia-glow-defs 811c9dc5"
+   ],
+   "queued": 1,
+   "values": {
+    "--zg-cx": "0.0px",
+    "--zg-glow": "0.520",
+    "--zg-h": "1.022",
+    "--zg-hue": "20.11deg",
+    "--zg-l0": "0.796",
+    "--zg-w": "1.307",
+    "--zg-x0": "15.1px"
+   }
+  },
+  {
+   "allValues": "bb6d1fae",
+   "attributes": [],
+   "canvas": "200x90 2f8c542c",
+   "displace": "16.6993446350098",
+   "filter": "id=zia-glow-distort-1 x=-10% y=90% width=120% height=23.3% color-interpolation-filters=sRGB",
+   "label": "paused past the fade",
+   "layers": [
+    "div.zia-glow-layer.zia-glow-inner d326bb64",
+    "div.zia-glow-layer.zia-glow-inner.zia-glow-warp 14800b44",
+    "div.zia-glow-layer.zia-glow-stroke 4da17054",
+    "div.zia-glow-layer.zia-glow-bloom 2fcc043c",
+    "div.zia-glow-layer.zia-glow-bloom.zia-glow-warp 479d320f",
+    "canvas.zia-glow-layer.zia-glow-band 811c9dc5",
+    "div.zia-glow-layer.zia-glow-core 811c9dc5",
+    "svg.zia-glow-defs 811c9dc5"
+   ],
+   "queued": 0,
+   "values": {
+    "--zg-cx": "0.0px",
+    "--zg-glow": "0.454",
+    "--zg-h": "0.929",
+    "--zg-hue": "18.44deg",
+    "--zg-l0": "0.734",
+    "--zg-w": "1.226",
+    "--zg-x0": "17.4px"
+   }
+  },
+  {
+   "label": "destroyed",
+   "left": 0,
+   "queued": 0
+  }
+ ],
+ "ziaErrors": []
+}
