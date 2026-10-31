@@ -1,0 +1,51 @@
+{
+ "added": [
+  "zia-color-probe",
+  "zia-context-multiview",
+  "zia-context-multiview-replace",
+  "zia-context-split-essential",
+  "zia-copy-link-button",
+  "zia-folder-bookmark",
+  "zia-icons-empty",
+  "zia-icons-grid",
+  "zia-icons-page",
+  "zia-icons-search",
+  "zia-icons-searchbar",
+  "zia-icons-style",
+  "zia-icons-tab",
+  "zia-space-label",
+  "zia-tab-multiview",
+  "zia-tab-multiview-replace",
+  "zia-url-plain",
+  "zia-url-title",
+  "zia-workspace-slot"
+ ],
+ "checks": {
+  "Zia loaded": true
+ },
+ "marks": [
+  "zia-panels-beside",
+  "zia-site-dark",
+  "zia-swipe-arrow",
+  "zia-urlbar-position",
+  "zia-workspace-slot"
+ ],
+ "sine": "2.3.3.0",
+ "styleVars": [
+  "--zia-dark-ink",
+  "--zia-ink-h",
+  "--zia-ink-s",
+  "--zia-lib-icon-gap",
+  "--zia-lib-row-pad",
+  "--zia-media-solid",
+  "--zia-site-bg",
+  "--zia-url-bottom",
+  "--zia-url-left",
+  "--zia-url-width",
+  "--zia-urlbar-hover-bg",
+  "--zia-urlbar-open-offset",
+  "--zia-urlbar-open-offset-x"
+ ],
+ "zen": "1.24b",
+ "ziaErrors": []
+}

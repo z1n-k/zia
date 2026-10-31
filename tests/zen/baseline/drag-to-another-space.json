@@ -1,0 +1,16 @@
+{
+ "active": true,
+ "checks": {
+  "A moved to Two": true,
+  "hovering the icon switched space": true
+ },
+ "inOther": true,
+ "seen": {
+  "dragging": true,
+  "slides": {
+   "A": "translateY(90px)"
+  }
+ },
+ "stayedHome": true,
+ "ziaErrors": []
+}

@@ -1,0 +1,22 @@
+{
+ "checks": {
+  "F keeps its tabs": true,
+  "F moved above P": true
+ },
+ "inFolder": [
+  "(empty)",
+  "X",
+  "Y"
+ ],
+ "pinnedRows": [
+  "F",
+  "P"
+ ],
+ "seen": {
+  "dragging": true,
+  "slides": {
+   "P": "translateY(38px)"
+  }
+ },
+ "ziaErrors": []
+}

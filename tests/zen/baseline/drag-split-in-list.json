@@ -1,0 +1,20 @@
+{
+ "checks": {
+  "A and B are still split": true
+ },
+ "list": [
+  "[A]",
+  "[B]",
+  "D",
+  "C",
+  "New Tab"
+ ],
+ "seen": {
+  "dragging": true,
+  "slides": {
+   "C": "translateY(38px)",
+   "D": "translateY(38px)"
+  }
+ },
+ "ziaErrors": []
+}

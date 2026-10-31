@@ -1,6 +1,6 @@
 """Zia's tests in the real Zen: each flow in flows/ runs in a fresh copy of a throwaway
 profile, with Zia loaded from this working copy, and what it saw is compared with
-baseline.json (what an unchanged Zia sees).
+baseline/<flow>.json (what an unchanged Zia sees).
 
     tests/zen/run.sh                 every flow, compared with the baseline
     tests/zen/run.sh drag-within     only flows whose names contain "drag-within"
@@ -28,7 +28,7 @@ ROOT = os.path.expanduser("~/Library/Caches/zia-test")
 RUN = os.path.join(ROOT, "runs", str(os.getpid()))
 TEMPLATE = os.path.join(RUN, "template")
 PROFILES = os.path.join(RUN, "profiles")
-BASELINE = os.path.join(HERE, "baseline.json")
+BASELINE = os.path.join(HERE, "baseline")  # one file per flow, beside its flows/<flow>.js
 LATEST = os.path.join(ROOT, "latest.json")  # (the last run to finish)
 EVENT_UTILS = os.path.join(ROOT, "EventUtils.js")
 # (pinned, and checked, so the helpers never change under the tests)
@@ -80,7 +80,7 @@ def main(args):
     utils = event_utils()
     flows = sorted(f[:-3] for f in os.listdir(os.path.join(HERE, "flows")) if f.endswith(".js"))
     flows = [f for f in flows if not only or any(o in f for o in only)]
-    baseline = json.load(open(BASELINE)) if os.path.exists(BASELINE) else {}
+    baseline = {f[:-5]: json.load(open(os.path.join(BASELINE, f))) for f in os.listdir(BASELINE) if f.endswith(".json")}
     results, failed = {}, []
     started = time.time()
     for name in flows:
@@ -128,9 +128,12 @@ def main(args):
             failed.append(name)
     json.dump(results, open(LATEST, "w"), indent=1, sort_keys=True)
     if record:
-        baseline.update({name: seen for name, seen in results.items() if name not in failed})
-        json.dump(baseline, open(BASELINE, "w"), indent=1, sort_keys=True)
-        print(f"Recorded {len(results)} flows in {os.path.relpath(BASELINE)}")
+        kept = {name: seen for name, seen in results.items() if name not in failed}
+        for name, seen in kept.items():
+            with open(os.path.join(BASELINE, name + ".json"), "w") as out:
+                json.dump(seen, out, indent=1, sort_keys=True)
+                out.write("\n")
+        print(f"Recorded {len(kept)} flows in {os.path.relpath(BASELINE)}/")
     shutil.rmtree(RUN, ignore_errors=True)
     print(f"{len(flows) - len(failed)}/{len(flows)} passed in {time.time() - started:.0f}s")
     return 1 if failed else 0

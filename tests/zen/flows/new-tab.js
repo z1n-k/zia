@@ -7,11 +7,17 @@ await search.init();
 const engine = await search.getDefault();
 const engineHost = engine.getSubmission("zia").uri.host;
 BrowserCommands.openTab();
-await wait(2500);
+// (the tab opens on about:newtab, which Zia sends on to the search page as it starts loading)
+const browser = gBrowser.selectedTab.linkedBrowser;
+for (let i = 0; i < 40 && !browser.currentURI.schemeIs("https"); i++) {
+  await wait(250);
+}
+await wait(1500);
+const page = browser.currentURI.schemeIs("https") ? browser.currentURI.host : browser.currentURI.spec;
 done({
   value: gURLBar.value,
   focused: gURLBar.focused,
-  page: gBrowser.selectedTab.linkedBrowser.currentURI.host,
-  checks: { "the bar lets go": !gURLBar.focused, "it opened the search engine's page": gBrowser.selectedTab.linkedBrowser.currentURI.host === engineHost },
+  page,
+  checks: { "the bar lets go": !gURLBar.focused, "it opened the search engine's page": page === engineHost },
   ziaErrors: ziaErrors(),
 });

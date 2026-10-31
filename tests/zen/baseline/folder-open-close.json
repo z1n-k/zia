@@ -1,0 +1,42 @@
+{
+ "checks": {
+  "each click turns it over": true,
+  "it springs both ways": true
+ },
+ "closing": [
+  "div.tab-group-container height:119px>119>5px 420",
+  "div.tab-group-container marginBottom:0px>-1>0px 420",
+  "div.zen-tab-group-start marginTop:0px>-123>-123px 420",
+  "div.zia-fb-lid transform:translate(-0.85px, -3.4px) rotate(-14deg)>>none 320",
+  "div.zia-fb-sheet transform:translateY(-1.7px)>>translateY(0px) 400",
+  "div.zia-fi-front transform:rotateX(-32deg)>>none 400",
+  "div.zia-fi-sheet transform:translateY(-1.02px) rotate(9deg)>>none 400",
+  "div.zia-fi-sheet transform:translateY(-1.53px) rotate(2deg)>>none 400",
+  "div.zia-fi-sheet transform:translateY(-2.04px) rotate(-6deg)>>none 400",
+  "label.tab-group-label rotate:none>-90>-90deg 220",
+  "tab:(empty) opacity:1>1>0 220",
+  "tab:X opacity:1>1>0 220",
+  "tab:Y opacity:1>1>0 220",
+  "tab:Z opacity:1>1>0 220"
+ ],
+ "collapsed": [
+  true,
+  false,
+  true
+ ],
+ "opening": [
+  "div.tab-group-container height:0px>121>119px 420",
+  "div.zen-tab-group-start marginTop:0px>0>0px 420",
+  "div.zia-fb-lid transform:none>>translate(-0.85px, -3.4px) rotate(-14deg) 320",
+  "div.zia-fb-sheet transform:translateY(0px)>>translateY(-1.7px) 400",
+  "div.zia-fi-front transform:none>>rotateX(-32deg) 600",
+  "div.zia-fi-sheet transform:none>>translateY(-1.02px) rotate(9deg) 550",
+  "div.zia-fi-sheet transform:none>>translateY(-1.53px) rotate(2deg) 550",
+  "div.zia-fi-sheet transform:none>>translateY(-2.04px) rotate(-6deg) 550",
+  "label.tab-group-label rotate:-90deg>-90>none 220",
+  "tab:X height:38px>38>38px minHeight:0px>0>0px opacity:1>1>1 180",
+  "tab:Y height:38px>38>38px minHeight:0px>0>0px opacity:1>1>1 180",
+  "tab:Z height:38px>38>38px minHeight:0px>0>0px opacity:1>1>1 180"
+ ],
+ "ziaErrors": []
+}
