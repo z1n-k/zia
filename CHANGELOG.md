@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.114.1] — 2026-10-31
+
+### Fixed
+
+- On Windows in light mode with no space colour, the sidebar is see-through again, the
+  desktop showing through as in Zen itself. 2.103.1's light base, meant for a light space
+  colour, covered it too and left it nearly solid (thanks Poumpky).
+
 ## [2.114.0] — 2026-10-30
 
 ### Added

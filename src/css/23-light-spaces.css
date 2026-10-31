@@ -11,9 +11,11 @@
    white over a white app, dark (its dark text on it) over the desktop, and the light
    look only seemed to work some of the time. A light space has a light base under
    its colour there, so it's light whatever's behind, a touch of the material still
-   showing through. */
+   showing through. Only for a light space colour: in light mode with no space colour
+   the material is light already, and the base hid it, the sidebar solid where Zen's
+   is see-through. */
 @media (-moz-platform: windows) {
-  :root[zia-light]:not([privatebrowsingmode="temporary"]):not(#zia-none) #zen-main-app-wrapper {
+  :root[zia-light][zen-should-be-dark-mode="false"]:not([privatebrowsingmode="temporary"]):not(#zia-none) #zen-main-app-wrapper {
     background: rgba(246, 246, 248, 0.86) !important;
   }
 }
