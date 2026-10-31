@@ -12,3 +12,7 @@
 - The tab drag's `drag` record is one drag session shared by the 28-tab-drag-* files, which are
   one module: each field is set only by the files listed in 01's comment, rather than through
   setter functions (decided under Olly's go-ahead to judge what's best, 2026-10-31).
+- Code ported or taken from others stays close to its source, so updates from upstream stay easy,
+  and isn't held to the rubric's structure rules: welcome/metal.js (metal-fx), tidy-downloads/
+  (Bxthesda and Zylaah's Tidy Downloads), icons/tabler-* (Tabler data). Zia's own code around
+  them is (decided under Olly's go-ahead, 2026-10-31).
