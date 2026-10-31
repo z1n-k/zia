@@ -9,6 +9,145 @@
   // closed folder. A plain click still just closes it.
   let snapping = null;
 
+  // its listeners and hooks, added by moveTabsLikeDia (28-tab-dragging.js) in order
+  function watchDragStart() {
+    window.addEventListener("mousedown", notePress, true);
+    window.addEventListener("mousedown", noteFolderPress, true);
+    window.addEventListener("mousemove", snapOnMove, true);
+    window.addEventListener("click", swallowSnapClick, true);
+    window.addEventListener("dragstart", onStart, true);
+    document.getElementById("tabbrowser-tabs")?.addEventListener("dragstart", onStart, true);
+  }
+
+  const onStart = (event) => {
+    if (inLibrary(event)) {
+      return;
+    }
+    const tab = tabFromEvent(event);
+    if (tab) {
+      begin(tab, event);
+      return;
+    }
+    const inSidebar = event.target?.closest?.("#navigator-toolbox, #tabbrowser-tabs");
+    if (inSidebar && dragCore.pending?.tab) {
+      begin(dragCore.pending.tab, event);
+    }
+  };
+
+  const notePress = (event) => {
+    if (event.button !== 0) {
+      return;
+    }
+    const tab = tabFromEvent(event);
+    dragCore.pending = tab ? { tab, clientY: event.clientY, screenY: event.screenY } : null;
+  };
+
+  const noteFolderPress = (event) => {
+    snapping = null;
+    if (event.button !== 0 || !featureOn("dia-tab-drag")) {
+      return;
+    }
+    const label = event.target?.closest?.(".tab-group-label-container");
+    const folder = label?.closest?.("zen-folder");
+    if (!folder || label.parentElement !== folder || isCollapsed(folder)) {
+      return;
+    }
+    snapping = { folder, x: event.screenX, y: event.screenY, shut: false };
+  };
+
+  const snapOnMove = (event) => {
+    if (!snapping || snapping.shut) {
+      return;
+    }
+    if (!(event.buttons & 1)) {
+      snapping = null;
+      return;
+    }
+    if (Math.hypot(event.screenX - snapping.x, event.screenY - snapping.y) < 2) {
+      return;
+    }
+    snapping.shut = true;
+    snapShut(snapping.folder);
+  };
+
+  // shut already: the click that would have shut it isn't let reopen it
+  const swallowSnapClick = (event) => {
+    const shut = snapping?.shut && snapping.folder.contains(event.target);
+    snapping = null;
+    if (shut) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+  };
+
+  const begin = (target, event) => {
+    if (!target || target.hasAttribute?.("zen-essential")) {
+      return;
+    }
+    const folder = target.localName === "zen-folder" || target.isZenFolder ? target : null;
+
+    // an open folder that the drag caught before it shut: shut now
+    if (folder && !isCollapsed(folder)) {
+      snapShut(folder);
+    }
+    const split = !folder && target.group?.hasAttribute?.("split-view-group") ? target.group : null;
+    const moving = folder || split || target;
+    const { companions, foldedFrom } =
+      !folder && !split && target.multiselected ? foldCompanions(target) : { companions: 0, foldedFrom: null };
+    const { rows, mine, box, sepTop, pitch } = measureStart(target, folder, moving);
+    document.documentElement.setAttribute("zia-dragging-tab", "true");
+    muteZenHaptics(true);
+
+    // a split's row narrows into a folder as a tab does, by its box
+    const bg = folder ? null : split ? split.querySelector(":scope > .tab-group-container") : bgOf(target);
+    const content = folder || split ? null : contentOf(target);
+    unclipAround(moving);
+    noLanding();
+    drag = {
+      split,
+      ...widthLook(bg, content),
+      tab: target,
+      folder,
+      moving,
+      rows,
+      origin: box.top,
+      height: box.height,
+      index: mine?.index ?? 0,
+      pitch,
+      shifted: new Set(),
+      sepTop,
+      sepDelta: 0,
+      clientY: event.clientY || dragCore.pending?.clientY || 0,
+      screenY: event.screenY || dragCore.pending?.screenY || 0,
+      companions,
+      foldedFrom,
+      space: window.gZenWorkspaces?.activeWorkspace,
+    };
+    resetWidthMorph(target.group && isFolderEl(target.group) ? target.group : "plain");
+    dragCore.lastDy = 0;
+    lendOut(split || (folder ? null : target));
+    resetRows(rows, moving, folder);
+  };
+
+  // the rows, the dragged one among them, its box and the step the rows move by
+  const measureStart = (target, folder, moving) => {
+    const rows = measureRows(folder ? null : target);
+    const mine = rows.find((row) => row.item === target || row.node === moving || (folder && folder.contains(row.node)));
+    const box = layoutTop(moving);
+    const sepTop = openSeparator(folder);
+    const pitch = !folder && mine ? rowPitch(rows, mine, box.height, sepTop) : box.height;
+    return { rows, mine, box, sepTop, pitch };
+  };
+
+  // the background and content a drag narrows, and where they start (morphWidth)
+  const widthLook = (bg, content) => ({
+    bg,
+    content,
+    bgBox: bg ? bg.getBoundingClientRect() : null,
+    bgBase: marginsOf(bg),
+    contentBase: marginsOf(content),
+  });
+
   // Several tabs selected: the others fold into the one dragged (out of the list, the
   // rows closing up, a count on it), as macOS drags several things; Firefox moves them
   // all on the drop, and they show again there. (Only the dragged one moved, and the
@@ -108,63 +247,6 @@
     }
   };
 
-  const begin = (target, event) => {
-    if (!target || target.hasAttribute?.("zen-essential")) {
-      return;
-    }
-    const folder = target.localName === "zen-folder" || target.isZenFolder ? target : null;
-
-    // an open folder that the drag caught before it shut: shut now
-    if (folder && !isCollapsed(folder)) {
-      snapShut(folder);
-    }
-    const split = !folder && target.group?.hasAttribute?.("split-view-group") ? target.group : null;
-    const moving = folder || split || target;
-    const { companions, foldedFrom } =
-      !folder && !split && target.multiselected ? foldCompanions(target) : { companions: 0, foldedFrom: null };
-    const rows = measureRows(folder ? null : target);
-    const mine = rows.find((row) => row.item === target || row.node === moving || (folder && folder.contains(row.node)));
-    const box = layoutTop(moving);
-    const sepTop = openSeparator(folder);
-    const pitch = !folder && mine ? rowPitch(rows, mine, box.height, sepTop) : box.height;
-    document.documentElement.setAttribute("zia-dragging-tab", "true");
-    muteZenHaptics(true);
-
-    // a split's row narrows into a folder as a tab does, by its box
-    const bg = folder ? null : split ? split.querySelector(":scope > .tab-group-container") : bgOf(target);
-    const content = folder || split ? null : contentOf(target);
-    unclipAround(moving);
-    noLanding();
-    drag = {
-      split,
-      bg,
-      content,
-      bgBox: bg ? bg.getBoundingClientRect() : null,
-      bgBase: marginsOf(bg),
-      contentBase: marginsOf(content),
-      widthKey: target.group && isFolderEl(target.group) ? target.group : "plain",
-      tab: target,
-      folder,
-      moving,
-      rows,
-      origin: box.top,
-      height: box.height,
-      index: mine?.index ?? 0,
-      pitch,
-      shifted: new Set(),
-      sepTop,
-      sepDelta: 0,
-      clientY: event.clientY || dragCore.pending?.clientY || 0,
-      screenY: event.screenY || dragCore.pending?.screenY || 0,
-      companions,
-      foldedFrom,
-      space: window.gZenWorkspaces?.activeWorkspace,
-    };
-    dragCore.lastDy = 0;
-    lendOut(split || (folder ? null : target));
-    resetRows(rows, moving, folder);
-  };
-
   const snapShut = (folder) => {
     try {
       folder.collapsed = true;
@@ -175,75 +257,3 @@
     jumpToEnd(folder);
     folder.getBoundingClientRect();
   };
-
-  const onStart = (event) => {
-    if (inLibrary(event)) {
-      return;
-    }
-    const tab = tabFromEvent(event);
-    if (tab) {
-      begin(tab, event);
-      return;
-    }
-    const inSidebar = event.target?.closest?.("#navigator-toolbox, #tabbrowser-tabs");
-    if (inSidebar && dragCore.pending?.tab) {
-      begin(dragCore.pending.tab, event);
-    }
-  };
-
-  const notePress = (event) => {
-    if (event.button !== 0) {
-      return;
-    }
-    const tab = tabFromEvent(event);
-    dragCore.pending = tab ? { tab, clientY: event.clientY, screenY: event.screenY } : null;
-  };
-
-  const noteFolderPress = (event) => {
-    snapping = null;
-    if (event.button !== 0 || !featureOn("dia-tab-drag")) {
-      return;
-    }
-    const label = event.target?.closest?.(".tab-group-label-container");
-    const folder = label?.closest?.("zen-folder");
-    if (!folder || label.parentElement !== folder || isCollapsed(folder)) {
-      return;
-    }
-    snapping = { folder, x: event.screenX, y: event.screenY, shut: false };
-  };
-
-  const snapOnMove = (event) => {
-    if (!snapping || snapping.shut) {
-      return;
-    }
-    if (!(event.buttons & 1)) {
-      snapping = null;
-      return;
-    }
-    if (Math.hypot(event.screenX - snapping.x, event.screenY - snapping.y) < 2) {
-      return;
-    }
-    snapping.shut = true;
-    snapShut(snapping.folder);
-  };
-
-  // shut already: the click that would have shut it isn't let reopen it
-  const swallowSnapClick = (event) => {
-    const shut = snapping?.shut && snapping.folder.contains(event.target);
-    snapping = null;
-    if (shut) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-  };
-
-  // its listeners and hooks, added by moveTabsLikeDia (28-tab-dragging.js) in order
-  function watchDragStart() {
-    window.addEventListener("mousedown", notePress, true);
-    window.addEventListener("mousedown", noteFolderPress, true);
-    window.addEventListener("mousemove", snapOnMove, true);
-    window.addEventListener("click", swallowSnapClick, true);
-    window.addEventListener("dragstart", onStart, true);
-    document.getElementById("tabbrowser-tabs")?.addEventListener("dragstart", onStart, true);
-  }
-

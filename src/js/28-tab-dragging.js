@@ -1,5 +1,17 @@
-  // The node a dragged item moves as, and the drag's listeners added in order.
-  // Used elsewhere: nodeToMove, moveTabsLikeDia.
+  // The drag's listeners added in order, and the node a dragged item moves as.
+  // Used elsewhere: moveTabsLikeDia, nodeToMove.
+
+  // Tabs dragged the way Dia drags them: the rows slide out of the dragged tab's way and it
+  // lands where it's let go, in place of Zen's drop line (28-tab-drag-*.js). Listeners are
+  // added in this order, the order they run in.
+  function moveTabsLikeDia() {
+    watchDragImage();
+    watchDragStart();
+    watchEssentialStart();
+    watchEssentialDrop();
+    watchZenHooks();
+    watchSettle();
+  }
 
   function nodeToMove(element) {
     if (!element) {
@@ -19,16 +31,3 @@
     }
     return element;
   }
-
-  // Tabs dragged the way Dia drags them: the rows slide out of the dragged tab's way and it
-  // lands where it's let go, in place of Zen's drop line (28-tab-drag-*.js). Listeners are
-  // added in this order, the order they run in.
-  function moveTabsLikeDia() {
-    watchDragImage();
-    watchDragStart();
-    watchEssentialStart();
-    watchEssentialDrop();
-    watchZenHooks();
-    watchSettle();
-  }
-

@@ -3,12 +3,37 @@
 
   const TAP_GAP_MS = 140;
 
-  const newTabOnTop = () => Services.prefs.getBoolPref("zen.view.show-newtab-button-top", false);
-  const newTabButton = () =>
-    window.gZenWorkspaces?.activeWorkspaceElement?.newTabButton ||
-    document.querySelector("#tabs-newtab-button, #vertical-tabs-newtab-button");
-
   let lastTap = 0;
+
+  const apply = (dy) => {
+    const moving = drag?.moving;
+    if (!moving?.isConnected || !drag.rows) {
+      return;
+    }
+    if (drag.folder && !drag.essentials && Math.abs(drag.folder.getBoundingClientRect().height - drag.height) > 3) {
+      remeasureFolderDrag(drag.folder);
+    }
+    const visualMid = drag.origin + dy + drag.height / 2;
+    place(moving, dy, true);
+
+    // over the essentials (a tab or a split): the list closes up behind it
+    if (drag.essentials || drag.splitEssential) {
+      closeUpBehind();
+      return;
+    }
+
+    shiftNewTab(0);
+    const rowsMoved = shiftRows(visualMid);
+    const crossed = drag.sepTop != null ? shiftSep(visualMid) : false;
+    if (rowsMoved || crossed) {
+      tap();
+    }
+    updateTarget(visualMid);
+    takeEmptySlot();
+    paintFolders();
+    morphWidth(drag.target?.folder || null);
+  };
+
   // Zia's own tap. Only if haptics are on in Zen; while a drag has them
   // muted, they're let through for just this one.
   const tap = () => {
@@ -31,19 +56,6 @@
     } finally {
       if (muted) {
         Services.prefs.setBoolPref(HAPTIC_PREF, false);
-      }
-    }
-  };
-
-  const placeSep = (sepDelta) => {
-    const sep = currentSeparator();
-    if (sep && drag.sepDelta !== sepDelta) {
-      drag.sepDelta = sepDelta;
-      drag.sepShownY = sepDelta;
-      place(sep, sepDelta, false);
-      const button = newTabOnTop() ? newTabButton() : null;
-      if (button) {
-        place(button, sepDelta, false);
       }
     }
   };
@@ -82,24 +94,6 @@
     drag.sepTop = sep ? sep.getBoundingClientRect().top : null;
   };
 
-  // New Tab at the foot of the list, when the list closes up (only if the
-  // row taken out was above it)
-  const shiftNewTab = (by) => {
-    if (newTabOnTop()) {
-      return;
-    }
-    const button = newTabButton();
-    if (!button) {
-      return;
-    }
-    drag.newTabTop ??= button.getBoundingClientRect().top;
-    const want = by && drag.origin < drag.newTabTop ? by : 0;
-    if ((drag.newTabShift || 0) !== want) {
-      drag.newTabShift = want;
-      place(button, want, false);
-    }
-  };
-
   const closeUpBehind = () => {
     for (const row of drag.rows) {
       if (notARow(row)) {
@@ -128,6 +122,24 @@
     setDropSlot(null);
     takeEmptySlot();
     paintFolders();
+  };
+
+  // New Tab at the foot of the list, when the list closes up (only if the
+  // row taken out was above it)
+  const shiftNewTab = (by) => {
+    if (newTabOnTop()) {
+      return;
+    }
+    const button = newTabButton();
+    if (!button) {
+      return;
+    }
+    drag.newTabTop ??= button.getBoundingClientRect().top;
+    const want = by && drag.origin < drag.newTabTop ? by : 0;
+    if ((drag.newTabShift || 0) !== want) {
+      drag.newTabShift = want;
+      place(button, want, false);
+    }
   };
 
   const shiftRows = (visualMid) => {
@@ -180,31 +192,20 @@
     return crossed;
   };
 
-  const apply = (dy) => {
-    const moving = drag?.moving;
-    if (!moving?.isConnected || !drag.rows) {
-      return;
+  const placeSep = (sepDelta) => {
+    const sep = currentSeparator();
+    if (sep && drag.sepDelta !== sepDelta) {
+      drag.sepDelta = sepDelta;
+      drag.sepShownY = sepDelta;
+      place(sep, sepDelta, false);
+      const button = newTabOnTop() ? newTabButton() : null;
+      if (button) {
+        place(button, sepDelta, false);
+      }
     }
-    if (drag.folder && !drag.essentials && Math.abs(drag.folder.getBoundingClientRect().height - drag.height) > 3) {
-      remeasureFolderDrag(drag.folder);
-    }
-    const visualMid = drag.origin + dy + drag.height / 2;
-    place(moving, dy, true);
-
-    // over the essentials (a tab or a split): the list closes up behind it
-    if (drag.essentials || drag.splitEssential) {
-      closeUpBehind();
-      return;
-    }
-
-    shiftNewTab(0);
-    const rowsMoved = shiftRows(visualMid);
-    const crossed = drag.sepTop != null ? shiftSep(visualMid) : false;
-    if (rowsMoved || crossed) {
-      tap();
-    }
-    updateTarget(visualMid);
-    takeEmptySlot();
-    paintFolders();
-    morphWidth(drag.target?.folder || null);
   };
+
+  const newTabOnTop = () => Services.prefs.getBoolPref("zen.view.show-newtab-button-top", false);
+  const newTabButton = () =>
+    window.gZenWorkspaces?.activeWorkspaceElement?.newTabButton ||
+    document.querySelector("#tabs-newtab-button, #vertical-tabs-newtab-button");

@@ -8,45 +8,38 @@
   const LAND_MS = 180;
   const LAND_EASE = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 
-  const acceptSplitDrop = (event) => {
-    event.preventDefault();
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = "move";
+  const onOver = (event) => {
+    if (!drag?.moving?.isConnected) {
+      return;
     }
-  };
-
-  const pointerOf = (event) => ({
-    x: event.clientX || (event.screenX ? event.screenX - window.mozInnerScreenX : 0),
-    y: event.clientY || (event.screenY ? event.screenY - window.mozInnerScreenY : 0),
-  });
-  const inBox = (element, point) => {
-    if (!element) {
-      return false;
+    if (drag.foldedFrom != null) {
+      measureFoldLift();
     }
-    const box = element.getBoundingClientRect();
-    return box.width > 0 && point.x >= box.left && point.x <= box.right && point.y >= box.top && point.y <= box.bottom;
-  };
-
-  const essentialsGrid = () => window.gZenWorkspaces?.getCurrentEssentialsContainer?.() || document.querySelector(".zen-essentials-container");
-
-  // the lowest of a bottom and the essentials' tiles' bottoms
-  const tilesBottom = (bottom, grid = essentialsGrid()) => {
-    for (const tile of grid?.querySelectorAll(".tabbrowser-tab[zen-essential]:not([zia-essential-proxy])") || []) {
-      bottom = Math.max(bottom, tile.getBoundingClientRect().bottom);
+    const dy = dragDy(event);
+    if (dy === null) {
+      return;
     }
-    return bottom;
-  };
-  const essentialsBottom = () => tilesBottom(document.getElementById("zen-essentials")?.getBoundingClientRect().bottom ?? -Infinity);
-
-  // Over the tiles themselves or just below the last row: the essentials' own box stops
-  // a little short of it, so a drag along it kept flipping into a list row.
-  const overAnyTile = (point) => {
-    const grid = essentialsGrid();
-    if (!grid) {
-      return false;
+    dragCore.lastDy = dy;
+    try {
+      const over = event.target;
+      const point = pointerOf(event);
+      if (trackAway(over, point)) {
+        return;
+      }
+      hideThumb();
+      trackEssentials(event, over, point);
+      apply(dy);
+    } catch (err) {
+      console.error("[Zia] Tab drag failed:", err);
     }
-    const box = grid.getBoundingClientRect();
-    return box.width > 0 && point.x >= box.left && point.x <= box.right && point.y >= box.top && point.y <= tilesBottom(box.bottom, grid) + 6;
+    if (!dragCore.raf) {
+      dragCore.raf = requestAnimationFrame(() => {
+        dragCore.raf = 0;
+        if (drag) {
+          apply(dragCore.lastDy);
+        }
+      });
+    }
   };
 
   // The other selected tabs folded away above the dragged one moved it up a row each,
@@ -74,7 +67,7 @@
     return null;
   };
 
-  // Out past the sidebar's sides: the page's picture shows in place of the stand-in
+  // Out past the sidebar's sides: the page's picture shows in place of the dragged row
   const trackAway = (over, point) => {
     const sideBox = document.getElementById("navigator-toolbox")?.getBoundingClientRect();
     drag.away =
@@ -90,6 +83,27 @@
       }
     }
     return drag.away;
+  };
+
+  const trackEssentials = (event, over, point) => {
+    const { overEssentials, hasTiles, promo, grid } = measureEssentials(over, point);
+    drag.essentials = !drag.folder && !drag.split && overEssentials && canBeEssential(drag.tab);
+    trackSplitEssential(event, point, overEssentials);
+    // the dragged tab's section stops covering the essentials, so Zen
+    // sees them under the pointer and takes the drop
+    setFlag("zia-drag-over-essentials", !!(drag.essentials || drag.splitEssential));
+    drag.noTiles = drag.essentials && !hasTiles && !promo;
+    makeRoom(drag.noTiles ? document.getElementById("zen-essentials") || grid : null);
+    if (drag.essentials) {
+      fitZenSlot();
+    }
+    if (drag.essentials && point.x) {
+      tapOnTileShift();
+      showProxy(point.x, point.y);
+    } else if (!drag.essentials && !drag.splitEssential) {
+      drag.tileShifts = null;
+      hideProxy();
+    }
   };
 
   const measureEssentials = (over, point) => {
@@ -136,58 +150,45 @@
     }
   };
 
-  const trackEssentials = (event, over, point) => {
-    const { overEssentials, hasTiles, promo, grid } = measureEssentials(over, point);
-    drag.essentials = !drag.folder && !drag.split && overEssentials && canBeEssential(drag.tab);
-    trackSplitEssential(event, point, overEssentials);
-    // the dragged tab's section stops covering the essentials, so Zen
-    // sees them under the pointer and takes the drop
-    setFlag("zia-drag-over-essentials", !!(drag.essentials || drag.splitEssential));
-    drag.noTiles = drag.essentials && !hasTiles && !promo;
-    makeRoom(drag.noTiles ? document.getElementById("zen-essentials") || grid : null);
-    if (drag.essentials) {
-      fitZenSlot();
-    }
-    if (drag.essentials && point.x) {
-      tapOnTileShift();
-      showProxy(point.x, point.y);
-    } else if (!drag.essentials && !drag.splitEssential) {
-      drag.tileShifts = null;
-      hideProxy();
+  const acceptSplitDrop = (event) => {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = "move";
     }
   };
 
-  const onOver = (event) => {
-    if (!drag?.moving?.isConnected) {
+  const fixDrop = (event) => {
+    const tab = drag?.tab;
+    const data = tab?._dragData;
+    if (drag?.splitEssential) {
+      acceptSplitDrop(event);
       return;
     }
-    if (drag.foldedFrom != null) {
-      measureFoldLift();
-    }
-    const dy = dragDy(event);
-    if (dy === null) {
+    if (data && drag.essentials && drag.noTiles) {
+      data.dropElement = tab;
+      data.dropBefore = true;
       return;
     }
-    dragCore.lastDy = dy;
-    try {
-      const over = event.target;
-      const point = pointerOf(event);
-      if (trackAway(over, point)) {
-        return;
+    if (!data || !event.clientY || drag.folder || drag.essentials || drag.away) {
+      return;
+    }
+    if (drag.target?.hand) {
+      data.dropElement = tab;
+      data.dropBefore = true;
+      if (typeof tab.elementIndex === "number") {
+        data.animDropElementIndex = tab.elementIndex;
       }
-      hideThumb();
-      trackEssentials(event, over, point);
-      apply(dy);
-    } catch (err) {
-      console.error("[Zia] Tab drag failed:", err);
+      return;
     }
-    if (!dragCore.raf) {
-      dragCore.raf = requestAnimationFrame(() => {
-        dragCore.raf = 0;
-        if (drag) {
-          apply(dragCore.lastDy);
-        }
-      });
+    const y = event.clientY;
+    const target = rowAtY(y, tab);
+    if (!target || dropOnFolderName(data, target, y)) {
+      return;
+    }
+    data.dropElement = target.item;
+    data.dropBefore = y < target.box.top + target.box.height / 2;
+    if (typeof target.item.elementIndex === "number") {
+      data.animDropElementIndex = target.item.elementIndex;
     }
   };
 
@@ -227,39 +228,40 @@
     return false;
   };
 
-  const fixDrop = (event) => {
-    const tab = drag?.tab;
-    const data = tab?._dragData;
-    if (drag?.splitEssential) {
-      acceptSplitDrop(event);
-      return;
+  const pointerOf = (event) => ({
+    x: event.clientX || (event.screenX ? event.screenX - window.mozInnerScreenX : 0),
+    y: event.clientY || (event.screenY ? event.screenY - window.mozInnerScreenY : 0),
+  });
+
+  const inBox = (element, point) => {
+    if (!element) {
+      return false;
     }
-    if (data && drag.essentials && drag.noTiles) {
-      data.dropElement = tab;
-      data.dropBefore = true;
-      return;
+    const box = element.getBoundingClientRect();
+    return box.width > 0 && point.x >= box.left && point.x <= box.right && point.y >= box.top && point.y <= box.bottom;
+  };
+
+  const essentialsGrid = () => window.gZenWorkspaces?.getCurrentEssentialsContainer?.() || document.querySelector(".zen-essentials-container");
+
+  // Over the tiles themselves or just below the last row: the essentials' own box stops
+  // a little short of it, so a drag along it kept flipping into a list row.
+  const overAnyTile = (point) => {
+    const grid = essentialsGrid();
+    if (!grid) {
+      return false;
     }
-    if (!data || !event.clientY || drag.folder || drag.essentials || drag.away) {
-      return;
+    const box = grid.getBoundingClientRect();
+    return box.width > 0 && point.x >= box.left && point.x <= box.right && point.y >= box.top && point.y <= tilesBottom(box.bottom, grid) + 6;
+  };
+
+  const essentialsBottom = () => tilesBottom(document.getElementById("zen-essentials")?.getBoundingClientRect().bottom ?? -Infinity);
+
+  // the lowest of a bottom and the essentials' tiles' bottoms
+  const tilesBottom = (bottom, grid = essentialsGrid()) => {
+    for (const tile of grid?.querySelectorAll(".tabbrowser-tab[zen-essential]:not([zia-essential-proxy])") || []) {
+      bottom = Math.max(bottom, tile.getBoundingClientRect().bottom);
     }
-    if (drag.target?.hand) {
-      data.dropElement = tab;
-      data.dropBefore = true;
-      if (typeof tab.elementIndex === "number") {
-        data.animDropElementIndex = tab.elementIndex;
-      }
-      return;
-    }
-    const y = event.clientY;
-    const target = rowAtY(y, tab);
-    if (!target || dropOnFolderName(data, target, y)) {
-      return;
-    }
-    data.dropElement = target.item;
-    data.dropBefore = y < target.box.top + target.box.height / 2;
-    if (typeof target.item.elementIndex === "number") {
-      data.animDropElementIndex = target.item.elementIndex;
-    }
+    return bottom;
   };
 
   // LAND_EASE's curve, for a glide stepped frame by frame
@@ -277,4 +279,3 @@
     }
     return bez(0.8, 1, (lo + hi) / 2);
   };
-

@@ -8,18 +8,53 @@
   const HOLD_EASE_MS = 200;
   const SHUT_WAIT_MS = 1000;
 
-  let thumb = null;
-  let thumbTimer = 0;
+  // the thumbnail shown out over the page, and its timer back into the row
+  const thumb = { node: null, timer: 0 };
 
-  const pictureSource = () => {
-    const source = document.getElementById("zia-split-drag-picture");
-    return source?.width ? source : null;
+  // folders whose one showing tab was lent out, to hold as it lands (unlend, holdLent)
+  let lentHomes = [];
+
+  const showThumb = (x, y) => {
+    clearTimeout(thumb.timer);
+    if (!thumb.node) {
+      thumb.node = document.createElementNS(XHTML_NS, "div");
+      thumb.node.id = "zia-drag-thumb";
+      fitThumb(thumb.node, (bgOf(drag.tab) || drag.moving).getBoundingClientRect());
+      root.appendChild(thumb.node);
+      thumb.node.getBoundingClientRect();
+    }
+    fillThumb();
+    thumb.node.removeAttribute("zia-leaving");
+    const size = pictureSize();
+    sizeThumb(thumb.node, size.width, size.height);
+    thumb.node.style.left = `${Math.round(x)}px`;
+    thumb.node.style.top = `${Math.round(y)}px`;
+    if (!drag.moving.hasAttribute("zia-drag-away")) {
+      tap();
+    }
+    drag.moving.setAttribute("zia-drag-away", "true");
   };
-  const pictureSize = () => {
-    const source = pictureSource();
-    const width = parseFloat(source?.style.width) || DRAG_PICTURE_W;
-    const height = parseFloat(source?.style.height) || DRAG_PICTURE_H;
-    return { width, height };
+
+  const hideThumb = (instant = false) => {
+    if (!thumb.node || thumb.node.hasAttribute("zia-leaving")) {
+      return;
+    }
+    const leaving = thumb.node;
+    const moving = drag?.moving;
+    const done = () => {
+      leaving.remove();
+      if (thumb.node === leaving) {
+        thumb.node = null;
+      }
+      moving?.removeAttribute("zia-drag-away");
+    };
+    if (instant || !moving?.isConnected) {
+      done();
+      return;
+    }
+    leaving.setAttribute("zia-leaving", "true");
+    fitThumb(leaving, (bgOf(drag.tab) || moving).getBoundingClientRect());
+    thumb.timer = setTimeout(done, THUMB_MS);
   };
 
   const fillPicture = (node, tab) => {
@@ -48,60 +83,29 @@
       node.setAttribute("zia-card", "true");
     }
   };
-  const fillThumb = () => fillPicture(thumb, drag?.tab);
+  const fillThumb = () => fillPicture(thumb.node, drag?.tab);
+
+  const pictureSource = () => {
+    const source = document.getElementById("zia-split-drag-picture");
+    return source?.width ? source : null;
+  };
+  const pictureSize = () => {
+    const source = pictureSource();
+    const width = parseFloat(source?.style.width) || DRAG_PICTURE_W;
+    const height = parseFloat(source?.style.height) || DRAG_PICTURE_H;
+    return { width, height };
+  };
 
   const sizeThumb = (node, width, height) => {
     node.style.width = `${Math.round(width)}px`;
     node.style.height = `${Math.round(height)}px`;
   };
+
   // sized to a box and centred on it (it's drawn from its middle)
   const fitThumb = (node, box) => {
     sizeThumb(node, box.width, box.height);
     node.style.left = `${Math.round(box.left + box.width / 2)}px`;
     node.style.top = `${Math.round(box.top + box.height / 2)}px`;
-  };
-
-  const showThumb = (x, y) => {
-    clearTimeout(thumbTimer);
-    if (!thumb) {
-      thumb = document.createElementNS(XHTML_NS, "div");
-      thumb.id = "zia-drag-thumb";
-      fitThumb(thumb, (bgOf(drag.tab) || drag.moving).getBoundingClientRect());
-      root.appendChild(thumb);
-      thumb.getBoundingClientRect();
-    }
-    fillThumb();
-    thumb.removeAttribute("zia-leaving");
-    const size = pictureSize();
-    sizeThumb(thumb, size.width, size.height);
-    thumb.style.left = `${Math.round(x)}px`;
-    thumb.style.top = `${Math.round(y)}px`;
-    if (!drag.moving.hasAttribute("zia-drag-away")) {
-      tap();
-    }
-    drag.moving.setAttribute("zia-drag-away", "true");
-  };
-
-  const hideThumb = (instant = false) => {
-    if (!thumb || thumb.hasAttribute("zia-leaving")) {
-      return;
-    }
-    const leaving = thumb;
-    const moving = drag?.moving;
-    const done = () => {
-      leaving.remove();
-      if (thumb === leaving) {
-        thumb = null;
-      }
-      moving?.removeAttribute("zia-drag-away");
-    };
-    if (instant || !moving?.isConnected) {
-      done();
-      return;
-    }
-    leaving.setAttribute("zia-leaving", "true");
-    fitThumb(leaving, (bgOf(drag.tab) || moving).getBoundingClientRect());
-    thumbTimer = setTimeout(done, THUMB_MS);
   };
 
   const noLanding = () => {
@@ -144,10 +148,42 @@
     }
     home.setAttribute("zia-lent", "true");
   };
+
+  const unlend = () => {
+    for (const home of document.querySelectorAll("zen-folder[zia-lent]")) {
+      // (on the folder itself, where its bounce looks, 06-tab-animations)
+      home.ziaLentUntil = Date.now() + LENT_MS;
+      home.removeAttribute("zia-lent");
+      // where its box ended through the drag (its visible bottom), for holdLent
+      home.ziaBoxBottom = home.getBoundingClientRect().bottom - (parseFloat(getComputedStyle(home, "::before").bottom) || 0);
+      home.ziaHeldHeight = home.getBoundingClientRect().height;
+      // and where what's below was seen: the rows round it were shifted to show the tab gone,
+      // so held by its height alone, what's below dropped a row first
+      const below = shownAfter(home);
+      home.ziaBelow = below ? { node: below, top: below.getBoundingClientRect().top } : null;
+      lentHomes.push(home);
+    }
+  };
+
+  // What shows next below a folder (for holdLent: where it was seen)
+  const shownAfter = (home) => {
+    const strip = document.getElementById("tabbrowser-tabs");
+    for (let at = home; at && at !== strip && strip?.contains(at); at = at.parentElement) {
+      for (let next = at.nextElementSibling; next; next = next.nextElementSibling) {
+        if (next.hasAttribute("zia-landing") || next.hasAttribute("zia-dragging")) {
+          continue;
+        }
+        if (next.getBoundingClientRect().height > 0) {
+          return next;
+        }
+      }
+    }
+    return null;
+  };
+
   // As the tab leaves, the folder's box is held where it ended through the drag, then
   // eased to its own height (in one step it snapped; held by its whole height it showed
   // more first, opening a little before closing)
-  let lentHomes = [];
   const holdLent = () => {
     const homes = lentHomes;
     lentHomes = [];
@@ -156,6 +192,8 @@
     }
   };
 
+  // (what's noted for it is kept on the folder itself, ziaHeldHeight and the like: noted
+  // twice before it's held, the later note wins and it's held once)
   const holdHome = (home) => {
     let held = home.ziaHeldHeight;
     const boxBottom = home.ziaBoxBottom;
@@ -175,6 +213,7 @@
     const inset = home.getBoundingClientRect().top + held - boxBottom;
     home.style.setProperty("--zia-hold-inset", `${inset}px`);
     home.setAttribute("zia-holding", "true");
+    // (not kept or cancelled: the release must always come, or the folder stays held)
     setTimeout(() => releaseHome(home, held, inset), HOLD_MS);
   };
 
@@ -206,6 +245,7 @@
 
   const easeUntilShut = (home, held, own, timing) => {
     const easing = home.animate([{ height: `${held}px` }, { height: `${own}px` }], { ...timing, fill: "forwards" });
+    // (checked each frame, and given up after SHUT_WAIT_MS, so it always ends)
     const until = performance.now() + SHUT_WAIT_MS;
     const release = () => {
       const list = home.querySelector(":scope > .tab-group-container");
@@ -218,35 +258,3 @@
     };
     requestAnimationFrame(release);
   };
-
-  // What shows next below a folder (for holdLent: where it was seen)
-  const shownAfter = (home) => {
-    const strip = document.getElementById("tabbrowser-tabs");
-    for (let at = home; at && at !== strip && strip?.contains(at); at = at.parentElement) {
-      for (let next = at.nextElementSibling; next; next = next.nextElementSibling) {
-        if (next.hasAttribute("zia-landing") || next.hasAttribute("zia-dragging")) {
-          continue;
-        }
-        if (next.getBoundingClientRect().height > 0) {
-          return next;
-        }
-      }
-    }
-    return null;
-  };
-
-  const unlend = () => {
-    for (const home of document.querySelectorAll("zen-folder[zia-lent]")) {
-      home.ziaLentUntil = Date.now() + LENT_MS;
-      home.removeAttribute("zia-lent");
-      // where its box ended through the drag (its visible bottom), for holdLent
-      home.ziaBoxBottom = home.getBoundingClientRect().bottom - (parseFloat(getComputedStyle(home, "::before").bottom) || 0);
-      home.ziaHeldHeight = home.getBoundingClientRect().height;
-      // and where what's below was seen: the rows round it were shifted to show the tab gone,
-      // so held by its height alone, what's below dropped a row first
-      const below = shownAfter(home);
-      home.ziaBelow = below ? { node: below, top: below.getBoundingClientRect().top } : null;
-      lentHomes.push(home);
-    }
-  };
-

@@ -14,6 +14,9 @@
   // (the settling mark left on after the animations' hold: it was stuck)
   const SETTLING_STUCK_MS = 1000;
 
+  // The drop's later steps (a step or a frame on, or a glide's end) aren't kept or cancelled:
+  // each runs once to take off a look the drop left, and must, even once a new drag begins.
+
   // Where what's dropped was let go, and its pin and width put right as the drop finishes
   // (dropFolder, dropTab)
   const landing = { from: null, repin: null, refit: null };
@@ -27,28 +30,37 @@
     lastTidy: 0,
   };
 
-  const releaseToZen = (event) => {
-    const tab = drag.split || drag.tab;
-    dragImage.zen = true;
-    try {
-      const image = gBrowser.tabContainer.tabDragAndDrop?.originalDragImageArgs;
-      if (image?.length) {
-        event.dataTransfer?.updateDragImage(...image);
-      }
-    } catch (err) {
-      noteError("tab dragging: Zen's picture back", err);
-    }
-    hideThumb(true);
-    clearMoved();
-    if (drag.folder) {
-      unmorphFolder(drag.folder);
-    }
-    easeOutWidth(tab);
-    makeRoom(null);
-    clearProxy();
-    endDrag();
-    document.documentElement.removeAttribute("zia-dragging-tab");
+  // its listeners and hooks, added by moveTabsLikeDia (28-tab-dragging.js) in order
+  function watchSettle() {
+    window.addEventListener("drop", noteRealDrop, true);
+    window.addEventListener("dragstart", forgetRealDrop, true);
+    window.addEventListener("dragover", followSpaceSwitch, true);
+    window.addEventListener("drop", settle, true);
+    window.addEventListener("dragstart", startFresh, true);
+    window.addEventListener("dragend", settleTwice);
+    window.addEventListener("mousemove", tidyLostDrag, true);
+  }
+
+  const noteRealDrop = () => {
+    settling.realDrop = true;
   };
+  const forgetRealDrop = () => {
+    settling.realDrop = false;
+  };
+
+  // Held over a space's icon, Zen switches to that space mid-drag, and the rest of the drag
+  // is Zen's: Zia's moved rows were the space it left, hidden now, and it went on steering the
+  // drop by them (fixDrop), so the tab landed back in that space, pinned there (#488). Zen
+  // announces no switch (ZenWorkspacesUIUpdate only comes at start-up), so it's seen as the
+  // drag goes on, and Zia lets go: its rows put back and its steering stopped, Zen's drop
+  // left as it is. (Not settle(): that turns Zen's drop off, and in 2.113.0 the tab went
+  // back where it was.)
+  const followSpaceSwitch = (event) => {
+    if (drag && drag.space !== window.gZenWorkspaces?.activeWorkspace) {
+      followIntoSpace(event);
+    }
+  };
+
   // A tab (or a split) goes with the drag instead: moved into the space now showing, and
   // dragged on there as before, under the pointer and inside the sidebar until pulled out to
   // the page. Handed to Zen, its loose picture went anywhere, over the split's panes too.
@@ -83,6 +95,62 @@
     }
   };
 
+  const releaseToZen = (event) => {
+    const tab = drag.split || drag.tab;
+    handImageToZen();
+    try {
+      const image = gBrowser.tabContainer.tabDragAndDrop?.originalDragImageArgs;
+      if (image?.length) {
+        event.dataTransfer?.updateDragImage(...image);
+      }
+    } catch (err) {
+      noteError("tab dragging: Zen's picture back", err);
+    }
+    hideThumb(true);
+    clearMoved();
+    if (drag.folder) {
+      unmorphFolder(drag.folder);
+    }
+    easeOutWidth(tab);
+    makeRoom(null);
+    clearProxy();
+    endDrag();
+    document.documentElement.removeAttribute("zia-dragging-tab");
+  };
+
+  const settle = () => {
+    const essential = takeEssentialDropped();
+    const droppedTab = drag?.tab || essential || null;
+    noteLandingFrom();
+    // (a folder let go is moved a step later: its folders keep their look till then)
+    const folderLanding = !!drag?.folder && dropFinish.pending;
+    unmorphDropped(droppedTab);
+    endDrag();
+    document.documentElement.removeAttribute("zia-dragging-tab");
+    unfoldCompanions();
+    clearDragLook(folderLanding);
+
+    if (dragCore.raf) {
+      cancelAnimationFrame(dragCore.raf);
+      dragCore.raf = 0;
+    }
+    blockAnims(ANIM_BLOCK_MS);
+    stopZenDropAnimation();
+    const strip = document.getElementById("tabbrowser-tabs");
+
+    const from = landing.from;
+    landing.from = null;
+    strip?.setAttribute("zia-settling", "true");
+    const locked = lockMoved();
+    if (from?.node?.isConnected) {
+      glideLanding(from);
+    }
+    wipeWhileSettling(strip, locked, droppedTab);
+    // the drop's own placing, now its landing is set up
+    finishDropNow();
+    holdLent();
+  };
+
   // where what's dropped was let go, for it to glide from
   const noteLandingFrom = () => {
     if (drag?.moving && !drag.essentials && !drag.away && landing.from === null && settling.realDrop) {
@@ -105,6 +173,7 @@
         }
       }, 0);
     }
+    // (after the drop has placed it, and a frame on, so the ease starts from its new place)
     if (drag?.bg) {
       setTimeout(() => requestAnimationFrame(() => easeOutWidth(droppedTab)), 0);
     }
@@ -197,6 +266,41 @@
     return locked;
   };
 
+  const glideLanding = (from) => {
+    const node = from.node;
+    holdFolderHover(node);
+
+    node.setAttribute("zia-landing", "true");
+    const held = node.getBoundingClientRect();
+    node.style.setProperty("transform", `translate(${from.left - held.left}px, ${from.top - held.top}px)`, "important");
+    // Firefox clears every tab's transform as its drag ends, so the tab painted a frame at
+    // its new spot before the glide: it's pinned where let go each frame until the drop moves it
+    const pin = () => {
+      if (!node.isConnected) {
+        return;
+      }
+      node.style.removeProperty("transform");
+      const at = node.getBoundingClientRect();
+      node.style.setProperty("transform", `translate(${from.left - at.left}px, ${from.top - at.top}px)`, "important");
+    };
+    landing.repin = pin;
+    landing.refit = from.bg ? () => settleDroppedWidth(from.tab, from.bgWidth) : null;
+    // (each frame until the drop's placed it, then the glide: never cancelled, as the drop
+    // always finishes)
+    const glideIn = () => {
+      if (dropFinish.pending) {
+        pin();
+        requestAnimationFrame(glideIn);
+        return;
+      }
+      landing.repin = null;
+      landing.refit = null;
+      hoverHold.refit?.();
+      glideFrom(node, from);
+    };
+    requestAnimationFrame(glideIn);
+  };
+
   // From where it was let go into where it's landed
   const glideFrom = (node, from) => {
     node.style.removeProperty("transform");
@@ -223,37 +327,32 @@
     glide.finished.then(end, end);
   };
 
-  const glideLanding = (from) => {
-    const node = from.node;
-    holdFolderHover(node);
-
-    node.setAttribute("zia-landing", "true");
-    const held = node.getBoundingClientRect();
-    node.style.setProperty("transform", `translate(${from.left - held.left}px, ${from.top - held.top}px)`, "important");
-    // Firefox clears every tab's transform as its drag ends, so the tab painted a frame at
-    // its new spot before the glide: it's pinned where let go each frame until the drop moves it
-    const pin = () => {
-      if (!node.isConnected) {
+  // Zen's and Firefox's moves wiped off each frame while the drop settles, then the rows
+  // unlocked. A new drag started within the settling time is left alone: the wipe undid the
+  // offsets Zen gives the other essentials to open a gap
+  const wipeWhileSettling = (strip, locked, droppedTab) => {
+    const gen = settling.dragGen;
+    const unlock = () => {
+      strip?.removeAttribute("zia-settling");
+      for (const node of locked) {
+        node.style.removeProperty("top");
+        node.removeAttribute("zia-drop-lock");
+      }
+    };
+    // (each frame until Zen's animations are let back in, a set time, so it always ends)
+    const wipe = () => {
+      if (gen !== settling.dragGen) {
+        unlock();
         return;
       }
-      node.style.removeProperty("transform");
-      const at = node.getBoundingClientRect();
-      node.style.setProperty("transform", `translate(${from.left - at.left}px, ${from.top - at.top}px)`, "important");
-    };
-    landing.repin = pin;
-    landing.refit = from.bg ? () => settleDroppedWidth(from.tab, from.bgWidth) : null;
-    const glideIn = () => {
-      if (dropFinish.pending) {
-        pin();
-        requestAnimationFrame(glideIn);
-        return;
+      strip?.querySelectorAll(".tabbrowser-tab, .tab-group-label-container, tab-group, zen-folder").forEach((node) => wipeNode(node, locked, droppedTab));
+      if (Date.now() < blockAnimUntil) {
+        requestAnimationFrame(wipe);
+      } else {
+        unlock();
       }
-      landing.repin = null;
-      landing.refit = null;
-      hoverHold.refit?.();
-      glideFrom(node, from);
     };
-    requestAnimationFrame(glideIn);
+    wipe();
   };
 
   const wipeNode = (node, locked, droppedTab) => {
@@ -277,64 +376,18 @@
     }
   };
 
-  // Zen's and Firefox's moves wiped off each frame while the drop settles, then the rows
-  // unlocked. A new drag started within the settling time is left alone: the wipe undid the
-  // offsets Zen gives the other essentials to open a gap
-  const wipeWhileSettling = (strip, locked, droppedTab) => {
-    const gen = settling.dragGen;
-    const unlock = () => {
-      strip?.removeAttribute("zia-settling");
-      for (const node of locked) {
-        node.style.removeProperty("top");
-        node.removeAttribute("zia-drop-lock");
-      }
-    };
-    const wipe = () => {
-      if (gen !== settling.dragGen) {
-        unlock();
-        return;
-      }
-      strip?.querySelectorAll(".tabbrowser-tab, .tab-group-label-container, tab-group, zen-folder").forEach((node) => wipeNode(node, locked, droppedTab));
-      if (Date.now() < blockAnimUntil) {
-        requestAnimationFrame(wipe);
-      } else {
-        unlock();
-      }
-    };
-    wipe();
+  const startFresh = () => {
+    // (and what the last drop kept showing: dragged straight back into
+    // the essentials, a tab kept its x on the tile)
+    hoverHold.release?.();
+    settling.dragGen++;
+    unblockAnims();
   };
 
-  const settle = () => {
-    const droppedTab = drag?.tab || essentialDropped || null;
-    noteLandingFrom();
-    essentialDropped = null;
-    // (a folder let go is moved a step later: its folders keep their look till then)
-    const folderLanding = !!drag?.folder && dropFinish.pending;
-    unmorphDropped(droppedTab);
-    endDrag();
-    document.documentElement.removeAttribute("zia-dragging-tab");
-    unfoldCompanions();
-    clearDragLook(folderLanding);
-
-    if (dragCore.raf) {
-      cancelAnimationFrame(dragCore.raf);
-      dragCore.raf = 0;
-    }
-    blockAnims(ANIM_BLOCK_MS);
-    stopZenDropAnimation();
-    const strip = document.getElementById("tabbrowser-tabs");
-
-    const from = landing.from;
-    landing.from = null;
-    strip?.setAttribute("zia-settling", "true");
-    const locked = lockMoved();
-    if (from?.node?.isConnected) {
-      glideLanding(from);
-    }
-    wipeWhileSettling(strip, locked, droppedTab);
-    // the drop's own placing, now its landing is set up
-    finishDropNow();
-    holdLent();
+  // (the second, a step later, isn't kept: settling again only tidies what's left)
+  const settleTwice = () => {
+    settle();
+    setTimeout(settle, 0);
   };
 
   // A drag that ends where this window can't see (another window, the desktop, its tab
@@ -359,48 +412,3 @@
       }
     }
   };
-
-  const noteRealDrop = () => {
-    settling.realDrop = true;
-  };
-  const forgetRealDrop = () => {
-    settling.realDrop = false;
-  };
-
-  // Held over a space's icon, Zen switches to that space mid-drag, and the rest of the drag
-  // is Zen's: Zia's moved rows were the space it left, hidden now, and it went on steering the
-  // drop by them (fixDrop), so the tab landed back in that space, pinned there (#488). Zen
-  // announces no switch (ZenWorkspacesUIUpdate only comes at start-up), so it's seen as the
-  // drag goes on, and Zia lets go: its rows put back and its steering stopped, Zen's drop
-  // left as it is. (Not settle(): that turns Zen's drop off, and in 2.113.0 the tab went
-  // back where it was.)
-  const followSpaceSwitch = (event) => {
-    if (drag && drag.space !== window.gZenWorkspaces?.activeWorkspace) {
-      followIntoSpace(event);
-    }
-  };
-
-  const startFresh = () => {
-    // (and what the last drop kept showing: dragged straight back into
-    // the essentials, a tab kept its x on the tile)
-    hoverHold.release?.();
-    settling.dragGen++;
-    unblockAnims();
-  };
-
-  const settleTwice = () => {
-    settle();
-    setTimeout(settle, 0);
-  };
-
-  // its listeners and hooks, added by moveTabsLikeDia (28-tab-dragging.js) in order
-  function watchSettle() {
-    window.addEventListener("drop", noteRealDrop, true);
-    window.addEventListener("dragstart", forgetRealDrop, true);
-    window.addEventListener("dragover", followSpaceSwitch, true);
-    window.addEventListener("drop", settle, true);
-    window.addEventListener("dragstart", startFresh, true);
-    window.addEventListener("dragend", settleTwice);
-    window.addEventListener("mousemove", tidyLostDrag, true);
-  }
-
