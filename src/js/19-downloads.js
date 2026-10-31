@@ -9,6 +9,8 @@
   const FLIGHT_WINDUP_MS = 420;
   const FLIGHT_LAUNCH_MS = 560;
   const FLIGHT_SETTLE_MS = 320;
+  // (the whole flight: the pop, the wind-up and the launch)
+  const FLIGHT_MS = FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
   // (the glow trails the row by this much, the button's nudge starts this much before it
   // lands, and the stage goes this much after it's settled)
   const FLIGHT_BEAM_LAG_MS = 40;
@@ -223,8 +225,7 @@
 
   function flightFrames(start, path) {
     const { p0, dx, dy, point, at } = path;
-    const total = FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
-    const o = (ms) => ms / total;
+    const o = (ms) => ms / FLIGHT_MS;
     const frames = [
       { offset: 0, transform: at(start.clientX, start.clientY, 0, 0.45), opacity: 0 },
       { offset: o(FLIGHT_POP_MS), transform: at(p0.x, p0.y, 0, 1), opacity: 1 },
@@ -261,15 +262,14 @@
 
   // The dim, the glow trailing the row and the bloom where it lands
   function lightFlight({ dim, beam, bloom, row }, frames, target) {
-    const total = FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
     // the dim: in as it winds up, out once it's landed
-    const settle = total + FLIGHT_SETTLE_MS;
+    const settle = FLIGHT_MS + FLIGHT_SETTLE_MS;
     const so = (ms) => ms / settle;
     dim.animate(
       [
         { opacity: 0, easing: "ease-in-out" },
         { opacity: 1, offset: so(FLIGHT_POP_MS + FLIGHT_WINDUP_MS) },
-        { opacity: 1, offset: so(total), easing: "ease-out" },
+        { opacity: 1, offset: so(FLIGHT_MS), easing: "ease-out" },
         { opacity: 0 },
       ],
       { duration: settle, easing: "linear", fill: "forwards" }
@@ -285,7 +285,7 @@
         transform: frame.transform.replace(/scale\(([\d.]+)\)/, (_, n) => `scale(${(Number(n) * 1.6).toFixed(3)})`),
         opacity: i < 3 ? 0 : frame.opacity,
       })),
-      { duration: total, delay: FLIGHT_BEAM_LAG_MS, easing: "linear", fill: "forwards" }
+      { duration: FLIGHT_MS, delay: FLIGHT_BEAM_LAG_MS, easing: "linear", fill: "forwards" }
     );
 
     // the bloom where it lands
@@ -294,7 +294,7 @@
       [
         { opacity: 0, scale: 0.4 },
         { opacity: 0, scale: 0.4, offset: so(FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS * 0.5) },
-        { opacity: 1, scale: 1, offset: so(total) },
+        { opacity: 1, scale: 1, offset: so(FLIGHT_MS) },
         { opacity: 0, scale: 1.3 },
       ],
       { duration: settle, easing: "linear", fill: "forwards" }
@@ -311,12 +311,11 @@
     const path = flightPath(start, target, row);
     row.style.left = `${path.p0.x}px`;
     row.style.top = `${path.p0.y}px`;
-    const total = FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
     const frames = flightFrames(start, path);
     // (only movement and fading, which Firefox runs on the graphics card:
     // with a blur in it too, it ran frame by frame alongside everything
     // else a download starts, and stuttered)
-    const flight = row.animate(frames, { duration: total, easing: "linear", fill: "forwards" });
+    const flight = row.animate(frames, { duration: FLIGHT_MS, easing: "linear", fill: "forwards" });
     lightFlight(parts, frames, target);
 
     // (not kept: a newer flight takes this stage away itself, and this one's nudge still lands)
@@ -325,8 +324,8 @@
         [{ transform: "scale(1)" }, { transform: "scale(1.18)", offset: 0.4 }, { transform: "scale(1)" }],
         { duration: FLIGHT_NUDGE_MS, easing: "cubic-bezier(0.3, 1.4, 0.5, 1)" }
       );
-    }, total - FLIGHT_NUDGE_EARLY_MS);
-    setTimeout(() => stage.remove(), total + FLIGHT_SETTLE_MS + FLIGHT_CLEAR_LATE_MS);
+    }, FLIGHT_MS - FLIGHT_NUDGE_EARLY_MS);
+    setTimeout(() => stage.remove(), FLIGHT_MS + FLIGHT_SETTLE_MS + FLIGHT_CLEAR_LATE_MS);
     flight.finished.catch(() => stage.remove());
   }
 

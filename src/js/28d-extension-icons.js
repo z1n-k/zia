@@ -407,64 +407,73 @@
     return item;
   }
 
+  // "Change icon" in an extension's menu: its items, put at the end of the menu
+  function buildExtIconMenu(menu) {
+    const separator = document.createXULElement("menuseparator");
+    separator.className = "zia-ext-icon-separator";
+    const item = document.createXULElement("menu");
+    item.className = "zia-ext-icon-menu";
+    item.setAttribute("label", "Change icon");
+    const popup = document.createXULElement("menupopup");
+    const note = menuItem("This extension changes its own icon");
+    note.setAttribute("disabled", "true");
+    note.className = "zia-ext-icon-note";
+    const noteSeparator = document.createXULElement("menuseparator");
+    const upload = menuItem("Choose an SVG…");
+    const choose = menuItem("Pick from Zia's icons…");
+    const keepSeparator = document.createXULElement("menuseparator");
+    const keep = menuItem("Keep the SVG's own colours");
+    keep.setAttribute("type", "checkbox");
+    const reset = menuItem("Reset to the original icon");
+    popup.append(note, noteSeparator, upload, choose, keepSeparator, keep, reset);
+    item.append(popup);
+    menu.append(separator, item);
+    return { separator, item, note, noteSeparator, upload, choose, keep, reset };
+  }
+
+  // ...shown for the extension right-clicked, and each item acting on it
+  function wireExtIconMenu(menu, { separator, item, note, noteSeparator, upload, choose, keep, reset }) {
+    let target = null;
+    menu.addEventListener("popupshowing", (event) => {
+      if (event.target !== menu) {
+        return;
+      }
+      target = menu.triggerNode?.closest?.("[data-extensionid]") || null;
+      const id = target?.getAttribute("data-extensionid");
+      const show = !!id;
+      item.hidden = separator.hidden = !show;
+      if (!show) {
+        return;
+      }
+      watchExtButtons();
+      const entry = extIconMap()[id];
+      const changes = changingSet().has(id);
+      note.hidden = noteSeparator.hidden = !changes;
+      keep.hidden = !entry?.uploaded;
+      keep.setAttribute("checked", String(!!entry?.own));
+      reset.disabled = !entry;
+    });
+    const idOf = () => target?.getAttribute("data-extensionid");
+    const buttonOf = () => (target?.matches?.(".webextension-browser-action") ? target : target?.querySelector?.(".webextension-browser-action")) || target;
+    upload.addEventListener("command", () => idOf() && chooseExtSvg(idOf()));
+    choose.addEventListener("command", () => idOf() && pickExtIcon(idOf(), buttonOf()));
+    keep.addEventListener("command", () => {
+      const id = idOf();
+      const entry = id && extIconMap()[id];
+      if (entry) {
+        setExtIcon(id, { ...entry, own: keep.getAttribute("checked") === "true" });
+      }
+    });
+    reset.addEventListener("command", () => idOf() && setExtIcon(idOf(), null));
+  }
+
   function addExtIconMenus() {
     for (const menuId of ["toolbar-context-menu", "unified-extensions-context-menu"]) {
       const menu = document.getElementById(menuId);
       if (!menu || menu.querySelector(".zia-ext-icon-menu")) {
         continue;
       }
-      const separator = document.createXULElement("menuseparator");
-      separator.className = "zia-ext-icon-separator";
-      const item = document.createXULElement("menu");
-      item.className = "zia-ext-icon-menu";
-      item.setAttribute("label", "Change icon");
-      const popup = document.createXULElement("menupopup");
-      const note = menuItem("This extension changes its own icon");
-      note.setAttribute("disabled", "true");
-      note.className = "zia-ext-icon-note";
-      const noteSeparator = document.createXULElement("menuseparator");
-      const upload = menuItem("Choose an SVG…");
-      const choose = menuItem("Pick from Zia's icons…");
-      const keepSeparator = document.createXULElement("menuseparator");
-      const keep = menuItem("Keep the SVG's own colours");
-      keep.setAttribute("type", "checkbox");
-      const reset = menuItem("Reset to the original icon");
-      popup.append(note, noteSeparator, upload, choose, keepSeparator, keep, reset);
-      item.append(popup);
-      menu.append(separator, item);
-
-      let target = null;
-      menu.addEventListener("popupshowing", (event) => {
-        if (event.target !== menu) {
-          return;
-        }
-        target = menu.triggerNode?.closest?.("[data-extensionid]") || null;
-        const id = target?.getAttribute("data-extensionid");
-        const show = !!id;
-        item.hidden = separator.hidden = !show;
-        if (!show) {
-          return;
-        }
-        watchExtButtons();
-        const entry = extIconMap()[id];
-        const changes = changingSet().has(id);
-        note.hidden = noteSeparator.hidden = !changes;
-        keep.hidden = !entry?.uploaded;
-        keep.setAttribute("checked", String(!!entry?.own));
-        reset.disabled = !entry;
-      });
-      const idOf = () => target?.getAttribute("data-extensionid");
-      const buttonOf = () => (target?.matches?.(".webextension-browser-action") ? target : target?.querySelector?.(".webextension-browser-action")) || target;
-      upload.addEventListener("command", () => idOf() && chooseExtSvg(idOf()));
-      choose.addEventListener("command", () => idOf() && pickExtIcon(idOf(), buttonOf()));
-      keep.addEventListener("command", () => {
-        const id = idOf();
-        const entry = id && extIconMap()[id];
-        if (entry) {
-          setExtIcon(id, { ...entry, own: keep.getAttribute("checked") === "true" });
-        }
-      });
-      reset.addEventListener("command", () => idOf() && setExtIcon(idOf(), null));
+      wireExtIconMenu(menu, buildExtIconMenu(menu));
     }
   }
 

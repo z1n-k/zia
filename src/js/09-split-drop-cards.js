@@ -203,7 +203,7 @@
       const cover = Math.max(width / pageW, height / pageH);
       const cropW = width / cover;
       const cropH = height / cover;
-      const scroll = scrollPositions.get(browser) || { x: 0, y: 0 };
+      const scroll = pageMemory.scrolls.get(browser) || { x: 0, y: 0 };
       const bitmap = await browser.drawSnapshot(
         scroll.x + (pageW - cropW) / 2,
         scroll.y,
@@ -377,6 +377,7 @@
     if (!tab || !side) {
       return;
     }
+    // (once the drop event is over, so the split isn't made in the middle of it)
     setTimeout(() => {
       try {
         splitTabToSide(tab, side, target);

@@ -434,6 +434,41 @@
     soon();
   }
 
+  // Opened, the text stays where it was as the bar was clicked (centred in the opened
+  // bar instead, it jumped aside, #443): the opened bar is wider and elsewhere, so the
+  // shift is measured again from it, to the closed text's centre (kept, it moved the
+  // closed bar's shift into the opened bar, still a jump, #475).
+  function shiftOpenedAddress(urlbar, box, centre) {
+    const bar = box.getBoundingClientRect();
+    if (centre.closed !== null && bar.width) {
+      const most = bar.width / 5;
+      const shift = Math.max(-most, Math.min(most, centre.closed - (bar.left + bar.width / 2)));
+      setStyle(urlbar, "--zia-center-shift", Math.abs(shift) >= 1 ? `${Math.round(shift)}px` : null);
+    }
+  }
+
+  // Closed, the text is centred in the toolbar's card (an option), noting where it is
+  function closedAddressShift(urlbar, box, toolbar, centre) {
+    let shift = 0;
+    centre.closed = null;
+    if (
+      Services.prefs.getBoolPref("zia.urlbar.center-text", false) &&
+      root.getAttribute("zen-single-toolbar") !== "true" &&
+      !urlbar.hasAttribute("breakout-extend") &&
+      urlbar.getAttribute("zen-floating-urlbar") !== "true"
+    ) {
+      const bar = box.getBoundingClientRect();
+      const card = toolbar.getBoundingClientRect();
+      if (bar.width && card.width) {
+        // (a fifth of the bar at most either way: a long address keeps most of its room)
+        const most = bar.width / 5;
+        shift = Math.max(-most, Math.min(most, card.left + card.width / 2 - (bar.left + bar.width / 2)));
+        centre.closed = bar.left + bar.width / 2 + shift;
+      }
+    }
+    return shift;
+  }
+
   function watchCenteredAddress() {
     const urlbar = gURLBar.textbox || document.getElementById("urlbar");
     const box = gURLBar.inputField?.parentNode;
@@ -442,43 +477,18 @@
       return;
     }
     // (where the closed bar's text was centred, in the window)
-    let closedCentre = null;
+    const centre = { closed: null };
     const update = () => {
-      let shift = 0;
-      // Opened, the text stays where it was as the bar was clicked (centred in the opened
-      // bar instead, it jumped aside, #443): the opened bar is wider and elsewhere, so the
-      // shift is measured again from it, to the closed text's centre (kept, it moved the
-      // closed bar's shift into the opened bar, still a jump, #475). Not with the opened
-      // pop-up's text from the left (an option).
+      // (not with the opened pop-up's text from the left, an option)
       if (
         urlbar.hasAttribute("breakout-extend") &&
         urlbar.getAttribute("zen-floating-urlbar") !== "true" &&
         !Services.prefs.getBoolPref("zia.urlbar.center-text.pop-up-left", false)
       ) {
-        const bar = box.getBoundingClientRect();
-        if (closedCentre !== null && bar.width) {
-          const most = bar.width / 5;
-          shift = Math.max(-most, Math.min(most, closedCentre - (bar.left + bar.width / 2)));
-          setStyle(urlbar, "--zia-center-shift", Math.abs(shift) >= 1 ? `${Math.round(shift)}px` : null);
-        }
+        shiftOpenedAddress(urlbar, box, centre);
         return;
       }
-      closedCentre = null;
-      if (
-        Services.prefs.getBoolPref("zia.urlbar.center-text", false) &&
-        root.getAttribute("zen-single-toolbar") !== "true" &&
-        !urlbar.hasAttribute("breakout-extend") &&
-        urlbar.getAttribute("zen-floating-urlbar") !== "true"
-      ) {
-        const bar = box.getBoundingClientRect();
-        const card = toolbar.getBoundingClientRect();
-        if (bar.width && card.width) {
-          // (a fifth of the bar at most either way: a long address keeps most of its room)
-          const most = bar.width / 5;
-          shift = Math.max(-most, Math.min(most, card.left + card.width / 2 - (bar.left + bar.width / 2)));
-          closedCentre = bar.left + bar.width / 2 + shift;
-        }
-      }
+      const shift = closedAddressShift(urlbar, box, toolbar, centre);
       setStyle(urlbar, "--zia-center-shift", Math.abs(shift) >= 1 ? `${Math.round(shift)}px` : null);
     };
     const observer = new ResizeObserver(update);

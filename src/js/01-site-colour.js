@@ -2,10 +2,10 @@
   // with it, the checker that corrects it, the address pop-up's colour frozen as it
   // opens, and the page helpers that report loads and scrolls (actors/ZiaChild.sys.mjs,
   // calling window.ziaOnPagePainted and window.ziaOnPageScroll) and draw PDFs.
-  // Used elsewhere: scrollPositions, ERROR_PAGE_COLOR, colorCache, cacheColor, dropColorReading,
-  // forgetAppliedColor, markErrorPage, forgetScroll, siteColorOn, applyColor, showColor, isErrorPage, isLoading,
-  // sampleTopColor, parseColor, colorOver, chromeBackdrop, cssColor, wantsDarkInk,
-  // updateColor, watchColorDrift, watchPopUpColor, snapColorForTab, scheduleColor,
+  // Used elsewhere: pageMemory (read only), ERROR_PAGE_COLOR, cacheColor, dropColorReading,
+  // forgetAppliedColor, markErrorPage, forgetScroll, siteColorOn, applyColor, showColor,
+  // isErrorPage, isLoading, sampleTopColor, parseColor, colorOver, chromeBackdrop, cssColor,
+  // wantsDarkInk, updateColor, watchColorDrift, watchPopUpColor, snapColorForTab, scheduleColor,
   // requestScrollSample, watchScrollInput, registerPdfActor, registerScrollActor.
 
   const SCROLL_SAMPLE_INTERVAL = 50;
@@ -24,28 +24,32 @@
   const STRIP_SCALE = 0.5;
   const FULL_VIEW_SCALE = 0.125;
   const TOP_BAND_ROWS = TOP_BAND * FULL_VIEW_SCALE;
-  const scrollPositions = new WeakMap();
   const LIGHT_THRESHOLD = 150;
   const INK_MAX = 90;
   const BLACKISH = 12;
   const ERROR_PAGE_COLOR = [0, 0, 0];
   const ERROR_PAGES = /^about:(neterror|certerror|httpsonlyerror|blocked|tabcrashed)/;
-  const errorBrowsers = new WeakSet();
-  const colorCache = new WeakMap();
-  let colorRequestId = 0;
 
   const MIN_COLOR_SHARE = 0.6;
   const SAME_COLOR_DISTANCE = 10;
 
-  let appliedColorKey = null;
+  // What's known of each tab's page: where it's scrolled to (from the page helper), whether
+  // it's an error page, and the colour its toolbar shows (read, or set by hand in 01b)
+  const pageMemory = { scrolls: new WeakMap(), errors: new WeakSet(), colors: new WeakMap() };
 
-  // a reading unlike the site's remembered colour, waiting on a second
-  let unsureColor = null;
+  // The toolbar's colour: the latest reading asked for (one started before it is dropped),
+  // the colour last put on (not put on again), and a reading unlike the site's remembered
+  // colour, waiting on a second (unsure)
+  const toolbarColor = { requestId: 0, appliedKey: null, unsure: null };
 
   // Readings on scroll: the one waiting (timer) or under way (sampling), when the last was
   // taken, whether the page helper reports scrolls (else scroll input stands in for it), and
   // a reading unlike the toolbar waiting on the next to agree (pendingColor)
   const scrollReading = { timer: null, sampling: false, last: 0, helperWorks: false, pendingColor: null };
+
+  // The checker's reading under way, and the last one unlike the toolbar (suspect), waiting
+  // on a second (the checker, below)
+  const colorCheck = { running: false, suspect: null };
 
   const siteColorOn = () => Services.prefs.getBoolPref("zia.toolbar.site-color", true);
 
@@ -58,10 +62,10 @@
     // (the fallback is light in light mode, so it takes dark ink then)
     const fallback = rgb ? null : fallbackColor();
     const key = rgb ? rgb.join(",") : `fallback:${fallback.join(",")}`;
-    if (key === appliedColorKey) {
+    if (key === toolbarColor.appliedKey) {
       return;
     }
-    appliedColorKey = key;
+    toolbarColor.appliedKey = key;
     if (!rgb) {
       root.style.removeProperty("--zia-site-bg");
       updateInkTint(null);
@@ -194,7 +198,7 @@
 
   // any reading under way dropped (29, as a page starts loading)
   function dropColorReading() {
-    colorRequestId++;
+    toolbarColor.requestId++;
   }
 
   // a colour shown outright, any reading under way dropped
@@ -205,31 +209,31 @@
 
   // the colour put on afresh next time, even the same one (18, as the options change)
   function forgetAppliedColor() {
-    appliedColorKey = null;
+    toolbarColor.appliedKey = null;
   }
 
   // what a browser now shows: an error page or not, and (a new page) no scroll yet (29)
   function markErrorPage(browser, error) {
     if (error) {
-      errorBrowsers.add(browser);
+      pageMemory.errors.add(browser);
     } else {
-      errorBrowsers.delete(browser);
+      pageMemory.errors.delete(browser);
     }
   }
   function forgetScroll(browser) {
-    scrollPositions.delete(browser);
+    pageMemory.scrolls.delete(browser);
   }
 
   // the colour a tab's toolbar shows from now on (a colour set by hand, 01b)
   function cacheColor(browser, rgb) {
-    colorCache.set(browser, rgb);
+    pageMemory.colors.set(browser, rgb);
   }
 
   function isErrorPage(browser) {
     if (!browser) {
       return false;
     }
-    if (errorBrowsers.has(browser)) {
+    if (pageMemory.errors.has(browser)) {
       return true;
     }
     const uris = [
@@ -303,7 +307,7 @@
     }
     const backing = browser.getAttribute("transparent") === "true" ? "transparent" : "rgb(255, 255, 255)";
 
-    const pos = scrollPositions.get(browser);
+    const pos = pageMemory.scrolls.get(browser);
     const bitmap = pos
       ? await windowGlobal.drawSnapshot(new DOMRect(pos.x, pos.y, width, TOP_BAND), STRIP_SCALE, backing)
       : await windowGlobal.drawSnapshot(null, FULL_VIEW_SCALE, backing);
@@ -428,30 +432,30 @@
     if (readingSkipped(browser, duringLoad)) {
       return;
     }
-    const id = ++colorRequestId;
+    const id = ++toolbarColor.requestId;
     let reading = null;
     try {
       reading = await sampleTopColor(browser);
     } catch (err) {
       noteError("site colour: updateColor", err);
     }
-    if (id !== colorRequestId || browser !== gBrowser.selectedBrowser || (isLoading(browser) && !duringLoad)) {
+    if (id !== toolbarColor.requestId || browser !== gBrowser.selectedBrowser || (isLoading(browser) && !duringLoad)) {
       return;
     }
 
-    const known = colorCache.has(browser);
-    const current = colorCache.get(browser) ?? null;
+    const known = pageMemory.colors.has(browser);
+    const current = pageMemory.colors.get(browser) ?? null;
     const rgb = reading?.rgb ?? null;
     if (!fromScroll && rgb && awaitingSecondReading(browser, rgb)) {
       return;
     }
-    unsureColor = null;
+    toolbarColor.unsure = null;
     if (known && fromScroll && !scrollReadingCounts(reading, current)) {
       return;
     }
     scrollReading.pendingColor = null;
     applyColor(rgb);
-    colorCache.set(browser, rgb);
+    pageMemory.colors.set(browser, rgb);
     if (!fromScroll && rgb) {
       rememberSiteColor(browser, rgb);
     }
@@ -477,7 +481,7 @@
     if (manual) {
       scrollReading.pendingColor = null;
       showColor(manual);
-      colorCache.set(browser, manual);
+      pageMemory.colors.set(browser, manual);
       return true;
     }
     if (isLoading(browser) && !duringLoad) {
@@ -493,8 +497,8 @@
   function awaitingSecondReading(browser, rgb) {
     const remembered = rememberedSiteColor(browser);
     if (remembered && colorDistance(rgb, remembered) > CHECK_DISTANCE) {
-      if (unsureColor?.browser !== browser || colorDistance(rgb, unsureColor.rgb) > CHECK_DISTANCE) {
-        unsureColor = { browser, rgb };
+      if (toolbarColor.unsure?.browser !== browser || colorDistance(rgb, toolbarColor.unsure.rgb) > CHECK_DISTANCE) {
+        toolbarColor.unsure = { browser, rgb };
         // (not cancelled: the second reading checks for itself that it's still wanted)
         setTimeout(() => updateColor(false, isLoading(browser)), UNSURE_RECHECK);
         return true;
@@ -528,18 +532,16 @@
   // leave it wrong. Every few seconds, and on focus or resize, the settled tab is
   // read again; two readings agreeing with each other, not the toolbar, correct it.
   const CHECK_DISTANCE = 24;
-  // a reading under way, and the last one unlike the toolbar (suspect), waiting on a second
-  const colorCheck = { running: false, suspect: null };
 
   async function checkColor() {
     const browser = gBrowser.selectedBrowser;
     if (colorCheck.running || document.hidden || !siteColorOn() || !browser || isErrorPage(browser) || isLoading(browser) ||
-        scrollReading.timer || scrollReading.sampling || !colorCache.has(browser) || colorPick || manualSiteColor(browser) ||
+        scrollReading.timer || scrollReading.sampling || !pageMemory.colors.has(browser) || colorPick || manualSiteColor(browser) ||
         (showsThrough(browser) && chromeOverPage())) {
       return;
     }
     colorCheck.running = true;
-    const id = colorRequestId;
+    const id = toolbarColor.requestId;
     let reading = null;
     try {
       reading = await sampleTopColor(browser);
@@ -549,11 +551,11 @@
       colorCheck.running = false;
     }
     // Something else read or changed the colour meanwhile, or the tab changed
-    if (id !== colorRequestId || browser !== gBrowser.selectedBrowser || isLoading(browser) || !reading?.rgb) {
+    if (id !== toolbarColor.requestId || browser !== gBrowser.selectedBrowser || isLoading(browser) || !reading?.rgb) {
       colorCheck.suspect = null;
       return;
     }
-    const shown = colorCache.get(browser);
+    const shown = pageMemory.colors.get(browser);
     if (reading.share < MIN_COLOR_SHARE || colorDistance(reading.rgb, shown) <= CHECK_DISTANCE) {
       colorCheck.suspect = null;
       return;
@@ -564,7 +566,7 @@
     }
     colorCheck.suspect = null;
     applyColor(reading.rgb);
-    colorCache.set(browser, reading.rgb);
+    pageMemory.colors.set(browser, reading.rgb);
     rememberSiteColor(browser, reading.rgb);
   }
 
@@ -634,11 +636,11 @@
       showColor(ERROR_PAGE_COLOR);
     } else if (manual) {
       showColor(manual);
-      colorCache.set(browser, manual);
-    } else if (isLoading(browser) || !colorCache.has(browser)) {
+      pageMemory.colors.set(browser, manual);
+    } else if (isLoading(browser) || !pageMemory.colors.has(browser)) {
       showColor(null);
     } else {
-      showColor(colorCache.get(browser));
+      showColor(pageMemory.colors.get(browser));
     }
     requestAnimationFrame(() => requestAnimationFrame(() => setFlag("zia-color-snap", false)));
   }
@@ -683,7 +685,7 @@
   window.ziaOnPageScroll = (browser, position) => {
     if (position) {
       scrollReading.helperWorks = true;
-      scrollPositions.set(browser, { x: position.x || 0, y: position.y || 0 });
+      pageMemory.scrolls.set(browser, { x: position.x || 0, y: position.y || 0 });
     }
     if (browser !== gBrowser.selectedBrowser || isLoading(browser) || isErrorPage(browser)) {
       return;

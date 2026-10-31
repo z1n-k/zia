@@ -418,6 +418,7 @@
     // row. Hidden now, gone once the drop's done.
     essential.setAttribute("zia-split-gone", "true");
     goneEssentials.add(essential);
+    // (once the drop's over; and its row cleared once it has gone)
     setTimeout(() => {
       if (essential.isConnected && !essential.closing) {
         gBrowser.removeTab(essential, { animate: false });
@@ -474,6 +475,7 @@
   // shows instead of the essential by itself.
   function onSplitEssentialSelect(event) {
     const tab = event.target;
+    // (both once Zen has finished selecting it)
     setTimeout(sweepReleasedSplits, 0);
     if (splitEssentialsOn() && splitDataOf(tab)) {
       setTimeout(() => {

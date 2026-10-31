@@ -1,67 +1,11 @@
-  // Copying a tab's link: the address bar's paperclip, popping into a tick once copied, and
-  // the hover card's actions (Copy link among them) with the card's timings and sizes.
-  // Used elsewhere: TAB_CARD_DELAY, TAB_CARD_GRACE, TAB_CARD_GAP, ESSENTIAL_CARD_OVERLAP_X,
-  // ESSENTIAL_CARD_OVERLAP_Y, DEFAULT_TAB_ICON, TAB_CARD_ACTIONS, copyLink, COPY_ICON,
-  // showCopiedIcon, showCopied, addCopyLinkButton.
+  // Copying a tab's link: the address bar's paperclip, popping into a tick once copied (and
+  // the hover card's Copy link, 27).
+  // Used elsewhere: inSplit, copyLink, COPY_ICON, showCopiedIcon, showCopied, addCopyLinkButton.
 
-  const TAB_CARD_DELAY = 600;
-  const TAB_CARD_GRACE = 120;
-  const TAB_CARD_GAP = 8;
-
-  // (how far an essential's card tucks under its corner: with the squircle
-  // corners on both, 6px brings the card's corner to the tile's)
-  const ESSENTIAL_CARD_OVERLAP_X = 6;
-  const ESSENTIAL_CARD_OVERLAP_Y = 2;
-  const DEFAULT_TAB_ICON = "chrome://sine/content/zia/icons/tab-default.svg";
   const POP_OUT_MS = 130;
   const TICK_POP_IN_MS = 380;
   const PAPERCLIP_POP_IN_MS = 320;
   const COPIED_SHOWN_MS = 1200;
-
-  const TAB_CARD_ACTIONS = [
-    {
-      name: "essential",
-      icon: "card-pin",
-      label: "Add to Essentials",
-      // a split goes in whole, as a split essential: Zen can't make one of
-      // its tabs an essential (it left the other stranded, without a title)
-      run: (tab) => (inSplit(tab) ? addSplitToEssentials(tab) : gZenPinnedTabManager?.addToEssentials(tab)),
-      hidden: (tab) => tab.hasAttribute("zen-essential") || tab.pinned || (inSplit(tab) && !canBecomeSplitEssential(tab)),
-    },
-    {
-      name: "unpin",
-      icon: "card-pinned-off",
-      label: "Unpin",
-      run: (tab) => {
-        if (tab.hasAttribute("zen-essential")) {
-          gZenPinnedTabManager?.removeEssentials(tab);
-        } else {
-          gBrowser.unpinTab(tab);
-        }
-      },
-      hidden: (tab) => !tab.hasAttribute("zen-essential") && !tab.pinned,
-    },
-    {
-      name: "split",
-      icon: "card-split",
-      label: "Add to Split",
-      run: (tab) => {
-        const other = tab === gBrowser.selectedTab ? lastUsedOtherTab(tab) : gBrowser.selectedTab;
-        if (other) {
-          gZenViewSplitter?.splitTabs(tab === gBrowser.selectedTab ? [tab, other] : [other, tab]);
-        }
-      },
-      hidden: (tab) => !lastUsedOtherTab(tab),
-    },
-    {
-      name: "copy",
-      icon: "card-paperclip",
-      label: "Copy link",
-      run: (tab) => copyLink(tab),
-      hidden: (tab) => tabCardKind(tab) !== "web",
-      keepsCard: true,
-    },
-  ];
 
   const inSplit = (tab) => !!tab?.group?.hasAttribute?.("split-view-group");
 

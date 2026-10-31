@@ -193,6 +193,7 @@
         return;
       }
       address.removeAttribute("zia-loading");
+      // (not kept either: it checks the bar hasn't started loading again first)
       setTimeout(() => {
         if (!address.hasAttribute("zia-loading")) {
           address.style.setProperty("--zia-load-progress", "0");

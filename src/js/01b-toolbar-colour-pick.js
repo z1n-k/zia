@@ -68,7 +68,7 @@
       showColor(manual);
       cacheColor(browser, manual);
     } else {
-      showColor(colorCache.get(browser) ?? null);
+      showColor(pageMemory.colors.get(browser) ?? null);
       updateColor();
     }
   }

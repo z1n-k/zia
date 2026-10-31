@@ -1,12 +1,67 @@
   // Hover cards: the card a tab hovered in the sidebar gets (its title, domain, picture and
   // buttons), and the one a closed folder gets (its tabs, to choose from). Firefox's and Zen's
   // own pop-ups give way to them.
-  // Used elsewhere: lastUsedOtherTab, tabCardKind, addTabHoverCards.
+  // Used elsewhere: TAB_CARD_DELAY, TAB_CARD_GAP, DEFAULT_TAB_ICON, lastUsedOtherTab, tabCardKind,
+  // addTabHoverCards.
+  const TAB_CARD_DELAY = 600;
+  const TAB_CARD_GRACE = 120;
+  const TAB_CARD_GAP = 8;
+
+  // (how far an essential's card tucks under its corner: with the squircle
+  // corners on both, 6px brings the card's corner to the tile's)
+  const ESSENTIAL_CARD_OVERLAP_X = 6;
+  const ESSENTIAL_CARD_OVERLAP_Y = 2;
+  const DEFAULT_TAB_ICON = "chrome://sine/content/zia/icons/tab-default.svg";
   const TAB_CARD_OUT_MS = 120;
   // (a card kept up this long after one of its buttons, as what it did shows)
   const TAB_CARD_KEEP_MS = 1200;
   // (a folder card filled again as a button's change lands)
   const FOLDER_CARD_REFILL_MS = [60, 400, 900];
+
+  const TAB_CARD_ACTIONS = [
+    {
+      name: "essential",
+      icon: "card-pin",
+      label: "Add to Essentials",
+      // a split goes in whole, as a split essential: Zen can't make one of
+      // its tabs an essential (it left the other stranded, without a title)
+      run: (tab) => (inSplit(tab) ? addSplitToEssentials(tab) : gZenPinnedTabManager?.addToEssentials(tab)),
+      hidden: (tab) => tab.hasAttribute("zen-essential") || tab.pinned || (inSplit(tab) && !canBecomeSplitEssential(tab)),
+    },
+    {
+      name: "unpin",
+      icon: "card-pinned-off",
+      label: "Unpin",
+      run: (tab) => {
+        if (tab.hasAttribute("zen-essential")) {
+          gZenPinnedTabManager?.removeEssentials(tab);
+        } else {
+          gBrowser.unpinTab(tab);
+        }
+      },
+      hidden: (tab) => !tab.hasAttribute("zen-essential") && !tab.pinned,
+    },
+    {
+      name: "split",
+      icon: "card-split",
+      label: "Add to Split",
+      run: (tab) => {
+        const other = tab === gBrowser.selectedTab ? lastUsedOtherTab(tab) : gBrowser.selectedTab;
+        if (other) {
+          gZenViewSplitter?.splitTabs(tab === gBrowser.selectedTab ? [tab, other] : [other, tab]);
+        }
+      },
+      hidden: (tab) => !lastUsedOtherTab(tab),
+    },
+    {
+      name: "copy",
+      icon: "card-paperclip",
+      label: "Copy link",
+      run: (tab) => copyLink(tab),
+      hidden: (tab) => tabCardKind(tab) !== "web",
+      keepsCard: true,
+    },
+  ];
 
   // The cards (each built the first time it's needed), the tab or folder shown, their
   // timers, whether the sidebar is held open for them, and till when a card stays up

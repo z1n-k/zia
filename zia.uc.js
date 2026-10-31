@@ -91,10 +91,10 @@
   // with it, the checker that corrects it, the address pop-up's colour frozen as it
   // opens, and the page helpers that report loads and scrolls (actors/ZiaChild.sys.mjs,
   // calling window.ziaOnPagePainted and window.ziaOnPageScroll) and draw PDFs.
-  // Used elsewhere: scrollPositions, ERROR_PAGE_COLOR, colorCache, cacheColor, dropColorReading,
-  // forgetAppliedColor, markErrorPage, forgetScroll, siteColorOn, applyColor, showColor, isErrorPage, isLoading,
-  // sampleTopColor, parseColor, colorOver, chromeBackdrop, cssColor, wantsDarkInk,
-  // updateColor, watchColorDrift, watchPopUpColor, snapColorForTab, scheduleColor,
+  // Used elsewhere: pageMemory (read only), ERROR_PAGE_COLOR, cacheColor, dropColorReading,
+  // forgetAppliedColor, markErrorPage, forgetScroll, siteColorOn, applyColor, showColor,
+  // isErrorPage, isLoading, sampleTopColor, parseColor, colorOver, chromeBackdrop, cssColor,
+  // wantsDarkInk, updateColor, watchColorDrift, watchPopUpColor, snapColorForTab, scheduleColor,
   // requestScrollSample, watchScrollInput, registerPdfActor, registerScrollActor.
 
   const SCROLL_SAMPLE_INTERVAL = 50;
@@ -113,28 +113,32 @@
   const STRIP_SCALE = 0.5;
   const FULL_VIEW_SCALE = 0.125;
   const TOP_BAND_ROWS = TOP_BAND * FULL_VIEW_SCALE;
-  const scrollPositions = new WeakMap();
   const LIGHT_THRESHOLD = 150;
   const INK_MAX = 90;
   const BLACKISH = 12;
   const ERROR_PAGE_COLOR = [0, 0, 0];
   const ERROR_PAGES = /^about:(neterror|certerror|httpsonlyerror|blocked|tabcrashed)/;
-  const errorBrowsers = new WeakSet();
-  const colorCache = new WeakMap();
-  let colorRequestId = 0;
 
   const MIN_COLOR_SHARE = 0.6;
   const SAME_COLOR_DISTANCE = 10;
 
-  let appliedColorKey = null;
+  // What's known of each tab's page: where it's scrolled to (from the page helper), whether
+  // it's an error page, and the colour its toolbar shows (read, or set by hand in 01b)
+  const pageMemory = { scrolls: new WeakMap(), errors: new WeakSet(), colors: new WeakMap() };
 
-  // a reading unlike the site's remembered colour, waiting on a second
-  let unsureColor = null;
+  // The toolbar's colour: the latest reading asked for (one started before it is dropped),
+  // the colour last put on (not put on again), and a reading unlike the site's remembered
+  // colour, waiting on a second (unsure)
+  const toolbarColor = { requestId: 0, appliedKey: null, unsure: null };
 
   // Readings on scroll: the one waiting (timer) or under way (sampling), when the last was
   // taken, whether the page helper reports scrolls (else scroll input stands in for it), and
   // a reading unlike the toolbar waiting on the next to agree (pendingColor)
   const scrollReading = { timer: null, sampling: false, last: 0, helperWorks: false, pendingColor: null };
+
+  // The checker's reading under way, and the last one unlike the toolbar (suspect), waiting
+  // on a second (the checker, below)
+  const colorCheck = { running: false, suspect: null };
 
   const siteColorOn = () => Services.prefs.getBoolPref("zia.toolbar.site-color", true);
 
@@ -147,10 +151,10 @@
     // (the fallback is light in light mode, so it takes dark ink then)
     const fallback = rgb ? null : fallbackColor();
     const key = rgb ? rgb.join(",") : `fallback:${fallback.join(",")}`;
-    if (key === appliedColorKey) {
+    if (key === toolbarColor.appliedKey) {
       return;
     }
-    appliedColorKey = key;
+    toolbarColor.appliedKey = key;
     if (!rgb) {
       root.style.removeProperty("--zia-site-bg");
       updateInkTint(null);
@@ -283,7 +287,7 @@
 
   // any reading under way dropped (29, as a page starts loading)
   function dropColorReading() {
-    colorRequestId++;
+    toolbarColor.requestId++;
   }
 
   // a colour shown outright, any reading under way dropped
@@ -294,31 +298,31 @@
 
   // the colour put on afresh next time, even the same one (18, as the options change)
   function forgetAppliedColor() {
-    appliedColorKey = null;
+    toolbarColor.appliedKey = null;
   }
 
   // what a browser now shows: an error page or not, and (a new page) no scroll yet (29)
   function markErrorPage(browser, error) {
     if (error) {
-      errorBrowsers.add(browser);
+      pageMemory.errors.add(browser);
     } else {
-      errorBrowsers.delete(browser);
+      pageMemory.errors.delete(browser);
     }
   }
   function forgetScroll(browser) {
-    scrollPositions.delete(browser);
+    pageMemory.scrolls.delete(browser);
   }
 
   // the colour a tab's toolbar shows from now on (a colour set by hand, 01b)
   function cacheColor(browser, rgb) {
-    colorCache.set(browser, rgb);
+    pageMemory.colors.set(browser, rgb);
   }
 
   function isErrorPage(browser) {
     if (!browser) {
       return false;
     }
-    if (errorBrowsers.has(browser)) {
+    if (pageMemory.errors.has(browser)) {
       return true;
     }
     const uris = [
@@ -392,7 +396,7 @@
     }
     const backing = browser.getAttribute("transparent") === "true" ? "transparent" : "rgb(255, 255, 255)";
 
-    const pos = scrollPositions.get(browser);
+    const pos = pageMemory.scrolls.get(browser);
     const bitmap = pos
       ? await windowGlobal.drawSnapshot(new DOMRect(pos.x, pos.y, width, TOP_BAND), STRIP_SCALE, backing)
       : await windowGlobal.drawSnapshot(null, FULL_VIEW_SCALE, backing);
@@ -517,30 +521,30 @@
     if (readingSkipped(browser, duringLoad)) {
       return;
     }
-    const id = ++colorRequestId;
+    const id = ++toolbarColor.requestId;
     let reading = null;
     try {
       reading = await sampleTopColor(browser);
     } catch (err) {
       noteError("site colour: updateColor", err);
     }
-    if (id !== colorRequestId || browser !== gBrowser.selectedBrowser || (isLoading(browser) && !duringLoad)) {
+    if (id !== toolbarColor.requestId || browser !== gBrowser.selectedBrowser || (isLoading(browser) && !duringLoad)) {
       return;
     }
 
-    const known = colorCache.has(browser);
-    const current = colorCache.get(browser) ?? null;
+    const known = pageMemory.colors.has(browser);
+    const current = pageMemory.colors.get(browser) ?? null;
     const rgb = reading?.rgb ?? null;
     if (!fromScroll && rgb && awaitingSecondReading(browser, rgb)) {
       return;
     }
-    unsureColor = null;
+    toolbarColor.unsure = null;
     if (known && fromScroll && !scrollReadingCounts(reading, current)) {
       return;
     }
     scrollReading.pendingColor = null;
     applyColor(rgb);
-    colorCache.set(browser, rgb);
+    pageMemory.colors.set(browser, rgb);
     if (!fromScroll && rgb) {
       rememberSiteColor(browser, rgb);
     }
@@ -566,7 +570,7 @@
     if (manual) {
       scrollReading.pendingColor = null;
       showColor(manual);
-      colorCache.set(browser, manual);
+      pageMemory.colors.set(browser, manual);
       return true;
     }
     if (isLoading(browser) && !duringLoad) {
@@ -582,8 +586,8 @@
   function awaitingSecondReading(browser, rgb) {
     const remembered = rememberedSiteColor(browser);
     if (remembered && colorDistance(rgb, remembered) > CHECK_DISTANCE) {
-      if (unsureColor?.browser !== browser || colorDistance(rgb, unsureColor.rgb) > CHECK_DISTANCE) {
-        unsureColor = { browser, rgb };
+      if (toolbarColor.unsure?.browser !== browser || colorDistance(rgb, toolbarColor.unsure.rgb) > CHECK_DISTANCE) {
+        toolbarColor.unsure = { browser, rgb };
         // (not cancelled: the second reading checks for itself that it's still wanted)
         setTimeout(() => updateColor(false, isLoading(browser)), UNSURE_RECHECK);
         return true;
@@ -617,18 +621,16 @@
   // leave it wrong. Every few seconds, and on focus or resize, the settled tab is
   // read again; two readings agreeing with each other, not the toolbar, correct it.
   const CHECK_DISTANCE = 24;
-  // a reading under way, and the last one unlike the toolbar (suspect), waiting on a second
-  const colorCheck = { running: false, suspect: null };
 
   async function checkColor() {
     const browser = gBrowser.selectedBrowser;
     if (colorCheck.running || document.hidden || !siteColorOn() || !browser || isErrorPage(browser) || isLoading(browser) ||
-        scrollReading.timer || scrollReading.sampling || !colorCache.has(browser) || colorPick || manualSiteColor(browser) ||
+        scrollReading.timer || scrollReading.sampling || !pageMemory.colors.has(browser) || colorPick || manualSiteColor(browser) ||
         (showsThrough(browser) && chromeOverPage())) {
       return;
     }
     colorCheck.running = true;
-    const id = colorRequestId;
+    const id = toolbarColor.requestId;
     let reading = null;
     try {
       reading = await sampleTopColor(browser);
@@ -638,11 +640,11 @@
       colorCheck.running = false;
     }
     // Something else read or changed the colour meanwhile, or the tab changed
-    if (id !== colorRequestId || browser !== gBrowser.selectedBrowser || isLoading(browser) || !reading?.rgb) {
+    if (id !== toolbarColor.requestId || browser !== gBrowser.selectedBrowser || isLoading(browser) || !reading?.rgb) {
       colorCheck.suspect = null;
       return;
     }
-    const shown = colorCache.get(browser);
+    const shown = pageMemory.colors.get(browser);
     if (reading.share < MIN_COLOR_SHARE || colorDistance(reading.rgb, shown) <= CHECK_DISTANCE) {
       colorCheck.suspect = null;
       return;
@@ -653,7 +655,7 @@
     }
     colorCheck.suspect = null;
     applyColor(reading.rgb);
-    colorCache.set(browser, reading.rgb);
+    pageMemory.colors.set(browser, reading.rgb);
     rememberSiteColor(browser, reading.rgb);
   }
 
@@ -723,11 +725,11 @@
       showColor(ERROR_PAGE_COLOR);
     } else if (manual) {
       showColor(manual);
-      colorCache.set(browser, manual);
-    } else if (isLoading(browser) || !colorCache.has(browser)) {
+      pageMemory.colors.set(browser, manual);
+    } else if (isLoading(browser) || !pageMemory.colors.has(browser)) {
       showColor(null);
     } else {
-      showColor(colorCache.get(browser));
+      showColor(pageMemory.colors.get(browser));
     }
     requestAnimationFrame(() => requestAnimationFrame(() => setFlag("zia-color-snap", false)));
   }
@@ -772,7 +774,7 @@
   window.ziaOnPageScroll = (browser, position) => {
     if (position) {
       scrollReading.helperWorks = true;
-      scrollPositions.set(browser, { x: position.x || 0, y: position.y || 0 });
+      pageMemory.scrolls.set(browser, { x: position.x || 0, y: position.y || 0 });
     }
     if (browser !== gBrowser.selectedBrowser || isLoading(browser) || isErrorPage(browser)) {
       return;
@@ -966,7 +968,7 @@
       showColor(manual);
       cacheColor(browser, manual);
     } else {
-      showColor(colorCache.get(browser) ?? null);
+      showColor(pageMemory.colors.get(browser) ?? null);
       updateColor();
     }
   }
@@ -1738,6 +1740,41 @@
     soon();
   }
 
+  // Opened, the text stays where it was as the bar was clicked (centred in the opened
+  // bar instead, it jumped aside, #443): the opened bar is wider and elsewhere, so the
+  // shift is measured again from it, to the closed text's centre (kept, it moved the
+  // closed bar's shift into the opened bar, still a jump, #475).
+  function shiftOpenedAddress(urlbar, box, centre) {
+    const bar = box.getBoundingClientRect();
+    if (centre.closed !== null && bar.width) {
+      const most = bar.width / 5;
+      const shift = Math.max(-most, Math.min(most, centre.closed - (bar.left + bar.width / 2)));
+      setStyle(urlbar, "--zia-center-shift", Math.abs(shift) >= 1 ? `${Math.round(shift)}px` : null);
+    }
+  }
+
+  // Closed, the text is centred in the toolbar's card (an option), noting where it is
+  function closedAddressShift(urlbar, box, toolbar, centre) {
+    let shift = 0;
+    centre.closed = null;
+    if (
+      Services.prefs.getBoolPref("zia.urlbar.center-text", false) &&
+      root.getAttribute("zen-single-toolbar") !== "true" &&
+      !urlbar.hasAttribute("breakout-extend") &&
+      urlbar.getAttribute("zen-floating-urlbar") !== "true"
+    ) {
+      const bar = box.getBoundingClientRect();
+      const card = toolbar.getBoundingClientRect();
+      if (bar.width && card.width) {
+        // (a fifth of the bar at most either way: a long address keeps most of its room)
+        const most = bar.width / 5;
+        shift = Math.max(-most, Math.min(most, card.left + card.width / 2 - (bar.left + bar.width / 2)));
+        centre.closed = bar.left + bar.width / 2 + shift;
+      }
+    }
+    return shift;
+  }
+
   function watchCenteredAddress() {
     const urlbar = gURLBar.textbox || document.getElementById("urlbar");
     const box = gURLBar.inputField?.parentNode;
@@ -1746,43 +1783,18 @@
       return;
     }
     // (where the closed bar's text was centred, in the window)
-    let closedCentre = null;
+    const centre = { closed: null };
     const update = () => {
-      let shift = 0;
-      // Opened, the text stays where it was as the bar was clicked (centred in the opened
-      // bar instead, it jumped aside, #443): the opened bar is wider and elsewhere, so the
-      // shift is measured again from it, to the closed text's centre (kept, it moved the
-      // closed bar's shift into the opened bar, still a jump, #475). Not with the opened
-      // pop-up's text from the left (an option).
+      // (not with the opened pop-up's text from the left, an option)
       if (
         urlbar.hasAttribute("breakout-extend") &&
         urlbar.getAttribute("zen-floating-urlbar") !== "true" &&
         !Services.prefs.getBoolPref("zia.urlbar.center-text.pop-up-left", false)
       ) {
-        const bar = box.getBoundingClientRect();
-        if (closedCentre !== null && bar.width) {
-          const most = bar.width / 5;
-          shift = Math.max(-most, Math.min(most, closedCentre - (bar.left + bar.width / 2)));
-          setStyle(urlbar, "--zia-center-shift", Math.abs(shift) >= 1 ? `${Math.round(shift)}px` : null);
-        }
+        shiftOpenedAddress(urlbar, box, centre);
         return;
       }
-      closedCentre = null;
-      if (
-        Services.prefs.getBoolPref("zia.urlbar.center-text", false) &&
-        root.getAttribute("zen-single-toolbar") !== "true" &&
-        !urlbar.hasAttribute("breakout-extend") &&
-        urlbar.getAttribute("zen-floating-urlbar") !== "true"
-      ) {
-        const bar = box.getBoundingClientRect();
-        const card = toolbar.getBoundingClientRect();
-        if (bar.width && card.width) {
-          // (a fifth of the bar at most either way: a long address keeps most of its room)
-          const most = bar.width / 5;
-          shift = Math.max(-most, Math.min(most, card.left + card.width / 2 - (bar.left + bar.width / 2)));
-          closedCentre = bar.left + bar.width / 2 + shift;
-        }
-      }
+      const shift = closedAddressShift(urlbar, box, toolbar, centre);
       setStyle(urlbar, "--zia-center-shift", Math.abs(shift) >= 1 ? `${Math.round(shift)}px` : null);
     };
     const observer = new ResizeObserver(update);
@@ -5397,7 +5409,7 @@
       const cover = Math.max(width / pageW, height / pageH);
       const cropW = width / cover;
       const cropH = height / cover;
-      const scroll = scrollPositions.get(browser) || { x: 0, y: 0 };
+      const scroll = pageMemory.scrolls.get(browser) || { x: 0, y: 0 };
       const bitmap = await browser.drawSnapshot(
         scroll.x + (pageW - cropW) / 2,
         scroll.y,
@@ -5571,6 +5583,7 @@
     if (!tab || !side) {
       return;
     }
+    // (once the drop event is over, so the split isn't made in the middle of it)
     setTimeout(() => {
       try {
         splitTabToSide(tab, side, target);
@@ -5965,6 +5978,7 @@
         return;
       }
       address.removeAttribute("zia-loading");
+      // (not kept either: it checks the bar hasn't started loading again first)
       setTimeout(() => {
         if (!address.hasAttribute("zia-loading")) {
           address.style.setProperty("--zia-load-progress", "0");
@@ -7505,6 +7519,8 @@
   const FLIGHT_WINDUP_MS = 420;
   const FLIGHT_LAUNCH_MS = 560;
   const FLIGHT_SETTLE_MS = 320;
+  // (the whole flight: the pop, the wind-up and the launch)
+  const FLIGHT_MS = FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
   // (the glow trails the row by this much, the button's nudge starts this much before it
   // lands, and the stage goes this much after it's settled)
   const FLIGHT_BEAM_LAG_MS = 40;
@@ -7719,8 +7735,7 @@
 
   function flightFrames(start, path) {
     const { p0, dx, dy, point, at } = path;
-    const total = FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
-    const o = (ms) => ms / total;
+    const o = (ms) => ms / FLIGHT_MS;
     const frames = [
       { offset: 0, transform: at(start.clientX, start.clientY, 0, 0.45), opacity: 0 },
       { offset: o(FLIGHT_POP_MS), transform: at(p0.x, p0.y, 0, 1), opacity: 1 },
@@ -7757,15 +7772,14 @@
 
   // The dim, the glow trailing the row and the bloom where it lands
   function lightFlight({ dim, beam, bloom, row }, frames, target) {
-    const total = FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
     // the dim: in as it winds up, out once it's landed
-    const settle = total + FLIGHT_SETTLE_MS;
+    const settle = FLIGHT_MS + FLIGHT_SETTLE_MS;
     const so = (ms) => ms / settle;
     dim.animate(
       [
         { opacity: 0, easing: "ease-in-out" },
         { opacity: 1, offset: so(FLIGHT_POP_MS + FLIGHT_WINDUP_MS) },
-        { opacity: 1, offset: so(total), easing: "ease-out" },
+        { opacity: 1, offset: so(FLIGHT_MS), easing: "ease-out" },
         { opacity: 0 },
       ],
       { duration: settle, easing: "linear", fill: "forwards" }
@@ -7781,7 +7795,7 @@
         transform: frame.transform.replace(/scale\(([\d.]+)\)/, (_, n) => `scale(${(Number(n) * 1.6).toFixed(3)})`),
         opacity: i < 3 ? 0 : frame.opacity,
       })),
-      { duration: total, delay: FLIGHT_BEAM_LAG_MS, easing: "linear", fill: "forwards" }
+      { duration: FLIGHT_MS, delay: FLIGHT_BEAM_LAG_MS, easing: "linear", fill: "forwards" }
     );
 
     // the bloom where it lands
@@ -7790,7 +7804,7 @@
       [
         { opacity: 0, scale: 0.4 },
         { opacity: 0, scale: 0.4, offset: so(FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS * 0.5) },
-        { opacity: 1, scale: 1, offset: so(total) },
+        { opacity: 1, scale: 1, offset: so(FLIGHT_MS) },
         { opacity: 0, scale: 1.3 },
       ],
       { duration: settle, easing: "linear", fill: "forwards" }
@@ -7807,12 +7821,11 @@
     const path = flightPath(start, target, row);
     row.style.left = `${path.p0.x}px`;
     row.style.top = `${path.p0.y}px`;
-    const total = FLIGHT_POP_MS + FLIGHT_WINDUP_MS + FLIGHT_LAUNCH_MS;
     const frames = flightFrames(start, path);
     // (only movement and fading, which Firefox runs on the graphics card:
     // with a blur in it too, it ran frame by frame alongside everything
     // else a download starts, and stuttered)
-    const flight = row.animate(frames, { duration: total, easing: "linear", fill: "forwards" });
+    const flight = row.animate(frames, { duration: FLIGHT_MS, easing: "linear", fill: "forwards" });
     lightFlight(parts, frames, target);
 
     // (not kept: a newer flight takes this stage away itself, and this one's nudge still lands)
@@ -7821,8 +7834,8 @@
         [{ transform: "scale(1)" }, { transform: "scale(1.18)", offset: 0.4 }, { transform: "scale(1)" }],
         { duration: FLIGHT_NUDGE_MS, easing: "cubic-bezier(0.3, 1.4, 0.5, 1)" }
       );
-    }, total - FLIGHT_NUDGE_EARLY_MS);
-    setTimeout(() => stage.remove(), total + FLIGHT_SETTLE_MS + FLIGHT_CLEAR_LATE_MS);
+    }, FLIGHT_MS - FLIGHT_NUDGE_EARLY_MS);
+    setTimeout(() => stage.remove(), FLIGHT_MS + FLIGHT_SETTLE_MS + FLIGHT_CLEAR_LATE_MS);
     flight.finished.catch(() => stage.remove());
   }
 
@@ -11087,6 +11100,7 @@
     // row. Hidden now, gone once the drop's done.
     essential.setAttribute("zia-split-gone", "true");
     goneEssentials.add(essential);
+    // (once the drop's over; and its row cleared once it has gone)
     setTimeout(() => {
       if (essential.isConnected && !essential.closing) {
         gBrowser.removeTab(essential, { animate: false });
@@ -11143,6 +11157,7 @@
   // shows instead of the essential by itself.
   function onSplitEssentialSelect(event) {
     const tab = event.target;
+    // (both once Zen has finished selecting it)
     setTimeout(sweepReleasedSplits, 0);
     if (splitEssentialsOn() && splitDataOf(tab)) {
       setTimeout(() => {
@@ -11491,70 +11506,14 @@
     fit();
   }
 
-  // Copying a tab's link: the address bar's paperclip, popping into a tick once copied, and
-  // the hover card's actions (Copy link among them) with the card's timings and sizes.
-  // Used elsewhere: TAB_CARD_DELAY, TAB_CARD_GRACE, TAB_CARD_GAP, ESSENTIAL_CARD_OVERLAP_X,
-  // ESSENTIAL_CARD_OVERLAP_Y, DEFAULT_TAB_ICON, TAB_CARD_ACTIONS, copyLink, COPY_ICON,
-  // showCopiedIcon, showCopied, addCopyLinkButton.
+  // Copying a tab's link: the address bar's paperclip, popping into a tick once copied (and
+  // the hover card's Copy link, 27).
+  // Used elsewhere: inSplit, copyLink, COPY_ICON, showCopiedIcon, showCopied, addCopyLinkButton.
 
-  const TAB_CARD_DELAY = 600;
-  const TAB_CARD_GRACE = 120;
-  const TAB_CARD_GAP = 8;
-
-  // (how far an essential's card tucks under its corner: with the squircle
-  // corners on both, 6px brings the card's corner to the tile's)
-  const ESSENTIAL_CARD_OVERLAP_X = 6;
-  const ESSENTIAL_CARD_OVERLAP_Y = 2;
-  const DEFAULT_TAB_ICON = "chrome://sine/content/zia/icons/tab-default.svg";
   const POP_OUT_MS = 130;
   const TICK_POP_IN_MS = 380;
   const PAPERCLIP_POP_IN_MS = 320;
   const COPIED_SHOWN_MS = 1200;
-
-  const TAB_CARD_ACTIONS = [
-    {
-      name: "essential",
-      icon: "card-pin",
-      label: "Add to Essentials",
-      // a split goes in whole, as a split essential: Zen can't make one of
-      // its tabs an essential (it left the other stranded, without a title)
-      run: (tab) => (inSplit(tab) ? addSplitToEssentials(tab) : gZenPinnedTabManager?.addToEssentials(tab)),
-      hidden: (tab) => tab.hasAttribute("zen-essential") || tab.pinned || (inSplit(tab) && !canBecomeSplitEssential(tab)),
-    },
-    {
-      name: "unpin",
-      icon: "card-pinned-off",
-      label: "Unpin",
-      run: (tab) => {
-        if (tab.hasAttribute("zen-essential")) {
-          gZenPinnedTabManager?.removeEssentials(tab);
-        } else {
-          gBrowser.unpinTab(tab);
-        }
-      },
-      hidden: (tab) => !tab.hasAttribute("zen-essential") && !tab.pinned,
-    },
-    {
-      name: "split",
-      icon: "card-split",
-      label: "Add to Split",
-      run: (tab) => {
-        const other = tab === gBrowser.selectedTab ? lastUsedOtherTab(tab) : gBrowser.selectedTab;
-        if (other) {
-          gZenViewSplitter?.splitTabs(tab === gBrowser.selectedTab ? [tab, other] : [other, tab]);
-        }
-      },
-      hidden: (tab) => !lastUsedOtherTab(tab),
-    },
-    {
-      name: "copy",
-      icon: "card-paperclip",
-      label: "Copy link",
-      run: (tab) => copyLink(tab),
-      hidden: (tab) => tabCardKind(tab) !== "web",
-      keepsCard: true,
-    },
-  ];
 
   const inSplit = (tab) => !!tab?.group?.hasAttribute?.("split-view-group");
 
@@ -11717,12 +11676,67 @@
   // Hover cards: the card a tab hovered in the sidebar gets (its title, domain, picture and
   // buttons), and the one a closed folder gets (its tabs, to choose from). Firefox's and Zen's
   // own pop-ups give way to them.
-  // Used elsewhere: lastUsedOtherTab, tabCardKind, addTabHoverCards.
+  // Used elsewhere: TAB_CARD_DELAY, TAB_CARD_GAP, DEFAULT_TAB_ICON, lastUsedOtherTab, tabCardKind,
+  // addTabHoverCards.
+  const TAB_CARD_DELAY = 600;
+  const TAB_CARD_GRACE = 120;
+  const TAB_CARD_GAP = 8;
+
+  // (how far an essential's card tucks under its corner: with the squircle
+  // corners on both, 6px brings the card's corner to the tile's)
+  const ESSENTIAL_CARD_OVERLAP_X = 6;
+  const ESSENTIAL_CARD_OVERLAP_Y = 2;
+  const DEFAULT_TAB_ICON = "chrome://sine/content/zia/icons/tab-default.svg";
   const TAB_CARD_OUT_MS = 120;
   // (a card kept up this long after one of its buttons, as what it did shows)
   const TAB_CARD_KEEP_MS = 1200;
   // (a folder card filled again as a button's change lands)
   const FOLDER_CARD_REFILL_MS = [60, 400, 900];
+
+  const TAB_CARD_ACTIONS = [
+    {
+      name: "essential",
+      icon: "card-pin",
+      label: "Add to Essentials",
+      // a split goes in whole, as a split essential: Zen can't make one of
+      // its tabs an essential (it left the other stranded, without a title)
+      run: (tab) => (inSplit(tab) ? addSplitToEssentials(tab) : gZenPinnedTabManager?.addToEssentials(tab)),
+      hidden: (tab) => tab.hasAttribute("zen-essential") || tab.pinned || (inSplit(tab) && !canBecomeSplitEssential(tab)),
+    },
+    {
+      name: "unpin",
+      icon: "card-pinned-off",
+      label: "Unpin",
+      run: (tab) => {
+        if (tab.hasAttribute("zen-essential")) {
+          gZenPinnedTabManager?.removeEssentials(tab);
+        } else {
+          gBrowser.unpinTab(tab);
+        }
+      },
+      hidden: (tab) => !tab.hasAttribute("zen-essential") && !tab.pinned,
+    },
+    {
+      name: "split",
+      icon: "card-split",
+      label: "Add to Split",
+      run: (tab) => {
+        const other = tab === gBrowser.selectedTab ? lastUsedOtherTab(tab) : gBrowser.selectedTab;
+        if (other) {
+          gZenViewSplitter?.splitTabs(tab === gBrowser.selectedTab ? [tab, other] : [other, tab]);
+        }
+      },
+      hidden: (tab) => !lastUsedOtherTab(tab),
+    },
+    {
+      name: "copy",
+      icon: "card-paperclip",
+      label: "Copy link",
+      run: (tab) => copyLink(tab),
+      hidden: (tab) => tabCardKind(tab) !== "web",
+      keepsCard: true,
+    },
+  ];
 
   // The cards (each built the first time it's needed), the tab or folder shown, their
   // timers, whether the sidebar is held open for them, and till when a card stays up
@@ -17525,64 +17539,73 @@
     return item;
   }
 
+  // "Change icon" in an extension's menu: its items, put at the end of the menu
+  function buildExtIconMenu(menu) {
+    const separator = document.createXULElement("menuseparator");
+    separator.className = "zia-ext-icon-separator";
+    const item = document.createXULElement("menu");
+    item.className = "zia-ext-icon-menu";
+    item.setAttribute("label", "Change icon");
+    const popup = document.createXULElement("menupopup");
+    const note = menuItem("This extension changes its own icon");
+    note.setAttribute("disabled", "true");
+    note.className = "zia-ext-icon-note";
+    const noteSeparator = document.createXULElement("menuseparator");
+    const upload = menuItem("Choose an SVG…");
+    const choose = menuItem("Pick from Zia's icons…");
+    const keepSeparator = document.createXULElement("menuseparator");
+    const keep = menuItem("Keep the SVG's own colours");
+    keep.setAttribute("type", "checkbox");
+    const reset = menuItem("Reset to the original icon");
+    popup.append(note, noteSeparator, upload, choose, keepSeparator, keep, reset);
+    item.append(popup);
+    menu.append(separator, item);
+    return { separator, item, note, noteSeparator, upload, choose, keep, reset };
+  }
+
+  // ...shown for the extension right-clicked, and each item acting on it
+  function wireExtIconMenu(menu, { separator, item, note, noteSeparator, upload, choose, keep, reset }) {
+    let target = null;
+    menu.addEventListener("popupshowing", (event) => {
+      if (event.target !== menu) {
+        return;
+      }
+      target = menu.triggerNode?.closest?.("[data-extensionid]") || null;
+      const id = target?.getAttribute("data-extensionid");
+      const show = !!id;
+      item.hidden = separator.hidden = !show;
+      if (!show) {
+        return;
+      }
+      watchExtButtons();
+      const entry = extIconMap()[id];
+      const changes = changingSet().has(id);
+      note.hidden = noteSeparator.hidden = !changes;
+      keep.hidden = !entry?.uploaded;
+      keep.setAttribute("checked", String(!!entry?.own));
+      reset.disabled = !entry;
+    });
+    const idOf = () => target?.getAttribute("data-extensionid");
+    const buttonOf = () => (target?.matches?.(".webextension-browser-action") ? target : target?.querySelector?.(".webextension-browser-action")) || target;
+    upload.addEventListener("command", () => idOf() && chooseExtSvg(idOf()));
+    choose.addEventListener("command", () => idOf() && pickExtIcon(idOf(), buttonOf()));
+    keep.addEventListener("command", () => {
+      const id = idOf();
+      const entry = id && extIconMap()[id];
+      if (entry) {
+        setExtIcon(id, { ...entry, own: keep.getAttribute("checked") === "true" });
+      }
+    });
+    reset.addEventListener("command", () => idOf() && setExtIcon(idOf(), null));
+  }
+
   function addExtIconMenus() {
     for (const menuId of ["toolbar-context-menu", "unified-extensions-context-menu"]) {
       const menu = document.getElementById(menuId);
       if (!menu || menu.querySelector(".zia-ext-icon-menu")) {
         continue;
       }
-      const separator = document.createXULElement("menuseparator");
-      separator.className = "zia-ext-icon-separator";
-      const item = document.createXULElement("menu");
-      item.className = "zia-ext-icon-menu";
-      item.setAttribute("label", "Change icon");
-      const popup = document.createXULElement("menupopup");
-      const note = menuItem("This extension changes its own icon");
-      note.setAttribute("disabled", "true");
-      note.className = "zia-ext-icon-note";
-      const noteSeparator = document.createXULElement("menuseparator");
-      const upload = menuItem("Choose an SVG…");
-      const choose = menuItem("Pick from Zia's icons…");
-      const keepSeparator = document.createXULElement("menuseparator");
-      const keep = menuItem("Keep the SVG's own colours");
-      keep.setAttribute("type", "checkbox");
-      const reset = menuItem("Reset to the original icon");
-      popup.append(note, noteSeparator, upload, choose, keepSeparator, keep, reset);
-      item.append(popup);
-      menu.append(separator, item);
-
-      let target = null;
-      menu.addEventListener("popupshowing", (event) => {
-        if (event.target !== menu) {
-          return;
-        }
-        target = menu.triggerNode?.closest?.("[data-extensionid]") || null;
-        const id = target?.getAttribute("data-extensionid");
-        const show = !!id;
-        item.hidden = separator.hidden = !show;
-        if (!show) {
-          return;
-        }
-        watchExtButtons();
-        const entry = extIconMap()[id];
-        const changes = changingSet().has(id);
-        note.hidden = noteSeparator.hidden = !changes;
-        keep.hidden = !entry?.uploaded;
-        keep.setAttribute("checked", String(!!entry?.own));
-        reset.disabled = !entry;
-      });
-      const idOf = () => target?.getAttribute("data-extensionid");
-      const buttonOf = () => (target?.matches?.(".webextension-browser-action") ? target : target?.querySelector?.(".webextension-browser-action")) || target;
-      upload.addEventListener("command", () => idOf() && chooseExtSvg(idOf()));
-      choose.addEventListener("command", () => idOf() && pickExtIcon(idOf(), buttonOf()));
-      keep.addEventListener("command", () => {
-        const id = idOf();
-        const entry = id && extIconMap()[id];
-        if (entry) {
-          setExtIcon(id, { ...entry, own: keep.getAttribute("checked") === "true" });
-        }
-      });
-      reset.addEventListener("command", () => idOf() && setExtIcon(idOf(), null));
+      wireExtIconMenu(menu, buildExtIconMenu(menu));
     }
   }
 
