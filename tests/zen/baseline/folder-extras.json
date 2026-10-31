@@ -1,0 +1,84 @@
+{
+ "button": {
+  "tooltip": "Delete Folder"
+ },
+ "checks": {
+  "a colour is set and kept": true,
+  "a sheet per tab, up to three": true,
+  "a tab in it ends the slot": true,
+  "an empty folder shows its slot": true,
+  "past three it's a box": true,
+  "the delete button deletes it": true,
+  "the menu has Zia's items": true
+ },
+ "colored": {
+  "attr": "blue",
+  "kept": "blue"
+ },
+ "deleted": {
+  "connected": true,
+  "list": [
+   "New Tab"
+  ]
+ },
+ "filled": {
+  "empty": false,
+  "first": {
+   "count": "3",
+   "full": true,
+   "items": 4,
+   "on": 4
+  }
+ },
+ "five": {
+  "count": "3",
+  "full": true,
+  "items": 5,
+  "on": 5
+ },
+ "items": {
+  "bookmark": false,
+  "colors": [
+   "White (checked)",
+   "Green",
+   "Blue",
+   "Purple",
+   "Amber",
+   "Pink",
+   "Red",
+   "Orange"
+  ],
+  "iconOnFolder": true,
+  "state": "open"
+ },
+ "slot": {
+  "canvases": [
+   "197pxx34px"
+  ],
+  "collapsed": false,
+  "empty": true,
+  "image": true,
+  "live": "-moz-element(#zia-slot-dashes-1)",
+  "page": true,
+  "vars": [
+   "2px",
+   "2px",
+   "16px",
+   "5px",
+   "34px"
+  ]
+ },
+ "three": {
+  "count": "3",
+  "full": false,
+  "items": 3,
+  "on": 0
+ },
+ "two": {
+  "count": "2",
+  "full": false,
+  "items": 2,
+  "on": 0
+ },
+ "ziaErrors": []
+}

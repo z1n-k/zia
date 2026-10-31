@@ -1,0 +1,217 @@
+{
+ "bottom": {
+  "at": [
+   1030,
+   744,
+   320,
+   180
+  ],
+  "attrs": [
+   "zia-dia=",
+   "zia-tuck-on=",
+   "zia-tucked=bottom"
+  ],
+  "turn": "90deg",
+  "veil": "1.000"
+ },
+ "broughtOut": {
+  "at": [
+   16,
+   572,
+   320,
+   180
+  ],
+  "attrs": [
+   "zia-dia=",
+   "zia-tuck-on="
+  ],
+  "turn": "90deg",
+  "veil": ""
+ },
+ "checks": {
+  "Dia's look comes off and back": true,
+  "Zia's script dressed the player": true,
+  "a click on the strip brings it out": true,
+  "a default only becomes the default while tucked": true,
+  "a picked spot tucks it there": true,
+  "the default spot is used": true,
+  "the picker opens": true,
+  "the tuck button tucks it": true,
+  "thrown past a side, it tucks": true
+ },
+ "defaulted": {
+  "at": [
+   -296,
+   572,
+   320,
+   180
+  ],
+  "attrs": [
+   "zia-dia=",
+   "zia-tuck-on=",
+   "zia-tucked=left"
+  ],
+  "spot": "bottom",
+  "turn": "180deg",
+  "veil": ""
+ },
+ "dia": {
+  "at": [
+   1030,
+   744,
+   320,
+   180
+  ],
+  "attrs": [
+   "zia-dia=",
+   "zia-tuck-on=",
+   "zia-tucked=bottom"
+  ],
+  "sound": [
+   "audio",
+   "audio-scrubber",
+   "timestamp"
+  ],
+  "turn": "90deg",
+  "veil": "1.000"
+ },
+ "leaving": {
+  "at": [
+   1226,
+   300,
+   320,
+   180
+  ],
+  "attrs": [
+   "zia-dia=",
+   "zia-tuck-on=",
+   "zia-leaving="
+  ],
+  "turn": "90deg",
+  "veil": "1.000"
+ },
+ "left": {
+  "at": [
+   -296,
+   572,
+   320,
+   180
+  ],
+  "attrs": [
+   "zia-dia=",
+   "zia-tuck-on=",
+   "zia-tucked=left"
+  ],
+  "turn": "180deg",
+  "veil": ""
+ },
+ "opened": {
+  "at": [
+   1046,
+   588,
+   320,
+   180
+  ],
+  "attrs": [
+   "zia-dia=",
+   "zia-tuck-on="
+  ],
+  "pills": [
+   "Back to Tab",
+   "zia-pip-tuck-button",
+   "Minimise",
+   "Close"
+  ],
+  "sound": [
+   "audio",
+   "audio-scrubber",
+   "timestamp"
+  ],
+  "spots": [
+   "left",
+   "right",
+   "bottom-left",
+   "bottom",
+   "bottom-right"
+  ],
+  "turn": "0deg",
+  "veil": ""
+ },
+ "out": {
+  "at": [
+   1030,
+   572,
+   320,
+   180
+  ],
+  "attrs": [
+   "zia-dia=",
+   "zia-tuck-on="
+  ],
+  "turn": "0deg",
+  "veil": ""
+ },
+ "picking": {
+  "at": [
+   1030,
+   572,
+   320,
+   180
+  ],
+  "attrs": [
+   "zia-dia=",
+   "zia-tuck-on=",
+   "zia-picking="
+  ],
+  "disabled": [],
+  "turn": "0deg",
+  "veil": ""
+ },
+ "plain": {
+  "at": [
+   1030,
+   744,
+   320,
+   180
+  ],
+  "attrs": [
+   "zia-tuck-on=",
+   "zia-tucked=bottom"
+  ],
+  "sound": [],
+  "turn": "90deg",
+  "veil": "1.000"
+ },
+ "thrown": {
+  "at": [
+   1330,
+   300,
+   320,
+   180
+  ],
+  "attrs": [
+   "zia-dia=",
+   "zia-tuck-on=",
+   "zia-tucked=right",
+   "zia-nudged="
+  ],
+  "turn": "0deg",
+  "veil": "1.000"
+ },
+ "tucked": {
+  "at": [
+   1342,
+   588,
+   320,
+   180
+  ],
+  "attrs": [
+   "zia-dia=",
+   "zia-tuck-on=",
+   "zia-tucked=right"
+  ],
+  "turn": "0deg",
+  "veil": ""
+ },
+ "ziaErrors": []
+}

@@ -1,0 +1,42 @@
+{
+ "back": {
+  "all": [
+   "(empty)",
+   "(empty)",
+   "A",
+   "B",
+   "C",
+   "D",
+   "New Tab"
+  ],
+  "folders": [
+   "F: C,D"
+  ],
+  "list": [
+   "B",
+   "A",
+   "New Tab"
+  ]
+ },
+ "checks": {
+  "the essential sprang in": true,
+  "the folder came back": true,
+  "they all came back": true,
+  "they closed": true
+ },
+ "closed": {
+  "folder": true,
+  "list": [
+   "A",
+   "New Tab"
+  ]
+ },
+ "essentials": [
+  "A"
+ ],
+ "springs": [
+  300,
+  820
+ ],
+ "ziaErrors": []
+}
