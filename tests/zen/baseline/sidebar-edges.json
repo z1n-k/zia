@@ -7,8 +7,14 @@
  "innerInOuter": true,
  "left": {
   "folders": {
-   "F": "1px",
-   "G": null
+   "F": {
+    "endsTheGapBelow": true,
+    "lastIsFolder": true,
+    "set": true
+   },
+   "G": {
+    "set": false
+   }
   },
   "side": "left",
   "sidebarLeft": 0,
@@ -20,8 +26,14 @@
  },
  "leftAgain": {
   "folders": {
-   "F": "1px",
-   "G": null
+   "F": {
+    "endsTheGapBelow": true,
+    "lastIsFolder": true,
+    "set": true
+   },
+   "G": {
+    "set": false
+   }
   },
   "side": "left",
   "sidebarLeft": 0,
@@ -33,8 +45,14 @@
  },
  "right": {
   "folders": {
-   "F": "1px",
-   "G": null
+   "F": {
+    "endsTheGapBelow": true,
+    "lastIsFolder": true,
+    "set": true
+   },
+   "G": {
+    "set": false
+   }
   },
   "side": "right",
   "sidebarLeft": 1136,
