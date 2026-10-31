@@ -424,9 +424,9 @@
       return;
     }
     if (stateFlags & STATE_START) {
-      scrollPositions.delete(browser);
+      forgetScroll(browser);
       startLoader();
-      colorRequestId++;
+      dropColorReading();
     } else if (stateFlags & STATE_STOP) {
       if (isErrorPage(browser)) {
         cancelLoader();
@@ -450,10 +450,10 @@
     keepNewTabAddressEmpty(browser, location);
 
     if (flags & LOCATION_CHANGE_ERROR_PAGE) {
-      errorBrowsers.add(browser);
+      markErrorPage(browser, true);
     } else if (!(flags & LOCATION_CHANGE_SAME_DOCUMENT)) {
-      errorBrowsers.delete(browser);
-      scrollPositions.delete(browser);
+      markErrorPage(browser, false);
+      forgetScroll(browser);
     }
     if (browser !== gBrowser.selectedBrowser) {
       return;
@@ -483,7 +483,7 @@
       "mousedown",
       () => {
         rememberClosedText();
-        clickedUrlbarAt = Date.now();
+        noteUrlbarPressed();
       },
       true
     );

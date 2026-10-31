@@ -91,9 +91,8 @@
   // with it, the checker that corrects it, the address pop-up's colour frozen as it
   // opens, and the page helpers that report loads and scrolls (actors/ZiaChild.sys.mjs,
   // calling window.ziaOnPagePainted and window.ziaOnPageScroll) and draw PDFs.
-  // Used elsewhere: scrollPositions, ERROR_PAGE_COLOR, errorBrowsers, colorCache, cacheColor,
-  // colorRequestId (bumped by 29 as a load starts), appliedColorKey (cleared by 18 as the
-  // options change), siteColorOn, applyColor, showColor, isErrorPage, isLoading,
+  // Used elsewhere: scrollPositions, ERROR_PAGE_COLOR, colorCache, cacheColor, dropColorReading,
+  // forgetAppliedColor, markErrorPage, forgetScroll, siteColorOn, applyColor, showColor, isErrorPage, isLoading,
   // sampleTopColor, parseColor, colorOver, chromeBackdrop, cssColor, wantsDarkInk,
   // updateColor, watchColorDrift, watchPopUpColor, snapColorForTab, scheduleColor,
   // requestScrollSample, watchScrollInput, registerPdfActor, registerScrollActor.
@@ -282,10 +281,32 @@
     return parsed[3] ? parsed.slice(0, 3) : [18, 18, 18];
   }
 
+  // any reading under way dropped (29, as a page starts loading)
+  function dropColorReading() {
+    colorRequestId++;
+  }
+
   // a colour shown outright, any reading under way dropped
   function showColor(rgb) {
-    colorRequestId++;
+    dropColorReading();
     applyColor(rgb);
+  }
+
+  // the colour put on afresh next time, even the same one (18, as the options change)
+  function forgetAppliedColor() {
+    appliedColorKey = null;
+  }
+
+  // what a browser now shows: an error page or not, and (a new page) no scroll yet (29)
+  function markErrorPage(browser, error) {
+    if (error) {
+      errorBrowsers.add(browser);
+    } else {
+      errorBrowsers.delete(browser);
+    }
+  }
+  function forgetScroll(browser) {
+    scrollPositions.delete(browser);
   }
 
   // the colour a tab's toolbar shows from now on (a colour set by hand, 01b)
@@ -1779,8 +1800,7 @@
   }
   // The opened address bar lined up with where its text was as it was clicked (or with its
   // place at the top), kept inside the window, and reaching up to the window's top edge.
-  // Used elsewhere: clickedUrlbarAt (set by 29 as the bar's pressed), rememberClosedText,
-  // alignOpenedUrlbarSoon.
+  // Used elsewhere: noteUrlbarPressed, rememberClosedText, alignOpenedUrlbarSoon.
 
   // (the closed text's place counts if taken as the bar was clicked, and the click if
   // it's this recent as the bar opens)
@@ -1795,6 +1815,11 @@
   let openOffsetX = 0;
   let closedTextRect = null;
   let clickedUrlbarAt = 0;
+
+  // (29, as the bar's pressed)
+  function noteUrlbarPressed() {
+    clickedUrlbarAt = Date.now();
+  }
 
   function desiredOpenTop() {
     return parseFloat(getComputedStyle(root).getPropertyValue("--zia-urlbar-open-top")) || 0;
@@ -7447,7 +7472,7 @@
     };
     const onChange = () => {
       apply();
-      appliedColorKey = null;
+      forgetAppliedColor();
       updateColor();
     };
     apply();
@@ -24723,9 +24748,9 @@
       return;
     }
     if (stateFlags & STATE_START) {
-      scrollPositions.delete(browser);
+      forgetScroll(browser);
       startLoader();
-      colorRequestId++;
+      dropColorReading();
     } else if (stateFlags & STATE_STOP) {
       if (isErrorPage(browser)) {
         cancelLoader();
@@ -24749,10 +24774,10 @@
     keepNewTabAddressEmpty(browser, location);
 
     if (flags & LOCATION_CHANGE_ERROR_PAGE) {
-      errorBrowsers.add(browser);
+      markErrorPage(browser, true);
     } else if (!(flags & LOCATION_CHANGE_SAME_DOCUMENT)) {
-      errorBrowsers.delete(browser);
-      scrollPositions.delete(browser);
+      markErrorPage(browser, false);
+      forgetScroll(browser);
     }
     if (browser !== gBrowser.selectedBrowser) {
       return;
@@ -24782,7 +24807,7 @@
       "mousedown",
       () => {
         rememberClosedText();
-        clickedUrlbarAt = Date.now();
+        noteUrlbarPressed();
       },
       true
     );

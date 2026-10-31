@@ -2,9 +2,8 @@
   // with it, the checker that corrects it, the address pop-up's colour frozen as it
   // opens, and the page helpers that report loads and scrolls (actors/ZiaChild.sys.mjs,
   // calling window.ziaOnPagePainted and window.ziaOnPageScroll) and draw PDFs.
-  // Used elsewhere: scrollPositions, ERROR_PAGE_COLOR, errorBrowsers, colorCache, cacheColor,
-  // colorRequestId (bumped by 29 as a load starts), appliedColorKey (cleared by 18 as the
-  // options change), siteColorOn, applyColor, showColor, isErrorPage, isLoading,
+  // Used elsewhere: scrollPositions, ERROR_PAGE_COLOR, colorCache, cacheColor, dropColorReading,
+  // forgetAppliedColor, markErrorPage, forgetScroll, siteColorOn, applyColor, showColor, isErrorPage, isLoading,
   // sampleTopColor, parseColor, colorOver, chromeBackdrop, cssColor, wantsDarkInk,
   // updateColor, watchColorDrift, watchPopUpColor, snapColorForTab, scheduleColor,
   // requestScrollSample, watchScrollInput, registerPdfActor, registerScrollActor.
@@ -193,10 +192,32 @@
     return parsed[3] ? parsed.slice(0, 3) : [18, 18, 18];
   }
 
+  // any reading under way dropped (29, as a page starts loading)
+  function dropColorReading() {
+    colorRequestId++;
+  }
+
   // a colour shown outright, any reading under way dropped
   function showColor(rgb) {
-    colorRequestId++;
+    dropColorReading();
     applyColor(rgb);
+  }
+
+  // the colour put on afresh next time, even the same one (18, as the options change)
+  function forgetAppliedColor() {
+    appliedColorKey = null;
+  }
+
+  // what a browser now shows: an error page or not, and (a new page) no scroll yet (29)
+  function markErrorPage(browser, error) {
+    if (error) {
+      errorBrowsers.add(browser);
+    } else {
+      errorBrowsers.delete(browser);
+    }
+  }
+  function forgetScroll(browser) {
+    scrollPositions.delete(browser);
   }
 
   // the colour a tab's toolbar shows from now on (a colour set by hand, 01b)

@@ -1,7 +1,6 @@
   // The opened address bar lined up with where its text was as it was clicked (or with its
   // place at the top), kept inside the window, and reaching up to the window's top edge.
-  // Used elsewhere: clickedUrlbarAt (set by 29 as the bar's pressed), rememberClosedText,
-  // alignOpenedUrlbarSoon.
+  // Used elsewhere: noteUrlbarPressed, rememberClosedText, alignOpenedUrlbarSoon.
 
   // (the closed text's place counts if taken as the bar was clicked, and the click if
   // it's this recent as the bar opens)
@@ -16,6 +15,11 @@
   let openOffsetX = 0;
   let closedTextRect = null;
   let clickedUrlbarAt = 0;
+
+  // (29, as the bar's pressed)
+  function noteUrlbarPressed() {
+    clickedUrlbarAt = Date.now();
+  }
 
   function desiredOpenTop() {
     return parseFloat(getComputedStyle(root).getPropertyValue("--zia-urlbar-open-top")) || 0;
