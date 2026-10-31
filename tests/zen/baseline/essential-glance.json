@@ -1,0 +1,21 @@
+{
+ "checks": {
+  "closed, it's gone": true,
+  "it opens from the essential": true,
+  "springing out": true
+ },
+ "closed": {
+  "ghost": null,
+  "ghosts": 0,
+  "glances": 0
+ },
+ "open": {
+  "on": "B",
+  "shown": "true",
+  "springs": [
+   "tab:data:text/html,<title>Peek</title>Peek maxHeight:0px>50>50px minHeight:0px>0>0px opacity:0>1>1 220",
+   "tab:data:text/html,<title>Peek</title>Peek opacity:0>1>1 rotate:0deg>6>6deg scale:0.12>1>1 translate:-26px>-26>0px 400"
+  ]
+ },
+ "ziaErrors": []
+}

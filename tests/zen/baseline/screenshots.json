@@ -1,0 +1,13 @@
+{
+ "buttons": [
+  {
+   "gap": "6px",
+   "sheets": 1,
+   "styled": true
+  }
+ ],
+ "checks": {
+  "the buttons have Zia's look": true
+ },
+ "ziaErrors": []
+}

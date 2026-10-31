@@ -1,0 +1,86 @@
+{
+ "back": {
+  "cards": [
+   "true"
+  ],
+  "clears": [
+   "Clear history: Clear history\u2026",
+   "Clear downloads: Clear downloads (the files stay)"
+  ],
+  "open": true,
+  "rail": {
+   "height": "56px",
+   "hidden": false,
+   "placed": true,
+   "transform": "translateY(256px)"
+  },
+  "section": "spaces"
+ },
+ "checks": {
+  "Downloads has Clear": true,
+  "History has Clear": true,
+  "Zen's look takes them off": true,
+  "it opened": true,
+  "the tile moves with the section": true
+ },
+ "downloads": {
+  "cards": [],
+  "clears": [
+   "Clear history: Clear history\u2026",
+   "Clear downloads: Clear downloads (the files stay)"
+  ],
+  "open": true,
+  "rail": {
+   "height": "56px",
+   "hidden": false,
+   "placed": true,
+   "transform": "translateY(128px)"
+  },
+  "section": "downloads"
+ },
+ "opened": {
+  "cards": [],
+  "clears": [
+   "Clear history: Clear history\u2026"
+  ],
+  "open": true,
+  "rail": {
+   "height": "56px",
+   "hidden": false,
+   "placed": true,
+   "transform": "translateY(320px)"
+  },
+  "section": "history"
+ },
+ "rows": [
+  "9px",
+  "10px"
+ ],
+ "spaces": {
+  "cards": [
+   "true"
+  ],
+  "clears": [
+   "Clear history: Clear history\u2026",
+   "Clear downloads: Clear downloads (the files stay)"
+  ],
+  "open": true,
+  "rail": {
+   "height": "56px",
+   "hidden": false,
+   "placed": true,
+   "transform": "translateY(256px)"
+  },
+  "section": "spaces"
+ },
+ "zenLook": {
+  "cards": [
+   "true"
+  ],
+  "clears": [],
+  "open": true,
+  "rail": null,
+  "section": "spaces"
+ },
+ "ziaErrors": []
+}
