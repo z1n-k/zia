@@ -1,11 +1,17 @@
   // The stand-in that follows the pointer over the essentials, and the room made for it.
+  // Used elsewhere: proxy, clearProxy, showProxy, hideProxy, landProxy, liveCopies, removeCopy,
+  // cloneCopy, easeSize, fadeSplitContent, fitSplitHalves, makeRoom, canBeEssential, fitZenSlot,
+  // splitSlot, holdSplitSlot.
 
-  let proxy = null;
-  let proxyLeaveTimer = 0;
-  let landingTab = null;
   const PROXY_MS = 140;
   // (back into a row quicker than it became a tile: as long, it lagged)
   const PROXY_BACK_MS = 100;
+  // (removed only once its glide has ended)
+  const PROXY_LAND_MS = PROXY_MS + 20;
+  const SLOT_SLIDE_MS = 180;
+
+  // the stand-in, its timer back to a row, and the tab it's landing as
+  const proxy = { node: null, leaveTimer: 0, landing: null };
 
   // A drag's copies are clones of the tab, so Zen could take one for a real tab: taking
   // an essential out mid-drag, it moved the copy into the list and put it back after the
@@ -13,7 +19,7 @@
   const liveCopies = new WeakSet();
   // Once in the list the copy was in the browser's cached tabs, which a removal doesn't
   // refresh: closing the selected tab then picked the copy, failed, and wouldn't close
-  const dropCopy = (node) => {
+  const removeCopy = (node) => {
     liveCopies.delete(node);
     Element.prototype.remove.call(node);
     try {
@@ -26,7 +32,7 @@
   const trackCopy = (node) => {
     liveCopies.add(node);
     node.remove = function () {
-      dropCopy(this);
+      removeCopy(this);
     };
     return node;
   };
@@ -137,9 +143,9 @@
   };
 
   const moveProxy = (x, y) => {
-    const off = proxy.ziaOffset || { x: 0, y: 0 };
-    proxy.style.setProperty("left", `${Math.round(x - off.x)}px`, "important");
-    proxy.style.setProperty("top", `${Math.round(y - off.y)}px`, "important");
+    const off = proxy.node.ziaOffset || { x: 0, y: 0 };
+    proxy.node.style.setProperty("left", `${Math.round(x - off.x)}px`, "important");
+    proxy.node.style.setProperty("top", `${Math.round(y - off.y)}px`, "important");
   };
 
   // A stand-in changing between a row and a tile hides what's in it while the box morphs
@@ -161,38 +167,38 @@
   };
 
   const showProxy = (x, y) => {
-    clearTimeout(proxyLeaveTimer);
-    if (!proxy) {
+    clearTimeout(proxy.leaveTimer);
+    if (!proxy.node) {
       const host = root;
       if (!host || !drag?.tab) {
         return;
       }
-      proxy = cloneCopy(drag.tab);
-      proxy.setAttribute("zen-essential", "true");
-      proxy.setAttribute("pinned", "true");
-      proxy.id = "zia-essential-proxy";
+      proxy.node = cloneCopy(drag.tab);
+      proxy.node.setAttribute("zen-essential", "true");
+      proxy.node.setAttribute("pinned", "true");
+      proxy.node.id = "zia-essential-proxy";
       const row = drag.moving.getBoundingClientRect();
-      sizeCopy(proxy, row.width, row.height);
-      host.appendChild(proxy);
+      sizeCopy(proxy.node, row.width, row.height);
+      host.appendChild(proxy.node);
       if (drag.split) {
         // a split starts as its row (both sites, icon and title), and
         // morphs into its tile below
-        dressSplitProxy(proxy, drag.tab);
-        proxy.removeAttribute("zen-essential");
-        proxy.removeAttribute("pinned");
+        dressSplitProxy(proxy.node, drag.tab);
+        proxy.node.removeAttribute("zen-essential");
+        proxy.node.removeAttribute("pinned");
       }
       try {
-        window.gZenPinnedTabManager?.setEssentialTabIcon?.(proxy);
+        window.gZenPinnedTabManager?.setEssentialTabIcon?.(proxy.node);
       } catch (err) {
         noteError("tab dragging: showProxy", err);
       }
       moveProxy(x, y);
 
-      const box = proxy.getBoundingClientRect();
-      proxy.ziaOffset = { x: box.left + box.width / 2 - x, y: box.top + box.height / 2 - y };
+      const box = proxy.node.getBoundingClientRect();
+      proxy.node.ziaOffset = { x: box.left + box.width / 2 - x, y: box.top + box.height / 2 - y };
     }
-    proxy.ziaLeaving = false;
-    easeSize(proxy, PROXY_MS);
+    proxy.node.ziaLeaving = false;
+    easeSize(proxy.node, PROXY_MS);
     if (!drag.moving.hasAttribute("zia-to-essential")) {
       tap();
     }
@@ -200,42 +206,42 @@
     const tile = tileSize();
 
     // (and back into a tile, headed back over the essentials)
-    if (!proxy.hasAttribute("zen-essential")) {
-      proxy.setAttribute("zen-essential", "true");
-      proxy.setAttribute("pinned", "true");
+    if (!proxy.node.hasAttribute("zen-essential")) {
+      proxy.node.setAttribute("zen-essential", "true");
+      proxy.node.setAttribute("pinned", "true");
       if (drag.split) {
-        fitSplitHalves(proxy, tile.stackHeight, tile.half, tile.width);
+        fitSplitHalves(proxy.node, tile.stackHeight, tile.half, tile.width);
       }
-      fadeSplitContent(proxy, PROXY_MS);
+      fadeSplitContent(proxy.node, PROXY_MS);
     }
-    sizeCopy(proxy, tile.width, tile.height);
+    sizeCopy(proxy.node, tile.width, tile.height);
     moveProxy(x, y);
   };
 
   const hideProxy = () => {
-    if (!proxy || proxy.ziaLeaving || !drag?.moving) {
+    if (!proxy.node || proxy.node.ziaLeaving || !drag?.moving) {
       return;
     }
-    proxy.ziaLeaving = true;
+    proxy.node.ziaLeaving = true;
     // (back to its row, not a tile stretched to a row's size, as a split does)
-    if (proxy.hasAttribute("zen-essential")) {
-      const current = proxy.getBoundingClientRect();
-      proxy.removeAttribute("zen-essential");
-      proxy.removeAttribute("pinned");
-      sizeCopy(proxy, current.width, current.height);
-      proxy.getBoundingClientRect();
-      fadeSplitContent(proxy, PROXY_BACK_MS);
+    if (proxy.node.hasAttribute("zen-essential")) {
+      const current = proxy.node.getBoundingClientRect();
+      proxy.node.removeAttribute("zen-essential");
+      proxy.node.removeAttribute("pinned");
+      sizeCopy(proxy.node, current.width, current.height);
+      proxy.node.getBoundingClientRect();
+      fadeSplitContent(proxy.node, PROXY_BACK_MS);
     }
     // Eased frame by frame to wherever its row is now: Zen slides the list
     // up as its cell in the essentials goes, so the row's place moves as
     // the tile travels (sent to where it was, it landed off and jumped)
-    const leaving = proxy;
+    const leaving = proxy.node;
     const moving = drag.moving;
     const from = leaving.getBoundingClientRect();
     const began = performance.now();
     leaving.style.setProperty("transition", "none", "important");
     const step = (now) => {
-      if (proxy !== leaving || !leaving.ziaLeaving) {
+      if (proxy.node !== leaving || !leaving.ziaLeaving) {
         return;
       }
       const t = Math.min(1, (now - began) / PROXY_BACK_MS);
@@ -249,28 +255,28 @@
       }
     };
     requestAnimationFrame(step);
-    proxyLeaveTimer = setTimeout(() => {
-      if (proxy === leaving && leaving.ziaLeaving) {
+    proxy.leaveTimer = setTimeout(() => {
+      if (proxy.node === leaving && leaving.ziaLeaving) {
         leaving.remove();
-        proxy = null;
+        proxy.node = null;
         moving.removeAttribute("zia-to-essential");
       }
     }, PROXY_BACK_MS);
   };
 
   const landProxy = (tab) => {
-    const tile = proxy;
-    proxy = null;
-    clearTimeout(proxyLeaveTimer);
+    const tile = proxy.node;
+    proxy.node = null;
+    clearTimeout(proxy.leaveTimer);
     if (!tile) {
       return;
     }
-    landingTab = tab;
+    proxy.landing = tab;
     const done = () => {
       tile.remove();
       tab.removeAttribute("zia-to-essential");
-      if (landingTab === tab) {
-        landingTab = null;
+      if (proxy.landing === tab) {
+        proxy.landing = null;
       }
     };
 
@@ -300,7 +306,7 @@
           tile.style.setProperty("left", `${Math.round(box.left + box.width / 2 - off.x)}px`, "important");
           tile.style.setProperty("top", `${Math.round(box.top + box.height / 2 - off.y)}px`, "important");
           sizeCopy(tile, box.width, box.height);
-          setTimeout(done, PROXY_MS + 20);
+          setTimeout(done, PROXY_LAND_MS);
         }),
       0
     );
@@ -388,17 +394,17 @@
       if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
         continue;
       }
-      const slide = cell.animate([{ translate: `${dx}px ${dy}px` }, { translate: "0 0" }], { duration: 180, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
+      const slide = cell.animate([{ translate: `${dx}px ${dy}px` }, { translate: "0 0" }], { duration: SLOT_SLIDE_MS, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
       slide.id = "zia-slot-slide";
     }
   };
 
-  const dropProxy = () => {
-    clearTimeout(proxyLeaveTimer);
-    proxy?.remove();
-    proxy = null;
+  const clearProxy = () => {
+    clearTimeout(proxy.leaveTimer);
+    proxy.node?.remove();
+    proxy.node = null;
     document.querySelectorAll("[zia-to-essential]").forEach((node) => {
-      if (node !== landingTab) {
+      if (node !== proxy.landing) {
         node.removeAttribute("zia-to-essential");
       }
     });

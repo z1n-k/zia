@@ -1,63 +1,84 @@
   // Folders tinted and their width morphed while a tab is dragged over or out of them.
+  // Used elsewhere: paintFolders, clearFolderPaint, bgOf, contentOf, widthFor, unmorphFolder,
+  // morphWidth, settleDroppedWidth, easeOutWidth.
+
+  const FOLDER_TAB_INSET = { start: 14.5, end: 5 };
+  const MORPH_PROPS = ["--zia-morph-bg-start", "--zia-morph-bg-end", "--zia-morph-content-start", "--zia-morph-content-end"];
+  const FOLDER_MORPH_MS = 140;
+  const WIDTH_WAIT_MS = 200;
+  const MORPH_OUT_MS = 450;
 
   const paintedFolders = new Set();
-  // Folders' boxes stretched round the room made for what's dragged: a tab, or
-  // (listRoom) an essential brought down into the list, whose folders didn't open
-  const paintFolders = (
-    { rows, target, pitch, height, skip, outer, moving } =
-      { rows: drag.rows, target: drag.target, pitch: drag.pitch, height: drag.height, skip: notARow, outer: drag.folder, moving: drag.moving }
-  ) => {
+
+  const foldersOf = (rows) => {
     const folders = new Set();
     for (const row of rows) {
       for (let f = rowFolder(row); f; f = f.parentElement?.closest?.(FOLDER_SELECTOR)) {
         folders.add(f);
       }
     }
-    for (const f of folders) {
+    return folders;
+  };
+
+  const closedFolderShape = (f, into, pitch) => {
+    let top = 0;
+    let grow = into ? pitch : 0;
+    if (into && topRoom?.folder === f && topRoom.key === "up") {
+      top = -pitch;
+      grow = 0;
+    }
+    return { top, grow };
+  };
+
+  const openFolderShape = (f, into, { rows, target, height, skip }) => {
+    let top = 0;
+    let grow = 0;
+    let origBottom = -Infinity;
+    let shownBottom = -Infinity;
+    let showsTab = false;
+    for (const row of rows) {
+      if (row.node === f || !f.contains(row.node)) {
+        continue;
+      }
+      const slot = slotAfterHeader(row);
+      origBottom = Math.max(origBottom, row.top + row.height + slot);
+      if (row.node === headerOf(f)) {
+        top = row.delta || 0;
+      }
+      if (!skip(row)) {
+        const intoThisSlot = slot && into && target.folder === row.node.parentElement;
+        shownBottom = Math.max(shownBottom, row.top + (row.delta || 0) + row.height + (intoThisSlot ? 0 : slot));
+        showsTab ||= row.node !== headerOf(f);
+      }
+    }
+    if (into && target.slotTop != null) {
+      shownBottom = Math.max(shownBottom, target.slotTop + height);
+      showsTab = true;
+    }
+    if (Number.isFinite(origBottom) && Number.isFinite(shownBottom)) {
+      grow = shownBottom - origBottom;
+    }
+    // closed, its open tab dragged out, it loses the padding below that tab too
+    // (chrome.css): the box closed up less that and snapped the rest on the drop
+    if (isCollapsed(f) && !showsTab) {
+      grow -= parseFloat(getComputedStyle(f).getPropertyValue("--zia-folder-inner-gap")) || 0;
+    }
+    return { top, grow };
+  };
+
+  // Folders' boxes stretched round the room made for what's dragged: a tab, or
+  // (listRoom) an essential brought down into the list, whose folders didn't open
+  const paintFolders = (
+    { rows, target, pitch, height, skip, outer, moving } =
+      { rows: drag.rows, target: drag.target, pitch: drag.pitch, height: drag.height, skip: notARow, outer: drag.folder, moving: drag.moving }
+  ) => {
+    for (const f of foldersOf(rows)) {
       if (outer && (f === outer || outer.contains(f))) {
         continue;
       }
       const into = !!target?.folder && (target.folder === f || f.contains(target.folder));
-      let top = 0;
-      let grow = 0;
-      if (isCollapsed(f) && !f.contains(moving)) {
-        grow = into ? pitch : 0;
-        if (into && topRoom?.folder === f && topRoom.key === "up") {
-          top = -pitch;
-          grow = 0;
-        }
-      } else {
-        let origBottom = -Infinity;
-        let shownBottom = -Infinity;
-        let showsTab = false;
-        for (const row of rows) {
-          if (row.node === f || !f.contains(row.node)) {
-            continue;
-          }
-          const slot = slotAfterHeader(row);
-          origBottom = Math.max(origBottom, row.top + row.height + slot);
-          if (row.node === headerOf(f)) {
-            top = row.delta || 0;
-          }
-          if (!skip(row)) {
-            const intoThisSlot = slot && into && target.folder === row.node.parentElement;
-            shownBottom = Math.max(shownBottom, row.top + (row.delta || 0) + row.height + (intoThisSlot ? 0 : slot));
-            showsTab ||= row.node !== headerOf(f);
-          }
-        }
-        if (into && target.slotTop != null) {
-          shownBottom = Math.max(shownBottom, target.slotTop + height);
-          showsTab = true;
-        }
-        if (Number.isFinite(origBottom) && Number.isFinite(shownBottom)) {
-          grow = shownBottom - origBottom;
-        }
-        // closed, its open tab dragged out, it loses the padding below that tab too
-        // (chrome.css): the box closed up less that and snapped the rest on the drop
-        if (isCollapsed(f) && !showsTab) {
-          grow -= parseFloat(getComputedStyle(f).getPropertyValue("--zia-folder-inner-gap")) || 0;
-        }
-      }
+      const { top, grow } =
+        isCollapsed(f) && !f.contains(moving) ? closedFolderShape(f, into, pitch) : openFolderShape(f, into, { rows, target, height, skip });
       f.style.setProperty("--zia-drag-bg-top", `${Math.round(top)}px`);
       f.style.setProperty("--zia-drag-bg-grow", `${Math.round(grow)}px`);
       if (!f.hasAttribute("zia-bg-shift")) {
@@ -68,12 +89,7 @@
   };
 
   const clearFolderPaint = () => {
-    if (topRoom) {
-      const { node } = topRoom;
-      topRoom = null;
-      node.style.removeProperty("translate");
-      setTimeout(() => node.style.removeProperty("transition"), 200);
-    }
+    clearTopRoom();
     for (const f of paintedFolders) {
       f.removeAttribute("zia-bg-shift");
       f.style.removeProperty("--zia-drag-bg-top");
@@ -82,7 +98,6 @@
     paintedFolders.clear();
   };
 
-  const FOLDER_TAB_INSET = { start: 14.5, end: 5 };
   const bgOf = (tab) => tab?.querySelector?.(":scope > .tab-stack > .tab-background");
   const contentOf = (tab) => tab?.querySelector?.(":scope > .tab-stack > .tab-content");
   const showing = (tab) => {
@@ -175,7 +190,7 @@
       if (!drag || drag.folder !== moving || drag.folderMorphId !== id || !moving.hasAttribute("zia-morph-folder")) {
         return;
       }
-      const t = Math.min(1, (now - began) / 140);
+      const t = Math.min(1, (now - began) / FOLDER_MORPH_MS);
       const k = 1 - Math.pow(1 - t, 3);
       draw({ start: from.start + (to.start - from.start) * k, end: from.end + (to.end - from.end) * k });
       if (t < 1) {
@@ -216,7 +231,7 @@
           drag.widthGo = true;
           morphWidth(null);
           drag.widthGo = false;
-        }, 200);
+        }, WIDTH_WAIT_MS);
       }
       return;
     }
@@ -239,13 +254,13 @@
     tab.setAttribute("zia-morph", "true");
   };
 
+  // a dropped tab and, if it's in a split, the split: whichever wears the look
+  const morphNodes = (tab) => [tab, tab?.group?.hasAttribute?.("split-view-group") ? tab.group : null];
+
   // Dropped, its narrower look goes straight to the row's own and the landing glide
   // starts from there: eased while the glide moved the row the other way (a folder's
   // indent changing), the two didn't cancel and it bulged sideways. Only a width that
   // differs from the one it was let go at eases, by its right edge.
-  const MORPH_PROPS = ["--zia-morph-bg-start", "--zia-morph-bg-end", "--zia-morph-content-start", "--zia-morph-content-end"];
-  // a dropped tab and, if it's in a split, the split: whichever wears the look
-  const morphNodes = (tab) => [tab, tab?.group?.hasAttribute?.("split-view-group") ? tab.group : null];
   const settleDroppedWidth = (tab, width) => {
     const node = morphNodes(tab).find((n) => n?.hasAttribute?.("zia-morph"));
     if (!node) {
@@ -291,7 +306,7 @@
         node.style.removeProperty(name);
       }
       clearTimeout(node.ziaMorphOutTimer);
-      node.ziaMorphOutTimer = setTimeout(() => node.removeAttribute("zia-morph-out"), 450);
+      node.ziaMorphOutTimer = setTimeout(() => node.removeAttribute("zia-morph-out"), MORPH_OUT_MS);
     }
   };
 

@@ -1,6 +1,13 @@
   // The split view's thumbnail, and rows lent out of a folder while dragging.
+  // Used elsewhere: THUMB_MS, LENT_MS, pictureSize, fillPicture, sizeThumb, fitThumb, showThumb,
+  // hideThumb, noLanding, lendOut, holdLent, unlend.
 
   const THUMB_MS = 150;
+  const LENT_MS = 800;
+  const HOLD_MS = 60;
+  const HOLD_EASE_MS = 200;
+  const SHUT_WAIT_MS = 1000;
+
   let thumb = null;
   let thumbTimer = 0;
 
@@ -131,8 +138,8 @@
     if (!home || !isCollapsed(home) || !home.hasAttribute("has-active")) {
       return;
     }
-    const showing = (home.activeTabs || []).filter((t) => t?.isConnected);
-    if (showing.some((t) => t !== row && !row.contains?.(t))) {
+    const shown = (home.activeTabs || []).filter((t) => t?.isConnected);
+    if (shown.some((t) => t !== row && !row.contains?.(t))) {
       return;
     }
     home.setAttribute("zia-lent", "true");
@@ -145,61 +152,71 @@
     const homes = lentHomes;
     lentHomes = [];
     for (const home of homes) {
-      let held = home.ziaHeldHeight;
-      const boxBottom = home.ziaBoxBottom;
-      const below = home.ziaBelow;
-      home.ziaHeldHeight = home.ziaBoxBottom = home.ziaBelow = null;
-      if (!home.isConnected || !(held > 0) || boxBottom == null) {
-        continue;
-      }
-      // held so what's below stays where it was seen
-      if (below?.node?.isConnected && !below.node.hasAttribute("zia-landing")) {
-        const height = home.getBoundingClientRect().height;
-        held = Math.max(0, height + below.top - below.node.getBoundingClientRect().top);
-      }
-      // its whole height (what's below stays) and its box's bottom where it was: as the tab
-      // leaves, padding and inset change, and held by either alone the other moved
-      home.style.setProperty("height", `${held}px`, "important");
-      const inset = home.getBoundingClientRect().top + held - boxBottom;
-      home.style.setProperty("--zia-hold-inset", `${inset}px`);
-      home.setAttribute("zia-holding", "true");
-      setTimeout(() => {
-        home.style.removeProperty("height");
-        home.removeAttribute("zia-holding");
-        home.style.removeProperty("--zia-hold-inset");
-        if (!home.isConnected) {
-          return;
-        }
-        // (closed and showing no tab, it ends as its name alone: Zen is still shutting it,
-        // a few pixels taller, so it eased open to that and snapped back)
-        const shut = isCollapsed(home) && !home.hasAttribute("has-active") && !home.querySelector(".tabbrowser-tab[selected]");
-        const own = shut && headerOf(home) ? headerOf(home).getBoundingClientRect().height : home.getBoundingClientRect().height;
-        const ownInset = parseFloat(getComputedStyle(home, "::before").bottom) || 0;
-        const timing = { duration: 200, easing: "cubic-bezier(0.25, 1, 0.5, 1)" };
-        if (shut) {
-          // ...held there until Zen has shut its list (sooner, it showed it part shut)
-          const easing = home.animate([{ height: `${held}px` }, { height: `${own}px` }], { ...timing, fill: "forwards" });
-          const until = performance.now() + 1000;
-          const release = () => {
-            const list = home.querySelector(":scope > .tab-group-container");
-            const busy = home.getAnimations({ subtree: true }).some((a) => a !== easing && a.playState === "running");
-            if (home.isConnected && performance.now() < until && (busy || (list && !list.hidden) || easing.playState === "running")) {
-              requestAnimationFrame(release);
-              return;
-            }
-            easing.cancel();
-          };
-          requestAnimationFrame(release);
-        } else if (Math.abs(own - held) >= 0.5) {
-          home.animate([{ height: `${held}px` }, { height: `${own}px` }], timing);
-        }
-        if (Math.abs(ownInset - inset) >= 0.5) {
-          for (const pseudoElement of ["::before", "::after"]) {
-            home.animate([{ bottom: `${inset}px` }, { bottom: `${ownInset}px` }], { ...timing, pseudoElement });
-          }
-        }
-      }, 60);
+      holdHome(home);
     }
+  };
+
+  const holdHome = (home) => {
+    let held = home.ziaHeldHeight;
+    const boxBottom = home.ziaBoxBottom;
+    const below = home.ziaBelow;
+    home.ziaHeldHeight = home.ziaBoxBottom = home.ziaBelow = null;
+    if (!home.isConnected || !(held > 0) || boxBottom == null) {
+      return;
+    }
+    // held so what's below stays where it was seen
+    if (below?.node?.isConnected && !below.node.hasAttribute("zia-landing")) {
+      const height = home.getBoundingClientRect().height;
+      held = Math.max(0, height + below.top - below.node.getBoundingClientRect().top);
+    }
+    // its whole height (what's below stays) and its box's bottom where it was: as the tab
+    // leaves, padding and inset change, and held by either alone the other moved
+    home.style.setProperty("height", `${held}px`, "important");
+    const inset = home.getBoundingClientRect().top + held - boxBottom;
+    home.style.setProperty("--zia-hold-inset", `${inset}px`);
+    home.setAttribute("zia-holding", "true");
+    setTimeout(() => releaseHome(home, held, inset), HOLD_MS);
+  };
+
+  const releaseHome = (home, held, inset) => {
+    home.style.removeProperty("height");
+    home.removeAttribute("zia-holding");
+    home.style.removeProperty("--zia-hold-inset");
+    if (!home.isConnected) {
+      return;
+    }
+    // (closed and showing no tab, it ends as its name alone: Zen is still shutting it,
+    // a few pixels taller, so it eased open to that and snapped back)
+    const shut = isCollapsed(home) && !home.hasAttribute("has-active") && !home.querySelector(".tabbrowser-tab[selected]");
+    const own = shut && headerOf(home) ? headerOf(home).getBoundingClientRect().height : home.getBoundingClientRect().height;
+    const ownInset = parseFloat(getComputedStyle(home, "::before").bottom) || 0;
+    const timing = { duration: HOLD_EASE_MS, easing: "cubic-bezier(0.25, 1, 0.5, 1)" };
+    if (shut) {
+      // ...held there until Zen has shut its list (sooner, it showed it part shut)
+      easeUntilShut(home, held, own, timing);
+    } else if (Math.abs(own - held) >= 0.5) {
+      home.animate([{ height: `${held}px` }, { height: `${own}px` }], timing);
+    }
+    if (Math.abs(ownInset - inset) >= 0.5) {
+      for (const pseudoElement of ["::before", "::after"]) {
+        home.animate([{ bottom: `${inset}px` }, { bottom: `${ownInset}px` }], { ...timing, pseudoElement });
+      }
+    }
+  };
+
+  const easeUntilShut = (home, held, own, timing) => {
+    const easing = home.animate([{ height: `${held}px` }, { height: `${own}px` }], { ...timing, fill: "forwards" });
+    const until = performance.now() + SHUT_WAIT_MS;
+    const release = () => {
+      const list = home.querySelector(":scope > .tab-group-container");
+      const busy = home.getAnimations({ subtree: true }).some((a) => a !== easing && a.playState === "running");
+      if (home.isConnected && performance.now() < until && (busy || (list && !list.hidden) || easing.playState === "running")) {
+        requestAnimationFrame(release);
+        return;
+      }
+      easing.cancel();
+    };
+    requestAnimationFrame(release);
   };
 
   // What shows next below a folder (for holdLent: where it was seen)
@@ -220,7 +237,7 @@
 
   const unlend = () => {
     for (const home of document.querySelectorAll("zen-folder[zia-lent]")) {
-      home.ziaLentUntil = Date.now() + 800;
+      home.ziaLentUntil = Date.now() + LENT_MS;
       home.removeAttribute("zia-lent");
       // where its box ended through the drag (its visible bottom), for holdLent
       home.ziaBoxBottom = home.getBoundingClientRect().bottom - (parseFloat(getComputedStyle(home, "::before").bottom) || 0);

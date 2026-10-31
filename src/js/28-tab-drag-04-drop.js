@@ -1,4 +1,8 @@
   // Where a dropped tab, split or folder lands: placed, pinned, unpinned or parked in a folder.
+  // Used elsewhere: takeEmptySlot, pinFor, placeBefore, splitIntoFolder, finishDrop, canNest,
+  // finishFolderDrop, jumpToEnd, parkInFolder.
+
+  const DROPPED_MS = 500;
 
   // Dropping into an open empty folder uses its slot as the tab's room: rows after the
   // folder move up by the slot's height too, and the slot fades (chrome.css).
@@ -175,35 +179,39 @@
     }
   };
 
+  // A split crossing the separator: both its tabs pinned (or not), then
+  // the split as a whole goes to the spot
+  const placeSplit = (tab, split, target) => {
+    for (const t of [...split.tabs]) {
+      pinFor(t, !target.below);
+    }
+    // (read after pinning, which can give the split a new group)
+    const group = tab.group || split;
+    const folder = target.folder?.isConnected && !split.contains(target.folder) ? target.folder : null;
+    if (folder) {
+      splitIntoFolder(split, folder, target);
+      return;
+    }
+    if (target.next && target.sameNext) {
+      placeBefore(group, topLevel(target.next));
+    } else if (!target.below && currentSeparator()) {
+      placeBefore(group, currentSeparator());
+    } else {
+      try {
+        gBrowser.moveTabToEnd?.(group);
+      } catch (err) {
+        noteError("tab dragging: finishDrop (split)", err);
+      }
+    }
+  };
+
   const placeDropped = (tab, target) => {
     if (!tab?.isConnected) {
       return;
     }
-    // A split crossing the separator: both its tabs pinned (or not), then
-    // the split as a whole goes to the spot
     const split = tab.group?.hasAttribute("split-view-group") ? tab.group : null;
     if (split) {
-      for (const t of [...split.tabs]) {
-        pinFor(t, !target.below);
-      }
-      // (read after pinning, which can give the split a new group)
-      const group = tab.group || split;
-      const folder = target.folder?.isConnected && !split.contains(target.folder) ? target.folder : null;
-      if (folder) {
-        splitIntoFolder(split, folder, target);
-        return;
-      }
-      if (target.next && target.sameNext) {
-        placeBefore(group, topLevel(target.next));
-      } else if (!target.below && currentSeparator()) {
-        placeBefore(group, currentSeparator());
-      } else {
-        try {
-          gBrowser.moveTabToEnd?.(group);
-        } catch (err) {
-          noteError("tab dragging: finishDrop (split)", err);
-        }
-      }
+      placeSplit(tab, split, target);
       return;
     }
     if (target.below && tab.group && !tab.group.hasAttribute("split-view-group")) {
@@ -266,6 +274,51 @@
     }
     return row;
   };
+  const placeFolderInto = (folder, into, target) => {
+    // (no longer empty: its slot went only on the next frame, and the folder opened
+    // round both, twice the room, for a moment)
+    into.removeAttribute("zia-empty");
+    if (isCollapsed(into)) {
+      into.ziaDroppedUntil = Date.now() + DROPPED_MS;
+    }
+    // Dropped where Zia showed it inside a folder: there, before the row
+    // it was shown above (at the end, if none or the folder is closed)
+    const box = into.querySelector(":scope > .tab-group-container");
+    const next = nextInFolder(into, box, target);
+    if (next && next !== folder) {
+      placeBefore(folder, next);
+    } else if (box) {
+      const last = [...box.children].reverse().find((item) => item !== folder && (gBrowser.isTab(item) || isFolderEl(item)));
+      if (last) {
+        placeAfter(folder, last);
+      }
+      if (folder.parentElement !== box) {
+        box.appendChild(folder);
+      }
+    }
+    // a closed one keeps showing only its open tab
+    if (isCollapsed(into)) {
+      try {
+        window.gZenFolders?.on_TabGroupCollapse?.({ target: into });
+      } catch (err) {
+        noteError("tab dragging: folder into a closed folder", err);
+      }
+      jumpToEnd(into);
+    }
+  };
+
+  const placeFolderInList = (folder, target) => {
+    const next = target.next && target.sameNext && !target.below ? outermostRow(target.next.node) : null;
+    if (next && next !== folder && !folder.contains(next)) {
+      placeBefore(folder, next);
+    } else if (currentSeparator()) {
+      placeBefore(folder, currentSeparator());
+    }
+    if (folder.parentElement?.closest?.("zen-folder")) {
+      console.warn("[Zia] The dropped folder is still inside another folder");
+    }
+  };
+
   const finishFolderDrop = (folder, target) => {
     if (!folder?.isConnected || !target) {
       return;
@@ -274,50 +327,13 @@
     // (the folder it comes out of, emptied, shuts itself: without the bounce, as when a
     // tab is taken out, or the line below jolted)
     if (nestedIn) {
-      nestedIn.ziaLentUntil = Date.now() + 800;
+      nestedIn.ziaLentUntil = Date.now() + LENT_MS;
     }
     const into = target.folder?.isConnected && target.folder !== folder && !folder.contains(target.folder) ? target.folder : null;
     if (into) {
-      // (no longer empty: its slot went only on the next frame, and the folder opened
-      // round both, twice the room, for a moment)
-      into.removeAttribute("zia-empty");
-      if (isCollapsed(into)) {
-        into.ziaDroppedUntil = Date.now() + 500;
-      }
-      // Dropped where Zia showed it inside a folder: there, before the row
-      // it was shown above (at the end, if none or the folder is closed)
-      const box = into.querySelector(":scope > .tab-group-container");
-      const next = nextInFolder(into, box, target);
-      if (next && next !== folder) {
-        placeBefore(folder, next);
-      } else if (box) {
-        const last = [...box.children].reverse().find((item) => item !== folder && (gBrowser.isTab(item) || isFolderEl(item)));
-        if (last) {
-          placeAfter(folder, last);
-        }
-        if (folder.parentElement !== box) {
-          box.appendChild(folder);
-        }
-      }
-      // a closed one keeps showing only its open tab
-      if (isCollapsed(into)) {
-        try {
-          window.gZenFolders?.on_TabGroupCollapse?.({ target: into });
-        } catch (err) {
-          noteError("tab dragging: folder into a closed folder", err);
-        }
-        jumpToEnd(into);
-      }
+      placeFolderInto(folder, into, target);
     } else {
-      const next = target.next && target.sameNext && !target.below ? outermostRow(target.next.node) : null;
-      if (next && next !== folder && !folder.contains(next)) {
-        placeBefore(folder, next);
-      } else if (currentSeparator()) {
-        placeBefore(folder, currentSeparator());
-      }
-      if (folder.parentElement?.closest?.("zen-folder")) {
-        console.warn("[Zia] The dropped folder is still inside another folder");
-      }
+      placeFolderInList(folder, target);
     }
     // a closed folder it was taken back out of fits its new contents
     if (nestedIn && nestedIn !== folder.parentElement?.closest?.("zen-folder") && isCollapsed(nestedIn)) {

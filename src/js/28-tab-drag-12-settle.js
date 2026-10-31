@@ -13,7 +13,7 @@
   let releaseHeld = null;
   const releaseToZen = (event) => {
     const tab = drag.split || drag.tab;
-    zenDragImage = true;
+    dragImage.zen = true;
     try {
       const image = gBrowser.tabContainer.tabDragAndDrop?.originalDragImageArgs;
       if (image?.length) {
@@ -29,9 +29,8 @@
     }
     easeOutWidth(tab);
     makeRoom(null);
-    dropProxy();
-    drag = null;
-    pending = null;
+    clearProxy();
+    endDrag();
     document.documentElement.removeAttribute("zia-dragging-tab");
   };
   // A tab (or a split) goes with the drag instead: moved into the space now showing, and
@@ -50,9 +49,8 @@
     clearMoved();
     easeOutWidth(drag.split || tab);
     makeRoom(null);
-    dropProxy();
-    drag = null;
-    pending = null;
+    clearProxy();
+    endDrag();
     try {
       window.gZenWorkspaces.moveTabsToWorkspace([tab], space);
     } catch (err) {
@@ -94,8 +92,7 @@
     if (drag?.bg) {
       setTimeout(() => requestAnimationFrame(() => easeOutWidth(droppedTab)), 0);
     }
-    drag = null;
-    pending = null;
+    endDrag();
     document.documentElement.removeAttribute("zia-dragging-tab");
     // The tabs folded into the dragged one unfold where they've landed, growing out under
     // it: shown again at once, they showed back where they'd been for a frame and then
@@ -146,16 +143,16 @@
     } else {
       clearFolderPaint();
     }
-    dropProxy();
+    clearProxy();
     hideThumb(true);
     document.querySelectorAll("[zia-drag-away]").forEach((node) => node.removeAttribute("zia-drag-away"));
     makeRoom(null);
     holdSplitSlot(false);
     document.querySelectorAll("[zia-sep-open]").forEach((node) => node.removeAttribute("zia-sep-open"));
 
-    if (raf) {
-      cancelAnimationFrame(raf);
-      raf = 0;
+    if (dragCore.raf) {
+      cancelAnimationFrame(dragCore.raf);
+      dragCore.raf = 0;
     }
     blockAnimUntil = Date.now() + 400;
     const dnd = gBrowser.tabContainer.tabDragAndDrop;
@@ -174,7 +171,7 @@
     const landing = droppedFrom;
     droppedFrom = null;
     strip?.setAttribute("zia-settling", "true");
-    const locked = new Set(moved);
+    const locked = new Set(dragCore.moved);
     clearMoved();
     for (const node of locked) {
       node.style.removeProperty("transform");

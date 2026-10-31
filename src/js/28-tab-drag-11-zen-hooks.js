@@ -192,7 +192,7 @@
         return;
       }
       if (moving.style.getPropertyPriority("transform") !== "important") {
-        place(moving, lastDy, true);
+        place(moving, dragCore.lastDy, true);
       }
     });
 

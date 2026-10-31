@@ -68,7 +68,7 @@
     if (dy === null) {
       return;
     }
-    lastDy = dy;
+    dragCore.lastDy = dy;
     try {
       const over = event.target;
       const point = pointerOf(event);
@@ -144,11 +144,11 @@
     } catch (err) {
       console.error("[Zia] Tab drag failed:", err);
     }
-    if (!raf) {
-      raf = requestAnimationFrame(() => {
-        raf = 0;
+    if (!dragCore.raf) {
+      dragCore.raf = requestAnimationFrame(() => {
+        dragCore.raf = 0;
         if (drag) {
-          apply(lastDy);
+          apply(dragCore.lastDy);
         }
       });
     }

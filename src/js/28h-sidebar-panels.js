@@ -34,7 +34,6 @@
       ? next.getBoundingClientRect().top - background.getBoundingClientRect().bottom
       : 2 * parseFloat(getComputedStyle(tab).getPropertyValue("--tab-margin-block") || "2");
     const text = getComputedStyle(label);
-    const box = content.getBoundingClientRect();
     const toolbox = document.getElementById("navigator-toolbox")?.getBoundingClientRect();
     const inset = toolbox ? background.getBoundingClientRect().left - toolbox.left : 8;
     return {

@@ -1,0 +1,14 @@
+{
+  "name": "zia",
+  "private": true,
+  "description": "Lint tools for Zia (the mod itself has no build dependencies).",
+  "scripts": {
+    "lint": "scripts/lint.sh"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.1",
+    "eslint": "9.39.1",
+    "stylelint": "16.10.0",
+    "stylelint-config-recommended": "14.0.1"
+  }
+}

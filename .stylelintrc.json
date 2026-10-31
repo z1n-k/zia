@@ -1,0 +1,9 @@
+{
+  "extends": "stylelint-config-recommended",
+  "rules": {
+    "media-query-no-invalid": null,
+    "selector-type-no-unknown": null,
+    "no-descending-specificity": null,
+    "property-no-unknown": [true, { "ignoreProperties": ["corner-shape", "text-box", "/^-moz-/"] }]
+  }
+}

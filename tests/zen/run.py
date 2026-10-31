@@ -24,10 +24,12 @@ from marionette import Zen
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.expanduser("~/Library/Caches/zia-test")
-TEMPLATE = os.path.join(ROOT, "template")
-PROFILES = os.path.join(ROOT, "profiles")
+# (each run in a folder of its own, so two runs, say from two checkouts, never meet)
+RUN = os.path.join(ROOT, "runs", str(os.getpid()))
+TEMPLATE = os.path.join(RUN, "template")
+PROFILES = os.path.join(RUN, "profiles")
 BASELINE = os.path.join(HERE, "baseline.json")
-LATEST = os.path.join(ROOT, "latest.json")
+LATEST = os.path.join(ROOT, "latest.json")  # (the last run to finish)
 EVENT_UTILS = os.path.join(ROOT, "EventUtils.js")
 # (pinned, and checked, so the helpers never change under the tests)
 EVENT_UTILS_URL = "https://raw.githubusercontent.com/mozilla-firefox/firefox/8b0aa3525257ad862f6f6c88c1d48e8c774f96c7/testing/mochitest/tests/SimpleTest/EventUtils.js"
@@ -129,7 +131,7 @@ def main(args):
         baseline.update({name: seen for name, seen in results.items() if name not in failed})
         json.dump(baseline, open(BASELINE, "w"), indent=1, sort_keys=True)
         print(f"Recorded {len(results)} flows in {os.path.relpath(BASELINE)}")
-    shutil.rmtree(PROFILES, ignore_errors=True)
+    shutil.rmtree(RUN, ignore_errors=True)
     print(f"{len(flows) - len(failed)}/{len(flows)} passed in {time.time() - started:.0f}s")
     return 1 if failed else 0
 

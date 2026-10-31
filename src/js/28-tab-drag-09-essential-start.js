@@ -90,7 +90,7 @@
   };
 
   const sweepLeftovers = () => {
-    const keep = new Set([essentialDrag?.copy, proxy].filter(Boolean));
+    const keep = new Set([essentialDrag?.copy, proxy.node].filter(Boolean));
     for (const node of document.querySelectorAll(".tabbrowser-tab[zia-essential-proxy]")) {
       if (!keep.has(node)) {
         node.remove();
@@ -104,7 +104,7 @@
     }
     if (!drag) {
       for (const tab of document.querySelectorAll(".tabbrowser-tab[zia-to-essential]")) {
-        if (tab !== landingTab) {
+        if (tab !== proxy.landing) {
           tab.removeAttribute("zia-to-essential");
         }
       }
@@ -116,7 +116,7 @@
     if (!tab || tab.hasAttribute("zia-essential-proxy") || !featureOn("dia-tab-drag") || inLibrary(event)) {
       return;
     }
-    essentialDragging = true;
+    dragImage.essential = true;
     try {
       event.dataTransfer?.setDragImage(blankImage(), 0, 0);
     } catch (err) {
@@ -234,7 +234,7 @@
       for (const record of records) {
         for (const node of record.addedNodes) {
           if (node.nodeType === 1 && node.hasAttribute("zia-essential-proxy") && !liveCopies.has(node)) {
-            dropCopy(node);
+            removeCopy(node);
           }
         }
       }

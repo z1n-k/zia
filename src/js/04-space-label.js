@@ -58,11 +58,11 @@
     }
 
     const rawIcon = typeof workspace.icon === "string" ? workspace.icon : "";
-    const visibleIcon = rawIcon.replace(/[\s\u200b-\u200f\u2060\ufe00-\ufe0f\p{Cf}]/gu, "");
+    const visibleIcon = rawIcon.replace(/[\ufe00-\ufe0f\s\u200b-\u200f\u2060\p{Cf}]/gu, "");
     const hasIcon = visibleIcon !== "";
     const icon = hasIcon ? rawIcon.trim() : "";
 
-    const blank = /^[\s\u200b-\u200f\u2060\ufe00-\ufe0f]+|[\s\u200b-\u200f\u2060\ufe00-\ufe0f]+$/gu;
+    const blank = /^[\ufe00-\ufe0f\s\u200b-\u200f\u2060]+|[\ufe00-\ufe0f\s\u200b-\u200f\u2060]+$/gu;
     let text = label.querySelector(".zia-space-name");
     if (!text) {
       label.textContent = "";

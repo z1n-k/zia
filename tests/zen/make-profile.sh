@@ -6,7 +6,7 @@
 set -eu
 here=$(cd "$(dirname "$0")/../.." && pwd)
 test_root="$HOME/Library/Caches/zia-test"
-profile="${1:-$test_root/template}"
+profile="$1"
 zen_profiles="$HOME/Library/Application Support/zen/Profiles"
 
 case "$profile" in

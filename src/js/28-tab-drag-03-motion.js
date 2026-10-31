@@ -1,4 +1,7 @@
   // The taps, the pinned tabs' line, and the rows slid out of the dragged tab's way (apply).
+  // Used elsewhere: newTabOnTop, newTabButton, tap, apply.
+
+  const TAP_GAP_MS = 140;
 
   const newTabOnTop = () => Services.prefs.getBoolPref("zen.view.show-newtab-button-top", false);
   const newTabButton = () =>
@@ -14,7 +17,7 @@
       return;
     }
     const now = Date.now();
-    if (now - lastTap < 140) {
+    if (now - lastTap < TAP_GAP_MS) {
       return;
     }
     lastTap = now;
@@ -79,67 +82,55 @@
     drag.sepTop = sep ? sep.getBoundingClientRect().top : null;
   };
 
-  const apply = (dy) => {
-    const moving = drag?.moving;
-    if (!moving?.isConnected || !drag.rows) {
+  // New Tab at the foot of the list, when the list closes up (only if the
+  // row taken out was above it)
+  const shiftNewTab = (by) => {
+    if (newTabOnTop()) {
       return;
     }
-    if (drag.folder && !drag.essentials && Math.abs(drag.folder.getBoundingClientRect().height - drag.height) > 3) {
-      remeasureFolderDrag(drag.folder);
-    }
-    const visualMid = drag.origin + dy + drag.height / 2;
-    place(moving, dy, true);
-
-    // New Tab at the foot of the list, when the list closes up (only if the
-    // row taken out was above it)
-    const shiftNewTab = (by) => {
-      if (newTabOnTop()) {
-        return;
-      }
-      const button = newTabButton();
-      if (!button) {
-        return;
-      }
-      drag.newTabTop ??= button.getBoundingClientRect().top;
-      const want = by && drag.origin < drag.newTabTop ? by : 0;
-      if ((drag.newTabShift || 0) !== want) {
-        drag.newTabShift = want;
-        place(button, want, false);
-      }
-    };
-    // over the essentials (a tab or a split): the list closes up behind it
-    if (drag.essentials || drag.splitEssential) {
-      for (const row of drag.rows) {
-        if (notARow(row)) {
-          continue;
-        }
-        const gone = row.index > drag.index;
-        if (gone) {
-          drag.shifted.add(row.node);
-        } else {
-          drag.shifted.delete(row.node);
-        }
-        const delta = gone ? -drag.pitch : 0;
-        if ((row.shownY ?? row.delta) !== delta) {
-          row.delta = delta;
-          row.shownY = delta;
-          place(row.node, delta, false);
-        }
-      }
-      if (drag.sepTop != null) {
-        placeSep(drag.origin > drag.sepTop ? 0 : -drag.pitch);
-      }
-      // (New Tab under the list too: it stayed, leaving a gap above it
-      // until the drop)
-      shiftNewTab(-drag.pitch);
-      drag.target = null;
-      setDropSlot(null);
-      takeEmptySlot();
-      paintFolders();
+    const button = newTabButton();
+    if (!button) {
       return;
     }
+    drag.newTabTop ??= button.getBoundingClientRect().top;
+    const want = by && drag.origin < drag.newTabTop ? by : 0;
+    if ((drag.newTabShift || 0) !== want) {
+      drag.newTabShift = want;
+      place(button, want, false);
+    }
+  };
 
-    shiftNewTab(0);
+  const closeUpBehind = () => {
+    for (const row of drag.rows) {
+      if (notARow(row)) {
+        continue;
+      }
+      const gone = row.index > drag.index;
+      if (gone) {
+        drag.shifted.add(row.node);
+      } else {
+        drag.shifted.delete(row.node);
+      }
+      const delta = gone ? -drag.pitch : 0;
+      if ((row.shownY ?? row.delta) !== delta) {
+        row.delta = delta;
+        row.shownY = delta;
+        place(row.node, delta, false);
+      }
+    }
+    if (drag.sepTop != null) {
+      placeSep(drag.origin > drag.sepTop ? 0 : -drag.pitch);
+    }
+    // (New Tab under the list too: it stayed, leaving a gap above it
+    // until the drop)
+    shiftNewTab(-drag.pitch);
+    drag.target = null;
+    setDropSlot(null);
+    takeEmptySlot();
+    paintFolders();
+  };
+
+  const shiftRows = (visualMid) => {
     let rowsMoved = false;
     for (const row of drag.rows) {
       if (notARow(row)) {
@@ -168,25 +159,48 @@
       place(row.node, delta, false);
       rowsMoved = true;
     }
-    if (drag.sepTop != null) {
-      const startedBelow = drag.origin > drag.sepTop;
-      let sepDelta = 0;
-      // Coming up from below, it's over the separator a fifth of the way into the space that
-      // opens (halfway, the gap under the last folder came first and it went in still in the
-      // space made for it); back down, just past that point with a few pixels' give.
-      const upTo = drag.sepTop + drag.pitch * 0.8 + (drag.sepDelta ? 4 : 0);
-      if (startedBelow && visualMid < upTo) {
-        sepDelta = drag.pitch;
-      } else if (!startedBelow && visualMid > drag.sepTop + 2) {
-        sepDelta = -drag.pitch;
-      }
-      // crossing the separator taps like a row moving does
-      if (drag.sepDelta !== sepDelta && (drag.sepDelta || sepDelta)) {
-        rowsMoved = true;
-      }
-      placeSep(sepDelta);
+    return rowsMoved;
+  };
+
+  const shiftSep = (visualMid) => {
+    const startedBelow = drag.origin > drag.sepTop;
+    let sepDelta = 0;
+    // Coming up from below, it's over the separator a fifth of the way into the space that
+    // opens (halfway, the gap under the last folder came first and it went in still in the
+    // space made for it); back down, just past that point with a few pixels' give.
+    const upTo = drag.sepTop + drag.pitch * 0.8 + (drag.sepDelta ? 4 : 0);
+    if (startedBelow && visualMid < upTo) {
+      sepDelta = drag.pitch;
+    } else if (!startedBelow && visualMid > drag.sepTop + 2) {
+      sepDelta = -drag.pitch;
     }
-    if (rowsMoved) {
+    // crossing the separator taps like a row moving does
+    const crossed = drag.sepDelta !== sepDelta && !!(drag.sepDelta || sepDelta);
+    placeSep(sepDelta);
+    return crossed;
+  };
+
+  const apply = (dy) => {
+    const moving = drag?.moving;
+    if (!moving?.isConnected || !drag.rows) {
+      return;
+    }
+    if (drag.folder && !drag.essentials && Math.abs(drag.folder.getBoundingClientRect().height - drag.height) > 3) {
+      remeasureFolderDrag(drag.folder);
+    }
+    const visualMid = drag.origin + dy + drag.height / 2;
+    place(moving, dy, true);
+
+    // over the essentials (a tab or a split): the list closes up behind it
+    if (drag.essentials || drag.splitEssential) {
+      closeUpBehind();
+      return;
+    }
+
+    shiftNewTab(0);
+    const rowsMoved = shiftRows(visualMid);
+    const crossed = drag.sepTop != null ? shiftSep(visualMid) : false;
+    if (rowsMoved || crossed) {
       tap();
     }
     updateTarget(visualMid);
@@ -194,4 +208,3 @@
     paintFolders();
     morphWidth(drag.target?.folder || null);
   };
-

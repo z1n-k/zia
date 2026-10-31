@@ -126,13 +126,13 @@
       shifted: new Set(),
       sepTop,
       sepDelta: 0,
-      clientY: event.clientY || pending?.clientY || 0,
-      screenY: event.screenY || pending?.screenY || 0,
+      clientY: event.clientY || dragCore.pending?.clientY || 0,
+      screenY: event.screenY || dragCore.pending?.screenY || 0,
       companions,
       foldedFrom,
       space: window.gZenWorkspaces?.activeWorkspace,
     };
-    lastDy = 0;
+    dragCore.lastDy = 0;
     lendOut(split || (folder ? null : target));
     for (const row of rows) {
       if (row.node === moving || (folder && folder.contains(row.node))) {
@@ -167,8 +167,8 @@
       return;
     }
     const inSidebar = event.target?.closest?.("#navigator-toolbox, #tabbrowser-tabs");
-    if (inSidebar && pending?.tab) {
-      begin(pending.tab, event);
+    if (inSidebar && dragCore.pending?.tab) {
+      begin(dragCore.pending.tab, event);
     }
   };
 
@@ -181,7 +181,7 @@
           return;
         }
         const tab = tabFromEvent(event);
-        pending = tab ? { tab, clientY: event.clientY, screenY: event.screenY } : null;
+        dragCore.pending = tab ? { tab, clientY: event.clientY, screenY: event.screenY } : null;
       },
       true
     );

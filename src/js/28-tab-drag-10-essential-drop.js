@@ -413,7 +413,7 @@
   const endEssentialDrag = (event) => {
     const state = essentialDrag;
     essentialDrag = null;
-    essentialDragging = false;
+    dragImage.essential = false;
     if (!state) {
       return;
     }

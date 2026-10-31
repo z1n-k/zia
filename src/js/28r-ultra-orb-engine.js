@@ -37,7 +37,7 @@
   //   box.append(orb.canvas);
   //   orb.setState("connecting"); orb.setDark(false); orb.destroy();
   //
-  // Options: state (one of ORB_STATES, default "working"); size in CSS px
+  // Options: state (one of ORB_STATE_MODE's, default "working"); size in CSS px
   // (default 64; 64, 32 and 20 are the package's tunings, sizes between
   // are interpolated the way the package made its 32, and anything under
   // 20 is the 20 tuning drawn at that size); dark (true: light dots for a
@@ -756,7 +756,6 @@
     breathing: "ring",
     shaping: "morph",
   };
-  const ORB_STATES = Object.keys(ORB_STATE_MODE);
 
   const ORB_LABELS = {
     working: "Working…",
