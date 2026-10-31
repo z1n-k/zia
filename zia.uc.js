@@ -3790,6 +3790,15 @@
     apply();
   }
 
+  // ---------- Music: colours read off pictures, for the music card's glow and the chosen tab's
+  // The artwork's (or favicon's) colours under the music card, and the chosen tab's glow in its
+  // favicon's colours (zia.tabs.favicon-glow).
+  // Used elsewhere: artUrlOf, readPixels, cachedArtColors, readFaviconPalette,
+  // faviconPaletteCache, noteFaviconPalette, updateCardGlow, watchSelectedTabGlow.
+
+  const ARTWORK_WAIT_MS = 1500;
+  const GROUPED_GLOW_MS = 50;
+
   const mediaColorCache = new Map();
 
   function artUrlOf(card) {
@@ -3935,6 +3944,10 @@
 
   const faviconPaletteCache = new Map();
 
+  function noteFaviconPalette(url, palette) {
+    faviconPaletteCache.set(url, palette);
+  }
+
   async function faviconPalette(tab) {
     const url = tab.getAttribute("image") || "";
     let palette = faviconPaletteCache.get(url);
@@ -3992,7 +4005,8 @@
       }
     });
     for (const type of ["TabGrouped", "TabUngrouped"]) {
-      window.addEventListener(type, () => setTimeout(glowSelectedTab, 50));
+      // (not kept: it looks at whichever tab is chosen when it runs)
+      window.addEventListener(type, () => setTimeout(glowSelectedTab, GROUPED_GLOW_MS));
     }
     const onPref = () => {
       glowSelectedTab();
@@ -4001,8 +4015,6 @@
     watchPrefs("zia.tabs.favicon-glow", onPref);
     glowSelectedTab();
   }
-
-  const ARTWORK_WAIT_MS = 1500;
 
   async function updateCardGlow(card) {
     const url = artUrlOf(card);
@@ -4037,6 +4049,10 @@
     card.__ziaColors = colors;
     paintSoundBars(card, colors);
   }
+  // ---------- Sound bars: a playing tab's, and the music card's, in the artwork's colours
+  // Four bars that move while sound plays and shrink to dots when muted, as SVG images
+  // the CSS shows; clicking a tab's mutes it.
+  // Used elsewhere: paintSoundBars, repaintSoundTabs, watchTabSoundBars.
 
   const soundBarCache = new Map();
 
@@ -4176,7 +4192,7 @@
     const palette = faviconPaletteCache.get(url);
     if (palette === undefined) {
       readFaviconPalette(url).then((result) => {
-        faviconPaletteCache.set(url, result);
+        noteFaviconPalette(url, result);
         if (result) {
           paintTabSoundBars(tab);
         }
@@ -4268,6 +4284,13 @@
     });
     repaintSoundTabs();
   }
+  // ---------- The music card's look: the progress ring, the favicon tile, the artwork's flip,
+  // the time left, and which of a page's artworks it shows.
+  // Used elsewhere: SVG_NS, ensureRing, showFaviconTile, flipArtwork, showTimeLeft, watchTimeLeft,
+  // bestArtwork.
+
+  const FLIP_OUT_MS = 200;
+  const FLIP_IN_MS = 380;
 
   const SVG_NS = "http://www.w3.org/2000/svg";
   let ringCount = 0;
@@ -4361,9 +4384,6 @@
     }
   }
 
-  const FLIP_OUT_MS = 200;
-  const FLIP_IN_MS = 380;
-
   function flipArtwork(button, swap) {
     const icon = button.querySelector(":scope > .toolbarbutton-icon") || button.querySelector("image");
     if (!icon || typeof icon.animate !== "function" || matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -4451,56 +4471,12 @@
       );
     return artwork.sort((x, y) => area(y) - area(x))[0]?.src || "";
   }
+  // ---------- The music card's pictures and LIVE from the sites themselves (Kick, YouTube),
+  // asked through Zia's actor (actors/ZiaChild.sys.mjs).
+  // Used elsewhere: kickAvatar, youTubeAvatar, markLiveStream.
 
-  // Zen hides a card while its video is in picture-in-picture, so the card's own
-  // picture-in-picture button took the card away; this option keeps it
-  const KEEP_WITH_PIP_PREF = "zia.media.keep-with-pip";
-
-  function keepWithPip() {
-    try {
-      return Services.prefs.getBoolPref(KEEP_WITH_PIP_PREF, true);
-    } catch (err) {
-      return true;
-    }
-  }
-
-  function keepCardsWithPip() {
-    const front = window.gZenMediaController?.frontCard;
-    const proto = front && Object.getPrototypeOf(front);
-    const desc = proto && Object.getOwnPropertyDescriptor(proto, "shouldBeVisible");
-    if (!desc?.get) {
-      return false;
-    }
-    if (desc.get.__zia) {
-      return true;
-    }
-    const original = desc.get;
-    const patched = function () {
-      try {
-        // (fullscreen is Zen's to decide, as before)
-        if (keepWithPip() && !this.isSharing && this.controller?.isBeingUsedInPIPModeOrFullscreen && !document.fullscreenElement && !window.fullScreen) {
-          return gBrowser.selectedBrowser.browserId !== this.browser.browserId;
-        }
-      } catch (err) {
-        noteError("music and sound bars: keepCardsWithPip", err);
-      }
-      return original.call(this);
-    };
-    patched.__zia = true;
-    Object.defineProperty(proto, "shouldBeVisible", { ...desc, get: patched });
-
-    const refreshCards = () => {
-      for (const element of document.querySelectorAll("#zen-media-controls-toolbar .zen-media-card")) {
-        try {
-          element.__ziaCard?.refreshVisibility?.();
-        } catch (err) {
-          noteError("music and sound bars: keepCardsWithPip (2)", err);
-        }
-      }
-    };
-    watchPrefs(KEEP_WITH_PIP_PREF, refreshCards);
-    return true;
-  }
+  const YOUTUBE_AVATAR_RETRY_MS = 1500;
+  const YOUTUBE_LIVE_RECHECK_MS = 10000;
 
   function ziaActor(browser) {
     try {
@@ -4611,11 +4587,12 @@
         if (pic) {
           card.updateIcon();
         } else {
+          // (not kept: it checks it's still the same video first)
           setTimeout(() => {
             if (youTubeVideo(card.browser) === video) {
               card.updateIcon();
             }
-          }, 1500);
+          }, YOUTUBE_AVATAR_RETRY_MS);
         }
       })
       .catch(() => youTubeAvatars.set(video, { tries }));
@@ -4656,7 +4633,7 @@
     }
     const spec = browser.currentURI.spec;
     const last = youTubeLiveChecked.get(element);
-    if (last && last.spec === spec && Date.now() - last.at < 10000) {
+    if (last && last.spec === spec && Date.now() - last.at < YOUTUBE_LIVE_RECHECK_MS) {
       return;
     }
     youTubeLiveChecked.set(element, { spec, at: Date.now() });
@@ -4668,6 +4645,59 @@
         }
       })
       .catch(() => {});
+  }
+  // ---------- Zen's music card, hooked: kept with picture-in-picture, dressed by Zia whenever
+  // Zen sets its icon or position, offered for media with no position, and never dragged.
+  // Used elsewhere: watchMediaGlow, cardForPositionlessMedia, keepMediaCardsInPlace.
+
+  // Zen hides a card while its video is in picture-in-picture, so the card's own
+  // picture-in-picture button took the card away; this option keeps it
+  const KEEP_WITH_PIP_PREF = "zia.media.keep-with-pip";
+
+  function keepWithPip() {
+    try {
+      return Services.prefs.getBoolPref(KEEP_WITH_PIP_PREF, true);
+    } catch (err) {
+      return true;
+    }
+  }
+
+  function keepCardsWithPip() {
+    const front = window.gZenMediaController?.frontCard;
+    const proto = front && Object.getPrototypeOf(front);
+    const desc = proto && Object.getOwnPropertyDescriptor(proto, "shouldBeVisible");
+    if (!desc?.get) {
+      return false;
+    }
+    if (desc.get.__zia) {
+      return true;
+    }
+    const original = desc.get;
+    const patched = function () {
+      try {
+        // (fullscreen is Zen's to decide, as before)
+        if (keepWithPip() && !this.isSharing && this.controller?.isBeingUsedInPIPModeOrFullscreen && !document.fullscreenElement && !window.fullScreen) {
+          return gBrowser.selectedBrowser.browserId !== this.browser.browserId;
+        }
+      } catch (err) {
+        noteError("music and sound bars: keepCardsWithPip", err);
+      }
+      return original.call(this);
+    };
+    patched.__zia = true;
+    Object.defineProperty(proto, "shouldBeVisible", { ...desc, get: patched });
+
+    const refreshCards = () => {
+      for (const element of document.querySelectorAll("#zen-media-controls-toolbar .zen-media-card")) {
+        try {
+          element.__ziaCard?.refreshVisibility?.();
+        } catch (err) {
+          noteError("music and sound bars: keepCardsWithPip (2)", err);
+        }
+      }
+    };
+    watchPrefs(KEEP_WITH_PIP_PREF, refreshCards);
+    return true;
   }
 
   function useMediaArtwork() {
