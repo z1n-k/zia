@@ -11066,6 +11066,30 @@
     update();
   }
 
+  // Hover cards: the card a tab hovered in the sidebar gets (its title, domain, picture and
+  // buttons), and the one a closed folder gets (its tabs, to choose from). Firefox's and Zen's
+  // own pop-ups give way to them.
+  // Used elsewhere: lastUsedOtherTab, tabCardKind, addTabHoverCards.
+  const TAB_CARD_OUT_MS = 120;
+  // (a card kept up this long after one of its buttons, as what it did shows)
+  const TAB_CARD_KEEP_MS = 1200;
+  // (a folder card filled again as a button's change lands)
+  const FOLDER_CARD_REFILL_MS = [60, 400, 900];
+
+  // The cards (each built the first time it's needed), the tab or folder shown, their
+  // timers, whether the sidebar is held open for them, and till when a card stays up
+  const hoverCards = {
+    toolbox: null,
+    card: null,
+    folderCard: null,
+    current: null,
+    showTimer: 0,
+    hideTimer: 0,
+    closeTimer: 0,
+    holding: false,
+    keepCardUntil: 0,
+  };
+
   function lastUsedOtherTab(tab) {
     let best = null;
     for (const other of gBrowser.visibleTabs) {
@@ -11331,7 +11355,8 @@
           console.error("[Zia] Folder card button failed:", err);
         }
 
-        for (const delay of [60, 400, 900]) {
+        // (not cancelled: each checks the card is still up)
+        for (const delay of FOLDER_CARD_REFILL_MS) {
           setTimeout(() => {
             if (!card.hidden && card.ziaFolder?.isConnected) {
               fillFolderCard(card, card.ziaFolder);
@@ -11365,40 +11390,56 @@
     card.ziaFolder = folder;
     const color = folder.getAttribute("zia-folder-color");
     setAttr(card, "zia-folder-color", color || null);
-    const rows = [];
-    for (const tab of tabsInFolder(folder)) {
-      const row = document.createElementNS(XHTML_NS, "div");
-      row.className = "zia-folder-card-row";
-      row.ziaTab = tab;
-      row.toggleAttribute("zia-selected", tab.selected);
-      row.append(folderCardIcon(gBrowser.getIcon(tab) || DEFAULT_TAB_ICON, "zia-folder-card-icon"));
-      if (tab.hasAttribute("soundplaying") || tab.hasAttribute("muted")) {
-        const muted = tab.hasAttribute("muted");
-        const speaker = folderCardIcon(
-          `chrome://sine/content/zia/icons/ui/${muted ? "volume-off" : "volume"}.svg`,
-          "zia-folder-card-sound"
-        );
-        speaker.classList.add("zia-folder-card-act");
-        speaker.setAttribute("zia-act", "mute");
-        speaker.setAttribute("title", muted ? "Unmute tab" : "Mute tab");
-        row.append(speaker);
-      }
-      const label = document.createElementNS(XHTML_NS, "span");
-      label.className = "zia-folder-card-label";
-      label.textContent = tab.label || "New Tab";
-      row.append(label);
+    const rows = tabsInFolder(folder).map(folderCardRow);
+    rows.push(folderCardNewTabRow());
 
-      const unloaded = tab.getAttribute("pending") === "true" && tab.getAttribute("folder-active") !== "true";
-      const unload = tab.pinned && !unloaded && canUnload(tab);
-      const button = folderCardIcon(
-        unload ? tabButtonIcon(tab, ".tab-reset-button", "minus") : tabButtonIcon(tab, ".tab-close-button", "x"),
-        "zia-folder-card-act"
-      );
-      button.setAttribute("zia-act", unload ? "unload" : "close");
-      button.setAttribute("title", unload ? "Unload tab" : "Close tab");
-      row.append(button);
-      rows.push(row);
+    const list = document.createElementNS(XHTML_NS, "div");
+    list.className = "zia-folder-card-list";
+    const inset = tabEdgeInset();
+    if (inset) {
+      list.style.setProperty("--zia-folder-card-inset", `${inset}px`);
     }
+    const scrolled = card.querySelector(".zia-folder-card-list")?.scrollTop || 0;
+    list.append(...rows);
+    card.replaceChildren(list);
+    list.scrollTop = scrolled;
+  }
+
+  function folderCardRow(tab) {
+    const row = document.createElementNS(XHTML_NS, "div");
+    row.className = "zia-folder-card-row";
+    row.ziaTab = tab;
+    row.toggleAttribute("zia-selected", tab.selected);
+    row.append(folderCardIcon(gBrowser.getIcon(tab) || DEFAULT_TAB_ICON, "zia-folder-card-icon"));
+    if (tab.hasAttribute("soundplaying") || tab.hasAttribute("muted")) {
+      const muted = tab.hasAttribute("muted");
+      const speaker = folderCardIcon(
+        `chrome://sine/content/zia/icons/ui/${muted ? "volume-off" : "volume"}.svg`,
+        "zia-folder-card-sound"
+      );
+      speaker.classList.add("zia-folder-card-act");
+      speaker.setAttribute("zia-act", "mute");
+      speaker.setAttribute("title", muted ? "Unmute tab" : "Mute tab");
+      row.append(speaker);
+    }
+    const label = document.createElementNS(XHTML_NS, "span");
+    label.className = "zia-folder-card-label";
+    label.textContent = tab.label || "New Tab";
+    row.append(label);
+
+    const unloaded = tab.getAttribute("pending") === "true" && tab.getAttribute("folder-active") !== "true";
+    const unload = tab.pinned && !unloaded && canUnload(tab);
+    const button = folderCardIcon(
+      unload ? tabButtonIcon(tab, ".tab-reset-button", "minus") : tabButtonIcon(tab, ".tab-close-button", "x"),
+      "zia-folder-card-act"
+    );
+    button.setAttribute("zia-act", unload ? "unload" : "close");
+    button.setAttribute("title", unload ? "Unload tab" : "Close tab");
+    row.append(button);
+    return row;
+  }
+
+  function folderCardNewTabRow() {
     const add = document.createElementNS(XHTML_NS, "div");
     add.className = "zia-folder-card-row";
     add.setAttribute("zia-new-tab", "true");
@@ -11417,18 +11458,7 @@
       );
     }
     add.append(addLabel);
-    rows.push(add);
-
-    const list = document.createElementNS(XHTML_NS, "div");
-    list.className = "zia-folder-card-list";
-    const inset = tabEdgeInset();
-    if (inset) {
-      list.style.setProperty("--zia-folder-card-inset", `${inset}px`);
-    }
-    const scrolled = card.querySelector(".zia-folder-card-list")?.scrollTop || 0;
-    list.append(...rows);
-    card.replaceChildren(list);
-    list.scrollTop = scrolled;
+    return add;
   }
 
   // a tab's icon inset in the sidebar, which the folder card keeps on all sides
@@ -11503,246 +11533,255 @@
     if (!toolbox) {
       return;
     }
+    hoverCards.toolbox = toolbox;
     quietZenFolderPopup();
-    let card = null;
-    let folderCard = null;
-    let current = null;
-    let showTimer = 0;
-    let hideTimer = 0;
-
-    const CARD_OUT_MS = 120;
-    let closeTimer = 0;
-    const cardUp = () => [card, folderCard].some((each) => each && !each.hidden && !each.hasAttribute("zia-closing"));
-    const cardHovered = () => [card, folderCard].some((each) => each && !each.hidden && each.matches(":hover"));
-
-    // Compact mode hides the sidebar once the pointer leaves it, and the cards sit
-    // outside it: hold it open, as Zen does for its own menus, while on a card.
-    let holding = false;
-    const holdSidebar = (on) => {
-      if (on === holding) {
-        return;
-      }
-      if (on) {
-        holding = !toolbox.hasAttribute("has-popup-menu");
-        if (holding) {
-          toolbox.setAttribute("has-popup-menu", "true");
-        }
-        return;
-      }
-      holding = false;
-      try {
-        const manager = window.gZenCompactModeManager;
-        if (manager?.preference) {
-          if (toolbox.matches(":hover")) {
-            // The card was inside the sidebar. Restore zen-has-hover synchronously
-            // before dropping has-popup-menu so there is no gap with zero attributes.
-            manager._setElementExpandAttribute?.(toolbox, true, "zen-has-hover");
-            toolbox.setAttribute("zen-has-hover", "true");
-            toolbox.setAttribute("zen-has-implicit-hover", "true");
-          } else {
-            const keep = Services.prefs.getIntPref("zen.view.compact.sidebar-keep-hover.duration", 0);
-            if (keep > 0) {
-              manager.flashElement(toolbox, keep, `has-hover${toolbox.id}`, "zen-has-hover");
-            }
-          }
-        }
-      } catch (err) {
-        noteError("hover cards: release sidebar", err);
-      }
-      toolbox.removeAttribute("has-popup-menu");
-    };
-
-    const hide = (force = false) => {
-      if (force !== true && cardHovered()) {
-        return;
-      }
-      holdSidebar(false);
-      clearTimeout(showTimer);
-      clearTimeout(hideTimer);
-      current = null;
-      for (const each of [card, folderCard]) {
-        if (each && !each.hidden && !each.hasAttribute("zia-closing")) {
-          each.removeAttribute("zia-snap");
-          each.setAttribute("zia-closing", "true");
-        }
-      }
-      clearTimeout(closeTimer);
-      closeTimer = setTimeout(() => {
-        for (const each of [card, folderCard]) {
-          if (each?.hasAttribute("zia-closing")) {
-            each.hidden = true;
-            each.removeAttribute("zia-closing");
-            each.removeAttribute("zia-open");
-          }
-        }
-      }, CARD_OUT_MS);
-    };
-
-    const openCard = (shown, other, wasUp) => {
-      clearTimeout(closeTimer);
-      if (other) {
-        other.hidden = true;
-        other.removeAttribute("zia-open");
-        other.removeAttribute("zia-closing");
-      }
-      shown.removeAttribute("zia-closing");
-      if (wasUp) {
-        shown.setAttribute("zia-snap", "true");
-        shown.setAttribute("zia-open", "true");
-        return;
-      }
-      shown.removeAttribute("zia-snap");
-      shown.removeAttribute("zia-open");
-      void shown.offsetWidth;
-      shown.setAttribute("zia-open", "true");
-    };
-
-    let keepCardUntil = 0;
-    const hideSoon = () => {
-      clearTimeout(hideTimer);
-      const attempt = () => {
-        const wait = keepCardUntil - Date.now();
-        if (wait > 0) {
-          hideTimer = setTimeout(attempt, wait);
-          return;
-        }
-        hide();
-      };
-      hideTimer = setTimeout(attempt, TAB_CARD_GRACE);
-    };
-    const onCard = (node) => !!node && (card?.contains(node) || folderCard?.contains(node));
-
-    const watchCard = (node) => {
-      node.addEventListener("mouseenter", () => {
-        clearTimeout(hideTimer);
-        holdSidebar(true);
-      });
-      node.addEventListener("mouseleave", () => {
-        holdSidebar(false);
-        hideSoon();
-      });
-    };
-
-    const showFolder = (label) => {
-      if (!folderCard) {
-        folderCard = buildFolderCard((row) => {
-          const folder = current?.parentElement;
-          hide(true);
-          try {
-            if (row.hasAttribute("zia-new-tab")) {
-              if (folder?.isConnected) {
-                newTabInFolder(folder);
-              }
-            } else if (row.ziaTab?.isConnected) {
-              gBrowser.selectedTab = row.ziaTab;
-            }
-          } catch (err) {
-            console.error("[Zia] Folder card action failed:", err);
-          }
-        });
-        watchCard(folderCard);
-        folderCard.addEventListener("zia-card-acting", () => {
-          keepCardUntil = Date.now() + 1200;
-          clearTimeout(hideTimer);
-        });
-      }
-      const wasUp = cardUp();
-      current = label;
-      fillFolderCard(folderCard, label.parentElement);
-      folderCard.hidden = false;
-      placeFolderCard(folderCard, label);
-      openCard(folderCard, card, wasUp);
-    };
-
-    const show = (tab) => {
-      if (!tab.classList.contains("tabbrowser-tab")) {
-        showFolder(tab);
-        return;
-      }
-      const wasUp = cardUp();
-      if (!card) {
-        card = buildTabCard((action) => {
-          const tab = current;
-          if (!action.keepsCard) {
-            hide(true);
-          } else {
-            keepCardUntil = Date.now() + 1200;
-            if (action.name === "copy") {
-              const button = card.querySelector('[zia-action="copy"]');
-              if (button) {
-                showCopiedIcon(button, button.querySelector("img"));
-              }
-            }
-          }
-          if (!tab?.isConnected) {
-            return;
-          }
-          Promise.try(() => action.run(tab)).catch((err) => console.error(`[Zia] ${action.label} failed:`, err));
-        });
-        watchCard(card);
-      }
-      current = tab;
-      fillTabCard(card, tab);
-      card.hidden = false;
-      placeTabCard(card, tab);
-      openCard(card, folderCard, wasUp);
-    };
-
-    toolbox.addEventListener("mouseover", (event) => {
-      if (!featureOn("tab-hover-cards")) {
-        return;
-      }
-      const tab = event.target?.closest?.(".tabbrowser-tab") || hoveredFolderLabel(event.target);
-      if (!tab || tab.hasAttribute("pending-drag") || gBrowser.tabContainer.hasAttribute("movingtab")) {
-        return;
-      }
-      clearTimeout(hideTimer);
-      if (tab === current) {
-        return;
-      }
-      clearTimeout(showTimer);
-      if (current) {
-        show(tab);
-        return;
-      }
-      showTimer = setTimeout(() => {
-        if (tab.isConnected && tab.matches(":hover")) {
-          show(tab);
-        }
-      }, TAB_CARD_DELAY);
-    });
-
-    toolbox.addEventListener("mouseout", (event) => {
-      const tab = event.target?.closest?.(".tabbrowser-tab, .tab-group-label-container");
-      if (!tab) {
-        return;
-      }
-      const to = event.relatedTarget;
-      if (to && (tab.contains(to) || onCard(to))) {
-        return;
-      }
-      clearTimeout(showTimer);
-      hideSoon();
-    });
-
-    toolbox.addEventListener("mousedown", () => hide(), true);
-    toolbox.addEventListener("dragstart", () => hide(true), true);
-    toolbox.addEventListener("wheel", () => hide(), { passive: true, capture: true });
+    toolbox.addEventListener("mouseover", onHoverCardOver);
+    toolbox.addEventListener("mouseout", onHoverCardOut);
+    toolbox.addEventListener("mousedown", () => hideHoverCards(), true);
+    toolbox.addEventListener("dragstart", () => hideHoverCards(true), true);
+    toolbox.addEventListener("wheel", () => hideHoverCards(), { passive: true, capture: true });
     for (const type of ["TabSelect", "TabClose"]) {
-      gBrowser.tabContainer.addEventListener(type, () => {
-        if ((Date.now() < keepCardUntil && folderCard && !folderCard.hidden) || cardHovered()) {
-          return;
-        }
-        hide();
-      });
+      gBrowser.tabContainer.addEventListener(type, onHoverCardTabChange);
     }
     window.addEventListener("blur", () => {
-      if (Date.now() >= keepCardUntil) {
-        hide();
+      if (Date.now() >= hoverCards.keepCardUntil) {
+        hideHoverCards();
       }
     });
   }
 
+  function hoverCardUp() {
+    return [hoverCards.card, hoverCards.folderCard].some((each) => each && !each.hidden && !each.hasAttribute("zia-closing"));
+  }
+
+  function hoverCardHovered() {
+    return [hoverCards.card, hoverCards.folderCard].some((each) => each && !each.hidden && each.matches(":hover"));
+  }
+
+  // Compact mode hides the sidebar once the pointer leaves it, and the cards sit
+  // outside it: hold it open, as Zen does for its own menus, while on a card.
+  function holdSidebarOpen(on) {
+    const toolbox = hoverCards.toolbox;
+    if (on === hoverCards.holding) {
+      return;
+    }
+    if (on) {
+      hoverCards.holding = !toolbox.hasAttribute("has-popup-menu");
+      if (hoverCards.holding) {
+        toolbox.setAttribute("has-popup-menu", "true");
+      }
+      return;
+    }
+    hoverCards.holding = false;
+    try {
+      const manager = window.gZenCompactModeManager;
+      if (manager?.preference) {
+        if (toolbox.matches(":hover")) {
+          // The card was inside the sidebar. Restore zen-has-hover synchronously
+          // before dropping has-popup-menu so there is no gap with zero attributes.
+          manager._setElementExpandAttribute?.(toolbox, true, "zen-has-hover");
+          toolbox.setAttribute("zen-has-hover", "true");
+          toolbox.setAttribute("zen-has-implicit-hover", "true");
+        } else {
+          const keep = Services.prefs.getIntPref("zen.view.compact.sidebar-keep-hover.duration", 0);
+          if (keep > 0) {
+            manager.flashElement(toolbox, keep, `has-hover${toolbox.id}`, "zen-has-hover");
+          }
+        }
+      }
+    } catch (err) {
+      noteError("hover cards: release sidebar", err);
+    }
+    toolbox.removeAttribute("has-popup-menu");
+  }
+
+  function hideHoverCards(force = false) {
+    if (force !== true && hoverCardHovered()) {
+      return;
+    }
+    holdSidebarOpen(false);
+    clearTimeout(hoverCards.showTimer);
+    clearTimeout(hoverCards.hideTimer);
+    hoverCards.current = null;
+    for (const each of [hoverCards.card, hoverCards.folderCard]) {
+      if (each && !each.hidden && !each.hasAttribute("zia-closing")) {
+        each.removeAttribute("zia-snap");
+        each.setAttribute("zia-closing", "true");
+      }
+    }
+    clearTimeout(hoverCards.closeTimer);
+    hoverCards.closeTimer = setTimeout(() => {
+      for (const each of [hoverCards.card, hoverCards.folderCard]) {
+        if (each?.hasAttribute("zia-closing")) {
+          each.hidden = true;
+          each.removeAttribute("zia-closing");
+          each.removeAttribute("zia-open");
+        }
+      }
+    }, TAB_CARD_OUT_MS);
+  }
+
+  function openHoverCard(shown, other, wasUp) {
+    clearTimeout(hoverCards.closeTimer);
+    if (other) {
+      other.hidden = true;
+      other.removeAttribute("zia-open");
+      other.removeAttribute("zia-closing");
+    }
+    shown.removeAttribute("zia-closing");
+    if (wasUp) {
+      shown.setAttribute("zia-snap", "true");
+      shown.setAttribute("zia-open", "true");
+      return;
+    }
+    shown.removeAttribute("zia-snap");
+    shown.removeAttribute("zia-open");
+    void shown.offsetWidth;
+    shown.setAttribute("zia-open", "true");
+  }
+
+  function hideHoverCardsSoon() {
+    clearTimeout(hoverCards.hideTimer);
+    const attempt = () => {
+      const wait = hoverCards.keepCardUntil - Date.now();
+      if (wait > 0) {
+        hoverCards.hideTimer = setTimeout(attempt, wait);
+        return;
+      }
+      hideHoverCards();
+    };
+    hoverCards.hideTimer = setTimeout(attempt, TAB_CARD_GRACE);
+  }
+
+  function onHoverCard(node) {
+    return !!node && (hoverCards.card?.contains(node) || hoverCards.folderCard?.contains(node));
+  }
+
+  function watchHoverCard(node) {
+    node.addEventListener("mouseenter", () => {
+      clearTimeout(hoverCards.hideTimer);
+      holdSidebarOpen(true);
+    });
+    node.addEventListener("mouseleave", () => {
+      holdSidebarOpen(false);
+      hideHoverCardsSoon();
+    });
+  }
+
+  function pickFolderCardRow(row) {
+    const folder = hoverCards.current?.parentElement;
+    hideHoverCards(true);
+    try {
+      if (row.hasAttribute("zia-new-tab")) {
+        if (folder?.isConnected) {
+          newTabInFolder(folder);
+        }
+      } else if (row.ziaTab?.isConnected) {
+        gBrowser.selectedTab = row.ziaTab;
+      }
+    } catch (err) {
+      console.error("[Zia] Folder card action failed:", err);
+    }
+  }
+
+  function showFolderCard(label) {
+    if (!hoverCards.folderCard) {
+      hoverCards.folderCard = buildFolderCard(pickFolderCardRow);
+      watchHoverCard(hoverCards.folderCard);
+      hoverCards.folderCard.addEventListener("zia-card-acting", () => {
+        hoverCards.keepCardUntil = Date.now() + TAB_CARD_KEEP_MS;
+        clearTimeout(hoverCards.hideTimer);
+      });
+    }
+    const folderCard = hoverCards.folderCard;
+    const wasUp = hoverCardUp();
+    hoverCards.current = label;
+    fillFolderCard(folderCard, label.parentElement);
+    folderCard.hidden = false;
+    placeFolderCard(folderCard, label);
+    openHoverCard(folderCard, hoverCards.card, wasUp);
+  }
+
+  function runTabCardAction(action) {
+    const tab = hoverCards.current;
+    if (!action.keepsCard) {
+      hideHoverCards(true);
+    } else {
+      hoverCards.keepCardUntil = Date.now() + TAB_CARD_KEEP_MS;
+      if (action.name === "copy") {
+        const button = hoverCards.card.querySelector('[zia-action="copy"]');
+        if (button) {
+          showCopiedIcon(button, button.querySelector("img"));
+        }
+      }
+    }
+    if (!tab?.isConnected) {
+      return;
+    }
+    Promise.try(() => action.run(tab)).catch((err) => console.error(`[Zia] ${action.label} failed:`, err));
+  }
+
+  function showHoverCard(tab) {
+    if (!tab.classList.contains("tabbrowser-tab")) {
+      showFolderCard(tab);
+      return;
+    }
+    const wasUp = hoverCardUp();
+    if (!hoverCards.card) {
+      hoverCards.card = buildTabCard(runTabCardAction);
+      watchHoverCard(hoverCards.card);
+    }
+    const card = hoverCards.card;
+    hoverCards.current = tab;
+    fillTabCard(card, tab);
+    card.hidden = false;
+    placeTabCard(card, tab);
+    openHoverCard(card, hoverCards.folderCard, wasUp);
+  }
+
+  function onHoverCardOver(event) {
+    if (!featureOn("tab-hover-cards")) {
+      return;
+    }
+    const tab = event.target?.closest?.(".tabbrowser-tab") || hoveredFolderLabel(event.target);
+    if (!tab || tab.hasAttribute("pending-drag") || gBrowser.tabContainer.hasAttribute("movingtab")) {
+      return;
+    }
+    clearTimeout(hoverCards.hideTimer);
+    if (tab === hoverCards.current) {
+      return;
+    }
+    clearTimeout(hoverCards.showTimer);
+    if (hoverCards.current) {
+      showHoverCard(tab);
+      return;
+    }
+    hoverCards.showTimer = setTimeout(() => {
+      if (tab.isConnected && tab.matches(":hover")) {
+        showHoverCard(tab);
+      }
+    }, TAB_CARD_DELAY);
+  }
+
+  function onHoverCardOut(event) {
+    const tab = event.target?.closest?.(".tabbrowser-tab, .tab-group-label-container");
+    if (!tab) {
+      return;
+    }
+    const to = event.relatedTarget;
+    if (to && (tab.contains(to) || onHoverCard(to))) {
+      return;
+    }
+    clearTimeout(hoverCards.showTimer);
+    hideHoverCardsSoon();
+  }
+
+  function onHoverCardTabChange() {
+    if ((Date.now() < hoverCards.keepCardUntil && hoverCards.folderCard && !hoverCards.folderCard.hidden) || hoverCardHovered()) {
+      return;
+    }
+    hideHoverCards();
+  }
   // The drag's shared state, the system's drag picture blanked, and the rows measured and the
   // drop target found.
   // Used elsewhere: drag, dragCore, dragImage, endDrag, topRoom, clearTopRoom, blankImage,
