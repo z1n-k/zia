@@ -1,0 +1,19 @@
+{
+ "checks": {
+  "it closed": true,
+  "the setting turned itself off": true,
+  "the tour opened": true
+ },
+ "closed": true,
+ "closing": true,
+ "shown": {
+  "open": true,
+  "overlay": true,
+  "popover": "manual",
+  "prefTurnedOff": true,
+  "shown": true,
+  "src": "chrome://sine/content/zia/welcome/index.html?ultra#install",
+  "title": "Welcome to Zia"
+ },
+ "ziaErrors": []
+}

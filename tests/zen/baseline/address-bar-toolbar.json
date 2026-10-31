@@ -1,0 +1,66 @@
+{
+ "after": {
+  "focused": false,
+  "open": false,
+  "value": "localhost:PORT/page"
+ },
+ "checks": {
+  "its bottom is fitted to the last row": true,
+  "the click selects the whole address": true,
+  "the closed bar shows the site and title": true,
+  "the pop-up lists the pages": true
+ },
+ "closed": {
+  "bar": [
+   426,
+   11,
+   800,
+   31
+  ],
+  "hasTitle": "true",
+  "plain": "localhost/page",
+  "title": "localhost / Lavender Fields",
+  "value": "localhost:PORT/page"
+ },
+ "opened": {
+  "bar": [
+   411,
+   2,
+   810,
+   252
+  ],
+  "focused": true,
+  "offset": "4px",
+  "offsetX": "-14.816680908203125px",
+  "open": true,
+  "selection": [
+   0,
+   20,
+   20
+  ],
+  "value": "localhost:PORT/page",
+  "width": "799.566650390625px"
+ },
+ "typed": {
+  "bar": [
+   411,
+   2,
+   810,
+   138
+  ],
+  "bottomGap": 8,
+  "bottomTrim": "",
+  "iconOff": -10,
+  "iconStart": "0px",
+  "reachBottom": "",
+  "rows": [
+   "search: lavender",
+   "history: Lavender Notes"
+  ],
+  "scrolls": true,
+  "textGap": "5.816680908203125px",
+  "textOff": -10,
+  "value": "lavender"
+ },
+ "ziaErrors": []
+}
