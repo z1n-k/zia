@@ -20093,6 +20093,12 @@
   // A canvas that's out of the document when the loop next runs is dropped
   // (destroy() isn't needed for it); setState() or setDark() on a handle
   // whose canvas is back in the document picks it up again.
+  //
+  // This file: the geometry helpers and the painter. The modes are in
+  // 28ra-ultra-orb-modes.js, the presets in 28rb-ultra-orb-presets.js, and
+  // the orbs on screen, their loop and ziaOrb() in 28rc-ultra-orb-loop.js.
+  // Used elsewhere: orbLerp, orbFrac, orbHash, orbNoise, orbFibDir, orbAngleDelta,
+  // orbProjector, orbRadiusScale, orbFinalize, orbPaintFrame, orbParseTint.
 
   // ----- geometry helpers (engine/core)
   function orbLerp(a, b, f) {
@@ -20226,6 +20232,8 @@
     }
     return undefined;
   }
+  // ---------- Thinking orbs: the modes, one per state (see 28r-ultra-orb-engine.js)
+  // Used elsewhere: ORB_FRAMES.
 
   // ----- modes: pure geometry over (size, t, opts), one per state
 
@@ -20573,25 +20581,7 @@
     const ghostN = o.ghostN ?? 40;
     const particles = o.particles ?? 3;
     for (let orb = 0; orb < orbitN; orb++) {
-      const h1 = orbHash(orb, 1.7);
-      const h2 = orbHash(orb, 5.2);
-      const h3 = orbHash(orb, 8.9);
-      const ro = R * (0.45 + 0.52 * h1);
-      const th = h1 * 2 * Math.PI;
-      const phi = Math.acos(2 * h2 - 1);
-      const nx = Math.sin(phi) * Math.cos(th);
-      const ny = Math.cos(phi);
-      const nz = Math.sin(phi) * Math.sin(th);
-      let ux = -ny;
-      let uy = nx;
-      const uz = 0;
-      const ul = Math.max(1e-6, Math.sqrt(ux * ux + uy * uy));
-      ux /= ul;
-      uy /= ul;
-      const vx = ny * uz - nz * uy;
-      const vy = nz * ux - nx * uz;
-      const vz = nx * uy - ny * ux;
-      const speed = (0.25 + 0.55 * h3) * (h3 > 0.5 ? 1 : -1);
+      const { h2, ro, ux, uy, uz, vx, vy, vz, speed } = orbOrbitPlane(orb, R);
       for (let k = 0; k < ghostN; k++) {
         const a = (k / ghostN) * 2 * Math.PI;
         const [px, py, z] = pt(
@@ -20627,6 +20617,30 @@
       }
     }
     return orbFinalize(dots, [], o.rMin);
+  }
+
+  // an orbit's radius, its plane (u, v) and its particles' speed, from its hashes
+  function orbOrbitPlane(orb, R) {
+    const h1 = orbHash(orb, 1.7);
+    const h2 = orbHash(orb, 5.2);
+    const h3 = orbHash(orb, 8.9);
+    const ro = R * (0.45 + 0.52 * h1);
+    const th = h1 * 2 * Math.PI;
+    const phi = Math.acos(2 * h2 - 1);
+    const nx = Math.sin(phi) * Math.cos(th);
+    const ny = Math.cos(phi);
+    const nz = Math.sin(phi) * Math.sin(th);
+    let ux = -ny;
+    let uy = nx;
+    const uz = 0;
+    const ul = Math.max(1e-6, Math.sqrt(ux * ux + uy * uy));
+    ux /= ul;
+    uy /= ul;
+    const vx = ny * uz - nz * uy;
+    const vy = nz * ux - nx * uz;
+    const vz = nx * uy - ny * ux;
+    const speed = (0.25 + 0.55 * h3) * (h3 > 0.5 ? 1 : -1);
+    return { h2, ro, ux, uy, uz, vx, vy, vz, speed };
   }
 
   // composing: an undulating multi-band sash; breathing (faceOn): the same
@@ -20702,6 +20716,27 @@
     const thr = o.thr ?? 0.72;
     const nodeR = o.nodeR ?? 1.4;
     const nodeRDepth = o.nodeRDepth ?? 1.8;
+    const nodes = orbWebNodes(nodeN, t);
+    const lines = orbWebLines(nodes, pt, thr, rs, o);
+    const dots = [];
+    for (let i = 0; i < nodeN; i++) {
+      const [px, py, z] = pt(nodes[i][0], nodes[i][1], nodes[i][2]);
+      const depth = (z + 1) / 2;
+      const pulse = 1 + 0.25 * Math.sin(t * 1.4 + i * 2.7);
+      dots.push({
+        x: px,
+        y: py,
+        z,
+        r: (nodeR + nodeRDepth * depth) * pulse * rs,
+        white: 0.55 - 0.45 * depth,
+      });
+    }
+    orbWebSignals(dots, nodes, pt, t, rs, nodeR, nodeRDepth, o.signals ?? 5);
+    return orbFinalize(dots, lines, o.rMin);
+  }
+
+  // the constellation's nodes: their sphere directions, wandering on noise
+  function orbWebNodes(nodeN, t) {
     const nodes = [];
     for (let i = 0; i < nodeN; i++) {
       const d = orbFibDir(i, nodeN);
@@ -20711,8 +20746,13 @@
       const l = Math.sqrt(x * x + y * y + z * z);
       nodes.push([x / l, y / l, z / l]);
     }
+    return nodes;
+  }
+
+  // an edge between every two nodes nearer than thr, fainter the longer it is
+  function orbWebLines(nodes, pt, thr, rs, o) {
+    const nodeN = nodes.length;
     const lines = [];
-    const dots = [];
     for (let i = 0; i < nodeN; i++) {
       for (let j = i + 1; j < nodeN; j++) {
         const dx = nodes[i][0] - nodes[j][0];
@@ -20736,19 +20776,12 @@
         });
       }
     }
-    for (let i = 0; i < nodeN; i++) {
-      const [px, py, z] = pt(nodes[i][0], nodes[i][1], nodes[i][2]);
-      const depth = (z + 1) / 2;
-      const pulse = 1 + 0.25 * Math.sin(t * 1.4 + i * 2.7);
-      dots.push({
-        x: px,
-        y: py,
-        z,
-        r: (nodeR + nodeRDepth * depth) * pulse * rs,
-        white: 0.55 - 0.45 * depth,
-      });
-    }
-    const signals = o.signals ?? 5;
+    return lines;
+  }
+
+  // the packets, each running from one node to another
+  function orbWebSignals(dots, nodes, pt, t, rs, nodeR, nodeRDepth, signals) {
+    const nodeN = nodes.length;
     for (let s = 0; s < signals; s++) {
       const seg = Math.floor(t * 0.55 + s * 7.31);
       const a = Math.floor(orbHash(seg, s * 3.1 + 1.7) * nodeN);
@@ -20772,7 +20805,6 @@
         a: 0.5 + 0.5 * depth,
       });
     }
-    return orbFinalize(dots, lines, o.rMin);
   }
 
   const ORB_FRAMES = {
@@ -20787,6 +20819,9 @@
     ring: orbFrameRibbon,
     morph: orbFrameMorph,
   };
+  // ---------- Thinking orbs: the presets, state to mode and the tuned sizes
+  // (see 28r-ultra-orb-engine.js)
+  // Used elsewhere: ORB_STATE_MODE, ORB_LABELS, orbResolve.
 
   // ----- presets: state to mode, base profiles, and the tuned sizes
   const ORB_STATE_MODE = {
@@ -20973,6 +21008,9 @@
     orbResolvedCache.set(key, resolved);
     return resolved;
   }
+  // ---------- Thinking orbs: the orbs on screen, the one loop that draws them, and ziaOrb()
+  // (see 28r-ultra-orb-engine.js for its use and options)
+  // Used elsewhere: ziaOrb.
 
   // ----- the orbs on screen, and the one loop that draws them
   const ORB_XHTML = "http://www.w3.org/1999/xhtml";
