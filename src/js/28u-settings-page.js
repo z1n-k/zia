@@ -4,6 +4,9 @@
   // a frame, nothing passed between it and Zia got through inside Zen (every switch showed
   // off, and it couldn't be closed). Only settings in that list are written, each with a
   // value of the kind it takes.
+  // Used elsewhere: addSettingsMenuItem.
+  // (the page fading out on closing)
+  const SETTINGS_OUT_MS = 260;
   let settingsList = null;
   const loadSettingsList = async () =>
     (settingsList ??= await (await fetch("chrome://sine/content/zia/preferences.json")).json());
@@ -189,6 +192,8 @@
     return { fresh, seen, stamped };
   }
 
+  // Each opening has a page of its own, handed to the steps below: the settings list, their
+  // values, which are new, the elements, the sections and rows, and what closing undoes.
   async function showZiaSettings() {
     const open = document.getElementById("zia-settings");
     if (open && !open.hasAttribute("closing")) {
@@ -198,329 +203,362 @@
     open?.remove();
     const list = await loadSettingsList();
     const platform = { macosx: "macos", win: "windows" }[AppConstants.platform] || "linux";
-    let values = settingValues(list);
-    const news = newSettings(list);
+    const page = { list, values: settingValues(list), news: newSettings(list), sections: [], rows: [], section: null };
+    buildSettingsFrame(page);
+    addSettingRows(page, platform);
+    makeSettingEl("div", "zia-set-none", page.listEl, "No settings match");
 
-    const make = (tag, className, parent, text) => {
-      const el = document.createElementNS(XHTML_NS, tag);
-      if (className) {
-        el.className = className;
-      }
-      if (text != null) {
-        el.textContent = text;
-      }
-      parent?.append(el);
-      return el;
-    };
-    const setOptions = (select, options) => {
-      select.replaceChildren();
-      for (const option of options) {
-        make("option", null, select, option.label).value = option.value;
-      }
-    };
-    const icon = (parent, d) => {
-      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.setAttribute("viewBox", "0 0 24 24");
-      svg.setAttribute("aria-hidden", "true");
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.setAttribute("d", d);
-      svg.append(path);
-      parent.append(svg);
-    };
-
-    // ---------- the frame of it: card, head (title, search, close), sections beside the list
-    const overlay = make("div");
-    overlay.id = "zia-settings";
-    overlay.setAttribute("popover", "manual");
-    const scrim = make("div", "zia-set-scrim", overlay);
-    const card = make("div", "zia-set-card", scrim);
-    card.setAttribute("role", "dialog");
-    card.setAttribute("aria-label", "Zia settings");
-    const head = make("div", "zia-set-head", card);
-    make("div", "zia-set-title", head, "Zia");
-    const searchBox = make("label", "zia-set-search", head);
-    icon(searchBox, "M10 4a6 6 0 1 0 0 12a6 6 0 0 0 0-12zM20 20l-5.5-5.5");
-    const search = make("input", null, searchBox);
-    search.type = "search";
-    search.placeholder = "Search settings";
-    search.setAttribute("autocomplete", "off");
-    search.spellcheck = false;
-    const closeButton = make("button", "zia-set-close", head);
-    closeButton.type = "button";
-    closeButton.setAttribute("aria-label", "Close");
-    icon(closeButton, "M6 6l12 12M18 6L6 18");
-    const body = make("div", "zia-set-body", card);
-    const nav = make("div", "zia-set-nav", body);
-    const listEl = make("div", "zia-set-list", body);
-
-    // Sine's rules for a row's conditions: "if" or "not", nested lists with their own
-    // "operator", and a row's own list "OR" unless it says otherwise
-    const holds = (conditions, operator) => {
-      const results = [conditions].flat().map((cond) => {
-        if (cond.if || cond.not) {
-          const test = cond.if || cond.not;
-          return (values[test.property] === test.value) === !cond.not;
-        }
-        return cond.conditions ? holds(cond.conditions, cond.operator || "AND") : false;
-      });
-      return operator === "OR" ? results.some(Boolean) : results.every(Boolean);
-    };
-
-    // ---------- sections and rows
-    const sections = [];
-    const rows = [];
-    let section = null;
-    const newSection = (label) => {
-      const el = make("div", "zia-set-section", listEl);
-      make("div", "zia-set-section-title", el, label);
-      const group = make("div", "zia-set-group", el);
-      const link = make("button", "zia-set-nav-item", nav, label);
-      link.type = "button";
-      link.addEventListener("click", () => el.scrollIntoView({ behavior: "smooth", block: "start" }));
-      section = { el, group, link, rows: [] };
-      sections.push(section);
-    };
-    for (const entry of list) {
-      if (entry.type === "separator") {
-        newSection(entry.label);
-        continue;
-      }
-      if (!section) {
-        newSection("General");
-      }
-      if (entry.disabledOn?.includes(platform)) {
-        continue;
-      }
-      const row = make("div", "zia-set-row", section.group);
-      row.classList.toggle("sub", !!entry.conditions);
-      const text = make("div", "zia-set-text", row);
-      const [name, detail] = settingName(entry);
-      const label = make("div", "zia-set-label", text, name);
-      const isNew = news.fresh.has(entry.property);
-      if (isNew) {
-        make("span", "zia-set-new", label, "New");
-        row.dataset.property = entry.property;
-        section.link.classList.add("new");
-      }
-      if (detail) {
-        make("div", "zia-set-desc", text, detail);
-      }
-      let control;
-      if (entry.type === "checkbox") {
-        control = make("button", "zia-set-switch", row);
-        control.type = "button";
-        control.setAttribute("role", "switch");
-        control.addEventListener("click", (event) => {
-          event.stopPropagation();
-          writeSetting(list, entry.property, control.getAttribute("aria-checked") !== "true");
-        });
-        row.addEventListener("click", () => control.click());
-      } else if (entry.type === "dropdown") {
-        control = make("select", "zia-set-select", row);
-        setOptions(control, entry.options || []);
-        control.addEventListener("change", () => writeSetting(list, entry.property, control.value));
-      } else if (entry.type === "string") {
-        control = make("input", "zia-set-field", row);
-        // (an API key is a secret: not shown as it's typed or read off the screen)
-        control.type = /api_key/i.test(entry.property) ? "password" : "text";
-        control.placeholder = entry.placeholder || "";
-        control.spellcheck = false;
-        control.setAttribute("autocomplete", "off");
-        control.addEventListener("change", () => writeSetting(list, entry.property, control.value));
-      } else {
-        row.remove();
-        continue;
-      }
-      control.setAttribute("aria-label", name);
-      // (found by its short name and detail, and by its full label too)
-      // (and the new ones by "new")
-      const words = `${name} ${detail} ${entry.label} ${entry.description || ""} ${section.el.firstChild.textContent}${isNew ? " new" : ""}`.toLowerCase();
-      const one = { entry, row, control, words };
-      rows.push(one);
-      section.rows.push(one);
-    }
-    make("div", "zia-set-none", listEl, "No settings match");
-
-    // ---------- what shows: each row's value, its conditions, then the search
-    const show = () => {
-      const query = search.value.trim().toLowerCase();
-      let any = false;
-      for (const one of rows) {
-        const allowed = !one.entry.conditions || holds(one.entry.conditions, one.entry.operator || "OR");
-        // (searching, a matching row shows even if its condition hides it, so it can be found)
-        one.row.hidden = query ? !query.split(/\s+/).every((word) => one.words.includes(word)) : !allowed;
-        one.row.classList.toggle("off", !!query && !allowed);
-      }
-      for (const part of sections) {
-        const visible = part.rows.some((one) => !one.row.hidden);
-        part.el.hidden = !visible;
-        part.link.hidden = !visible;
-        any ||= visible;
-      }
-      listEl.classList.toggle("empty", !any);
-    };
-    const fill = () => {
-      values = settingValues(list);
-      for (const one of rows) {
-        const value = values[one.entry.property];
-        if (one.entry.type === "checkbox") {
-          one.control.setAttribute("aria-checked", String(!!value));
-          continue;
-        }
-        // (a saved choice that isn't in the list, a model fetched in Sine's page say, is added
-        // to it: the dropdown showed empty)
-        if (one.entry.type === "dropdown" && value && ![...one.control.options].some((option) => option.value === value)) {
-          make("option", null, one.control, value).value = value;
-        }
-        if (document.activeElement !== one.control) {
-          one.control.value = value ?? "";
-        }
-      }
-      show();
-      fillModels();
-    };
-    // The AI services' model dropdowns with the models each service actually offers, as
-    // Sine's page has them (tidy-downloads-models.js, read live, cached a few minutes):
-    // the list in preferences.json is only a fallback
-    const fillModels = () => {
-      const lists = window.ziaTidyModels;
-      for (const one of rows) {
-        if (one.entry.type !== "dropdown" || one.row.hidden || !lists?.handles(one.entry.property)) {
-          continue;
-        }
-        lists
-          .modelsFor(one.entry.property)
-          .then((models) => {
-            if (!models?.length || !one.control.isConnected || document.activeElement === one.control) {
-              return;
-            }
-            const value = values[one.entry.property];
-            setOptions(one.control, models);
-            if (value && !models.some((model) => model.value === value)) {
-              make("option", null, one.control, value).value = value;
-            }
-            one.control.value = value ?? "";
-          })
-          .catch((err) => noteError("settings page: models", err));
-      }
-    };
-    fill();
-    search.addEventListener("input", () => {
-      show();
-      listEl.scrollTop = 0;
+    fillSettings(page);
+    page.search.addEventListener("input", () => {
+      showSettingRows(page);
+      page.listEl.scrollTop = 0;
     });
-
-    // the section in view lit in the side list
-    const lit = new IntersectionObserver(
-      (seen) => {
-        for (const item of seen) {
-          if (item.isIntersecting) {
-            for (const part of sections) {
-              part.link.classList.toggle("cur", part.el === item.target);
-            }
-          }
-        }
-      },
-      { root: listEl, rootMargin: "0px 0px -70% 0px" }
-    );
-    for (const part of sections) {
-      lit.observe(part.el);
-    }
-
-    // a "New" row once on screen counts as seen, from the next opening
-    const seenNow = new Set();
-    const spotted = new IntersectionObserver(
-      (seen) => {
-        for (const item of seen) {
-          if (item.isIntersecting) {
-            seenNow.add(item.target.dataset.property);
-          }
-        }
-      },
-      { root: listEl }
-    );
-    for (const one of rows) {
-      if (one.row.dataset.property) {
-        spotted.observe(one.row);
-      }
-    }
+    watchSettingsInView(page);
 
     // ---------- a change anywhere shows at once (this panel, Sine's list, another window, one
     // that turns itself back off), till it's closed
-    let refresh = 0;
-    const onPref = () => {
-      refresh ||= requestAnimationFrame(() => {
-        refresh = 0;
-        fill();
-      });
-    };
-    const watched = Object.keys(values);
-    for (const property of watched) {
-      Services.prefs.addObserver(property, onPref);
+    page.refresh = 0;
+    page.onPref = () => refreshSettings(page);
+    page.watched = Object.keys(page.values);
+    for (const property of page.watched) {
+      Services.prefs.addObserver(property, page.onPref);
     }
 
     // ---------- closing: the ✕, Esc (which first clears a search) or a click outside the card
-    const onKey = (event) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        event.stopPropagation();
-        if (search.value) {
-          search.value = "";
-          show();
-        } else {
-          close();
-        }
-      } else if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "f") {
-        event.preventDefault();
-        event.stopPropagation();
-        search.focus();
-      }
-    };
-    const close = () => {
-      if (overlay.hasAttribute("closing")) {
-        return;
-      }
-      overlay.setAttribute("closing", "");
-      window.removeEventListener("keydown", onKey, true);
-      lit.disconnect();
-      spotted.disconnect();
-      if (seenNow.size) {
-        // (kept to the stamped settings, so the list never outgrows them)
-        const seen = news.stamped
-          .map((entry) => entry.property)
-          .filter((property) => seenNow.has(property) || news.seen.includes(property));
-        Services.prefs.setStringPref(NEW_SEEN_PREF, seen.join(","));
-      }
-      for (const property of watched) {
-        Services.prefs.removeObserver(property, onPref);
-      }
-      setTimeout(() => {
-        try {
-          overlay.hidePopover?.();
-        } catch (err) {}
-        overlay.remove();
-      }, 260);
-      gBrowser.selectedBrowser?.focus();
-    };
-    window.addEventListener("keydown", onKey, true);
-    closeButton.addEventListener("click", close);
-    scrim.addEventListener("mousedown", (event) => {
-      if (event.target === scrim) {
-        close();
+    page.onKey = (event) => onSettingsKey(page, event);
+    window.addEventListener("keydown", page.onKey, true);
+    page.closeButton.addEventListener("click", () => closeSettings(page));
+    page.scrim.addEventListener("mousedown", (event) => {
+      if (event.target === page.scrim) {
+        closeSettings(page);
       }
     });
-    window.addEventListener("unload", close, { once: true });
+    window.addEventListener("unload", () => closeSettings(page), { once: true });
 
-    document.documentElement.appendChild(overlay);
+    document.documentElement.appendChild(page.overlay);
     try {
-      overlay.showPopover();
+      page.overlay.showPopover();
     } catch (err) {
       noteError("settings page: top layer", err);
     }
     requestAnimationFrame(() => {
-      overlay.setAttribute("shown", "");
-      search.focus();
+      page.overlay.setAttribute("shown", "");
+      page.search.focus();
     });
+  }
+
+  function makeSettingEl(tag, className, parent, text) {
+    const el = document.createElementNS(XHTML_NS, tag);
+    if (className) {
+      el.className = className;
+    }
+    if (text != null) {
+      el.textContent = text;
+    }
+    parent?.append(el);
+    return el;
+  }
+
+  function setSettingOptions(select, options) {
+    select.replaceChildren();
+    for (const option of options) {
+      makeSettingEl("option", null, select, option.label).value = option.value;
+    }
+  }
+
+  function settingsIcon(parent, d) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", d);
+    svg.append(path);
+    parent.append(svg);
+  }
+
+  // ---------- the frame of it: card, head (title, search, close), sections beside the list
+  function buildSettingsFrame(page) {
+    const overlay = makeSettingEl("div");
+    overlay.id = "zia-settings";
+    overlay.setAttribute("popover", "manual");
+    const scrim = makeSettingEl("div", "zia-set-scrim", overlay);
+    const card = makeSettingEl("div", "zia-set-card", scrim);
+    card.setAttribute("role", "dialog");
+    card.setAttribute("aria-label", "Zia settings");
+    const head = makeSettingEl("div", "zia-set-head", card);
+    makeSettingEl("div", "zia-set-title", head, "Zia");
+    const searchBox = makeSettingEl("label", "zia-set-search", head);
+    settingsIcon(searchBox, "M10 4a6 6 0 1 0 0 12a6 6 0 0 0 0-12zM20 20l-5.5-5.5");
+    const search = makeSettingEl("input", null, searchBox);
+    search.type = "search";
+    search.placeholder = "Search settings";
+    search.setAttribute("autocomplete", "off");
+    search.spellcheck = false;
+    const closeButton = makeSettingEl("button", "zia-set-close", head);
+    closeButton.type = "button";
+    closeButton.setAttribute("aria-label", "Close");
+    settingsIcon(closeButton, "M6 6l12 12M18 6L6 18");
+    const body = makeSettingEl("div", "zia-set-body", card);
+    const nav = makeSettingEl("div", "zia-set-nav", body);
+    const listEl = makeSettingEl("div", "zia-set-list", body);
+    Object.assign(page, { overlay, scrim, search, closeButton, nav, listEl });
+  }
+
+  // Sine's rules for a row's conditions: "if" or "not", nested lists with their own
+  // "operator", and a row's own list "OR" unless it says otherwise
+  function conditionsHold(page, conditions, operator) {
+    const results = [conditions].flat().map((cond) => {
+      if (cond.if || cond.not) {
+        const test = cond.if || cond.not;
+        return (page.values[test.property] === test.value) === !cond.not;
+      }
+      return cond.conditions ? conditionsHold(page, cond.conditions, cond.operator || "AND") : false;
+    });
+    return operator === "OR" ? results.some(Boolean) : results.every(Boolean);
+  }
+
+  // ---------- sections and rows
+  function addSettingsSection(page, label) {
+    const el = makeSettingEl("div", "zia-set-section", page.listEl);
+    makeSettingEl("div", "zia-set-section-title", el, label);
+    const group = makeSettingEl("div", "zia-set-group", el);
+    const link = makeSettingEl("button", "zia-set-nav-item", page.nav, label);
+    link.type = "button";
+    link.addEventListener("click", () => el.scrollIntoView({ behavior: "smooth", block: "start" }));
+    page.section = { el, group, link, rows: [] };
+    page.sections.push(page.section);
+  }
+
+  function addSettingRows(page, platform) {
+    for (const entry of page.list) {
+      if (entry.type === "separator") {
+        addSettingsSection(page, entry.label);
+        continue;
+      }
+      if (!page.section) {
+        addSettingsSection(page, "General");
+      }
+      if (entry.disabledOn?.includes(platform)) {
+        continue;
+      }
+      addSettingRow(page, entry);
+    }
+  }
+
+  function addSettingRow(page, entry) {
+    const section = page.section;
+    const row = makeSettingEl("div", "zia-set-row", section.group);
+    row.classList.toggle("sub", !!entry.conditions);
+    const text = makeSettingEl("div", "zia-set-text", row);
+    const [name, detail] = settingName(entry);
+    const label = makeSettingEl("div", "zia-set-label", text, name);
+    const isNew = page.news.fresh.has(entry.property);
+    if (isNew) {
+      makeSettingEl("span", "zia-set-new", label, "New");
+      row.dataset.property = entry.property;
+      section.link.classList.add("new");
+    }
+    if (detail) {
+      makeSettingEl("div", "zia-set-desc", text, detail);
+    }
+    const control = settingControl(page, entry, row);
+    if (!control) {
+      row.remove();
+      return;
+    }
+    control.setAttribute("aria-label", name);
+    // (found by its short name and detail, and by its full label too)
+    // (and the new ones by "new")
+    const words = `${name} ${detail} ${entry.label} ${entry.description || ""} ${section.el.firstChild.textContent}${isNew ? " new" : ""}`.toLowerCase();
+    const setting = { entry, row, control, words };
+    page.rows.push(setting);
+    section.rows.push(setting);
+  }
+
+  // the switch, list or field a row's setting takes (none for a kind it can't show)
+  function settingControl(page, entry, row) {
+    let control;
+    if (entry.type === "checkbox") {
+      control = makeSettingEl("button", "zia-set-switch", row);
+      control.type = "button";
+      control.setAttribute("role", "switch");
+      control.addEventListener("click", (event) => {
+        event.stopPropagation();
+        writeSetting(page.list, entry.property, control.getAttribute("aria-checked") !== "true");
+      });
+      row.addEventListener("click", () => control.click());
+    } else if (entry.type === "dropdown") {
+      control = makeSettingEl("select", "zia-set-select", row);
+      setSettingOptions(control, entry.options || []);
+      control.addEventListener("change", () => writeSetting(page.list, entry.property, control.value));
+    } else if (entry.type === "string") {
+      control = makeSettingEl("input", "zia-set-field", row);
+      // (an API key is a secret: not shown as it's typed or read off the screen)
+      control.type = /api_key/i.test(entry.property) ? "password" : "text";
+      control.placeholder = entry.placeholder || "";
+      control.spellcheck = false;
+      control.setAttribute("autocomplete", "off");
+      control.addEventListener("change", () => writeSetting(page.list, entry.property, control.value));
+    } else {
+      return null;
+    }
+    return control;
+  }
+
+  // ---------- what shows: each row's value, its conditions, then the search
+  function showSettingRows(page) {
+    const query = page.search.value.trim().toLowerCase();
+    let any = false;
+    for (const setting of page.rows) {
+      const allowed = !setting.entry.conditions || conditionsHold(page, setting.entry.conditions, setting.entry.operator || "OR");
+      // (searching, a matching row shows even if its condition hides it, so it can be found)
+      setting.row.hidden = query ? !query.split(/\s+/).every((word) => setting.words.includes(word)) : !allowed;
+      setting.row.classList.toggle("off", !!query && !allowed);
+    }
+    for (const section of page.sections) {
+      const visible = section.rows.some((setting) => !setting.row.hidden);
+      section.el.hidden = !visible;
+      section.link.hidden = !visible;
+      any ||= visible;
+    }
+    page.listEl.classList.toggle("empty", !any);
+  }
+
+  function fillSettings(page) {
+    page.values = settingValues(page.list);
+    for (const setting of page.rows) {
+      const value = page.values[setting.entry.property];
+      if (setting.entry.type === "checkbox") {
+        setting.control.setAttribute("aria-checked", String(!!value));
+        continue;
+      }
+      // (a saved choice that isn't in the list, a model fetched in Sine's page say, is added
+      // to it: the dropdown showed empty)
+      if (setting.entry.type === "dropdown" && value && ![...setting.control.options].some((option) => option.value === value)) {
+        makeSettingEl("option", null, setting.control, value).value = value;
+      }
+      if (document.activeElement !== setting.control) {
+        setting.control.value = value ?? "";
+      }
+    }
+    showSettingRows(page);
+    fillModelLists(page);
+  }
+
+  // The AI services' model dropdowns with the models each service actually offers, as
+  // Sine's page has them (tidy-downloads-models.js, read live, cached a few minutes):
+  // the list in preferences.json is only a fallback
+  function fillModelLists(page) {
+    const lists = window.ziaTidyModels;
+    for (const setting of page.rows) {
+      if (setting.entry.type !== "dropdown" || setting.row.hidden || !lists?.handles(setting.entry.property)) {
+        continue;
+      }
+      lists
+        .modelsFor(setting.entry.property)
+        .then((models) => {
+          if (!models?.length || !setting.control.isConnected || document.activeElement === setting.control) {
+            return;
+          }
+          const value = page.values[setting.entry.property];
+          setSettingOptions(setting.control, models);
+          if (value && !models.some((model) => model.value === value)) {
+            makeSettingEl("option", null, setting.control, value).value = value;
+          }
+          setting.control.value = value ?? "";
+        })
+        .catch((err) => noteError("settings page: models", err));
+    }
+  }
+
+  function watchSettingsInView(page) {
+    // the section in view lit in the side list
+    page.lit = new IntersectionObserver(
+      (seen) => {
+        for (const item of seen) {
+          if (item.isIntersecting) {
+            for (const section of page.sections) {
+              section.link.classList.toggle("cur", section.el === item.target);
+            }
+          }
+        }
+      },
+      { root: page.listEl, rootMargin: "0px 0px -70% 0px" }
+    );
+    for (const section of page.sections) {
+      page.lit.observe(section.el);
+    }
+
+    // a "New" row once on screen counts as seen, from the next opening
+    page.seenNow = new Set();
+    page.spotted = new IntersectionObserver(
+      (seen) => {
+        for (const item of seen) {
+          if (item.isIntersecting) {
+            page.seenNow.add(item.target.dataset.property);
+          }
+        }
+      },
+      { root: page.listEl }
+    );
+    for (const one of page.rows) {
+      if (one.row.dataset.property) {
+        page.spotted.observe(one.row);
+      }
+    }
+  }
+
+  function refreshSettings(page) {
+    page.refresh ||= requestAnimationFrame(() => {
+      page.refresh = 0;
+      fillSettings(page);
+    });
+  }
+
+  function onSettingsKey(page, event) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      if (page.search.value) {
+        page.search.value = "";
+        showSettingRows(page);
+      } else {
+        closeSettings(page);
+      }
+    } else if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "f") {
+      event.preventDefault();
+      event.stopPropagation();
+      page.search.focus();
+    }
+  }
+
+  function closeSettings(page) {
+    const { overlay, news, seenNow } = page;
+    if (overlay.hasAttribute("closing")) {
+      return;
+    }
+    overlay.setAttribute("closing", "");
+    window.removeEventListener("keydown", page.onKey, true);
+    page.lit.disconnect();
+    page.spotted.disconnect();
+    if (seenNow.size) {
+      // (kept to the stamped settings, so the list never outgrows them)
+      const seen = news.stamped
+        .map((entry) => entry.property)
+        .filter((property) => seenNow.has(property) || news.seen.includes(property));
+      Services.prefs.setStringPref(NEW_SEEN_PREF, seen.join(","));
+    }
+    for (const property of page.watched) {
+      Services.prefs.removeObserver(property, page.onPref);
+    }
+    // (not kept: a page opened meanwhile removes this one itself)
+    setTimeout(() => {
+      try {
+        overlay.hidePopover?.();
+      } catch (err) {}
+      overlay.remove();
+    }, SETTINGS_OUT_MS);
+    gBrowser.selectedBrowser?.focus();
   }
 
   // "Zia Settings" in the ⋯ menu, under Firefox's own Settings (the menu is built the

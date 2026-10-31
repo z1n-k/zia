@@ -1,0 +1,86 @@
+{
+ "beforeBeat": null,
+ "checks": {
+  "a card shows after a beat": true,
+  "a pinned tab's minus only unloads": true,
+  "leaving closes it": true,
+  "the icons' own tips are stashed": true,
+  "the next shows at once": true,
+  "unpinned, Zen's word is back": true
+ },
+ "first": {
+  "hidden": false,
+  "left": "76px",
+  "marks": [
+   "zia-open"
+  ],
+  "origin": "center bottom 0px",
+  "size": [
+   67,
+   38
+  ],
+  "text": "Space",
+  "top": "689px"
+ },
+ "leaving": {
+  "hidden": false,
+  "left": "94px",
+  "marks": [
+   "zia-open",
+   "zia-snap"
+  ],
+  "origin": "center bottom 0px",
+  "size": [
+   54,
+   38
+  ],
+  "text": "Two",
+  "top": "689px"
+ },
+ "left": {
+  "hidden": true,
+  "left": "94px",
+  "marks": [],
+  "origin": "center bottom 0px",
+  "size": [
+   0,
+   0
+  ],
+  "text": "Two",
+  "top": "689px"
+ },
+ "next": {
+  "hidden": false,
+  "left": "94px",
+  "marks": [
+   "zia-open",
+   "zia-snap"
+  ],
+  "origin": "center bottom 0px",
+  "size": [
+   54,
+   38
+  ],
+  "text": "Two",
+  "top": "689px"
+ },
+ "pinnedTip": {
+  "marked": true,
+  "text": "Unload tab"
+ },
+ "tips": {
+  "home": {
+   "stashed": "Space",
+   "tooltiptext": null
+  },
+  "other": {
+   "stashed": "Two",
+   "tooltiptext": null
+  }
+ },
+ "unpinnedTip": {
+  "marked": false,
+  "reworded": false
+ },
+ "ziaErrors": []
+}

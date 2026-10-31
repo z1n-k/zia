@@ -7458,10 +7458,20 @@
   // Zia makes a zip of them in the profile (once per icon pack, so Zia's own
   // updates don't redo it) and reads icons straight out of it, the way
   // Firefox reads its own, at resource://zia-tabler/.
+  // Used elsewhere: ICON_DIR, pointResource, setupIconPack, tablerIcons, watchOldIcons,
+  // addIconPicker.
   const ICON_ROOT = "chrome://sine/content/zia/icons";
   const ICON_HOST = "zia-tabler";
   const ICON_DIR = `resource://${ICON_HOST}`;
   const ICON_STYLE_PREF = "zia.icons.style";
+  // (old icons moved off a beat after folders and spaces change, all at once)
+  const OLD_ICONS_QUEUE_MS = 500;
+  // (icons drawn again a beat after the session's folders and spaces are back)
+  const ICON_REDRAW_MS = 300;
+  // Results are added a screenful at a time as the grid scrolls, so the
+  // thousands of icons never load at once.
+  const ICON_BATCH = 180;
+  const ZIP_DATE = 0x21; // 1 January 1980
   let iconIndex = null;
   let iconPackReady = null;
 
@@ -7548,68 +7558,85 @@
     for (const item of items) {
       size += 30 + 46 + 2 * item.nameBytes.length + item.data.length;
     }
+    const zip = zipWriter(size);
+    for (const item of items) {
+      writeZipEntry(zip, item);
+    }
+    const directory = zip.at;
+    for (const item of items) {
+      writeZipDirectoryEntry(zip, item);
+    }
+    const directorySize = zip.at - directory;
+    zip.u32(0x06054b50);
+    zip.u16(0);
+    zip.u16(0);
+    zip.u16(items.length);
+    zip.u16(items.length);
+    zip.u32(directorySize);
+    zip.u32(directory);
+    zip.u16(0);
+    return zip.out;
+  }
+
+  // little-endian numbers and bytes written one after another
+  function zipWriter(size) {
     const out = new Uint8Array(size);
     const view = new DataView(out.buffer);
-    let at = 0;
-    const u16 = (v) => {
-      view.setUint16(at, v, true);
-      at += 2;
+    const zip = {
+      out,
+      at: 0,
+      u16: (v) => {
+        view.setUint16(zip.at, v, true);
+        zip.at += 2;
+      },
+      u32: (v) => {
+        view.setUint32(zip.at, v, true);
+        zip.at += 4;
+      },
+      bytes: (bytes) => {
+        out.set(bytes, zip.at);
+        zip.at += bytes.length;
+      },
     };
-    const u32 = (v) => {
-      view.setUint32(at, v, true);
-      at += 4;
-    };
-    const DATE = 0x21; // 1 January 1980
-    for (const item of items) {
-      item.offset = at;
-      u32(0x04034b50);
-      u16(10);
-      u16(0);
-      u16(0);
-      u16(0);
-      u16(DATE);
-      u32(item.crc);
-      u32(item.data.length);
-      u32(item.data.length);
-      u16(item.nameBytes.length);
-      u16(0);
-      out.set(item.nameBytes, at);
-      at += item.nameBytes.length;
-      out.set(item.data, at);
-      at += item.data.length;
-    }
-    const directory = at;
-    for (const item of items) {
-      u32(0x02014b50);
-      u16(20);
-      u16(10);
-      u16(0);
-      u16(0);
-      u16(0);
-      u16(DATE);
-      u32(item.crc);
-      u32(item.data.length);
-      u32(item.data.length);
-      u16(item.nameBytes.length);
-      u16(0);
-      u16(0);
-      u16(0);
-      u16(0);
-      u32(0o644 << 16);
-      u32(item.offset);
-      out.set(item.nameBytes, at);
-      at += item.nameBytes.length;
-    }
-    const directorySize = at - directory;
-    u32(0x06054b50);
-    u16(0);
-    u16(0);
-    u16(items.length);
-    u16(items.length);
-    u32(directorySize);
-    u32(directory);
-    u16(0);
-    return out;
+    return zip;
+  }
+
+  function writeZipEntry(zip, item) {
+    item.offset = zip.at;
+    zip.u32(0x04034b50);
+    zip.u16(10);
+    zip.u16(0);
+    zip.u16(0);
+    zip.u16(0);
+    zip.u16(ZIP_DATE);
+    zip.u32(item.crc);
+    zip.u32(item.data.length);
+    zip.u32(item.data.length);
+    zip.u16(item.nameBytes.length);
+    zip.u16(0);
+    zip.bytes(item.nameBytes);
+    zip.bytes(item.data);
+  }
+
+  function writeZipDirectoryEntry(zip, item) {
+    zip.u32(0x02014b50);
+    zip.u16(20);
+    zip.u16(10);
+    zip.u16(0);
+    zip.u16(0);
+    zip.u16(0);
+    zip.u16(ZIP_DATE);
+    zip.u32(item.crc);
+    zip.u32(item.data.length);
+    zip.u32(item.data.length);
+    zip.u16(item.nameBytes.length);
+    zip.u16(0);
+    zip.u16(0);
+    zip.u16(0);
+    zip.u16(0);
+    zip.u32(0o644 << 16);
+    zip.u32(item.offset);
+    zip.bytes(item.nameBytes);
   }
 
   async function packFromBundle() {
@@ -7774,7 +7801,7 @@
         setTimeout(() => {
           queued = false;
           setupIconPack().finally(moveOffOldIcons);
-        }, 500);
+        }, OLD_ICONS_QUEUE_MS);
       }
     };
     gBrowser.tabContainer.addEventListener("TabGroupCreate", queue);
@@ -7789,9 +7816,32 @@
     };
     setupIconPack().then(() => {
       redraw();
-      window.SessionStore?.promiseAllWindowsRestored?.then(() => setTimeout(redraw, 300), () => {});
+      window.SessionStore?.promiseAllWindowsRestored?.then(() => setTimeout(redraw, ICON_REDRAW_MS), () => {});
     }, () => {});
   }
+
+  // Zia's tab in Zen's emoji and icon picker: its elements, whether it's the page shown,
+  // the pick under way (Zen's settings for it, whether Zia's page made it, and how to hand it
+  // back), and the search's results and how many of them are in the grid
+  const iconPicker = {
+    panel: null,
+    tabs: null,
+    tab: null,
+    page: null,
+    bar: null,
+    box: null,
+    styleButtons: {},
+    grid: null,
+    empty: null,
+    more: null,
+    showing: false,
+    picked: false,
+    resolvePick: null,
+    options: null,
+    results: [],
+    shown: 0,
+    lastQuery: null,
+  };
 
   function addIconPicker() {
     const picker = window.gZenEmojiPicker;
@@ -7802,33 +7852,92 @@
     if (!picker || !panel || !pages || !tabs) {
       return;
     }
+    iconPicker.panel = panel;
+    iconPicker.tabs = tabs;
 
     const tab = document.createXULElement("toolbarbutton");
+    iconPicker.tab = tab;
     tab.id = "zia-icons-tab";
     tab.setAttribute("label", "Zia");
     tabs.appendChild(tab);
 
-    function nameZenTab() {
-      const zenTab = document.getElementById("PanelUI-zen-emojis-picker-change-svg");
-      if (zenTab && zenTab.getAttribute("label") !== "Zen") {
-        zenTab.removeAttribute("data-l10n-id");
-        zenTab.removeAttribute("data-l10n-args");
-        zenTab.setAttribute("label", "Zen");
-      }
-    }
+    buildIconsPage(pages);
+    const more = document.createElementNS(XHTML_NS, "div");
+    iconPicker.more = more;
+    more.id = "zia-icons-more";
+    const moreWatcher = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          addMoreIcons();
+        }
+      },
+      { root: iconPicker.grid, rootMargin: "200px" }
+    );
+    moreWatcher.observe(more);
 
+    tab.addEventListener("command", showIconsPage);
+    panel.addEventListener("command", onIconPickerCommand);
+    iconPicker.box.addEventListener("input", renderIcons);
+    search?.addEventListener("input", () => {
+      if (iconPicker.showing) {
+        iconPicker.box.value = search.value;
+        renderIcons();
+      }
+    });
+    panel.addEventListener("popupshowing", () => {
+      nameZenTab();
+      matchZenSearch();
+    });
+    panel.addEventListener("popupshown", () => {
+      nameZenTab();
+      matchZenSearch();
+      iconPicker.showing = false;
+      tab.classList.remove("selected");
+      if (search && iconPicker.lastQuery !== null) {
+        renderIcons();
+      }
+    });
+    wrapIconPickerOpen(picker);
+  }
+
+  function nameZenTab() {
+    const zenTab = document.getElementById("PanelUI-zen-emojis-picker-change-svg");
+    if (zenTab && zenTab.getAttribute("label") !== "Zen") {
+      zenTab.removeAttribute("data-l10n-id");
+      zenTab.removeAttribute("data-l10n-args");
+      zenTab.setAttribute("label", "Zen");
+    }
+  }
+
+  function buildIconsPage(pages) {
     const page = document.createXULElement("vbox");
+    iconPicker.page = page;
     page.id = "zia-icons-page";
     const bar = document.createElementNS(XHTML_NS, "div");
+    iconPicker.bar = bar;
     bar.id = "zia-icons-searchbar";
     const box = document.createElementNS(XHTML_NS, "input");
+    iconPicker.box = box;
     box.id = "zia-icons-search";
     box.setAttribute("type", "text");
     box.setAttribute("placeholder", "Search icons");
-    // Outline or solid, remembered
+    bar.append(box, buildIconStyleButtons());
+    const grid = document.createElementNS(XHTML_NS, "div");
+    iconPicker.grid = grid;
+    grid.id = "zia-icons-grid";
+    const empty = document.createElementNS(XHTML_NS, "div");
+    iconPicker.empty = empty;
+    empty.id = "zia-icons-empty";
+    empty.textContent = "No icons found";
+    empty.hidden = true;
+    page.append(bar, grid, empty);
+    pages.appendChild(page);
+  }
+
+  // Outline or solid, remembered
+  function buildIconStyleButtons() {
     const styles = document.createElementNS(XHTML_NS, "div");
     styles.id = "zia-icons-style";
-    const styleButtons = {};
     for (const [value, label] of [["outline", "Outline"], ["filled", "Solid"]]) {
       const button = document.createElementNS(XHTML_NS, "button");
       button.className = "zia-icons-style-option";
@@ -7840,207 +7949,156 @@
         } catch (err) {
           noteError("icon picker: save style", err);
         }
-        showStyle();
-        render();
+        showIconStyle();
+        renderIcons();
       });
-      styleButtons[value] = button;
+      iconPicker.styleButtons[value] = button;
       styles.appendChild(button);
     }
-    bar.append(box, styles);
-    const grid = document.createElementNS(XHTML_NS, "div");
-    grid.id = "zia-icons-grid";
-    const empty = document.createElementNS(XHTML_NS, "div");
-    empty.id = "zia-icons-empty";
-    empty.textContent = "No icons found";
-    empty.hidden = true;
-    page.append(bar, grid, empty);
-    pages.appendChild(page);
+    return styles;
+  }
 
-    function showStyle() {
-      const current = iconStyle();
-      for (const [value, button] of Object.entries(styleButtons)) {
-        button.toggleAttribute("selected", value === current);
+  function showIconStyle() {
+    const current = iconStyle();
+    for (const [value, button] of Object.entries(iconPicker.styleButtons)) {
+      button.toggleAttribute("selected", value === current);
+    }
+  }
+
+  function chooseIcon(url) {
+    const { panel, options } = iconPicker;
+    iconPicker.picked = true;
+    // as Zen does after its own picks: with an icon chosen, the "none"
+    // (bin) button can take it off again
+    panel.removeAttribute("hide-none-option");
+    options?.onSelect?.(url);
+    iconPicker.resolvePick?.(url);
+    if (options?.closeOnSelect !== false) {
+      panel.hidePopup();
+    }
+  }
+
+  function addMoreIcons() {
+    const { results, shown } = iconPicker;
+    if (shown >= results.length) {
+      return;
+    }
+    const style = iconStyle();
+    const fragment = document.createDocumentFragment();
+    for (const icon of results.slice(shown, shown + ICON_BATCH)) {
+      const url = `${ICON_DIR}/${style}/${icon.name}.svg`;
+      const item = document.createXULElement("toolbarbutton");
+      item.className = "toolbarbutton-1 zen-emojis-picker-svg zia-icon-item";
+      item.setAttribute("tooltiptext", icon.name.replace(/-/g, " "));
+      item.style.listStyleImage = `url(${url})`;
+      // Zen's picker takes every click on an icon with its class as one
+      // of its own, and would pass on a broken address (it reads an
+      // "icon" attribute these don't have) after Zia's
+      item.addEventListener("command", (event) => {
+        event.stopPropagation();
+        chooseIcon(url);
+      });
+      fragment.appendChild(item);
+    }
+    iconPicker.shown = Math.min(results.length, shown + ICON_BATCH);
+    iconPicker.grid.insertBefore(fragment, iconPicker.more);
+  }
+
+  function renderIcons() {
+    const { box, grid } = iconPicker;
+    const style = iconStyle();
+    const query = `${style}:${(box.value || "").trim()}`;
+    if (query === iconPicker.lastQuery) {
+      return;
+    }
+    iconPicker.lastQuery = query;
+    iconPicker.results = searchIcons(tablerIcons().filter((icon) => icon[style]), box.value || "");
+    iconPicker.shown = 0;
+    grid.replaceChildren(iconPicker.more);
+    grid.scrollTop = 0;
+    iconPicker.empty.hidden = iconPicker.results.length > 0;
+    addMoreIcons();
+  }
+
+  function showIconsPage() {
+    iconPicker.showing = true;
+    showIconStyle();
+    renderIcons();
+    iconPicker.box.focus({ preventScroll: true });
+    iconPicker.page.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
+    for (const other of iconPicker.tabs.children) {
+      other.classList.toggle("selected", other === iconPicker.tab);
+    }
+  }
+
+  function onIconPickerCommand(event) {
+    if (event.target === iconPicker.tab) {
+      return;
+    }
+    if (event.target.id?.startsWith("PanelUI-zen-emojis-picker-change")) {
+      iconPicker.showing = false;
+      iconPicker.tab.classList.remove("selected");
+    }
+  }
+
+  function matchZenSearch() {
+    const { box, bar, grid } = iconPicker;
+    const zenBox = document.getElementById("PanelUI-zen-emojis-picker-search");
+    if (!zenBox) {
+      return;
+    }
+    const from = getComputedStyle(zenBox);
+    for (const prop of [
+      "appearance", "padding", "border", "borderRadius", "backgroundColor",
+      "backgroundImage", "color", "font", "fontSize", "fontFamily",
+      "boxShadow", "outline", "minHeight", "height", "lineHeight",
+    ]) {
+      const value = from[prop];
+      if (value && value !== "auto") {
+        box.style[prop] = value;
       }
     }
-
-    let showing = false;
-    let picked = false;
-    let resolvePick = null;
-    let options = null;
-
-    function choose(url) {
-      picked = true;
-      // as Zen does after its own picks: with an icon chosen, the "none"
-      // (bin) button can take it off again
-      panel.removeAttribute("hide-none-option");
-      options?.onSelect?.(url);
-      resolvePick?.(url);
-      if (options?.closeOnSelect !== false) {
-        panel.hidePopup();
-      }
+    const rect = zenBox.getBoundingClientRect();
+    if (rect.height > 0) {
+      box.style.boxSizing = "border-box";
+      box.style.height = `${rect.height}px`;
+      box.style.minHeight = `${rect.height}px`;
     }
-
-    // Results are added a screenful at a time as the grid scrolls, so the
-    // thousands of icons never load at once.
-    const BATCH = 180;
-    let results = [];
-    let shown = 0;
-    let lastQuery = null;
-    const more = document.createElementNS(XHTML_NS, "div");
-    more.id = "zia-icons-more";
-    const moreWatcher = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          addMore();
-        }
-      },
-      { root: grid, rootMargin: "200px" }
-    );
-    moreWatcher.observe(more);
-
-    function addMore() {
-      if (shown >= results.length) {
-        return;
-      }
-      const style = iconStyle();
-      const fragment = document.createDocumentFragment();
-      for (const icon of results.slice(shown, shown + BATCH)) {
-        const url = `${ICON_DIR}/${style}/${icon.name}.svg`;
-        const item = document.createXULElement("toolbarbutton");
-        item.className = "toolbarbutton-1 zen-emojis-picker-svg zia-icon-item";
-        item.setAttribute("tooltiptext", icon.name.replace(/-/g, " "));
-        item.style.listStyleImage = `url(${url})`;
-        // Zen's picker takes every click on an icon with its class as one
-        // of its own, and would pass on a broken address (it reads an
-        // "icon" attribute these don't have) after Zia's
-        item.addEventListener("command", (event) => {
-          event.stopPropagation();
-          choose(url);
-        });
-        fragment.appendChild(item);
-      }
-      shown = Math.min(results.length, shown + BATCH);
-      grid.insertBefore(fragment, more);
-    }
-
-    function render() {
-      const style = iconStyle();
-      const query = `${style}:${(box.value || "").trim()}`;
-      if (query === lastQuery) {
-        return;
-      }
-      lastQuery = query;
-      results = searchIcons(tablerIcons().filter((icon) => icon[style]), box.value || "");
-      shown = 0;
-      grid.replaceChildren(more);
-      grid.scrollTop = 0;
-      empty.hidden = results.length > 0;
-      addMore();
-    }
-
-    function show() {
-      showing = true;
-      showStyle();
-      render();
-      box.focus({ preventScroll: true });
-      page.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
-      for (const other of tabs.children) {
-        other.classList.toggle("selected", other === tab);
-      }
-    }
-
-    tab.addEventListener("command", show);
-
-    panel.addEventListener("command", (event) => {
-      if (event.target === tab) {
-        return;
-      }
-      if (event.target.id?.startsWith("PanelUI-zen-emojis-picker-change")) {
-        showing = false;
-        tab.classList.remove("selected");
-      }
-    });
-
-    function matchZenSearch() {
-      const zenBox = document.getElementById("PanelUI-zen-emojis-picker-search");
-      if (!zenBox) {
-        return;
-      }
-      const from = getComputedStyle(zenBox);
-      for (const prop of [
-        "appearance", "padding", "border", "borderRadius", "backgroundColor",
-        "backgroundImage", "color", "font", "fontSize", "fontFamily",
-        "boxShadow", "outline", "minHeight", "height", "lineHeight",
-      ]) {
-        const value = from[prop];
-        if (value && value !== "auto") {
-          box.style[prop] = value;
-        }
-      }
-      const rect = zenBox.getBoundingClientRect();
-      if (rect.height > 0) {
-        box.style.boxSizing = "border-box";
-        box.style.height = `${rect.height}px`;
-        box.style.minHeight = `${rect.height}px`;
-      }
-      const header = document.getElementById("PanelUI-zen-emojis-picker-header");
-      if (header) {
-        const row = getComputedStyle(header);
-        for (const prop of ["padding", "gap", "alignItems"]) {
-          if (row[prop]) {
-            bar.style[prop] = row[prop];
-          }
-        }
-      }
-      const zenList = document.getElementById("PanelUI-zen-emojis-picker-svgs");
-      if (zenList) {
-        const list = getComputedStyle(zenList);
-        for (const prop of ["padding", "gap", "gridTemplateColumns"]) {
-          if (list[prop]) {
-            grid.style[prop] = list[prop];
-          }
+    const header = document.getElementById("PanelUI-zen-emojis-picker-header");
+    if (header) {
+      const row = getComputedStyle(header);
+      for (const prop of ["padding", "gap", "alignItems"]) {
+        if (row[prop]) {
+          bar.style[prop] = row[prop];
         }
       }
     }
-
-    box.addEventListener("input", render);
-
-    search?.addEventListener("input", () => {
-      if (showing) {
-        box.value = search.value;
-        render();
+    const zenList = document.getElementById("PanelUI-zen-emojis-picker-svgs");
+    if (zenList) {
+      const list = getComputedStyle(zenList);
+      for (const prop of ["padding", "gap", "gridTemplateColumns"]) {
+        if (list[prop]) {
+          grid.style[prop] = list[prop];
+        }
       }
-    });
+    }
+  }
 
-    panel.addEventListener("popupshowing", () => {
-      nameZenTab();
-      matchZenSearch();
-    });
-
-    panel.addEventListener("popupshown", () => {
-      nameZenTab();
-      matchZenSearch();
-      showing = false;
-      tab.classList.remove("selected");
-      if (search && lastQuery !== null) {
-        render();
-      }
-    });
-
+  function wrapIconPickerOpen(picker) {
     const openPicker = picker.open.bind(picker);
     picker.open = function (anchor, settings = {}) {
       const zenPick = openPicker(anchor, settings);
       if (!zenPick) {
         return zenPick;
       }
-      options = settings;
-      picked = false;
+      iconPicker.options = settings;
+      iconPicker.picked = false;
       const ziaPick = new Promise((resolve) => {
-        resolvePick = resolve;
+        iconPicker.resolvePick = resolve;
       });
       return Promise.race([
         zenPick.catch((err) => {
-          if (picked) {
+          if (iconPicker.picked) {
             return ziaPick;
           }
           throw err;
@@ -8049,7 +8107,6 @@
       ]);
     };
   }
-
   function watchCompactTopRow() {
     const navBar = document.getElementById("nav-bar");
     if (!navBar) {
@@ -11066,6 +11123,30 @@
     update();
   }
 
+  // Hover cards: the card a tab hovered in the sidebar gets (its title, domain, picture and
+  // buttons), and the one a closed folder gets (its tabs, to choose from). Firefox's and Zen's
+  // own pop-ups give way to them.
+  // Used elsewhere: lastUsedOtherTab, tabCardKind, addTabHoverCards.
+  const TAB_CARD_OUT_MS = 120;
+  // (a card kept up this long after one of its buttons, as what it did shows)
+  const TAB_CARD_KEEP_MS = 1200;
+  // (a folder card filled again as a button's change lands)
+  const FOLDER_CARD_REFILL_MS = [60, 400, 900];
+
+  // The cards (each built the first time it's needed), the tab or folder shown, their
+  // timers, whether the sidebar is held open for them, and till when a card stays up
+  const hoverCards = {
+    toolbox: null,
+    card: null,
+    folderCard: null,
+    current: null,
+    showTimer: 0,
+    hideTimer: 0,
+    closeTimer: 0,
+    holding: false,
+    keepCardUntil: 0,
+  };
+
   function lastUsedOtherTab(tab) {
     let best = null;
     for (const other of gBrowser.visibleTabs) {
@@ -11331,7 +11412,8 @@
           console.error("[Zia] Folder card button failed:", err);
         }
 
-        for (const delay of [60, 400, 900]) {
+        // (not cancelled: each checks the card is still up)
+        for (const delay of FOLDER_CARD_REFILL_MS) {
           setTimeout(() => {
             if (!card.hidden && card.ziaFolder?.isConnected) {
               fillFolderCard(card, card.ziaFolder);
@@ -11365,40 +11447,56 @@
     card.ziaFolder = folder;
     const color = folder.getAttribute("zia-folder-color");
     setAttr(card, "zia-folder-color", color || null);
-    const rows = [];
-    for (const tab of tabsInFolder(folder)) {
-      const row = document.createElementNS(XHTML_NS, "div");
-      row.className = "zia-folder-card-row";
-      row.ziaTab = tab;
-      row.toggleAttribute("zia-selected", tab.selected);
-      row.append(folderCardIcon(gBrowser.getIcon(tab) || DEFAULT_TAB_ICON, "zia-folder-card-icon"));
-      if (tab.hasAttribute("soundplaying") || tab.hasAttribute("muted")) {
-        const muted = tab.hasAttribute("muted");
-        const speaker = folderCardIcon(
-          `chrome://sine/content/zia/icons/ui/${muted ? "volume-off" : "volume"}.svg`,
-          "zia-folder-card-sound"
-        );
-        speaker.classList.add("zia-folder-card-act");
-        speaker.setAttribute("zia-act", "mute");
-        speaker.setAttribute("title", muted ? "Unmute tab" : "Mute tab");
-        row.append(speaker);
-      }
-      const label = document.createElementNS(XHTML_NS, "span");
-      label.className = "zia-folder-card-label";
-      label.textContent = tab.label || "New Tab";
-      row.append(label);
+    const rows = tabsInFolder(folder).map(folderCardRow);
+    rows.push(folderCardNewTabRow());
 
-      const unloaded = tab.getAttribute("pending") === "true" && tab.getAttribute("folder-active") !== "true";
-      const unload = tab.pinned && !unloaded && canUnload(tab);
-      const button = folderCardIcon(
-        unload ? tabButtonIcon(tab, ".tab-reset-button", "minus") : tabButtonIcon(tab, ".tab-close-button", "x"),
-        "zia-folder-card-act"
-      );
-      button.setAttribute("zia-act", unload ? "unload" : "close");
-      button.setAttribute("title", unload ? "Unload tab" : "Close tab");
-      row.append(button);
-      rows.push(row);
+    const list = document.createElementNS(XHTML_NS, "div");
+    list.className = "zia-folder-card-list";
+    const inset = tabEdgeInset();
+    if (inset) {
+      list.style.setProperty("--zia-folder-card-inset", `${inset}px`);
     }
+    const scrolled = card.querySelector(".zia-folder-card-list")?.scrollTop || 0;
+    list.append(...rows);
+    card.replaceChildren(list);
+    list.scrollTop = scrolled;
+  }
+
+  function folderCardRow(tab) {
+    const row = document.createElementNS(XHTML_NS, "div");
+    row.className = "zia-folder-card-row";
+    row.ziaTab = tab;
+    row.toggleAttribute("zia-selected", tab.selected);
+    row.append(folderCardIcon(gBrowser.getIcon(tab) || DEFAULT_TAB_ICON, "zia-folder-card-icon"));
+    if (tab.hasAttribute("soundplaying") || tab.hasAttribute("muted")) {
+      const muted = tab.hasAttribute("muted");
+      const speaker = folderCardIcon(
+        `chrome://sine/content/zia/icons/ui/${muted ? "volume-off" : "volume"}.svg`,
+        "zia-folder-card-sound"
+      );
+      speaker.classList.add("zia-folder-card-act");
+      speaker.setAttribute("zia-act", "mute");
+      speaker.setAttribute("title", muted ? "Unmute tab" : "Mute tab");
+      row.append(speaker);
+    }
+    const label = document.createElementNS(XHTML_NS, "span");
+    label.className = "zia-folder-card-label";
+    label.textContent = tab.label || "New Tab";
+    row.append(label);
+
+    const unloaded = tab.getAttribute("pending") === "true" && tab.getAttribute("folder-active") !== "true";
+    const unload = tab.pinned && !unloaded && canUnload(tab);
+    const button = folderCardIcon(
+      unload ? tabButtonIcon(tab, ".tab-reset-button", "minus") : tabButtonIcon(tab, ".tab-close-button", "x"),
+      "zia-folder-card-act"
+    );
+    button.setAttribute("zia-act", unload ? "unload" : "close");
+    button.setAttribute("title", unload ? "Unload tab" : "Close tab");
+    row.append(button);
+    return row;
+  }
+
+  function folderCardNewTabRow() {
     const add = document.createElementNS(XHTML_NS, "div");
     add.className = "zia-folder-card-row";
     add.setAttribute("zia-new-tab", "true");
@@ -11417,18 +11515,7 @@
       );
     }
     add.append(addLabel);
-    rows.push(add);
-
-    const list = document.createElementNS(XHTML_NS, "div");
-    list.className = "zia-folder-card-list";
-    const inset = tabEdgeInset();
-    if (inset) {
-      list.style.setProperty("--zia-folder-card-inset", `${inset}px`);
-    }
-    const scrolled = card.querySelector(".zia-folder-card-list")?.scrollTop || 0;
-    list.append(...rows);
-    card.replaceChildren(list);
-    list.scrollTop = scrolled;
+    return add;
   }
 
   // a tab's icon inset in the sidebar, which the folder card keeps on all sides
@@ -11503,246 +11590,255 @@
     if (!toolbox) {
       return;
     }
+    hoverCards.toolbox = toolbox;
     quietZenFolderPopup();
-    let card = null;
-    let folderCard = null;
-    let current = null;
-    let showTimer = 0;
-    let hideTimer = 0;
-
-    const CARD_OUT_MS = 120;
-    let closeTimer = 0;
-    const cardUp = () => [card, folderCard].some((each) => each && !each.hidden && !each.hasAttribute("zia-closing"));
-    const cardHovered = () => [card, folderCard].some((each) => each && !each.hidden && each.matches(":hover"));
-
-    // Compact mode hides the sidebar once the pointer leaves it, and the cards sit
-    // outside it: hold it open, as Zen does for its own menus, while on a card.
-    let holding = false;
-    const holdSidebar = (on) => {
-      if (on === holding) {
-        return;
-      }
-      if (on) {
-        holding = !toolbox.hasAttribute("has-popup-menu");
-        if (holding) {
-          toolbox.setAttribute("has-popup-menu", "true");
-        }
-        return;
-      }
-      holding = false;
-      try {
-        const manager = window.gZenCompactModeManager;
-        if (manager?.preference) {
-          if (toolbox.matches(":hover")) {
-            // The card was inside the sidebar. Restore zen-has-hover synchronously
-            // before dropping has-popup-menu so there is no gap with zero attributes.
-            manager._setElementExpandAttribute?.(toolbox, true, "zen-has-hover");
-            toolbox.setAttribute("zen-has-hover", "true");
-            toolbox.setAttribute("zen-has-implicit-hover", "true");
-          } else {
-            const keep = Services.prefs.getIntPref("zen.view.compact.sidebar-keep-hover.duration", 0);
-            if (keep > 0) {
-              manager.flashElement(toolbox, keep, `has-hover${toolbox.id}`, "zen-has-hover");
-            }
-          }
-        }
-      } catch (err) {
-        noteError("hover cards: release sidebar", err);
-      }
-      toolbox.removeAttribute("has-popup-menu");
-    };
-
-    const hide = (force = false) => {
-      if (force !== true && cardHovered()) {
-        return;
-      }
-      holdSidebar(false);
-      clearTimeout(showTimer);
-      clearTimeout(hideTimer);
-      current = null;
-      for (const each of [card, folderCard]) {
-        if (each && !each.hidden && !each.hasAttribute("zia-closing")) {
-          each.removeAttribute("zia-snap");
-          each.setAttribute("zia-closing", "true");
-        }
-      }
-      clearTimeout(closeTimer);
-      closeTimer = setTimeout(() => {
-        for (const each of [card, folderCard]) {
-          if (each?.hasAttribute("zia-closing")) {
-            each.hidden = true;
-            each.removeAttribute("zia-closing");
-            each.removeAttribute("zia-open");
-          }
-        }
-      }, CARD_OUT_MS);
-    };
-
-    const openCard = (shown, other, wasUp) => {
-      clearTimeout(closeTimer);
-      if (other) {
-        other.hidden = true;
-        other.removeAttribute("zia-open");
-        other.removeAttribute("zia-closing");
-      }
-      shown.removeAttribute("zia-closing");
-      if (wasUp) {
-        shown.setAttribute("zia-snap", "true");
-        shown.setAttribute("zia-open", "true");
-        return;
-      }
-      shown.removeAttribute("zia-snap");
-      shown.removeAttribute("zia-open");
-      void shown.offsetWidth;
-      shown.setAttribute("zia-open", "true");
-    };
-
-    let keepCardUntil = 0;
-    const hideSoon = () => {
-      clearTimeout(hideTimer);
-      const attempt = () => {
-        const wait = keepCardUntil - Date.now();
-        if (wait > 0) {
-          hideTimer = setTimeout(attempt, wait);
-          return;
-        }
-        hide();
-      };
-      hideTimer = setTimeout(attempt, TAB_CARD_GRACE);
-    };
-    const onCard = (node) => !!node && (card?.contains(node) || folderCard?.contains(node));
-
-    const watchCard = (node) => {
-      node.addEventListener("mouseenter", () => {
-        clearTimeout(hideTimer);
-        holdSidebar(true);
-      });
-      node.addEventListener("mouseleave", () => {
-        holdSidebar(false);
-        hideSoon();
-      });
-    };
-
-    const showFolder = (label) => {
-      if (!folderCard) {
-        folderCard = buildFolderCard((row) => {
-          const folder = current?.parentElement;
-          hide(true);
-          try {
-            if (row.hasAttribute("zia-new-tab")) {
-              if (folder?.isConnected) {
-                newTabInFolder(folder);
-              }
-            } else if (row.ziaTab?.isConnected) {
-              gBrowser.selectedTab = row.ziaTab;
-            }
-          } catch (err) {
-            console.error("[Zia] Folder card action failed:", err);
-          }
-        });
-        watchCard(folderCard);
-        folderCard.addEventListener("zia-card-acting", () => {
-          keepCardUntil = Date.now() + 1200;
-          clearTimeout(hideTimer);
-        });
-      }
-      const wasUp = cardUp();
-      current = label;
-      fillFolderCard(folderCard, label.parentElement);
-      folderCard.hidden = false;
-      placeFolderCard(folderCard, label);
-      openCard(folderCard, card, wasUp);
-    };
-
-    const show = (tab) => {
-      if (!tab.classList.contains("tabbrowser-tab")) {
-        showFolder(tab);
-        return;
-      }
-      const wasUp = cardUp();
-      if (!card) {
-        card = buildTabCard((action) => {
-          const tab = current;
-          if (!action.keepsCard) {
-            hide(true);
-          } else {
-            keepCardUntil = Date.now() + 1200;
-            if (action.name === "copy") {
-              const button = card.querySelector('[zia-action="copy"]');
-              if (button) {
-                showCopiedIcon(button, button.querySelector("img"));
-              }
-            }
-          }
-          if (!tab?.isConnected) {
-            return;
-          }
-          Promise.try(() => action.run(tab)).catch((err) => console.error(`[Zia] ${action.label} failed:`, err));
-        });
-        watchCard(card);
-      }
-      current = tab;
-      fillTabCard(card, tab);
-      card.hidden = false;
-      placeTabCard(card, tab);
-      openCard(card, folderCard, wasUp);
-    };
-
-    toolbox.addEventListener("mouseover", (event) => {
-      if (!featureOn("tab-hover-cards")) {
-        return;
-      }
-      const tab = event.target?.closest?.(".tabbrowser-tab") || hoveredFolderLabel(event.target);
-      if (!tab || tab.hasAttribute("pending-drag") || gBrowser.tabContainer.hasAttribute("movingtab")) {
-        return;
-      }
-      clearTimeout(hideTimer);
-      if (tab === current) {
-        return;
-      }
-      clearTimeout(showTimer);
-      if (current) {
-        show(tab);
-        return;
-      }
-      showTimer = setTimeout(() => {
-        if (tab.isConnected && tab.matches(":hover")) {
-          show(tab);
-        }
-      }, TAB_CARD_DELAY);
-    });
-
-    toolbox.addEventListener("mouseout", (event) => {
-      const tab = event.target?.closest?.(".tabbrowser-tab, .tab-group-label-container");
-      if (!tab) {
-        return;
-      }
-      const to = event.relatedTarget;
-      if (to && (tab.contains(to) || onCard(to))) {
-        return;
-      }
-      clearTimeout(showTimer);
-      hideSoon();
-    });
-
-    toolbox.addEventListener("mousedown", () => hide(), true);
-    toolbox.addEventListener("dragstart", () => hide(true), true);
-    toolbox.addEventListener("wheel", () => hide(), { passive: true, capture: true });
+    toolbox.addEventListener("mouseover", onHoverCardOver);
+    toolbox.addEventListener("mouseout", onHoverCardOut);
+    toolbox.addEventListener("mousedown", () => hideHoverCards(), true);
+    toolbox.addEventListener("dragstart", () => hideHoverCards(true), true);
+    toolbox.addEventListener("wheel", () => hideHoverCards(), { passive: true, capture: true });
     for (const type of ["TabSelect", "TabClose"]) {
-      gBrowser.tabContainer.addEventListener(type, () => {
-        if ((Date.now() < keepCardUntil && folderCard && !folderCard.hidden) || cardHovered()) {
-          return;
-        }
-        hide();
-      });
+      gBrowser.tabContainer.addEventListener(type, onHoverCardTabChange);
     }
     window.addEventListener("blur", () => {
-      if (Date.now() >= keepCardUntil) {
-        hide();
+      if (Date.now() >= hoverCards.keepCardUntil) {
+        hideHoverCards();
       }
     });
   }
 
+  function hoverCardUp() {
+    return [hoverCards.card, hoverCards.folderCard].some((each) => each && !each.hidden && !each.hasAttribute("zia-closing"));
+  }
+
+  function hoverCardHovered() {
+    return [hoverCards.card, hoverCards.folderCard].some((each) => each && !each.hidden && each.matches(":hover"));
+  }
+
+  // Compact mode hides the sidebar once the pointer leaves it, and the cards sit
+  // outside it: hold it open, as Zen does for its own menus, while on a card.
+  function holdSidebarOpen(on) {
+    const toolbox = hoverCards.toolbox;
+    if (on === hoverCards.holding) {
+      return;
+    }
+    if (on) {
+      hoverCards.holding = !toolbox.hasAttribute("has-popup-menu");
+      if (hoverCards.holding) {
+        toolbox.setAttribute("has-popup-menu", "true");
+      }
+      return;
+    }
+    hoverCards.holding = false;
+    try {
+      const manager = window.gZenCompactModeManager;
+      if (manager?.preference) {
+        if (toolbox.matches(":hover")) {
+          // The card was inside the sidebar. Restore zen-has-hover synchronously
+          // before dropping has-popup-menu so there is no gap with zero attributes.
+          manager._setElementExpandAttribute?.(toolbox, true, "zen-has-hover");
+          toolbox.setAttribute("zen-has-hover", "true");
+          toolbox.setAttribute("zen-has-implicit-hover", "true");
+        } else {
+          const keep = Services.prefs.getIntPref("zen.view.compact.sidebar-keep-hover.duration", 0);
+          if (keep > 0) {
+            manager.flashElement(toolbox, keep, `has-hover${toolbox.id}`, "zen-has-hover");
+          }
+        }
+      }
+    } catch (err) {
+      noteError("hover cards: release sidebar", err);
+    }
+    toolbox.removeAttribute("has-popup-menu");
+  }
+
+  function hideHoverCards(force = false) {
+    if (force !== true && hoverCardHovered()) {
+      return;
+    }
+    holdSidebarOpen(false);
+    clearTimeout(hoverCards.showTimer);
+    clearTimeout(hoverCards.hideTimer);
+    hoverCards.current = null;
+    for (const each of [hoverCards.card, hoverCards.folderCard]) {
+      if (each && !each.hidden && !each.hasAttribute("zia-closing")) {
+        each.removeAttribute("zia-snap");
+        each.setAttribute("zia-closing", "true");
+      }
+    }
+    clearTimeout(hoverCards.closeTimer);
+    hoverCards.closeTimer = setTimeout(() => {
+      for (const each of [hoverCards.card, hoverCards.folderCard]) {
+        if (each?.hasAttribute("zia-closing")) {
+          each.hidden = true;
+          each.removeAttribute("zia-closing");
+          each.removeAttribute("zia-open");
+        }
+      }
+    }, TAB_CARD_OUT_MS);
+  }
+
+  function openHoverCard(shown, other, wasUp) {
+    clearTimeout(hoverCards.closeTimer);
+    if (other) {
+      other.hidden = true;
+      other.removeAttribute("zia-open");
+      other.removeAttribute("zia-closing");
+    }
+    shown.removeAttribute("zia-closing");
+    if (wasUp) {
+      shown.setAttribute("zia-snap", "true");
+      shown.setAttribute("zia-open", "true");
+      return;
+    }
+    shown.removeAttribute("zia-snap");
+    shown.removeAttribute("zia-open");
+    void shown.offsetWidth;
+    shown.setAttribute("zia-open", "true");
+  }
+
+  function hideHoverCardsSoon() {
+    clearTimeout(hoverCards.hideTimer);
+    const attempt = () => {
+      const wait = hoverCards.keepCardUntil - Date.now();
+      if (wait > 0) {
+        hoverCards.hideTimer = setTimeout(attempt, wait);
+        return;
+      }
+      hideHoverCards();
+    };
+    hoverCards.hideTimer = setTimeout(attempt, TAB_CARD_GRACE);
+  }
+
+  function isOnHoverCard(node) {
+    return !!node && (hoverCards.card?.contains(node) || hoverCards.folderCard?.contains(node));
+  }
+
+  function watchHoverCard(node) {
+    node.addEventListener("mouseenter", () => {
+      clearTimeout(hoverCards.hideTimer);
+      holdSidebarOpen(true);
+    });
+    node.addEventListener("mouseleave", () => {
+      holdSidebarOpen(false);
+      hideHoverCardsSoon();
+    });
+  }
+
+  function pickFolderCardRow(row) {
+    const folder = hoverCards.current?.parentElement;
+    hideHoverCards(true);
+    try {
+      if (row.hasAttribute("zia-new-tab")) {
+        if (folder?.isConnected) {
+          newTabInFolder(folder);
+        }
+      } else if (row.ziaTab?.isConnected) {
+        gBrowser.selectedTab = row.ziaTab;
+      }
+    } catch (err) {
+      console.error("[Zia] Folder card action failed:", err);
+    }
+  }
+
+  function showFolderCard(label) {
+    if (!hoverCards.folderCard) {
+      hoverCards.folderCard = buildFolderCard(pickFolderCardRow);
+      watchHoverCard(hoverCards.folderCard);
+      hoverCards.folderCard.addEventListener("zia-card-acting", () => {
+        hoverCards.keepCardUntil = Date.now() + TAB_CARD_KEEP_MS;
+        clearTimeout(hoverCards.hideTimer);
+      });
+    }
+    const folderCard = hoverCards.folderCard;
+    const wasUp = hoverCardUp();
+    hoverCards.current = label;
+    fillFolderCard(folderCard, label.parentElement);
+    folderCard.hidden = false;
+    placeFolderCard(folderCard, label);
+    openHoverCard(folderCard, hoverCards.card, wasUp);
+  }
+
+  function runTabCardAction(action) {
+    const tab = hoverCards.current;
+    if (!action.keepsCard) {
+      hideHoverCards(true);
+    } else {
+      hoverCards.keepCardUntil = Date.now() + TAB_CARD_KEEP_MS;
+      if (action.name === "copy") {
+        const button = hoverCards.card.querySelector('[zia-action="copy"]');
+        if (button) {
+          showCopiedIcon(button, button.querySelector("img"));
+        }
+      }
+    }
+    if (!tab?.isConnected) {
+      return;
+    }
+    Promise.try(() => action.run(tab)).catch((err) => console.error(`[Zia] ${action.label} failed:`, err));
+  }
+
+  function showHoverCard(tab) {
+    if (!tab.classList.contains("tabbrowser-tab")) {
+      showFolderCard(tab);
+      return;
+    }
+    const wasUp = hoverCardUp();
+    if (!hoverCards.card) {
+      hoverCards.card = buildTabCard(runTabCardAction);
+      watchHoverCard(hoverCards.card);
+    }
+    const card = hoverCards.card;
+    hoverCards.current = tab;
+    fillTabCard(card, tab);
+    card.hidden = false;
+    placeTabCard(card, tab);
+    openHoverCard(card, hoverCards.folderCard, wasUp);
+  }
+
+  function onHoverCardOver(event) {
+    if (!featureOn("tab-hover-cards")) {
+      return;
+    }
+    const tab = event.target?.closest?.(".tabbrowser-tab") || hoveredFolderLabel(event.target);
+    if (!tab || tab.hasAttribute("pending-drag") || gBrowser.tabContainer.hasAttribute("movingtab")) {
+      return;
+    }
+    clearTimeout(hoverCards.hideTimer);
+    if (tab === hoverCards.current) {
+      return;
+    }
+    clearTimeout(hoverCards.showTimer);
+    if (hoverCards.current) {
+      showHoverCard(tab);
+      return;
+    }
+    hoverCards.showTimer = setTimeout(() => {
+      if (tab.isConnected && tab.matches(":hover")) {
+        showHoverCard(tab);
+      }
+    }, TAB_CARD_DELAY);
+  }
+
+  function onHoverCardOut(event) {
+    const tab = event.target?.closest?.(".tabbrowser-tab, .tab-group-label-container");
+    if (!tab) {
+      return;
+    }
+    const to = event.relatedTarget;
+    if (to && (tab.contains(to) || isOnHoverCard(to))) {
+      return;
+    }
+    clearTimeout(hoverCards.showTimer);
+    hideHoverCardsSoon();
+  }
+
+  function onHoverCardTabChange() {
+    if ((Date.now() < hoverCards.keepCardUntil && hoverCards.folderCard && !hoverCards.folderCard.hidden) || hoverCardHovered()) {
+      return;
+    }
+    hideHoverCards();
+  }
   // The drag's shared state, the system's drag picture blanked, and the rows measured and the
   // drop target found.
   // Used elsewhere: drag, dragCore, endDrag, markEssentialImage, handImageToZen,
@@ -17038,8 +17134,15 @@
   // essential, Zia taking over Cmd/Ctrl+digit so all are reachable (Firefox's stop at
   // 8). The typed number lights up and is chosen only on letting go, so nothing loads
   // by accident; past nine, type the digits in turn. Optionally shown all the time.
+  // Used elsewhere: watchTabNumbers.
   const TAB_NUMBERS_ALWAYS_PREF = "zia.tab-numbers.always";
   const TAB_NUMBERS_COLOR_PREF = "zia.tab-numbers.color";
+  const TAB_NUMBERS_LEAVE_MS = 110;
+
+  // While the keys are up: the tabs they number, the digits typed so far, the last digit
+  // handled (each is seen twice, see watchTabNumbers), the keys' leaving timer, and
+  // whether a renumbering waits for the next frame
+  const tabKeys = { tabs: [], typed: "", lastDigit: null, leaving: null, queued: false };
 
   // The tabs the keys go to, in order: what's on screen, in the tab strip's
   // order (a tab inside a closed folder is skipped)
@@ -17086,165 +17189,165 @@
     return tabs;
   }
 
-  const TAB_NUMBERS_LEAVE_MS = 110;
+  function isModKey(event) {
+    return event.key === (AppConstants.platform === "macosx" ? "Meta" : "Control");
+  }
+
+  function modHeld(event) {
+    const mac = AppConstants.platform === "macosx";
+    return (mac ? event.metaKey && !event.ctrlKey : event.ctrlKey && !event.metaKey) && !event.altKey && !event.shiftKey;
+  }
+
+  // The key of the tab typed so far lights up
+  function markTarget() {
+    tabKeys.tabs.forEach((tab, i) => keyOf(tab)?.toggleAttribute("zia-target", !!tabKeys.typed && Number(tabKeys.typed) === i + 1));
+  }
+
+  function showTabNumbers() {
+    clearTimeout(tabKeys.leaving);
+    setFlag("zia-tab-numbers-leaving", false);
+    tabKeys.tabs = numberTabs();
+    setFlag("zia-tab-numbers", true);
+  }
+
+  // Letting go, the keys slide back off to the right the way they came
+  function hideTabNumbers() {
+    tabKeys.typed = "";
+    markTarget();
+    if (root.hasAttribute("zia-tab-numbers") && !Services.prefs.getBoolPref(TAB_NUMBERS_ALWAYS_PREF, false)) {
+      setFlag("zia-tab-numbers-leaving", true);
+      clearTimeout(tabKeys.leaving);
+      tabKeys.leaving = setTimeout(() => setFlag("zia-tab-numbers-leaving", false), TAB_NUMBERS_LEAVE_MS);
+    }
+    setFlag("zia-tab-numbers", false);
+  }
+
+  // Letting go: the tab typed, if any
+  function chooseTypedTab() {
+    const tab = tabKeys.typed ? tabKeys.tabs[Number(tabKeys.typed) - 1] : null;
+    hideTabNumbers();
+    if (tab?.isConnected) {
+      gBrowser.selectedTab = tab;
+    }
+  }
+
+  function startsATabNumber(prefix) {
+    return tabKeys.tabs.some((_, i) => String(i + 1).startsWith(prefix));
+  }
+
+  function typeTabDigit(digit) {
+    if (!root.hasAttribute("zia-tab-numbers")) {
+      showTabNumbers();
+    }
+    // Carries on from the digits before if together they still name a
+    // tab; otherwise starts again from this one
+    const next = tabKeys.typed + digit;
+    tabKeys.typed = startsATabNumber(next) ? next : startsATabNumber(digit) ? digit : "";
+    markTarget();
+  }
+
+  function onTabNumberKeyDown(event) {
+    if (isModKey(event)) {
+      if (!event.repeat && !root.hasAttribute("zia-tab-numbers")) {
+        showTabNumbers();
+      }
+      return;
+    }
+    const digit = /^(?:Digit|Numpad)([0-9])$/.exec(event.code)?.[1];
+    // A 0 names no tab on its own (they're counted from 1): it's Firefox's own
+    // Cmd/Ctrl+0, the page back to its own size, unless it carries on a number
+    // being typed (10, 20…). Held back, the zoom couldn't be reset.
+    if (digit === "0" && modHeld(event) && !(tabKeys.typed && startsATabNumber(`${tabKeys.typed}0`))) {
+      return;
+    }
+    if (digit !== undefined && modHeld(event)) {
+      event.preventDefault();
+      event.stopPropagation();
+      const stamp = `${event.timeStamp}:${event.code}`;
+      if (stamp !== tabKeys.lastDigit && !event.repeat) {
+        tabKeys.lastDigit = stamp;
+        typeTabDigit(digit);
+      }
+    } else if (root.hasAttribute("zia-tab-numbers")) {
+      // Any other shortcut (Cmd+W, Cmd+T…) or key: the keys go, and
+      // nothing is chosen. Closing a tab can lose the letting go of
+      // Cmd, which would otherwise leave them up.
+      hideTabNumbers();
+    }
+  }
+
+  function onTabNumberKeyUp(event) {
+    if (isModKey(event)) {
+      chooseTypedTab();
+    }
+  }
+
+  // Should the letting go of Cmd still be missed, the next key or move
+  // of the mouse without it held puts the keys away
+  function putAwayStrayNumbers(event) {
+    const heldStill = AppConstants.platform === "macosx" ? event.metaKey : event.ctrlKey;
+    if (root.hasAttribute("zia-tab-numbers") && !heldStill && !isModKey(event)) {
+      hideTabNumbers();
+    }
+  }
+
+  // Only when the window itself is left: focus moving into the page just
+  // chosen reads as a blur too, with the key still held
+  function onTabNumbersBlur(event) {
+    if (event.target !== window) {
+      return;
+    }
+    // (a step later, once focus has settled: not kept, as it only reads where focus went)
+    setTimeout(() => {
+      if (Services.focus.activeWindow !== window) {
+        hideTabNumbers();
+      }
+    }, 0);
+  }
+
+  // Kept up to date as tabs come and go, for when they show all the time
+  function renumberTabs() {
+    if (tabKeys.queued || !(root.hasAttribute("zia-tab-numbers") || Services.prefs.getBoolPref(TAB_NUMBERS_ALWAYS_PREF, false))) {
+      return;
+    }
+    tabKeys.queued = true;
+    requestAnimationFrame(() => {
+      tabKeys.queued = false;
+      tabKeys.tabs = numberTabs();
+    });
+  }
+
+  // Zia blue or the space's colour for the number being typed
+  function showTypedNumberColor() {
+    const space = Services.prefs.getStringPref(TAB_NUMBERS_COLOR_PREF, "zia") === "space";
+    setAttr(root, "zia-tab-number-color", space ? "space" : null);
+  }
 
   function watchTabNumbers() {
-    const mac = AppConstants.platform === "macosx";
-    const isModKey = (event) => event.key === (mac ? "Meta" : "Control");
-    const modHeld = (event) =>
-      (mac ? event.metaKey && !event.ctrlKey : event.ctrlKey && !event.metaKey) && !event.altKey && !event.shiftKey;
-
-    let tabs = [];
-    let typed = "";
-    let lastDigit = null;
-
-    // The key of the tab typed so far lights up
-    const markTarget = () => {
-      tabs.forEach((tab, i) => keyOf(tab)?.toggleAttribute("zia-target", !!typed && Number(typed) === i + 1));
-    };
-
-    // Letting go, the keys slide back off to the right the way they came
-    let leaving = null;
-    const show = () => {
-      clearTimeout(leaving);
-      setFlag("zia-tab-numbers-leaving", false);
-      tabs = numberTabs();
-      setFlag("zia-tab-numbers", true);
-    };
-    const hide = () => {
-      typed = "";
-      markTarget();
-      if (root.hasAttribute("zia-tab-numbers") && !Services.prefs.getBoolPref(TAB_NUMBERS_ALWAYS_PREF, false)) {
-        setFlag("zia-tab-numbers-leaving", true);
-        clearTimeout(leaving);
-        leaving = setTimeout(() => setFlag("zia-tab-numbers-leaving", false), TAB_NUMBERS_LEAVE_MS);
-      }
-      setFlag("zia-tab-numbers", false);
-    };
-    // Letting go: the tab typed, if any
-    const commit = () => {
-      const tab = typed ? tabs[Number(typed) - 1] : null;
-      hide();
-      if (tab?.isConnected) {
-        gBrowser.selectedTab = tab;
-      }
-    };
-    const startsANumber = (prefix) => tabs.some((_, i) => String(i + 1).startsWith(prefix));
-
-    const onDigit = (digit) => {
-      if (!root.hasAttribute("zia-tab-numbers")) {
-        show();
-      }
-      // Carries on from the digits before if together they still name a
-      // tab; otherwise starts again from this one
-      const next = typed + digit;
-      typed = startsANumber(next) ? next : startsANumber(digit) ? digit : "";
-      markTarget();
-    };
-
     // Seen both ways: keys pressed in a page reach the window only
     // afterwards, in the system group. A digit is handled once, but held
     // back from Firefox's own shortcut both times.
     for (const options of [{ capture: true }, { capture: true, mozSystemGroup: true }]) {
-      window.addEventListener(
-        "keydown",
-        (event) => {
-          if (isModKey(event)) {
-            if (!event.repeat && !root.hasAttribute("zia-tab-numbers")) {
-              show();
-            }
-            return;
-          }
-          const digit = /^(?:Digit|Numpad)([0-9])$/.exec(event.code)?.[1];
-          // A 0 names no tab on its own (they're counted from 1): it's Firefox's own
-          // Cmd/Ctrl+0, the page back to its own size, unless it carries on a number
-          // being typed (10, 20…). Held back, the zoom couldn't be reset.
-          if (digit === "0" && modHeld(event) && !(typed && startsANumber(`${typed}0`))) {
-            return;
-          }
-          if (digit !== undefined && modHeld(event)) {
-            event.preventDefault();
-            event.stopPropagation();
-            const stamp = `${event.timeStamp}:${event.code}`;
-            if (stamp !== lastDigit && !event.repeat) {
-              lastDigit = stamp;
-              onDigit(digit);
-            }
-          } else if (root.hasAttribute("zia-tab-numbers")) {
-            // Any other shortcut (Cmd+W, Cmd+T…) or key: the keys go, and
-            // nothing is chosen. Closing a tab can lose the letting go of
-            // Cmd, which would otherwise leave them up.
-            hide();
-          }
-        },
-        options
-      );
-      window.addEventListener(
-        "keyup",
-        (event) => {
-          if (isModKey(event)) {
-            commit();
-          }
-        },
-        options
-      );
+      window.addEventListener("keydown", onTabNumberKeyDown, options);
+      window.addEventListener("keyup", onTabNumberKeyUp, options);
     }
-    // Should the letting go of Cmd still be missed, the next key or move
-    // of the mouse without it held puts the keys away
-    const heldStill = (event) => (mac ? event.metaKey : event.ctrlKey);
     for (const type of ["mousemove", "mousedown", "wheel", "keyup"]) {
-      window.addEventListener(
-        type,
-        (event) => {
-          if (root.hasAttribute("zia-tab-numbers") && !heldStill(event) && !isModKey(event)) {
-            hide();
-          }
-        },
-        { capture: true, passive: true }
-      );
+      window.addEventListener(type, putAwayStrayNumbers, { capture: true, passive: true });
     }
-    // Only when the window itself is left: focus moving into the page just
-    // chosen reads as a blur too, with the key still held
-    window.addEventListener("blur", (event) => {
-      if (event.target !== window) {
-        return;
-      }
-      setTimeout(() => {
-        if (Services.focus.activeWindow !== window) {
-          hide();
-        }
-      }, 0);
-    });
-    document.addEventListener("visibilitychange", () => document.hidden && hide());
+    window.addEventListener("blur", onTabNumbersBlur);
+    document.addEventListener("visibilitychange", () => document.hidden && hideTabNumbers());
 
-    // Kept up to date as tabs come and go, for when they show all the time
-    let queued = false;
-    const renumber = () => {
-      if (queued || !(root.hasAttribute("zia-tab-numbers") || Services.prefs.getBoolPref(TAB_NUMBERS_ALWAYS_PREF, false))) {
-        return;
-      }
-      queued = true;
-      requestAnimationFrame(() => {
-        queued = false;
-        tabs = numberTabs();
-      });
-    };
     // TabSelect too: the newly selected tab can be redrawn, losing its key
     for (const type of ["TabSelect", "TabOpen", "TabClose", "TabMove", "TabShow", "TabHide", "TabPinned", "TabUnpinned", "TabGrouped", "TabUngrouped", "TabGroupExpand", "TabGroupCollapse"]) {
-      gBrowser.tabContainer.addEventListener(type, renumber);
+      gBrowser.tabContainer.addEventListener(type, renumberTabs);
     }
-    window.addEventListener("ZenWorkspacesUIUpdate", renumber);
-    window.addEventListener("ZenWorkspaceChanged", renumber);
-    watchPrefs(TAB_NUMBERS_ALWAYS_PREF, renumber);
+    window.addEventListener("ZenWorkspacesUIUpdate", renumberTabs);
+    window.addEventListener("ZenWorkspaceChanged", renumberTabs);
+    watchPrefs(TAB_NUMBERS_ALWAYS_PREF, renumberTabs);
 
-    // Zia blue or the space's colour for the number being typed
-    const showColor = () => {
-      const space = Services.prefs.getStringPref(TAB_NUMBERS_COLOR_PREF, "zia") === "space";
-      setAttr(root, "zia-tab-number-color", space ? "space" : null);
-    };
-    showColor();
-    watchPrefs(TAB_NUMBERS_COLOR_PREF, showColor);
-    renumber();
+    showTypedNumberColor();
+    watchPrefs(TAB_NUMBERS_COLOR_PREF, showTypedNumberColor);
+    renumberTabs();
   }
   // The welcome tour (welcome/index.html): once on a first install, and once after
   // a release that bumps WELCOME_VERSION ("release + welcome card"), over a dimmed
@@ -17760,9 +17863,38 @@
   // pages of their own inside the panel, which Zia's chrome.css doesn't
   // reach: zia-sidebar.css is loaded into each as it opens. The panel's
   // frame is styled in chrome.css. On unless switched off in settings.
+  // Used elsewhere: tabMeasurements, watchSidebarPanels.
   const SIDEBAR_PANELS_PREF = "zia.sidebar-panels.style";
+  const SIDEBAR_BESIDE_PREF = "zia.sidebar-panels.beside";
+  const SIDEBAR_MAX_WIDTH_PREF = "zen.view.sidebar-expanded.max-width";
   // fresh each session, so an updated Zia's styles aren't served from cache
   const SIDEBAR_SHEET = `chrome://sine/content/zia/zia-sidebar.css?${Date.now()}`;
+  // (the search field drawn a moment later, the first time)
+  const SEARCH_FIELD_LATE_MS = 300;
+  // (how often an open tree's row highlights are checked over)
+  const TREE_CHECK_MS = 250;
+  // (how long the panel's slide runs where Zen's own motion isn't there)
+  const PANEL_SLIDE_MS = 100;
+  // (the sliding mark held after a slide stops)
+  const PANEL_SLIDING_HOLD_MS = 250;
+
+  // The panel moved beside the page: its box, splitter and the page's card, where Zen had
+  // the first two (to put them back), whether its width is being put back to the limit,
+  // how many slides are running, whether Zen's own sidebar is sliding, whether the box was
+  // hidden when last seen, and whether a close is sliding it out
+  const sidePanel = {
+    box: null,
+    splitter: null,
+    card: null,
+    home: null,
+    homeNext: null,
+    resize: null,
+    clamping: false,
+    slides: 0,
+    zenSliding: false,
+    wasHidden: false,
+    hiding: false,
+  };
 
   // The tabs' own measurements, read off a tab in the sidebar, for the
   // panels' rows to match: text size and weight, row height, the gap
@@ -18005,7 +18137,7 @@
       apply();
       // drawn a moment later, the first time
       field.updateComplete?.then(apply, () => {});
-      win.setTimeout(apply, 300);
+      win.setTimeout(apply, SEARCH_FIELD_LATE_MS);
     }
   }
 
@@ -18030,58 +18162,17 @@
     layer.append(chosen, hover);
     tree.before(layer);
 
-    let hoveredRow = -1;
-    const put = (pill, row) => {
-      const body = tree.treeBody || tree.querySelector("treechildren");
-      const height = tree.rowHeight;
-      if (row < 0 || !body || !height) {
-        pill.hidden = true;
-        return;
-      }
-      const shown = row - tree.getFirstVisibleRow();
-      const box = body.getBoundingClientRect();
-      // each row is a tab's height and the gap after it: the pill is the tab
-      const gap = parseFloat(win.getComputedStyle(doc.documentElement).getPropertyValue("--zia-row-gap")) || 0;
-      const top = box.top + shown * height;
-      if (shown < 0 || top + height > box.bottom + 1) {
-        pill.hidden = true;
-        return;
-      }
-      // a row inside a folder steps in, as a folder's tabs do
-      const indent = (tree.view?.getLevel(row) || 0) * (parseFloat(win.getComputedStyle(doc.documentElement).getPropertyValue("--zia-row-indent")) || 0);
-      pill.hidden = false;
-      pill.style.top = `${top + gap / 2}px`;
-      pill.style.left = `${box.left + indent}px`;
-      pill.style.width = `${Math.max(0, box.width - indent)}px`;
-      pill.style.height = `${height - gap}px`;
-    };
-    let queued = false;
-    const update = () => {
-      if (queued) {
-        return;
-      }
-      queued = true;
-      win.requestAnimationFrame(() => {
-        queued = false;
-        try {
-          // the selected row keeps its look under the pointer, as a tab does
-          const current = tree.view?.selection?.count ? tree.currentIndex : -1;
-          put(chosen, current);
-          put(hover, hoveredRow === current ? -1 : hoveredRow);
-        } catch (err) {
-          noteError("sidebar panels: rows", err);
-        }
-      });
-    };
+    const pills = { doc, win, tree, hover, chosen, hoveredRow: -1, queued: false };
+    const update = () => updateRowPills(pills);
     tree.addEventListener("mousemove", (event) => {
       const row = tree.getRowAt(event.clientX, event.clientY);
-      if (row !== hoveredRow) {
-        hoveredRow = row;
+      if (row !== pills.hoveredRow) {
+        pills.hoveredRow = row;
         update();
       }
     });
     tree.addEventListener("mouseleave", () => {
-      hoveredRow = -1;
+      pills.hoveredRow = -1;
       update();
     });
     for (const type of ["select", "wheel", "keydown", "click", "focus", "blur"]) {
@@ -18090,9 +18181,52 @@
     win.addEventListener("resize", update);
     // rows coming and going (a search, a folder opened) and scrolling the
     // tree itself don't all tell anyone: checked over as well while open
-    const every = win.setInterval(update, 250);
+    const every = win.setInterval(update, TREE_CHECK_MS);
     win.addEventListener("unload", () => win.clearInterval(every));
     update();
+  }
+
+  function updateRowPills(pills) {
+    if (pills.queued) {
+      return;
+    }
+    pills.queued = true;
+    pills.win.requestAnimationFrame(() => {
+      pills.queued = false;
+      try {
+        // the selected row keeps its look under the pointer, as a tab does
+        const current = pills.tree.view?.selection?.count ? pills.tree.currentIndex : -1;
+        placeRowPill(pills, pills.chosen, current);
+        placeRowPill(pills, pills.hover, pills.hoveredRow === current ? -1 : pills.hoveredRow);
+      } catch (err) {
+        noteError("sidebar panels: rows", err);
+      }
+    });
+  }
+
+  function placeRowPill({ doc, win, tree }, pill, row) {
+    const body = tree.treeBody || tree.querySelector("treechildren");
+    const height = tree.rowHeight;
+    if (row < 0 || !body || !height) {
+      pill.hidden = true;
+      return;
+    }
+    const shown = row - tree.getFirstVisibleRow();
+    const box = body.getBoundingClientRect();
+    // each row is a tab's height and the gap after it: the pill is the tab
+    const gap = parseFloat(win.getComputedStyle(doc.documentElement).getPropertyValue("--zia-row-gap")) || 0;
+    const top = box.top + shown * height;
+    if (shown < 0 || top + height > box.bottom + 1) {
+      pill.hidden = true;
+      return;
+    }
+    // a row inside a folder steps in, as a folder's tabs do
+    const indent = (tree.view?.getLevel(row) || 0) * (parseFloat(win.getComputedStyle(doc.documentElement).getPropertyValue("--zia-row-indent")) || 0);
+    pill.hidden = false;
+    pill.style.top = `${top + gap / 2}px`;
+    pill.style.left = `${box.left + indent}px`;
+    pill.style.width = `${Math.max(0, box.width - indent)}px`;
+    pill.style.height = `${height - gap}px`;
   }
 
   function watchSidebarPanels() {
@@ -18137,8 +18271,6 @@
   // moves it beside the card instead, full height on the window's own
   // background, a second sidebar, on whichever side it's set to (Firefox's
   // "Move sidebar to left/right"). Off in settings: back where Zen has it.
-  const SIDEBAR_BESIDE_PREF = "zia.sidebar-panels.beside";
-
   function placeSidebarPanel() {
     const box = document.getElementById("sidebar-box");
     const splitter = document.getElementById("sidebar-splitter");
@@ -18146,199 +18278,221 @@
     if (!box || !splitter || !card) {
       return;
     }
-    // where Zen had them, to put them back
-    const home = box.parentNode;
-    const homeNext = splitter.nextSibling;
-    const resize = [splitter.getAttribute("resizebefore"), splitter.getAttribute("resizeafter")];
-
-    const reload = () => {
-      // a moved panel's page starts again: shown again if it was open
-      try {
-        const id = window.SidebarController?.currentID;
-        if (id && !box.hidden) {
-          window.SidebarController.show(id);
-        }
-      } catch (err) {
-        noteError("sidebar panels: reload", err);
-      }
-    };
-    const place = () => {
-      const beside = Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true);
-      setFlag("zia-panels-beside", beside);
-      const end = box.hasAttribute("sidebar-positionend");
-      let moved = false;
-      if (beside) {
-        // the splitter sits between the card and the panel, and resizes
-        // the panel
-        if (end && (card.nextElementSibling !== splitter || splitter.nextElementSibling !== box)) {
-          card.after(splitter, box);
-          moved = true;
-        } else if (!end && (card.previousElementSibling !== splitter || splitter.previousElementSibling !== box)) {
-          card.before(box, splitter);
-          moved = true;
-        }
-        splitter.setAttribute("resizebefore", end ? "none" : "sibling");
-        splitter.setAttribute("resizeafter", end ? "sibling" : "none");
-      } else if (box.parentNode !== home) {
-        home.insertBefore(box, homeNext);
-        home.insertBefore(splitter, homeNext);
-        splitter.setAttribute("resizebefore", resize[0] ?? "sibling");
-        splitter.setAttribute("resizeafter", resize[1] ?? "none");
-        moved = true;
-      }
-      if (moved) {
-        reload();
-      }
-    };
-    place();
-    watchPrefs(SIDEBAR_BESIDE_PREF, place);
+    Object.assign(sidePanel, {
+      box,
+      splitter,
+      card,
+      // where Zen had them, to put them back
+      home: box.parentNode,
+      homeNext: splitter.nextSibling,
+      resize: [splitter.getAttribute("resizebefore"), splitter.getAttribute("resizeafter")],
+    });
+    moveSidebarPanel();
+    watchPrefs(SIDEBAR_BESIDE_PREF, moveSidebarPanel);
 
     // no wider than Zen lets the tab sidebar be (dragging its edge stops
     // there too), and following that setting if it's changed
-    const MAX_PREF = "zen.view.sidebar-expanded.max-width";
-    // the tab sidebar's own limit as Zen sets it on it, else its setting
-    const maxWidth = () => {
-      const toolbox = parseFloat(gNavToolbox?.style.maxWidth || getComputedStyle(gNavToolbox).maxWidth);
-      if (toolbox > 0) {
-        return toolbox;
-      }
-      try {
-        return Services.prefs.getIntPref(MAX_PREF);
-      } catch (err) {
-        return 300;
-      }
-    };
-    let clamping = false;
-    const cap = () => {
-      if (clamping) {
-        return;
-      }
-      const beside = Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true);
-      const max = maxWidth();
-      if (!beside || !(max > 0)) {
-        box.style.removeProperty("max-width");
-        return;
-      }
-      box.style.setProperty("max-width", `${max}px`, "important");
-      // dragged past it anyway: back to the limit, as the tab sidebar stops
-      if (box.getBoundingClientRect().width > max + 0.5) {
-        clamping = true;
-        box.style.width = `${max}px`;
-        box.setAttribute("width", String(max));
-        clamping = false;
-      }
-    };
-    cap();
-    new MutationObserver(cap).observe(box, { attributes: true, attributeFilter: ["width", "style"] });
-    new MutationObserver(cap).observe(gNavToolbox, { attributes: true, attributeFilter: ["style"] });
-    watchPrefs([MAX_PREF, SIDEBAR_BESIDE_PREF], cap);
+    capPanelWidth();
+    new MutationObserver(capPanelWidth).observe(box, { attributes: true, attributeFilter: ["width", "style"] });
+    new MutationObserver(capPanelWidth).observe(gNavToolbox, { attributes: true, attributeFilter: ["style"] });
+    watchPrefs([SIDEBAR_MAX_WIDTH_PREF, SIDEBAR_BESIDE_PREF], capPanelWidth);
     // moving it to the other side
-    new MutationObserver(place).observe(box, { attributes: true, attributeFilter: ["sidebar-positionend"] });
+    new MutationObserver(moveSidebarPanel).observe(box, { attributes: true, attributeFilter: ["sidebar-positionend"] });
 
-    // It slides in from the window's edge as it opens, the page giving way
-    // to it, and back out as it closes: exactly as Zen slides the tab
-    // sidebar (its outer margin, from minus its width to nothing, with
-    // Zen's own spring: no bounce, a tenth of a second)
-    const beside = () => Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true) && !matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let slides = 0;
-    const sliding = (on) => {
-      slides = Math.max(0, slides + (on ? 1 : -1));
-      // a little after it stops, as the site catches up with its new size
-      if (slides) {
-        setFlag("zia-panel-sliding", true);
-      } else {
-        setTimeout(() => !slides && setFlag("zia-panel-sliding", false), 250);
-      }
-    };
     // the tab sidebar's own slide too: Zen marks it while it runs, and the
     // colour is held a moment after, as the site catches up
-    let zenSliding = false;
-    new MutationObserver(() => {
-      const now = root.hasAttribute("zen-compact-animating");
-      if (now !== zenSliding) {
-        zenSliding = now;
-        sliding(now);
-      }
-    }).observe(root, { attributes: true, attributeFilter: ["zen-compact-animating"] });
-    const slide = (opening) => {
-      const run = slideBox(opening);
-      sliding(true);
-      return run.finally(() => {
-        sliding(false);
-        // its sides measured where it has come to rest
-        if (opening) {
-          safely("sidebar panels: sides", sidebarSides);
-        }
-      });
-    };
-    const slideBox = (opening) => {
-      // off the window's edge; but on the tab sidebar's own side that edge
-      // is the tabs, so it's tucked under the page instead (the margin on
-      // the page's side), never sliding over the tabs
-      const onRight = box.hasAttribute("sidebar-positionend");
-      const besideTabs = onRight === (root.getAttribute("zen-right-side") === "true");
-      const side = onRight !== besideTabs ? "marginRight" : "marginLeft";
-      const hidden = `-${box.getBoundingClientRect().width}px`;
-      const motion = window.gZenUIManager?.motion;
-      const done = () => box.style.removeProperty(side === "marginRight" ? "margin-right" : "margin-left");
-      if (motion?.animate) {
-        box.style[side] = opening ? hidden : "0px";
-        return Promise.resolve(
-          motion.animate(box, { [side]: opening ? [hidden, "0px"] : ["0px", hidden] }, {
-            ease: opening ? "easeOut" : "easeIn",
-            type: "spring",
-            bounce: 0,
-            duration: 0.1,
-          })
-        ).then(() => {
-          if (opening) {
-            done();
-          }
-          return done;
-        });
-      }
-      const run = box.animate([{ [side]: opening ? hidden : "0px" }, { [side]: opening ? "0px" : hidden }], {
-        duration: 100,
-        easing: opening ? "ease-out" : "ease-in",
-        fill: "forwards",
-      });
-      return run.finished.catch(() => {}).then(() => () => run.cancel());
-    };
-    let wasHidden = box.hidden;
-    new MutationObserver(() => {
-      if (wasHidden && !box.hidden && beside()) {
-        slide(true).catch((err) => noteError("sidebar panels: slide in", err));
-      }
-      wasHidden = box.hidden;
-    }).observe(box, { attributes: true, attributeFilter: ["hidden"] });
+    new MutationObserver(followZenSlide).observe(root, { attributes: true, attributeFilter: ["zen-compact-animating"] });
+    sidePanel.wasHidden = box.hidden;
+    new MutationObserver(slideInOnShow).observe(box, { attributes: true, attributeFilter: ["hidden"] });
+    slideOutOnHide();
+  }
 
-    // closing: slid out first, then hidden as Firefox would have
-    const controller = window.SidebarController;
-    if (controller && typeof controller.hide === "function" && !controller.ziaSlides) {
-      const hide = controller.hide;
-      let sliding = false;
-      controller.hide = function (...args) {
-        if (sliding || box.hidden || !beside()) {
-          return hide.apply(this, args);
-        }
-        sliding = true;
-        slide(false)
-          .catch((err) => {
-            noteError("sidebar panels: slide out", err);
-            return () => {};
-          })
-          .then((undo) => {
-            sliding = false;
-            try {
-              hide.apply(this, args);
-            } finally {
-              undo?.();
-            }
-          });
-        return undefined;
-      };
-      controller.ziaSlides = true;
+  function reloadSidebarPanel() {
+    // a moved panel's page starts again: shown again if it was open
+    try {
+      const id = window.SidebarController?.currentID;
+      if (id && !sidePanel.box.hidden) {
+        window.SidebarController.show(id);
+      }
+    } catch (err) {
+      noteError("sidebar panels: reload", err);
     }
+  }
+
+  function moveSidebarPanel() {
+    const { box, splitter, card, home, homeNext, resize } = sidePanel;
+    const beside = Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true);
+    setFlag("zia-panels-beside", beside);
+    const end = box.hasAttribute("sidebar-positionend");
+    let moved = false;
+    if (beside) {
+      // the splitter sits between the card and the panel, and resizes
+      // the panel
+      if (end && (card.nextElementSibling !== splitter || splitter.nextElementSibling !== box)) {
+        card.after(splitter, box);
+        moved = true;
+      } else if (!end && (card.previousElementSibling !== splitter || splitter.previousElementSibling !== box)) {
+        card.before(box, splitter);
+        moved = true;
+      }
+      splitter.setAttribute("resizebefore", end ? "none" : "sibling");
+      splitter.setAttribute("resizeafter", end ? "sibling" : "none");
+    } else if (box.parentNode !== home) {
+      home.insertBefore(box, homeNext);
+      home.insertBefore(splitter, homeNext);
+      splitter.setAttribute("resizebefore", resize[0] ?? "sibling");
+      splitter.setAttribute("resizeafter", resize[1] ?? "none");
+      moved = true;
+    }
+    if (moved) {
+      reloadSidebarPanel();
+    }
+  }
+
+  // the tab sidebar's own limit as Zen sets it on it, else its setting
+  function panelMaxWidth() {
+    const toolbox = parseFloat(gNavToolbox?.style.maxWidth || getComputedStyle(gNavToolbox).maxWidth);
+    if (toolbox > 0) {
+      return toolbox;
+    }
+    try {
+      return Services.prefs.getIntPref(SIDEBAR_MAX_WIDTH_PREF);
+    } catch (err) {
+      return 300;
+    }
+  }
+
+  function capPanelWidth() {
+    const box = sidePanel.box;
+    if (sidePanel.clamping) {
+      return;
+    }
+    const beside = Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true);
+    const max = panelMaxWidth();
+    if (!beside || !(max > 0)) {
+      box.style.removeProperty("max-width");
+      return;
+    }
+    box.style.setProperty("max-width", `${max}px`, "important");
+    // dragged past it anyway: back to the limit, as the tab sidebar stops
+    if (box.getBoundingClientRect().width > max + 0.5) {
+      sidePanel.clamping = true;
+      box.style.width = `${max}px`;
+      box.setAttribute("width", String(max));
+      sidePanel.clamping = false;
+    }
+  }
+
+  // It slides in from the window's edge as it opens, the page giving way
+  // to it, and back out as it closes: exactly as Zen slides the tab
+  // sidebar (its outer margin, from minus its width to nothing, with
+  // Zen's own spring: no bounce, a tenth of a second)
+  function slidesBeside() {
+    return Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true) && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  function markPanelSliding(on) {
+    sidePanel.slides = Math.max(0, sidePanel.slides + (on ? 1 : -1));
+    // a little after it stops, as the site catches up with its new size
+    if (sidePanel.slides) {
+      setFlag("zia-panel-sliding", true);
+    } else {
+      // (not kept: it checks no slide has started since)
+      setTimeout(() => !sidePanel.slides && setFlag("zia-panel-sliding", false), PANEL_SLIDING_HOLD_MS);
+    }
+  }
+
+  function followZenSlide() {
+    const now = root.hasAttribute("zen-compact-animating");
+    if (now !== sidePanel.zenSliding) {
+      sidePanel.zenSliding = now;
+      markPanelSliding(now);
+    }
+  }
+
+  function slidePanel(opening) {
+    const run = slidePanelBox(opening);
+    markPanelSliding(true);
+    return run.finally(() => {
+      markPanelSliding(false);
+      // its sides measured where it has come to rest
+      if (opening) {
+        safely("sidebar panels: sides", sidebarSides);
+      }
+    });
+  }
+
+  function slidePanelBox(opening) {
+    const box = sidePanel.box;
+    // off the window's edge; but on the tab sidebar's own side that edge
+    // is the tabs, so it's tucked under the page instead (the margin on
+    // the page's side), never sliding over the tabs
+    const onRight = box.hasAttribute("sidebar-positionend");
+    const besideTabs = onRight === (root.getAttribute("zen-right-side") === "true");
+    const side = onRight !== besideTabs ? "marginRight" : "marginLeft";
+    const hidden = `-${box.getBoundingClientRect().width}px`;
+    const motion = window.gZenUIManager?.motion;
+    const done = () => box.style.removeProperty(side === "marginRight" ? "margin-right" : "margin-left");
+    if (motion?.animate) {
+      box.style[side] = opening ? hidden : "0px";
+      return Promise.resolve(
+        motion.animate(box, { [side]: opening ? [hidden, "0px"] : ["0px", hidden] }, {
+          ease: opening ? "easeOut" : "easeIn",
+          type: "spring",
+          bounce: 0,
+          duration: 0.1,
+        })
+      ).then(() => {
+        if (opening) {
+          done();
+        }
+        return done;
+      });
+    }
+    const run = box.animate([{ [side]: opening ? hidden : "0px" }, { [side]: opening ? "0px" : hidden }], {
+      duration: PANEL_SLIDE_MS,
+      easing: opening ? "ease-out" : "ease-in",
+      fill: "forwards",
+    });
+    return run.finished.catch(() => {}).then(() => () => run.cancel());
+  }
+
+  function slideInOnShow() {
+    const box = sidePanel.box;
+    if (sidePanel.wasHidden && !box.hidden && slidesBeside()) {
+      slidePanel(true).catch((err) => noteError("sidebar panels: slide in", err));
+    }
+    sidePanel.wasHidden = box.hidden;
+  }
+
+  // closing: slid out first, then hidden as Firefox would have
+  function slideOutOnHide() {
+    const controller = window.SidebarController;
+    if (!controller || typeof controller.hide !== "function" || controller.ziaSlides) {
+      return;
+    }
+    const hide = controller.hide;
+    controller.hide = function (...args) {
+      if (sidePanel.hiding || sidePanel.box.hidden || !slidesBeside()) {
+        return hide.apply(this, args);
+      }
+      sidePanel.hiding = true;
+      slidePanel(false)
+        .catch((err) => {
+          noteError("sidebar panels: slide out", err);
+          return () => {};
+        })
+        .then((undo) => {
+          sidePanel.hiding = false;
+          try {
+            hide.apply(this, args);
+          } finally {
+            undo?.();
+          }
+        });
+      return undefined;
+    };
+    controller.ziaSlides = true;
   }
   // A page gone full screen inside the window (a YouTube video) is shown square,
   // edge to edge: it kept the page's rounded card, grey behind the video's corners.
@@ -18352,6 +18506,7 @@
   }
   // Dia's swipe arrow and card of pages, in place of Firefox's arrow. Firefox
   // still navigates; this wraps gHistorySwipeAnimation and gGestureSupport.
+  // Used elsewhere: watchSwipeArrow.
   const SWIPE_PREF = "zia.swipe.dia-arrow";
   const SWIPE_HOLD_MS = 450;
   const SWIPE_MAX_PAGES = 8;
@@ -18438,215 +18593,211 @@
     }
   }
 
-  function watchSwipeArrow() {
-    const swipe = window.gHistorySwipeAnimation;
-    if (!swipe || swipe.ziaWrapped) {
+  // Firefox calls its animation's methods on every swipe, arrow shown or not: whether one is
+  // under way, the arrow (which becomes the card) and the backdrop behind the card, the side
+  // it's on, the timer that opens it when held, and whether it's open and stays after the lift.
+  // Zen's tap only plays inside a trackpad event, so the card opens on an
+  // update; held still (no updates), a timer opens it with macOS's tap, and
+  // where that can't be done the tap waits for the next update or the lift
+  // (willSince: when it last reached "will go"; tapOwed: that waiting tap).
+  const swipeCard = { swiping: false, el: null, backdrop: null, holdTimer: null, side: null, pinned: false, willSince: 0, tapOwed: false };
+
+  function swipeOn() {
+    return Services.prefs.getBoolPref(SWIPE_PREF, true);
+  }
+
+  // hides Firefox's own arrow (22-swipe-arrow.css)
+  function markSwipeArrow() {
+    setFlag("zia-swipe-arrow", swipeOn());
+  }
+
+  function paySwipeTap() {
+    if (swipeCard.tapOwed) {
+      swipeCard.tapOwed = false;
+      swipeTap();
+    }
+  }
+
+  function clearSwipeHold() {
+    clearTimeout(swipeCard.holdTimer);
+    swipeCard.holdTimer = null;
+  }
+
+  function discardSwipe() {
+    clearSwipeHold();
+    swipeCard.pinned = false;
+    swipeCard.el?.remove();
+    swipeCard.backdrop?.remove();
+    swipeCard.el = swipeCard.backdrop = swipeCard.side = null;
+  }
+
+  function closeSwipe() {
+    const node = swipeCard.el;
+    swipeCard.el = null;
+    discardSwipe();
+    if (node) {
+      node.toggleAttribute("commit", node.hasAttribute("open"));
+      node.setAttribute("leaving", "");
+      // (not cancelled: a card on its way out goes, whatever comes after it)
+      setTimeout(() => node.remove(), SWIPE_LEAVE_MS);
+    }
+  }
+
+  function goToSwipePage(depth, forward) {
+    try {
+      const history = gBrowser.selectedBrowser.browsingContext.sessionHistory;
+      const target = history.index + (forward ? depth : -depth);
+      if (target >= 0 && target < history.count) {
+        gBrowser.gotoIndex(target);
+      }
+    } catch (err) {
+      noteError("swipe arrow: go to page", err);
+    }
+  }
+
+  function buildSwipe(forward) {
+    discardSwipe();
+    const stack = gBrowser.selectedBrowser?.closest(".browserStack");
+    if (!stack) {
       return;
     }
-    swipe.ziaWrapped = true;
-    const on = () => Services.prefs.getBoolPref(SWIPE_PREF, true);
-    // hides Firefox's own arrow (22-swipe-arrow.css)
-    const mark = () => setFlag("zia-swipe-arrow", on());
-    mark();
-    watchPrefs(SWIPE_PREF, mark);
+    swipeCard.side = forward ? "forward" : "back";
+    const el = document.createElementNS(XHTML_NS, "div");
+    swipeCard.el = el;
+    el.id = "zia-swipe";
+    el.setAttribute("side", swipeCard.side);
+    const arrow = document.createElementNS(XHTML_NS, "div");
+    arrow.className = "zia-swipe-arrow";
+    arrow.append(swipeChevron());
+    const list = document.createElementNS(XHTML_NS, "div");
+    list.className = "zia-swipe-pages";
+    el.append(arrow, list);
+    stack.append(el);
+  }
 
-    // Firefox calls its animation's methods on every swipe, arrow shown or not
-    let swiping = false;
-    let el = null;
-    let backdrop = null;
-    let holdTimer = null;
-    let side = null;
-    let pinned = false;
-    // Zen's tap only plays inside a trackpad event, so the card opens on an
-    // update; held still (no updates), a timer opens it with macOS's tap, and
-    // where that can't be done the tap waits for the next update or the lift
-    let willSince = 0;
-    let tapOwed = false;
-    const payTap = () => {
-      if (tapOwed) {
-        tapOwed = false;
-        swipeTap();
-      }
-    };
+  function swipePageRow(page, i, forward) {
+    const row = document.createElementNS(XHTML_NS, "div");
+    row.className = "zia-swipe-page";
+    row.toggleAttribute("selected", i === 0);
+    const icon = document.createElementNS(XHTML_NS, "img");
+    icon.alt = "";
+    icon.src = `page-icon:${page.url}`;
+    icon.addEventListener("error", () => icon.setAttribute("src", "chrome://global/skin/icons/defaultFavicon.svg"), { once: true });
+    const title = document.createElementNS(XHTML_NS, "span");
+    title.textContent = page.title;
+    row.append(icon, title);
+    // close first, then navigate: navigating at once kept the browser busy
+    // and the card hung before it left
+    row.addEventListener("click", () => {
+      closeSwipe();
+      requestAnimationFrame(() => requestAnimationFrame(() => goToSwipePage(i + 1, forward)));
+    });
+    return row;
+  }
 
-    const clearHold = () => {
-      clearTimeout(holdTimer);
-      holdTimer = null;
-    };
+  function openSwipe(fromEvent = false) {
+    clearSwipeHold();
+    const el = swipeCard.el;
+    if (!el || el.hasAttribute("open")) {
+      return;
+    }
+    const forward = swipeCard.side === "forward";
+    const pages = swipePages(forward);
+    if (!pages.length) {
+      return;
+    }
+    const list = el.querySelector(".zia-swipe-pages");
+    list.replaceChildren(...pages.map((page, i) => swipePageRow(page, i, forward)));
+    el.style.setProperty("--zia-swipe-n", `${pages.length}`);
+    el.setAttribute("open", "");
+    // squircle only once the morph ends (see 22-swipe-arrow.css; on that card
+    // only, so one already gone just goes)
+    setTimeout(() => el.setAttribute("settled", ""), SWIPE_SETTLE_MS);
+    swipeCard.pinned = true;
+    const backdrop = document.createElementNS(XHTML_NS, "div");
+    swipeCard.backdrop = backdrop;
+    backdrop.id = "zia-swipe-backdrop";
+    backdrop.addEventListener("mousedown", closeSwipe);
+    el.before(backdrop);
+    if (fromEvent || nativeTapNow()) {
+      swipeTap(!fromEvent);
+    } else {
+      swipeCard.tapOwed = true;
+    }
+  }
 
-    const discard = () => {
-      clearHold();
-      pinned = false;
-      el?.remove();
-      backdrop?.remove();
-      el = backdrop = side = null;
-    };
+  function followSwipe(animation, update) {
+    if (!swipeOn() || !swipeCard.swiping) {
+      return;
+    }
+    paySwipeTap();
+    if (swipeCard.pinned) {
+      return;
+    }
+    const back = !!animation._willGoBack?.(update);
+    const forward = !back && !!animation._willGoForward?.(update);
+    if (!back && !forward) {
+      if (swipeCard.el) {
+        swipeCard.el.style.setProperty("--p", "0");
+        swipeCard.el.removeAttribute("will");
+      }
+      clearSwipeHold();
+      return;
+    }
+    if (!swipeCard.el || swipeCard.side !== (forward ? "forward" : "back")) {
+      buildSwipe(forward);
+    }
+    const el = swipeCard.el;
+    if (!el) {
+      return;
+    }
+    const progress = Math.min(Math.abs(update?.delta || 0) * 4, 1);
+    el.style.setProperty("--p", `${progress}`);
+    const will = progress >= 1;
+    if (will && !el.hasAttribute("will")) {
+      swipeTap();
+      swipeCard.willSince = Date.now();
+    }
+    el.toggleAttribute("will", will);
+    if (will) {
+      if (Date.now() - swipeCard.willSince >= SWIPE_HOLD_MS) {
+        openSwipe(true);
+      } else if (!swipeCard.holdTimer) {
+        swipeCard.holdTimer = setTimeout(openSwipe, SWIPE_HOLD_MS);
+      }
+    } else {
+      clearSwipeHold();
+    }
+  }
 
-    const close = () => {
-      const node = el;
-      el = null;
-      discard();
-      if (node) {
-        node.toggleAttribute("commit", node.hasAttribute("open"));
-        node.setAttribute("leaving", "");
-        setTimeout(() => node.remove(), SWIPE_LEAVE_MS);
-      }
-    };
+  function leaveSwipe() {
+    paySwipeTap();
+    if (!swipeCard.pinned) {
+      closeSwipe();
+    }
+  }
 
-    const goTo = (depth, forward) => {
-      try {
-        const history = gBrowser.selectedBrowser.browsingContext.sessionHistory;
-        const target = history.index + (forward ? depth : -depth);
-        if (target >= 0 && target < history.count) {
-          gBrowser.gotoIndex(target);
-        }
-      } catch (err) {
-        noteError("swipe arrow: go to page", err);
-      }
-    };
+  function onSwipeKey(event) {
+    if (swipeCard.pinned && event.key === "Escape") {
+      closeSwipe();
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }
 
-    const build = (forward) => {
-      discard();
-      const stack = gBrowser.selectedBrowser?.closest(".browserStack");
-      if (!stack) {
-        return;
-      }
-      side = forward ? "forward" : "back";
-      el = document.createElementNS(XHTML_NS, "div");
-      el.id = "zia-swipe";
-      el.setAttribute("side", side);
-      const arrow = document.createElementNS(XHTML_NS, "div");
-      arrow.className = "zia-swipe-arrow";
-      arrow.append(swipeChevron());
-      const list = document.createElementNS(XHTML_NS, "div");
-      list.className = "zia-swipe-pages";
-      el.append(arrow, list);
-      stack.append(el);
-    };
-
-    const open = (fromEvent = false) => {
-      clearHold();
-      if (!el || el.hasAttribute("open")) {
-        return;
-      }
-      const forward = side === "forward";
-      const pages = swipePages(forward);
-      if (!pages.length) {
-        return;
-      }
-      const list = el.querySelector(".zia-swipe-pages");
-      list.replaceChildren(
-        ...pages.map((page, i) => {
-          const row = document.createElementNS(XHTML_NS, "div");
-          row.className = "zia-swipe-page";
-          row.toggleAttribute("selected", i === 0);
-          const icon = document.createElementNS(XHTML_NS, "img");
-          icon.alt = "";
-          icon.src = `page-icon:${page.url}`;
-          icon.addEventListener("error", () => icon.setAttribute("src", "chrome://global/skin/icons/defaultFavicon.svg"), { once: true });
-          const title = document.createElementNS(XHTML_NS, "span");
-          title.textContent = page.title;
-          row.append(icon, title);
-          // close first, then navigate: navigating at once kept the browser busy
-          // and the card hung before it left
-          row.addEventListener("click", () => {
-            close();
-            requestAnimationFrame(() => requestAnimationFrame(() => goTo(i + 1, forward)));
-          });
-          return row;
-        })
-      );
-      el.style.setProperty("--zia-swipe-n", `${pages.length}`);
-      el.setAttribute("open", "");
-      // squircle only once the morph ends (see 22-swipe-arrow.css)
-      const card = el;
-      setTimeout(() => card.setAttribute("settled", ""), SWIPE_SETTLE_MS);
-      pinned = true;
-      backdrop = document.createElementNS(XHTML_NS, "div");
-      backdrop.id = "zia-swipe-backdrop";
-      backdrop.addEventListener("mousedown", close);
-      el.before(backdrop);
-      if (fromEvent || nativeTapNow()) {
-        swipeTap(!fromEvent);
-      } else {
-        tapOwed = true;
-      }
-    };
-
-    const follow = (animation, update) => {
-      if (!on() || !swiping) {
-        return;
-      }
-      payTap();
-      if (pinned) {
-        return;
-      }
-      const back = !!animation._willGoBack?.(update);
-      const forward = !back && !!animation._willGoForward?.(update);
-      if (!back && !forward) {
-        if (el) {
-          el.style.setProperty("--p", "0");
-          el.removeAttribute("will");
-        }
-        clearHold();
-        return;
-      }
-      if (!el || side !== (forward ? "forward" : "back")) {
-        build(forward);
-      }
-      if (!el) {
-        return;
-      }
-      const progress = Math.min(Math.abs(update?.delta || 0) * 4, 1);
-      el.style.setProperty("--p", `${progress}`);
-      const will = progress >= 1;
-      if (will && !el.hasAttribute("will")) {
-        swipeTap();
-        willSince = Date.now();
-      }
-      el.toggleAttribute("will", will);
-      if (will) {
-        if (Date.now() - willSince >= SWIPE_HOLD_MS) {
-          open(true);
-        } else if (!holdTimer) {
-          holdTimer = setTimeout(open, SWIPE_HOLD_MS);
-        }
-      } else {
-        clearHold();
-      }
-    };
-
-    const leave = () => {
-      payTap();
-      if (!pinned) {
-        close();
-      }
-    };
-
-    window.addEventListener(
-      "keydown",
-      (event) => {
-        if (pinned && event.key === "Escape") {
-          close();
-          event.preventDefault();
-          event.stopPropagation();
-        }
-      },
-      true
-    );
-
+  function wrapSwipeAnimation(swipe) {
     const start = swipe.startAnimation;
     swipe.startAnimation = function () {
-      discard();
-      swiping = true;
-      tapOwed = false;
+      discardSwipe();
+      swipeCard.swiping = true;
+      swipeCard.tapOwed = false;
       return start.apply(this, arguments);
     };
     const update = swipe.updateAnimation;
     swipe.updateAnimation = function (aSwipeUpdate) {
       const result = update.apply(this, arguments);
       try {
-        follow(this, aSwipeUpdate);
+        followSwipe(this, aSwipeUpdate);
       } catch (err) {
         noteError("swipe arrow: update", err);
       }
@@ -18654,28 +18805,43 @@
     };
     const stop = swipe.stopAnimation;
     swipe.stopAnimation = function () {
-      swiping = false;
+      swipeCard.swiping = false;
       try {
-        leave();
+        leaveSwipe();
       } catch (err) {
         noteError("swipe arrow: stop", err);
       }
       return stop.apply(this, arguments);
     };
-    gBrowser.tabContainer.addEventListener("TabSelect", discard);
+  }
 
-    // letting go with the card open: no navigating, the card stays
+  // letting go with the card open: no navigating, the card stays
+  function keepSwipeCardOnLift(swipe) {
     const gestures = window.gGestureSupport;
     const coordinate = gestures?._coordinateSwipeEventWithAnimation;
     if (gestures && coordinate) {
       gestures._coordinateSwipeEventWithAnimation = function (aEvent, aDir) {
-        if (on() && pinned) {
+        if (swipeOn() && swipeCard.pinned) {
           swipe.stopAnimation();
           return;
         }
         return coordinate.apply(this, arguments);
       };
     }
+  }
+
+  function watchSwipeArrow() {
+    const swipe = window.gHistorySwipeAnimation;
+    if (!swipe || swipe.ziaWrapped) {
+      return;
+    }
+    swipe.ziaWrapped = true;
+    markSwipeArrow();
+    watchPrefs(SWIPE_PREF, markSwipeArrow);
+    window.addEventListener("keydown", onSwipeKey, true);
+    wrapSwipeAnimation(swipe);
+    gBrowser.tabContainer.addEventListener("TabSelect", discardSwipe);
+    keepSwipeCardOnLift(swipe);
   }
   // ---------- Zen's Library: Clear in Downloads, and rows measured off the tabs
   // Off with "Zen's own Library look" (zia.library.zen-look): Zia leaves the
@@ -19177,6 +19343,25 @@
     window.addEventListener("unload", () => Services.obs.removeObserver(onDocument, "document-element-inserted"), { once: true });
   }
 
+  // Tips: what a tab's buttons say they do, and the cards shown in place of the tips of
+  // the spaces and add-ons.
+  // Used elsewhere: watchButtonTooltips, watchTipCards.
+  const TIP_MARK = "zia-tip";
+  const TIPPED =
+    "toolbarbutton[zen-workspace-id], toolbarbutton.webextension-browser-action, " +
+    "toolbarbutton[data-extensionid], #unified-extensions-button";
+  const TIP_ATTR = "zia-tip-text";
+  // longer than a tab's grace: the row's gaps between buttons are wider
+  const TIP_GRACE = 300;
+  const TIP_CARD_OUT_MS = 120;
+
+  // a reworded button's own tip, for when it's handed back
+  const tipOriginals = new WeakMap();
+
+  // The tip card and the button it's for, the covered button under the pointer (see
+  // tipIsOurs), and the card's timers
+  const tipCard = { card: null, current: null, hovered: null, showTimer: 0, hideTimer: 0, closeTimer: 0 };
+
   // What a tab's buttons say they do. On a tab holding a glance the close
   // shuts the glance (28g-glance-thumbs.js) and the minus lets the glance
   // go, and on a pinned tab the minus only lets the tab go: nothing
@@ -19184,76 +19369,73 @@
   // tab" either way. The tips are reworded while that wouldn't be true,
   // and handed back to Fluent when it would.
   function watchButtonTooltips() {
-    const TIP_MARK = "zia-tip";
-    const originals = new WeakMap();
-
-    const retipButton = (button, text) => {
-      if (!button) {
-        return;
-      }
-      if (text) {
-        if (!originals.has(button)) {
-          originals.set(button, button.getAttribute("tooltiptext"));
-        }
-        if (button.getAttribute("tooltiptext") !== text) {
-          button.setAttribute("tooltiptext", text);
-        }
-        button.setAttribute(TIP_MARK, "true");
-        return;
-      }
-      if (!button.hasAttribute(TIP_MARK)) {
-        return;
-      }
-      button.removeAttribute(TIP_MARK);
-      const id = button.getAttribute("data-l10n-id");
-      let args = {};
-      try {
-        args = JSON.parse(button.getAttribute("data-l10n-args") || "{}");
-      } catch (err) {
-        args = {};
-      }
-      if (id && document.l10n) {
-        document.l10n.setAttributes(button, id, args);
-      } else {
-        setAttr(button, "tooltiptext", originals.get(button));
-      }
-      originals.delete(button);
-    };
-
-    const retip = (tab) => {
-      if (!tab?.classList?.contains("tabbrowser-tab")) {
-        return;
-      }
-      const glance = tab.hasAttribute("zen-glance-tab") || !!glanceOnTab(tab);
-      retipButton(
-        tab.querySelector(":scope > .tab-stack > .tab-content > .tab-close-button"),
-        glance ? "Close glance" : null
-      );
-      retipButton(
-        tab.querySelector(":scope > .tab-stack > .tab-content > .tab-reset-button"),
-        glance ? "Unload glance" : tab.pinned ? "Unload tab" : null
-      );
-    };
-
-    const retipAll = () => {
-      for (const tab of gBrowser.tabs) {
-        retip(tab);
-      }
-    };
-
     // Fluent rewrites a button's tip when its args change (a multiselect
     // growing, say), so the rewording is put back whenever the tip or the
     // marks it's set off change. (A tip is only set when it differs, so
     // this settles.)
-    new MutationObserver(retipAll).observe(gBrowser.tabContainer, {
+    new MutationObserver(retipAllTabs).observe(gBrowser.tabContainer, {
       subtree: true,
       attributes: true,
       attributeFilter: ["zen-glance-tab", "pinned", "tooltiptext", "data-l10n-args"],
     });
     for (const type of ["TabOpen", "TabPinned", "TabUnpinned"]) {
-      gBrowser.tabContainer.addEventListener(type, retipAll);
+      gBrowser.tabContainer.addEventListener(type, retipAllTabs);
     }
-    retipAll();
+    retipAllTabs();
+  }
+
+  function retipButton(button, text) {
+    if (!button) {
+      return;
+    }
+    if (text) {
+      if (!tipOriginals.has(button)) {
+        tipOriginals.set(button, button.getAttribute("tooltiptext"));
+      }
+      if (button.getAttribute("tooltiptext") !== text) {
+        button.setAttribute("tooltiptext", text);
+      }
+      button.setAttribute(TIP_MARK, "true");
+      return;
+    }
+    if (!button.hasAttribute(TIP_MARK)) {
+      return;
+    }
+    button.removeAttribute(TIP_MARK);
+    const id = button.getAttribute("data-l10n-id");
+    let args = {};
+    try {
+      args = JSON.parse(button.getAttribute("data-l10n-args") || "{}");
+    } catch (err) {
+      args = {};
+    }
+    if (id && document.l10n) {
+      document.l10n.setAttributes(button, id, args);
+    } else {
+      setAttr(button, "tooltiptext", tipOriginals.get(button));
+    }
+    tipOriginals.delete(button);
+  }
+
+  function retipTab(tab) {
+    if (!tab?.classList?.contains("tabbrowser-tab")) {
+      return;
+    }
+    const glance = tab.hasAttribute("zen-glance-tab") || !!glanceOnTab(tab);
+    retipButton(
+      tab.querySelector(":scope > .tab-stack > .tab-content > .tab-close-button"),
+      glance ? "Close glance" : null
+    );
+    retipButton(
+      tab.querySelector(":scope > .tab-stack > .tab-content > .tab-reset-button"),
+      glance ? "Unload glance" : tab.pinned ? "Unload tab" : null
+    );
+  }
+
+  function retipAllTabs() {
+    for (const tab of gBrowser.tabs) {
+      retipTab(tab);
+    }
   }
 
   // The spaces at the foot of the sidebar and the add-ons along the top
@@ -19264,220 +19446,214 @@
   // an add-on on its own changes. What's in a pop-up or a menu keeps
   // Firefox's tip.
   function watchTipCards() {
-    const TIPPED =
-      "toolbarbutton[zen-workspace-id], toolbarbutton.webextension-browser-action, " +
-      "toolbarbutton[data-extensionid], #unified-extensions-button";
-    const TIP_ATTR = "zia-tip-text";
-    // longer than a tab's grace: the row's gaps between buttons are wider
-    const TIP_GRACE = 300;
-    const inPopup = (el) => !!el.closest("popup, menupopup, panel, tooltip");
-
-    const stash = (el) => {
-      // an add-on's own tip can sit on a wrapper over the button (the
-      // "unified-extensions-item" toolbaritem carries it too), and a tip
-      // hunts up through ancestors, so the stash climbs to the toolbar
-      for (let n = el; n && !inPopup(n); n = n.parentElement) {
-        const text = n.getAttribute?.("tooltiptext");
-        if (text !== null && text !== undefined) {
-          if (text) {
-            n.setAttribute(TIP_ATTR, text);
-          }
-          n.removeAttribute("tooltiptext");
-        }
-        if (n.matches?.("toolbar, #navigator-toolbox")) {
-          break;
-        }
-      }
-    };
-    const stashUnder = (node) => {
-      if (node?.matches?.(TIPPED)) {
-        stash(node);
-      }
-      for (const el of node?.querySelectorAll?.(TIPPED) || []) {
-        stash(el);
-      }
-    };
     // (the window itself, not the sidebar's box: the top row's add-ons
     // sit outside it. New buttons — an add-on installed, a space made —
     // are stashed as they land, and a tip Zen rewrites is re-stashed,
     // the wrapper's along with the button's.)
-    stashUnder(document);
-    new MutationObserver((records) => {
-      for (const record of records) {
-        if (record.type === "attributes") {
-          if (record.target?.matches?.(TIPPED) || record.target?.querySelector?.(TIPPED)) {
-            stash(record.target);
-          }
-        } else {
-          for (const node of record.addedNodes) {
-            stashUnder(node);
-          }
-        }
-      }
-    }).observe(root, { subtree: true, childList: true, attributes: true, attributeFilter: ["tooltiptext"] });
+    stashTipsUnder(document);
+    new MutationObserver(restashTips).observe(root, { subtree: true, childList: true, attributes: true, attributeFilter: ["tooltiptext"] });
 
-    let card = null;
-    let current = null;
-    let showTimer = 0;
-    let hideTimer = 0;
-    let closeTimer = 0;
-    const CARD_OUT_MS = 120;
-    const cardUp = () => card && !card.hidden && !card.hasAttribute("zia-closing");
-
-    const place = (el) => {
-      const box = el.getBoundingClientRect();
-      const width = card.offsetWidth;
-      const height = card.offsetHeight;
-      // below like a tip, unless there's no room: the spaces sit at the
-      // window's foot, so theirs go above the icons
-      const below = box.bottom + TAB_CARD_GAP + height <= window.innerHeight - TAB_CARD_GAP;
-      const y = below ? box.bottom + TAB_CARD_GAP : box.top - height - TAB_CARD_GAP;
-      const x = Math.max(
-        TAB_CARD_GAP,
-        Math.min(box.left + box.width / 2 - width / 2, window.innerWidth - width - TAB_CARD_GAP)
-      );
-      card.style.left = `${Math.round(x)}px`;
-      card.style.top = `${Math.round(y)}px`;
-      card.style.transformOrigin = `center ${below ? "top" : "bottom"}`;
-    };
-
-    const show = (el) => {
-      const text =
-        el.getAttribute(TIP_ATTR) ||
-        el.getAttribute("tooltiptext") ||
-        el.getAttribute("aria-label") ||
-        el.getAttribute("label") ||
-        "";
-      if (!text.trim()) {
-        return;
-      }
-      if (!card) {
-        card = document.createElementNS(XHTML_NS, "div");
-        card.id = "zia-tip-card";
-        card.hidden = true;
-        root.appendChild(card);
-      }
-      const wasUp = cardUp();
-      current = el;
-      card.textContent = text;
-      card.hidden = false;
-      place(el);
-      clearTimeout(closeTimer);
-      card.removeAttribute("zia-closing");
-      if (wasUp) {
-        card.setAttribute("zia-snap", "true");
-        card.setAttribute("zia-open", "true");
-        return;
-      }
-      card.removeAttribute("zia-snap");
-      card.removeAttribute("zia-open");
-      void card.offsetWidth;
-      card.setAttribute("zia-open", "true");
-    };
-
-    const hide = () => {
-      clearTimeout(showTimer);
-      clearTimeout(hideTimer);
-      current = null;
-      if (card && !card.hidden && !card.hasAttribute("zia-closing")) {
-        card.removeAttribute("zia-snap");
-        card.setAttribute("zia-closing", "true");
-      }
-      clearTimeout(closeTimer);
-      closeTimer = setTimeout(() => {
-        if (card?.hasAttribute("zia-closing")) {
-          card.hidden = true;
-          card.removeAttribute("zia-closing");
-          card.removeAttribute("zia-open");
-        }
-      }, CARD_OUT_MS);
-    };
-
-    const tippedTarget = (node) => {
-      const el = node?.closest?.(TIPPED);
-      if (!el || inPopup(el)) {
-        return null;
-      }
-      // one that slipped past the watcher is stashed as it's hovered
-      stash(el);
-      return el;
-    };
-
-    // the covered button under the pointer, before its card is even up:
-    // a native tip anchored to it — or to a wrapper around it — is shut
-    // at the door, so a card and a Firefox tip never double up
-    let hovered = null;
-    const tipIsOurs = (trigger) => {
-      if (!trigger) {
-        return false;
-      }
-      if (tippedTarget(trigger)) {
-        return true;
-      }
-      const el = hovered || current;
-      return !!el && (el.contains(trigger) || trigger.contains(el));
-    };
-    window.addEventListener(
-      "popupshowing",
-      (event) => {
-        const popup = event.target;
-        if (popup?.localName !== "tooltip") {
-          return;
-        }
-        if (tipIsOurs(popup.triggerNode || document.tooltipNode)) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-      },
-      true
-    );
-    window.addEventListener(
-      "popupshown",
-      (event) => {
-        const popup = event.target;
-        if (popup?.localName === "tooltip" && tipIsOurs(popup.triggerNode || document.tooltipNode)) {
-          popup.hidePopup?.();
-        }
-      },
-      true
-    );
-
-    root.addEventListener("mouseover", (event) => {
-      const el = tippedTarget(event.target);
-      if (!el || el.contains(event.relatedTarget)) {
-        return;
-      }
-      hovered = el;
-      clearTimeout(hideTimer);
-      if (el === current) {
-        return;
-      }
-      clearTimeout(showTimer);
-      if (current) {
-        show(el);
-        return;
-      }
-      showTimer = setTimeout(() => {
-        if (el.isConnected && el.matches(":hover")) {
-          show(el);
-        }
-      }, TAB_CARD_DELAY);
-    });
-    root.addEventListener("mouseout", (event) => {
-      const el = tippedTarget(event.target);
-      if (!el || el.contains(event.relatedTarget)) {
-        return;
-      }
-      hovered = null;
-      clearTimeout(showTimer);
-      clearTimeout(hideTimer);
-      hideTimer = setTimeout(hide, TIP_GRACE);
-    });
+    window.addEventListener("popupshowing", onTooltipShowing, true);
+    window.addEventListener("popupshown", onTooltipShown, true);
+    root.addEventListener("mouseover", onTipOver);
+    root.addEventListener("mouseout", onTipOut);
     for (const type of ["mousedown", "dragstart", "contextmenu", "popupshown"]) {
-      window.addEventListener(type, () => hide(), true);
+      window.addEventListener(type, () => hideTipCard(), true);
     }
-    window.addEventListener("wheel", () => hide(), { passive: true, capture: true });
-    window.addEventListener("blur", hide);
+    window.addEventListener("wheel", () => hideTipCard(), { passive: true, capture: true });
+    window.addEventListener("blur", hideTipCard);
+  }
+
+  function inPopup(el) {
+    return !!el.closest("popup, menupopup, panel, tooltip");
+  }
+
+  function stashTip(el) {
+    // an add-on's own tip can sit on a wrapper over the button (the
+    // "unified-extensions-item" toolbaritem carries it too), and a tip
+    // hunts up through ancestors, so the stash climbs to the toolbar
+    for (let n = el; n && !inPopup(n); n = n.parentElement) {
+      const text = n.getAttribute?.("tooltiptext");
+      if (text !== null && text !== undefined) {
+        if (text) {
+          n.setAttribute(TIP_ATTR, text);
+        }
+        n.removeAttribute("tooltiptext");
+      }
+      if (n.matches?.("toolbar, #navigator-toolbox")) {
+        break;
+      }
+    }
+  }
+
+  function stashTipsUnder(node) {
+    if (node?.matches?.(TIPPED)) {
+      stashTip(node);
+    }
+    for (const el of node?.querySelectorAll?.(TIPPED) || []) {
+      stashTip(el);
+    }
+  }
+
+  function restashTips(records) {
+    for (const record of records) {
+      if (record.type === "attributes") {
+        if (record.target?.matches?.(TIPPED) || record.target?.querySelector?.(TIPPED)) {
+          stashTip(record.target);
+        }
+      } else {
+        for (const node of record.addedNodes) {
+          stashTipsUnder(node);
+        }
+      }
+    }
+  }
+
+  function placeTipCard(el) {
+    const card = tipCard.card;
+    const box = el.getBoundingClientRect();
+    const width = card.offsetWidth;
+    const height = card.offsetHeight;
+    // below like a tip, unless there's no room: the spaces sit at the
+    // window's foot, so theirs go above the icons
+    const below = box.bottom + TAB_CARD_GAP + height <= window.innerHeight - TAB_CARD_GAP;
+    const y = below ? box.bottom + TAB_CARD_GAP : box.top - height - TAB_CARD_GAP;
+    const x = Math.max(
+      TAB_CARD_GAP,
+      Math.min(box.left + box.width / 2 - width / 2, window.innerWidth - width - TAB_CARD_GAP)
+    );
+    card.style.left = `${Math.round(x)}px`;
+    card.style.top = `${Math.round(y)}px`;
+    card.style.transformOrigin = `center ${below ? "top" : "bottom"}`;
+  }
+
+  function showTipCard(el) {
+    const text =
+      el.getAttribute(TIP_ATTR) ||
+      el.getAttribute("tooltiptext") ||
+      el.getAttribute("aria-label") ||
+      el.getAttribute("label") ||
+      "";
+    if (!text.trim()) {
+      return;
+    }
+    if (!tipCard.card) {
+      tipCard.card = document.createElementNS(XHTML_NS, "div");
+      tipCard.card.id = "zia-tip-card";
+      tipCard.card.hidden = true;
+      root.appendChild(tipCard.card);
+    }
+    const card = tipCard.card;
+    const wasUp = !card.hidden && !card.hasAttribute("zia-closing");
+    tipCard.current = el;
+    card.textContent = text;
+    card.hidden = false;
+    placeTipCard(el);
+    clearTimeout(tipCard.closeTimer);
+    card.removeAttribute("zia-closing");
+    if (wasUp) {
+      card.setAttribute("zia-snap", "true");
+      card.setAttribute("zia-open", "true");
+      return;
+    }
+    card.removeAttribute("zia-snap");
+    card.removeAttribute("zia-open");
+    void card.offsetWidth;
+    card.setAttribute("zia-open", "true");
+  }
+
+  function hideTipCard() {
+    const card = tipCard.card;
+    clearTimeout(tipCard.showTimer);
+    clearTimeout(tipCard.hideTimer);
+    tipCard.current = null;
+    if (card && !card.hidden && !card.hasAttribute("zia-closing")) {
+      card.removeAttribute("zia-snap");
+      card.setAttribute("zia-closing", "true");
+    }
+    clearTimeout(tipCard.closeTimer);
+    tipCard.closeTimer = setTimeout(() => {
+      if (tipCard.card?.hasAttribute("zia-closing")) {
+        tipCard.card.hidden = true;
+        tipCard.card.removeAttribute("zia-closing");
+        tipCard.card.removeAttribute("zia-open");
+      }
+    }, TIP_CARD_OUT_MS);
+  }
+
+  function tippedTarget(node) {
+    const el = node?.closest?.(TIPPED);
+    if (!el || inPopup(el)) {
+      return null;
+    }
+    // one that slipped past the watcher is stashed as it's hovered
+    stashTip(el);
+    return el;
+  }
+
+  // the covered button under the pointer, before its card is even up:
+  // a native tip anchored to it — or to a wrapper around it — is shut
+  // at the door, so a card and a Firefox tip never double up
+  function tipIsOurs(trigger) {
+    if (!trigger) {
+      return false;
+    }
+    if (tippedTarget(trigger)) {
+      return true;
+    }
+    const el = tipCard.hovered || tipCard.current;
+    return !!el && (el.contains(trigger) || trigger.contains(el));
+  }
+
+  function onTooltipShowing(event) {
+    const popup = event.target;
+    if (popup?.localName !== "tooltip") {
+      return;
+    }
+    if (tipIsOurs(popup.triggerNode || document.tooltipNode)) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }
+
+  function onTooltipShown(event) {
+    const popup = event.target;
+    if (popup?.localName === "tooltip" && tipIsOurs(popup.triggerNode || document.tooltipNode)) {
+      popup.hidePopup?.();
+    }
+  }
+
+  function onTipOver(event) {
+    const el = tippedTarget(event.target);
+    if (!el || el.contains(event.relatedTarget)) {
+      return;
+    }
+    tipCard.hovered = el;
+    clearTimeout(tipCard.hideTimer);
+    if (el === tipCard.current) {
+      return;
+    }
+    clearTimeout(tipCard.showTimer);
+    if (tipCard.current) {
+      showTipCard(el);
+      return;
+    }
+    tipCard.showTimer = setTimeout(() => {
+      if (el.isConnected && el.matches(":hover")) {
+        showTipCard(el);
+      }
+    }, TAB_CARD_DELAY);
+  }
+
+  function onTipOut(event) {
+    const el = tippedTarget(event.target);
+    if (!el || el.contains(event.relatedTarget)) {
+      return;
+    }
+    tipCard.hovered = null;
+    clearTimeout(tipCard.showTimer);
+    clearTimeout(tipCard.hideTimer);
+    tipCard.hideTimer = setTimeout(hideTipCard, TIP_GRACE);
   }
   // ---------- Address bar commands: Zia's own actions in Zen's list, and answers
   // Zen lists its actions in the address bar's results (one shared list, matched
@@ -22668,6 +22844,9 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
   // a frame, nothing passed between it and Zia got through inside Zen (every switch showed
   // off, and it couldn't be closed). Only settings in that list are written, each with a
   // value of the kind it takes.
+  // Used elsewhere: addSettingsMenuItem.
+  // (the page fading out on closing)
+  const SETTINGS_OUT_MS = 260;
   let settingsList = null;
   const loadSettingsList = async () =>
     (settingsList ??= await (await fetch("chrome://sine/content/zia/preferences.json")).json());
@@ -22853,6 +23032,8 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     return { fresh, seen, stamped };
   }
 
+  // Each opening has a page of its own, handed to the steps below: the settings list, their
+  // values, which are new, the elements, the sections and rows, and what closing undoes.
   async function showZiaSettings() {
     const open = document.getElementById("zia-settings");
     if (open && !open.hasAttribute("closing")) {
@@ -22862,329 +23043,362 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     open?.remove();
     const list = await loadSettingsList();
     const platform = { macosx: "macos", win: "windows" }[AppConstants.platform] || "linux";
-    let values = settingValues(list);
-    const news = newSettings(list);
+    const page = { list, values: settingValues(list), news: newSettings(list), sections: [], rows: [], section: null };
+    buildSettingsFrame(page);
+    addSettingRows(page, platform);
+    makeSettingEl("div", "zia-set-none", page.listEl, "No settings match");
 
-    const make = (tag, className, parent, text) => {
-      const el = document.createElementNS(XHTML_NS, tag);
-      if (className) {
-        el.className = className;
-      }
-      if (text != null) {
-        el.textContent = text;
-      }
-      parent?.append(el);
-      return el;
-    };
-    const setOptions = (select, options) => {
-      select.replaceChildren();
-      for (const option of options) {
-        make("option", null, select, option.label).value = option.value;
-      }
-    };
-    const icon = (parent, d) => {
-      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.setAttribute("viewBox", "0 0 24 24");
-      svg.setAttribute("aria-hidden", "true");
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.setAttribute("d", d);
-      svg.append(path);
-      parent.append(svg);
-    };
-
-    // ---------- the frame of it: card, head (title, search, close), sections beside the list
-    const overlay = make("div");
-    overlay.id = "zia-settings";
-    overlay.setAttribute("popover", "manual");
-    const scrim = make("div", "zia-set-scrim", overlay);
-    const card = make("div", "zia-set-card", scrim);
-    card.setAttribute("role", "dialog");
-    card.setAttribute("aria-label", "Zia settings");
-    const head = make("div", "zia-set-head", card);
-    make("div", "zia-set-title", head, "Zia");
-    const searchBox = make("label", "zia-set-search", head);
-    icon(searchBox, "M10 4a6 6 0 1 0 0 12a6 6 0 0 0 0-12zM20 20l-5.5-5.5");
-    const search = make("input", null, searchBox);
-    search.type = "search";
-    search.placeholder = "Search settings";
-    search.setAttribute("autocomplete", "off");
-    search.spellcheck = false;
-    const closeButton = make("button", "zia-set-close", head);
-    closeButton.type = "button";
-    closeButton.setAttribute("aria-label", "Close");
-    icon(closeButton, "M6 6l12 12M18 6L6 18");
-    const body = make("div", "zia-set-body", card);
-    const nav = make("div", "zia-set-nav", body);
-    const listEl = make("div", "zia-set-list", body);
-
-    // Sine's rules for a row's conditions: "if" or "not", nested lists with their own
-    // "operator", and a row's own list "OR" unless it says otherwise
-    const holds = (conditions, operator) => {
-      const results = [conditions].flat().map((cond) => {
-        if (cond.if || cond.not) {
-          const test = cond.if || cond.not;
-          return (values[test.property] === test.value) === !cond.not;
-        }
-        return cond.conditions ? holds(cond.conditions, cond.operator || "AND") : false;
-      });
-      return operator === "OR" ? results.some(Boolean) : results.every(Boolean);
-    };
-
-    // ---------- sections and rows
-    const sections = [];
-    const rows = [];
-    let section = null;
-    const newSection = (label) => {
-      const el = make("div", "zia-set-section", listEl);
-      make("div", "zia-set-section-title", el, label);
-      const group = make("div", "zia-set-group", el);
-      const link = make("button", "zia-set-nav-item", nav, label);
-      link.type = "button";
-      link.addEventListener("click", () => el.scrollIntoView({ behavior: "smooth", block: "start" }));
-      section = { el, group, link, rows: [] };
-      sections.push(section);
-    };
-    for (const entry of list) {
-      if (entry.type === "separator") {
-        newSection(entry.label);
-        continue;
-      }
-      if (!section) {
-        newSection("General");
-      }
-      if (entry.disabledOn?.includes(platform)) {
-        continue;
-      }
-      const row = make("div", "zia-set-row", section.group);
-      row.classList.toggle("sub", !!entry.conditions);
-      const text = make("div", "zia-set-text", row);
-      const [name, detail] = settingName(entry);
-      const label = make("div", "zia-set-label", text, name);
-      const isNew = news.fresh.has(entry.property);
-      if (isNew) {
-        make("span", "zia-set-new", label, "New");
-        row.dataset.property = entry.property;
-        section.link.classList.add("new");
-      }
-      if (detail) {
-        make("div", "zia-set-desc", text, detail);
-      }
-      let control;
-      if (entry.type === "checkbox") {
-        control = make("button", "zia-set-switch", row);
-        control.type = "button";
-        control.setAttribute("role", "switch");
-        control.addEventListener("click", (event) => {
-          event.stopPropagation();
-          writeSetting(list, entry.property, control.getAttribute("aria-checked") !== "true");
-        });
-        row.addEventListener("click", () => control.click());
-      } else if (entry.type === "dropdown") {
-        control = make("select", "zia-set-select", row);
-        setOptions(control, entry.options || []);
-        control.addEventListener("change", () => writeSetting(list, entry.property, control.value));
-      } else if (entry.type === "string") {
-        control = make("input", "zia-set-field", row);
-        // (an API key is a secret: not shown as it's typed or read off the screen)
-        control.type = /api_key/i.test(entry.property) ? "password" : "text";
-        control.placeholder = entry.placeholder || "";
-        control.spellcheck = false;
-        control.setAttribute("autocomplete", "off");
-        control.addEventListener("change", () => writeSetting(list, entry.property, control.value));
-      } else {
-        row.remove();
-        continue;
-      }
-      control.setAttribute("aria-label", name);
-      // (found by its short name and detail, and by its full label too)
-      // (and the new ones by "new")
-      const words = `${name} ${detail} ${entry.label} ${entry.description || ""} ${section.el.firstChild.textContent}${isNew ? " new" : ""}`.toLowerCase();
-      const one = { entry, row, control, words };
-      rows.push(one);
-      section.rows.push(one);
-    }
-    make("div", "zia-set-none", listEl, "No settings match");
-
-    // ---------- what shows: each row's value, its conditions, then the search
-    const show = () => {
-      const query = search.value.trim().toLowerCase();
-      let any = false;
-      for (const one of rows) {
-        const allowed = !one.entry.conditions || holds(one.entry.conditions, one.entry.operator || "OR");
-        // (searching, a matching row shows even if its condition hides it, so it can be found)
-        one.row.hidden = query ? !query.split(/\s+/).every((word) => one.words.includes(word)) : !allowed;
-        one.row.classList.toggle("off", !!query && !allowed);
-      }
-      for (const part of sections) {
-        const visible = part.rows.some((one) => !one.row.hidden);
-        part.el.hidden = !visible;
-        part.link.hidden = !visible;
-        any ||= visible;
-      }
-      listEl.classList.toggle("empty", !any);
-    };
-    const fill = () => {
-      values = settingValues(list);
-      for (const one of rows) {
-        const value = values[one.entry.property];
-        if (one.entry.type === "checkbox") {
-          one.control.setAttribute("aria-checked", String(!!value));
-          continue;
-        }
-        // (a saved choice that isn't in the list, a model fetched in Sine's page say, is added
-        // to it: the dropdown showed empty)
-        if (one.entry.type === "dropdown" && value && ![...one.control.options].some((option) => option.value === value)) {
-          make("option", null, one.control, value).value = value;
-        }
-        if (document.activeElement !== one.control) {
-          one.control.value = value ?? "";
-        }
-      }
-      show();
-      fillModels();
-    };
-    // The AI services' model dropdowns with the models each service actually offers, as
-    // Sine's page has them (tidy-downloads-models.js, read live, cached a few minutes):
-    // the list in preferences.json is only a fallback
-    const fillModels = () => {
-      const lists = window.ziaTidyModels;
-      for (const one of rows) {
-        if (one.entry.type !== "dropdown" || one.row.hidden || !lists?.handles(one.entry.property)) {
-          continue;
-        }
-        lists
-          .modelsFor(one.entry.property)
-          .then((models) => {
-            if (!models?.length || !one.control.isConnected || document.activeElement === one.control) {
-              return;
-            }
-            const value = values[one.entry.property];
-            setOptions(one.control, models);
-            if (value && !models.some((model) => model.value === value)) {
-              make("option", null, one.control, value).value = value;
-            }
-            one.control.value = value ?? "";
-          })
-          .catch((err) => noteError("settings page: models", err));
-      }
-    };
-    fill();
-    search.addEventListener("input", () => {
-      show();
-      listEl.scrollTop = 0;
+    fillSettings(page);
+    page.search.addEventListener("input", () => {
+      showSettingRows(page);
+      page.listEl.scrollTop = 0;
     });
-
-    // the section in view lit in the side list
-    const lit = new IntersectionObserver(
-      (seen) => {
-        for (const item of seen) {
-          if (item.isIntersecting) {
-            for (const part of sections) {
-              part.link.classList.toggle("cur", part.el === item.target);
-            }
-          }
-        }
-      },
-      { root: listEl, rootMargin: "0px 0px -70% 0px" }
-    );
-    for (const part of sections) {
-      lit.observe(part.el);
-    }
-
-    // a "New" row once on screen counts as seen, from the next opening
-    const seenNow = new Set();
-    const spotted = new IntersectionObserver(
-      (seen) => {
-        for (const item of seen) {
-          if (item.isIntersecting) {
-            seenNow.add(item.target.dataset.property);
-          }
-        }
-      },
-      { root: listEl }
-    );
-    for (const one of rows) {
-      if (one.row.dataset.property) {
-        spotted.observe(one.row);
-      }
-    }
+    watchSettingsInView(page);
 
     // ---------- a change anywhere shows at once (this panel, Sine's list, another window, one
     // that turns itself back off), till it's closed
-    let refresh = 0;
-    const onPref = () => {
-      refresh ||= requestAnimationFrame(() => {
-        refresh = 0;
-        fill();
-      });
-    };
-    const watched = Object.keys(values);
-    for (const property of watched) {
-      Services.prefs.addObserver(property, onPref);
+    page.refresh = 0;
+    page.onPref = () => refreshSettings(page);
+    page.watched = Object.keys(page.values);
+    for (const property of page.watched) {
+      Services.prefs.addObserver(property, page.onPref);
     }
 
     // ---------- closing: the ✕, Esc (which first clears a search) or a click outside the card
-    const onKey = (event) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        event.stopPropagation();
-        if (search.value) {
-          search.value = "";
-          show();
-        } else {
-          close();
-        }
-      } else if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "f") {
-        event.preventDefault();
-        event.stopPropagation();
-        search.focus();
-      }
-    };
-    const close = () => {
-      if (overlay.hasAttribute("closing")) {
-        return;
-      }
-      overlay.setAttribute("closing", "");
-      window.removeEventListener("keydown", onKey, true);
-      lit.disconnect();
-      spotted.disconnect();
-      if (seenNow.size) {
-        // (kept to the stamped settings, so the list never outgrows them)
-        const seen = news.stamped
-          .map((entry) => entry.property)
-          .filter((property) => seenNow.has(property) || news.seen.includes(property));
-        Services.prefs.setStringPref(NEW_SEEN_PREF, seen.join(","));
-      }
-      for (const property of watched) {
-        Services.prefs.removeObserver(property, onPref);
-      }
-      setTimeout(() => {
-        try {
-          overlay.hidePopover?.();
-        } catch (err) {}
-        overlay.remove();
-      }, 260);
-      gBrowser.selectedBrowser?.focus();
-    };
-    window.addEventListener("keydown", onKey, true);
-    closeButton.addEventListener("click", close);
-    scrim.addEventListener("mousedown", (event) => {
-      if (event.target === scrim) {
-        close();
+    page.onKey = (event) => onSettingsKey(page, event);
+    window.addEventListener("keydown", page.onKey, true);
+    page.closeButton.addEventListener("click", () => closeSettings(page));
+    page.scrim.addEventListener("mousedown", (event) => {
+      if (event.target === page.scrim) {
+        closeSettings(page);
       }
     });
-    window.addEventListener("unload", close, { once: true });
+    window.addEventListener("unload", () => closeSettings(page), { once: true });
 
-    document.documentElement.appendChild(overlay);
+    document.documentElement.appendChild(page.overlay);
     try {
-      overlay.showPopover();
+      page.overlay.showPopover();
     } catch (err) {
       noteError("settings page: top layer", err);
     }
     requestAnimationFrame(() => {
-      overlay.setAttribute("shown", "");
-      search.focus();
+      page.overlay.setAttribute("shown", "");
+      page.search.focus();
     });
+  }
+
+  function makeSettingEl(tag, className, parent, text) {
+    const el = document.createElementNS(XHTML_NS, tag);
+    if (className) {
+      el.className = className;
+    }
+    if (text != null) {
+      el.textContent = text;
+    }
+    parent?.append(el);
+    return el;
+  }
+
+  function setSettingOptions(select, options) {
+    select.replaceChildren();
+    for (const option of options) {
+      makeSettingEl("option", null, select, option.label).value = option.value;
+    }
+  }
+
+  function settingsIcon(parent, d) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", d);
+    svg.append(path);
+    parent.append(svg);
+  }
+
+  // ---------- the frame of it: card, head (title, search, close), sections beside the list
+  function buildSettingsFrame(page) {
+    const overlay = makeSettingEl("div");
+    overlay.id = "zia-settings";
+    overlay.setAttribute("popover", "manual");
+    const scrim = makeSettingEl("div", "zia-set-scrim", overlay);
+    const card = makeSettingEl("div", "zia-set-card", scrim);
+    card.setAttribute("role", "dialog");
+    card.setAttribute("aria-label", "Zia settings");
+    const head = makeSettingEl("div", "zia-set-head", card);
+    makeSettingEl("div", "zia-set-title", head, "Zia");
+    const searchBox = makeSettingEl("label", "zia-set-search", head);
+    settingsIcon(searchBox, "M10 4a6 6 0 1 0 0 12a6 6 0 0 0 0-12zM20 20l-5.5-5.5");
+    const search = makeSettingEl("input", null, searchBox);
+    search.type = "search";
+    search.placeholder = "Search settings";
+    search.setAttribute("autocomplete", "off");
+    search.spellcheck = false;
+    const closeButton = makeSettingEl("button", "zia-set-close", head);
+    closeButton.type = "button";
+    closeButton.setAttribute("aria-label", "Close");
+    settingsIcon(closeButton, "M6 6l12 12M18 6L6 18");
+    const body = makeSettingEl("div", "zia-set-body", card);
+    const nav = makeSettingEl("div", "zia-set-nav", body);
+    const listEl = makeSettingEl("div", "zia-set-list", body);
+    Object.assign(page, { overlay, scrim, search, closeButton, nav, listEl });
+  }
+
+  // Sine's rules for a row's conditions: "if" or "not", nested lists with their own
+  // "operator", and a row's own list "OR" unless it says otherwise
+  function conditionsHold(page, conditions, operator) {
+    const results = [conditions].flat().map((cond) => {
+      if (cond.if || cond.not) {
+        const test = cond.if || cond.not;
+        return (page.values[test.property] === test.value) === !cond.not;
+      }
+      return cond.conditions ? conditionsHold(page, cond.conditions, cond.operator || "AND") : false;
+    });
+    return operator === "OR" ? results.some(Boolean) : results.every(Boolean);
+  }
+
+  // ---------- sections and rows
+  function addSettingsSection(page, label) {
+    const el = makeSettingEl("div", "zia-set-section", page.listEl);
+    makeSettingEl("div", "zia-set-section-title", el, label);
+    const group = makeSettingEl("div", "zia-set-group", el);
+    const link = makeSettingEl("button", "zia-set-nav-item", page.nav, label);
+    link.type = "button";
+    link.addEventListener("click", () => el.scrollIntoView({ behavior: "smooth", block: "start" }));
+    page.section = { el, group, link, rows: [] };
+    page.sections.push(page.section);
+  }
+
+  function addSettingRows(page, platform) {
+    for (const entry of page.list) {
+      if (entry.type === "separator") {
+        addSettingsSection(page, entry.label);
+        continue;
+      }
+      if (!page.section) {
+        addSettingsSection(page, "General");
+      }
+      if (entry.disabledOn?.includes(platform)) {
+        continue;
+      }
+      addSettingRow(page, entry);
+    }
+  }
+
+  function addSettingRow(page, entry) {
+    const section = page.section;
+    const row = makeSettingEl("div", "zia-set-row", section.group);
+    row.classList.toggle("sub", !!entry.conditions);
+    const text = makeSettingEl("div", "zia-set-text", row);
+    const [name, detail] = settingName(entry);
+    const label = makeSettingEl("div", "zia-set-label", text, name);
+    const isNew = page.news.fresh.has(entry.property);
+    if (isNew) {
+      makeSettingEl("span", "zia-set-new", label, "New");
+      row.dataset.property = entry.property;
+      section.link.classList.add("new");
+    }
+    if (detail) {
+      makeSettingEl("div", "zia-set-desc", text, detail);
+    }
+    const control = settingControl(page, entry, row);
+    if (!control) {
+      row.remove();
+      return;
+    }
+    control.setAttribute("aria-label", name);
+    // (found by its short name and detail, and by its full label too)
+    // (and the new ones by "new")
+    const words = `${name} ${detail} ${entry.label} ${entry.description || ""} ${section.el.firstChild.textContent}${isNew ? " new" : ""}`.toLowerCase();
+    const setting = { entry, row, control, words };
+    page.rows.push(setting);
+    section.rows.push(setting);
+  }
+
+  // the switch, list or field a row's setting takes (none for a kind it can't show)
+  function settingControl(page, entry, row) {
+    let control;
+    if (entry.type === "checkbox") {
+      control = makeSettingEl("button", "zia-set-switch", row);
+      control.type = "button";
+      control.setAttribute("role", "switch");
+      control.addEventListener("click", (event) => {
+        event.stopPropagation();
+        writeSetting(page.list, entry.property, control.getAttribute("aria-checked") !== "true");
+      });
+      row.addEventListener("click", () => control.click());
+    } else if (entry.type === "dropdown") {
+      control = makeSettingEl("select", "zia-set-select", row);
+      setSettingOptions(control, entry.options || []);
+      control.addEventListener("change", () => writeSetting(page.list, entry.property, control.value));
+    } else if (entry.type === "string") {
+      control = makeSettingEl("input", "zia-set-field", row);
+      // (an API key is a secret: not shown as it's typed or read off the screen)
+      control.type = /api_key/i.test(entry.property) ? "password" : "text";
+      control.placeholder = entry.placeholder || "";
+      control.spellcheck = false;
+      control.setAttribute("autocomplete", "off");
+      control.addEventListener("change", () => writeSetting(page.list, entry.property, control.value));
+    } else {
+      return null;
+    }
+    return control;
+  }
+
+  // ---------- what shows: each row's value, its conditions, then the search
+  function showSettingRows(page) {
+    const query = page.search.value.trim().toLowerCase();
+    let any = false;
+    for (const setting of page.rows) {
+      const allowed = !setting.entry.conditions || conditionsHold(page, setting.entry.conditions, setting.entry.operator || "OR");
+      // (searching, a matching row shows even if its condition hides it, so it can be found)
+      setting.row.hidden = query ? !query.split(/\s+/).every((word) => setting.words.includes(word)) : !allowed;
+      setting.row.classList.toggle("off", !!query && !allowed);
+    }
+    for (const section of page.sections) {
+      const visible = section.rows.some((setting) => !setting.row.hidden);
+      section.el.hidden = !visible;
+      section.link.hidden = !visible;
+      any ||= visible;
+    }
+    page.listEl.classList.toggle("empty", !any);
+  }
+
+  function fillSettings(page) {
+    page.values = settingValues(page.list);
+    for (const setting of page.rows) {
+      const value = page.values[setting.entry.property];
+      if (setting.entry.type === "checkbox") {
+        setting.control.setAttribute("aria-checked", String(!!value));
+        continue;
+      }
+      // (a saved choice that isn't in the list, a model fetched in Sine's page say, is added
+      // to it: the dropdown showed empty)
+      if (setting.entry.type === "dropdown" && value && ![...setting.control.options].some((option) => option.value === value)) {
+        makeSettingEl("option", null, setting.control, value).value = value;
+      }
+      if (document.activeElement !== setting.control) {
+        setting.control.value = value ?? "";
+      }
+    }
+    showSettingRows(page);
+    fillModelLists(page);
+  }
+
+  // The AI services' model dropdowns with the models each service actually offers, as
+  // Sine's page has them (tidy-downloads-models.js, read live, cached a few minutes):
+  // the list in preferences.json is only a fallback
+  function fillModelLists(page) {
+    const lists = window.ziaTidyModels;
+    for (const setting of page.rows) {
+      if (setting.entry.type !== "dropdown" || setting.row.hidden || !lists?.handles(setting.entry.property)) {
+        continue;
+      }
+      lists
+        .modelsFor(setting.entry.property)
+        .then((models) => {
+          if (!models?.length || !setting.control.isConnected || document.activeElement === setting.control) {
+            return;
+          }
+          const value = page.values[setting.entry.property];
+          setSettingOptions(setting.control, models);
+          if (value && !models.some((model) => model.value === value)) {
+            makeSettingEl("option", null, setting.control, value).value = value;
+          }
+          setting.control.value = value ?? "";
+        })
+        .catch((err) => noteError("settings page: models", err));
+    }
+  }
+
+  function watchSettingsInView(page) {
+    // the section in view lit in the side list
+    page.lit = new IntersectionObserver(
+      (seen) => {
+        for (const item of seen) {
+          if (item.isIntersecting) {
+            for (const section of page.sections) {
+              section.link.classList.toggle("cur", section.el === item.target);
+            }
+          }
+        }
+      },
+      { root: page.listEl, rootMargin: "0px 0px -70% 0px" }
+    );
+    for (const section of page.sections) {
+      page.lit.observe(section.el);
+    }
+
+    // a "New" row once on screen counts as seen, from the next opening
+    page.seenNow = new Set();
+    page.spotted = new IntersectionObserver(
+      (seen) => {
+        for (const item of seen) {
+          if (item.isIntersecting) {
+            page.seenNow.add(item.target.dataset.property);
+          }
+        }
+      },
+      { root: page.listEl }
+    );
+    for (const one of page.rows) {
+      if (one.row.dataset.property) {
+        page.spotted.observe(one.row);
+      }
+    }
+  }
+
+  function refreshSettings(page) {
+    page.refresh ||= requestAnimationFrame(() => {
+      page.refresh = 0;
+      fillSettings(page);
+    });
+  }
+
+  function onSettingsKey(page, event) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      if (page.search.value) {
+        page.search.value = "";
+        showSettingRows(page);
+      } else {
+        closeSettings(page);
+      }
+    } else if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "f") {
+      event.preventDefault();
+      event.stopPropagation();
+      page.search.focus();
+    }
+  }
+
+  function closeSettings(page) {
+    const { overlay, news, seenNow } = page;
+    if (overlay.hasAttribute("closing")) {
+      return;
+    }
+    overlay.setAttribute("closing", "");
+    window.removeEventListener("keydown", page.onKey, true);
+    page.lit.disconnect();
+    page.spotted.disconnect();
+    if (seenNow.size) {
+      // (kept to the stamped settings, so the list never outgrows them)
+      const seen = news.stamped
+        .map((entry) => entry.property)
+        .filter((property) => seenNow.has(property) || news.seen.includes(property));
+      Services.prefs.setStringPref(NEW_SEEN_PREF, seen.join(","));
+    }
+    for (const property of page.watched) {
+      Services.prefs.removeObserver(property, page.onPref);
+    }
+    // (not kept: a page opened meanwhile removes this one itself)
+    setTimeout(() => {
+      try {
+        overlay.hidePopover?.();
+      } catch (err) {}
+      overlay.remove();
+    }, SETTINGS_OUT_MS);
+    gBrowser.selectedBrowser?.focus();
   }
 
   // "Zia Settings" in the ⋯ menu, under Firefox's own Settings (the menu is built the
