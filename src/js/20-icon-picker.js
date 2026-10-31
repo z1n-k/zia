@@ -9,10 +9,20 @@
   // Zia makes a zip of them in the profile (once per icon pack, so Zia's own
   // updates don't redo it) and reads icons straight out of it, the way
   // Firefox reads its own, at resource://zia-tabler/.
+  // Used elsewhere: ICON_DIR, pointResource, setupIconPack, tablerIcons, watchOldIcons,
+  // addIconPicker.
   const ICON_ROOT = "chrome://sine/content/zia/icons";
   const ICON_HOST = "zia-tabler";
   const ICON_DIR = `resource://${ICON_HOST}`;
   const ICON_STYLE_PREF = "zia.icons.style";
+  // (old icons moved off a beat after folders and spaces change, all at once)
+  const OLD_ICONS_QUEUE_MS = 500;
+  // (icons drawn again a beat after the session's folders and spaces are back)
+  const ICON_REDRAW_MS = 300;
+  // Results are added a screenful at a time as the grid scrolls, so the
+  // thousands of icons never load at once.
+  const ICON_BATCH = 180;
+  const ZIP_DATE = 0x21; // 1 January 1980
   let iconIndex = null;
   let iconPackReady = null;
 
@@ -99,68 +109,85 @@
     for (const item of items) {
       size += 30 + 46 + 2 * item.nameBytes.length + item.data.length;
     }
+    const zip = zipWriter(size);
+    for (const item of items) {
+      writeZipEntry(zip, item);
+    }
+    const directory = zip.at;
+    for (const item of items) {
+      writeZipDirectoryEntry(zip, item);
+    }
+    const directorySize = zip.at - directory;
+    zip.u32(0x06054b50);
+    zip.u16(0);
+    zip.u16(0);
+    zip.u16(items.length);
+    zip.u16(items.length);
+    zip.u32(directorySize);
+    zip.u32(directory);
+    zip.u16(0);
+    return zip.out;
+  }
+
+  // little-endian numbers and bytes written one after another
+  function zipWriter(size) {
     const out = new Uint8Array(size);
     const view = new DataView(out.buffer);
-    let at = 0;
-    const u16 = (v) => {
-      view.setUint16(at, v, true);
-      at += 2;
+    const zip = {
+      out,
+      at: 0,
+      u16: (v) => {
+        view.setUint16(zip.at, v, true);
+        zip.at += 2;
+      },
+      u32: (v) => {
+        view.setUint32(zip.at, v, true);
+        zip.at += 4;
+      },
+      bytes: (bytes) => {
+        out.set(bytes, zip.at);
+        zip.at += bytes.length;
+      },
     };
-    const u32 = (v) => {
-      view.setUint32(at, v, true);
-      at += 4;
-    };
-    const DATE = 0x21; // 1 January 1980
-    for (const item of items) {
-      item.offset = at;
-      u32(0x04034b50);
-      u16(10);
-      u16(0);
-      u16(0);
-      u16(0);
-      u16(DATE);
-      u32(item.crc);
-      u32(item.data.length);
-      u32(item.data.length);
-      u16(item.nameBytes.length);
-      u16(0);
-      out.set(item.nameBytes, at);
-      at += item.nameBytes.length;
-      out.set(item.data, at);
-      at += item.data.length;
-    }
-    const directory = at;
-    for (const item of items) {
-      u32(0x02014b50);
-      u16(20);
-      u16(10);
-      u16(0);
-      u16(0);
-      u16(0);
-      u16(DATE);
-      u32(item.crc);
-      u32(item.data.length);
-      u32(item.data.length);
-      u16(item.nameBytes.length);
-      u16(0);
-      u16(0);
-      u16(0);
-      u16(0);
-      u32(0o644 << 16);
-      u32(item.offset);
-      out.set(item.nameBytes, at);
-      at += item.nameBytes.length;
-    }
-    const directorySize = at - directory;
-    u32(0x06054b50);
-    u16(0);
-    u16(0);
-    u16(items.length);
-    u16(items.length);
-    u32(directorySize);
-    u32(directory);
-    u16(0);
-    return out;
+    return zip;
+  }
+
+  function writeZipEntry(zip, item) {
+    item.offset = zip.at;
+    zip.u32(0x04034b50);
+    zip.u16(10);
+    zip.u16(0);
+    zip.u16(0);
+    zip.u16(0);
+    zip.u16(ZIP_DATE);
+    zip.u32(item.crc);
+    zip.u32(item.data.length);
+    zip.u32(item.data.length);
+    zip.u16(item.nameBytes.length);
+    zip.u16(0);
+    zip.bytes(item.nameBytes);
+    zip.bytes(item.data);
+  }
+
+  function writeZipDirectoryEntry(zip, item) {
+    zip.u32(0x02014b50);
+    zip.u16(20);
+    zip.u16(10);
+    zip.u16(0);
+    zip.u16(0);
+    zip.u16(0);
+    zip.u16(ZIP_DATE);
+    zip.u32(item.crc);
+    zip.u32(item.data.length);
+    zip.u32(item.data.length);
+    zip.u16(item.nameBytes.length);
+    zip.u16(0);
+    zip.u16(0);
+    zip.u16(0);
+    zip.u16(0);
+    zip.u32(0o644 << 16);
+    zip.u32(item.offset);
+    zip.bytes(item.nameBytes);
   }
 
   async function packFromBundle() {
@@ -325,7 +352,7 @@
         setTimeout(() => {
           queued = false;
           setupIconPack().finally(moveOffOldIcons);
-        }, 500);
+        }, OLD_ICONS_QUEUE_MS);
       }
     };
     gBrowser.tabContainer.addEventListener("TabGroupCreate", queue);
@@ -340,9 +367,32 @@
     };
     setupIconPack().then(() => {
       redraw();
-      window.SessionStore?.promiseAllWindowsRestored?.then(() => setTimeout(redraw, 300), () => {});
+      window.SessionStore?.promiseAllWindowsRestored?.then(() => setTimeout(redraw, ICON_REDRAW_MS), () => {});
     }, () => {});
   }
+
+  // Zia's tab in Zen's emoji and icon picker: its elements, whether it's the page shown,
+  // the pick under way (Zen's settings for it, whether Zia's page made it, and how to hand it
+  // back), and the search's results and how many of them are in the grid
+  const iconPicker = {
+    panel: null,
+    tabs: null,
+    tab: null,
+    page: null,
+    bar: null,
+    box: null,
+    styleButtons: {},
+    grid: null,
+    empty: null,
+    more: null,
+    showing: false,
+    picked: false,
+    resolvePick: null,
+    options: null,
+    results: [],
+    shown: 0,
+    lastQuery: null,
+  };
 
   function addIconPicker() {
     const picker = window.gZenEmojiPicker;
@@ -353,33 +403,92 @@
     if (!picker || !panel || !pages || !tabs) {
       return;
     }
+    iconPicker.panel = panel;
+    iconPicker.tabs = tabs;
 
     const tab = document.createXULElement("toolbarbutton");
+    iconPicker.tab = tab;
     tab.id = "zia-icons-tab";
     tab.setAttribute("label", "Zia");
     tabs.appendChild(tab);
 
-    function nameZenTab() {
-      const zenTab = document.getElementById("PanelUI-zen-emojis-picker-change-svg");
-      if (zenTab && zenTab.getAttribute("label") !== "Zen") {
-        zenTab.removeAttribute("data-l10n-id");
-        zenTab.removeAttribute("data-l10n-args");
-        zenTab.setAttribute("label", "Zen");
-      }
-    }
+    buildIconsPage(pages);
+    const more = document.createElementNS(XHTML_NS, "div");
+    iconPicker.more = more;
+    more.id = "zia-icons-more";
+    const moreWatcher = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          addMoreIcons();
+        }
+      },
+      { root: iconPicker.grid, rootMargin: "200px" }
+    );
+    moreWatcher.observe(more);
 
+    tab.addEventListener("command", showIconsPage);
+    panel.addEventListener("command", onIconPickerCommand);
+    iconPicker.box.addEventListener("input", renderIcons);
+    search?.addEventListener("input", () => {
+      if (iconPicker.showing) {
+        iconPicker.box.value = search.value;
+        renderIcons();
+      }
+    });
+    panel.addEventListener("popupshowing", () => {
+      nameZenTab();
+      matchZenSearch();
+    });
+    panel.addEventListener("popupshown", () => {
+      nameZenTab();
+      matchZenSearch();
+      iconPicker.showing = false;
+      tab.classList.remove("selected");
+      if (search && iconPicker.lastQuery !== null) {
+        renderIcons();
+      }
+    });
+    wrapIconPickerOpen(picker);
+  }
+
+  function nameZenTab() {
+    const zenTab = document.getElementById("PanelUI-zen-emojis-picker-change-svg");
+    if (zenTab && zenTab.getAttribute("label") !== "Zen") {
+      zenTab.removeAttribute("data-l10n-id");
+      zenTab.removeAttribute("data-l10n-args");
+      zenTab.setAttribute("label", "Zen");
+    }
+  }
+
+  function buildIconsPage(pages) {
     const page = document.createXULElement("vbox");
+    iconPicker.page = page;
     page.id = "zia-icons-page";
     const bar = document.createElementNS(XHTML_NS, "div");
+    iconPicker.bar = bar;
     bar.id = "zia-icons-searchbar";
     const box = document.createElementNS(XHTML_NS, "input");
+    iconPicker.box = box;
     box.id = "zia-icons-search";
     box.setAttribute("type", "text");
     box.setAttribute("placeholder", "Search icons");
-    // Outline or solid, remembered
+    bar.append(box, buildIconStyleButtons());
+    const grid = document.createElementNS(XHTML_NS, "div");
+    iconPicker.grid = grid;
+    grid.id = "zia-icons-grid";
+    const empty = document.createElementNS(XHTML_NS, "div");
+    iconPicker.empty = empty;
+    empty.id = "zia-icons-empty";
+    empty.textContent = "No icons found";
+    empty.hidden = true;
+    page.append(bar, grid, empty);
+    pages.appendChild(page);
+  }
+
+  // Outline or solid, remembered
+  function buildIconStyleButtons() {
     const styles = document.createElementNS(XHTML_NS, "div");
     styles.id = "zia-icons-style";
-    const styleButtons = {};
     for (const [value, label] of [["outline", "Outline"], ["filled", "Solid"]]) {
       const button = document.createElementNS(XHTML_NS, "button");
       button.className = "zia-icons-style-option";
@@ -391,207 +500,156 @@
         } catch (err) {
           noteError("icon picker: save style", err);
         }
-        showStyle();
-        render();
+        showIconStyle();
+        renderIcons();
       });
-      styleButtons[value] = button;
+      iconPicker.styleButtons[value] = button;
       styles.appendChild(button);
     }
-    bar.append(box, styles);
-    const grid = document.createElementNS(XHTML_NS, "div");
-    grid.id = "zia-icons-grid";
-    const empty = document.createElementNS(XHTML_NS, "div");
-    empty.id = "zia-icons-empty";
-    empty.textContent = "No icons found";
-    empty.hidden = true;
-    page.append(bar, grid, empty);
-    pages.appendChild(page);
+    return styles;
+  }
 
-    function showStyle() {
-      const current = iconStyle();
-      for (const [value, button] of Object.entries(styleButtons)) {
-        button.toggleAttribute("selected", value === current);
+  function showIconStyle() {
+    const current = iconStyle();
+    for (const [value, button] of Object.entries(iconPicker.styleButtons)) {
+      button.toggleAttribute("selected", value === current);
+    }
+  }
+
+  function chooseIcon(url) {
+    const { panel, options } = iconPicker;
+    iconPicker.picked = true;
+    // as Zen does after its own picks: with an icon chosen, the "none"
+    // (bin) button can take it off again
+    panel.removeAttribute("hide-none-option");
+    options?.onSelect?.(url);
+    iconPicker.resolvePick?.(url);
+    if (options?.closeOnSelect !== false) {
+      panel.hidePopup();
+    }
+  }
+
+  function addMoreIcons() {
+    const { results, shown } = iconPicker;
+    if (shown >= results.length) {
+      return;
+    }
+    const style = iconStyle();
+    const fragment = document.createDocumentFragment();
+    for (const icon of results.slice(shown, shown + ICON_BATCH)) {
+      const url = `${ICON_DIR}/${style}/${icon.name}.svg`;
+      const item = document.createXULElement("toolbarbutton");
+      item.className = "toolbarbutton-1 zen-emojis-picker-svg zia-icon-item";
+      item.setAttribute("tooltiptext", icon.name.replace(/-/g, " "));
+      item.style.listStyleImage = `url(${url})`;
+      // Zen's picker takes every click on an icon with its class as one
+      // of its own, and would pass on a broken address (it reads an
+      // "icon" attribute these don't have) after Zia's
+      item.addEventListener("command", (event) => {
+        event.stopPropagation();
+        chooseIcon(url);
+      });
+      fragment.appendChild(item);
+    }
+    iconPicker.shown = Math.min(results.length, shown + ICON_BATCH);
+    iconPicker.grid.insertBefore(fragment, iconPicker.more);
+  }
+
+  function renderIcons() {
+    const { box, grid } = iconPicker;
+    const style = iconStyle();
+    const query = `${style}:${(box.value || "").trim()}`;
+    if (query === iconPicker.lastQuery) {
+      return;
+    }
+    iconPicker.lastQuery = query;
+    iconPicker.results = searchIcons(tablerIcons().filter((icon) => icon[style]), box.value || "");
+    iconPicker.shown = 0;
+    grid.replaceChildren(iconPicker.more);
+    grid.scrollTop = 0;
+    iconPicker.empty.hidden = iconPicker.results.length > 0;
+    addMoreIcons();
+  }
+
+  function showIconsPage() {
+    iconPicker.showing = true;
+    showIconStyle();
+    renderIcons();
+    iconPicker.box.focus({ preventScroll: true });
+    iconPicker.page.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
+    for (const other of iconPicker.tabs.children) {
+      other.classList.toggle("selected", other === iconPicker.tab);
+    }
+  }
+
+  function onIconPickerCommand(event) {
+    if (event.target === iconPicker.tab) {
+      return;
+    }
+    if (event.target.id?.startsWith("PanelUI-zen-emojis-picker-change")) {
+      iconPicker.showing = false;
+      iconPicker.tab.classList.remove("selected");
+    }
+  }
+
+  function matchZenSearch() {
+    const { box, bar, grid } = iconPicker;
+    const zenBox = document.getElementById("PanelUI-zen-emojis-picker-search");
+    if (!zenBox) {
+      return;
+    }
+    const from = getComputedStyle(zenBox);
+    for (const prop of [
+      "appearance", "padding", "border", "borderRadius", "backgroundColor",
+      "backgroundImage", "color", "font", "fontSize", "fontFamily",
+      "boxShadow", "outline", "minHeight", "height", "lineHeight",
+    ]) {
+      const value = from[prop];
+      if (value && value !== "auto") {
+        box.style[prop] = value;
       }
     }
-
-    let showing = false;
-    let picked = false;
-    let resolvePick = null;
-    let options = null;
-
-    function choose(url) {
-      picked = true;
-      // as Zen does after its own picks: with an icon chosen, the "none"
-      // (bin) button can take it off again
-      panel.removeAttribute("hide-none-option");
-      options?.onSelect?.(url);
-      resolvePick?.(url);
-      if (options?.closeOnSelect !== false) {
-        panel.hidePopup();
-      }
+    const rect = zenBox.getBoundingClientRect();
+    if (rect.height > 0) {
+      box.style.boxSizing = "border-box";
+      box.style.height = `${rect.height}px`;
+      box.style.minHeight = `${rect.height}px`;
     }
-
-    // Results are added a screenful at a time as the grid scrolls, so the
-    // thousands of icons never load at once.
-    const BATCH = 180;
-    let results = [];
-    let shown = 0;
-    let lastQuery = null;
-    const more = document.createElementNS(XHTML_NS, "div");
-    more.id = "zia-icons-more";
-    const moreWatcher = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          addMore();
-        }
-      },
-      { root: grid, rootMargin: "200px" }
-    );
-    moreWatcher.observe(more);
-
-    function addMore() {
-      if (shown >= results.length) {
-        return;
-      }
-      const style = iconStyle();
-      const fragment = document.createDocumentFragment();
-      for (const icon of results.slice(shown, shown + BATCH)) {
-        const url = `${ICON_DIR}/${style}/${icon.name}.svg`;
-        const item = document.createXULElement("toolbarbutton");
-        item.className = "toolbarbutton-1 zen-emojis-picker-svg zia-icon-item";
-        item.setAttribute("tooltiptext", icon.name.replace(/-/g, " "));
-        item.style.listStyleImage = `url(${url})`;
-        // Zen's picker takes every click on an icon with its class as one
-        // of its own, and would pass on a broken address (it reads an
-        // "icon" attribute these don't have) after Zia's
-        item.addEventListener("command", (event) => {
-          event.stopPropagation();
-          choose(url);
-        });
-        fragment.appendChild(item);
-      }
-      shown = Math.min(results.length, shown + BATCH);
-      grid.insertBefore(fragment, more);
-    }
-
-    function render() {
-      const style = iconStyle();
-      const query = `${style}:${(box.value || "").trim()}`;
-      if (query === lastQuery) {
-        return;
-      }
-      lastQuery = query;
-      results = searchIcons(tablerIcons().filter((icon) => icon[style]), box.value || "");
-      shown = 0;
-      grid.replaceChildren(more);
-      grid.scrollTop = 0;
-      empty.hidden = results.length > 0;
-      addMore();
-    }
-
-    function show() {
-      showing = true;
-      showStyle();
-      render();
-      box.focus({ preventScroll: true });
-      page.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "start" });
-      for (const other of tabs.children) {
-        other.classList.toggle("selected", other === tab);
-      }
-    }
-
-    tab.addEventListener("command", show);
-
-    panel.addEventListener("command", (event) => {
-      if (event.target === tab) {
-        return;
-      }
-      if (event.target.id?.startsWith("PanelUI-zen-emojis-picker-change")) {
-        showing = false;
-        tab.classList.remove("selected");
-      }
-    });
-
-    function matchZenSearch() {
-      const zenBox = document.getElementById("PanelUI-zen-emojis-picker-search");
-      if (!zenBox) {
-        return;
-      }
-      const from = getComputedStyle(zenBox);
-      for (const prop of [
-        "appearance", "padding", "border", "borderRadius", "backgroundColor",
-        "backgroundImage", "color", "font", "fontSize", "fontFamily",
-        "boxShadow", "outline", "minHeight", "height", "lineHeight",
-      ]) {
-        const value = from[prop];
-        if (value && value !== "auto") {
-          box.style[prop] = value;
-        }
-      }
-      const rect = zenBox.getBoundingClientRect();
-      if (rect.height > 0) {
-        box.style.boxSizing = "border-box";
-        box.style.height = `${rect.height}px`;
-        box.style.minHeight = `${rect.height}px`;
-      }
-      const header = document.getElementById("PanelUI-zen-emojis-picker-header");
-      if (header) {
-        const row = getComputedStyle(header);
-        for (const prop of ["padding", "gap", "alignItems"]) {
-          if (row[prop]) {
-            bar.style[prop] = row[prop];
-          }
-        }
-      }
-      const zenList = document.getElementById("PanelUI-zen-emojis-picker-svgs");
-      if (zenList) {
-        const list = getComputedStyle(zenList);
-        for (const prop of ["padding", "gap", "gridTemplateColumns"]) {
-          if (list[prop]) {
-            grid.style[prop] = list[prop];
-          }
+    const header = document.getElementById("PanelUI-zen-emojis-picker-header");
+    if (header) {
+      const row = getComputedStyle(header);
+      for (const prop of ["padding", "gap", "alignItems"]) {
+        if (row[prop]) {
+          bar.style[prop] = row[prop];
         }
       }
     }
-
-    box.addEventListener("input", render);
-
-    search?.addEventListener("input", () => {
-      if (showing) {
-        box.value = search.value;
-        render();
+    const zenList = document.getElementById("PanelUI-zen-emojis-picker-svgs");
+    if (zenList) {
+      const list = getComputedStyle(zenList);
+      for (const prop of ["padding", "gap", "gridTemplateColumns"]) {
+        if (list[prop]) {
+          grid.style[prop] = list[prop];
+        }
       }
-    });
+    }
+  }
 
-    panel.addEventListener("popupshowing", () => {
-      nameZenTab();
-      matchZenSearch();
-    });
-
-    panel.addEventListener("popupshown", () => {
-      nameZenTab();
-      matchZenSearch();
-      showing = false;
-      tab.classList.remove("selected");
-      if (search && lastQuery !== null) {
-        render();
-      }
-    });
-
+  function wrapIconPickerOpen(picker) {
     const openPicker = picker.open.bind(picker);
     picker.open = function (anchor, settings = {}) {
       const zenPick = openPicker(anchor, settings);
       if (!zenPick) {
         return zenPick;
       }
-      options = settings;
-      picked = false;
+      iconPicker.options = settings;
+      iconPicker.picked = false;
       const ziaPick = new Promise((resolve) => {
-        resolvePick = resolve;
+        iconPicker.resolvePick = resolve;
       });
       return Promise.race([
         zenPick.catch((err) => {
-          if (picked) {
+          if (iconPicker.picked) {
             return ziaPick;
           }
           throw err;
@@ -600,4 +658,3 @@
       ]);
     };
   }
-
