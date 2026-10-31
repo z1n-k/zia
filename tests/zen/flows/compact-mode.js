@@ -21,19 +21,21 @@ const state = () => {
     clips: Object.fromEntries(["zen-appcontent-navbar-container", "urlbar"].map((id) => [id, document.getElementById(id)?.style.clipPath ?? null])),
   };
 };
+// (each step read once it has happened, everything has come to rest and it has held a while)
+const after = async (test) => {
+  await until(test);
+  await atRest();
+  return steady(state);
+};
 const before = state();
 gZenCompactModeManager.toggle();
-await wait(1500);
-const on = state();
+const on = await after(() => root.getAttribute("zen-compact-mode") === "true");
 gZenCompactModeManager.toggleSidebar();
-await wait(1500);
-const shown = state();
+const shown = await after(() => root.hasAttribute("zia-panel-open"));
 gZenCompactModeManager.toggleSidebar();
-await wait(1500);
-const hidden = state();
+const hidden = await after(() => !root.hasAttribute("zia-panel-open"));
 gZenCompactModeManager.toggle();
-await wait(1500);
-const off = state();
+const off = await after(() => root.getAttribute("zen-compact-mode") === "false");
 done({
   before,
   on,

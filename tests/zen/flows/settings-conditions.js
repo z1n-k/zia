@@ -2,22 +2,25 @@
 // read again as those settings change
 const tab = gBrowser.addTab("about:preferences#sineMods", { triggeringPrincipal: SYSTEM });
 gBrowser.selectedTab = tab;
-await wait(5000);
-const doc = tab.linkedBrowser.contentDocument;
 const ROWS = ["zia-tab-numbers-always", "zia-tab-numbers-color", "zia-sidebar-hide-space-name", "zia-compact-toolbar-over-page", "zia-urlbar-center-text-pop-up-left"];
+// (the page loaded, and Sine's list of mods built in it, Zia's rows and all)
+const doc = await until(() => {
+  const loaded = tab.linkedBrowser.contentDocument;
+  return loaded?.readyState === "complete" && loaded.getElementById("sineModsList") && ROWS.every((id) => loaded.getElementById(id)) && loaded;
+}, { what: "Sine's settings with Zia's rows", timeout: 20000 });
 const shown = () => Object.fromEntries(ROWS.map((id) => [id, doc.getElementById(id)?.style.display ?? "missing"]));
-const before = shown();
+const before = await steady(shown, { quiet: 500 });
 Services.prefs.setBoolPref("zia.features.tab-numbers", false);
 Services.prefs.setBoolPref("zia.sidebar.space-name-in-list", true);
 // (rows are checked as the page changes)
 doc.getElementById("sineModsList").append(doc.createElement("div"));
-await wait(500);
-const changed = shown();
+await until(() => shown()["zia-tab-numbers-always"] !== before["zia-tab-numbers-always"]);
+const changed = await steady(shown);
 Services.prefs.clearUserPref("zia.features.tab-numbers");
 Services.prefs.clearUserPref("zia.sidebar.space-name-in-list");
 doc.getElementById("sineModsList").lastElementChild.remove();
-await wait(500);
-const back = shown();
+await until(() => shown()["zia-tab-numbers-always"] === before["zia-tab-numbers-always"]);
+const back = await steady(shown);
 done({
   before,
   changed,

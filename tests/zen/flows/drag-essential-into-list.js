@@ -2,10 +2,12 @@
 // and it lands there as a plain tab
 const [e, a, b] = await addTabs(["E", "A", "B"]);
 gZenPinnedTabManager.addToEssentials(e);
-await wait(1200);
+await until(() => e.hasAttribute("zen-essential"));
+await atRest();
 const from = centre(e);
 const to = a.getBoundingClientRect();
-const seen = await drag(e, path(from, { x: from.x, y: Math.round(to.top + to.height * 0.75) }, 16));
+// (Zen takes it out of the essentials in its own time, and Zia places it once it has)
+const seen = await drag(e, path(from, { x: from.x, y: Math.round(to.top + to.height * 0.75) }, 16), { landed: () => !named("E").hasAttribute("zen-essential") && listOrder().includes("E") });
 done({
   essentials: essentials(),
   list: listOrder(),

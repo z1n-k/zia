@@ -2,10 +2,12 @@
 const [a, b, c, d] = await addTabs(["A", "B", "C", "D"]);
 gBrowser.selectedTab = a;
 gBrowser.addToMultiSelectedTabs(b);
-await wait(600);
+await until(() => a.selected && a.multiselected && b.multiselected);
+await atRest();
 const from = centre(a);
 const to = d.getBoundingClientRect();
-const seen = await drag(a, path(from, { x: from.x, y: Math.round(to.top + to.height * 0.75) }, 12));
+const before = listOrder().join();
+const seen = await drag(a, path(from, { x: from.x, y: Math.round(to.top + to.height * 0.75) }, 12), { landed: () => listOrder().join() !== before });
 const order = listOrder();
 done({
   order,

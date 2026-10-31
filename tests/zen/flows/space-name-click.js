@@ -4,7 +4,8 @@
 const [a, x, y, p] = await addTabs(["A", "X", "Y", "P"]);
 gBrowser.pinTab(p);
 const folder = gZenFolders.createFolder([x, y], { label: "F", renameFolder: false });
-await wait(1000);
+await until(() => p.pinned && folder.tabs.includes(x) && folder.tabs.includes(y));
+await atRest();
 const name = document.querySelector(".zen-current-workspace-indicator");
 const space = gZenWorkspaces.activeWorkspaceElement;
 const click = async () => {
@@ -14,17 +15,22 @@ const click = async () => {
 const run = async () => {
   const closing = await animationsDuring(click);
   const tucked = space.hasAttribute("collapsedpinnedtabs");
-  await wait(400);
+  await atRest();
   const opening = await animationsDuring(click);
-  return { closing, tucked, back: !space.hasAttribute("collapsedpinnedtabs"), opening };
+  const back = !space.hasAttribute("collapsedpinnedtabs");
+  await atRest();
+  return { closing, tucked, back, opening };
 };
 gBrowser.selectedTab = a;
-await wait(800);
+await until(() => a.linkedBrowser.docShellIsActive);
+await atRest();
 const openTabBelow = await run();
 gBrowser.selectedTab = x;
-await wait(500);
+await until(() => x.linkedBrowser.docShellIsActive);
+await atRest();
 folder.collapsed = true;
-await wait(1000);
+await until(() => folder.hasAttribute("collapsed"));
+await atRest();
 const openTabInFolder = await run();
 const line = (list) => list.some((anim) => anim.includes("pinned-tabs-container-separator"));
 done({

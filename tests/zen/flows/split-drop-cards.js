@@ -3,7 +3,8 @@
 // off the cards, they go.
 const [a, b] = await addTabs(["A", "B"]);
 gBrowser.selectedTab = b;
-await wait(800);
+await until(() => b.linkedBrowser.docShellIsActive);
+await atRest();
 const panels = document.getElementById("tabbrowser-tabpanels").getBoundingClientRect();
 const from = centre(a);
 const to = { x: Math.round(panels.left + panels.width * 0.15), y: Math.round(panels.top + panels.height / 2) };

@@ -22,28 +22,28 @@ const original = { name: space.name, icon: space.icon || "" };
 const before = label();
 
 document.getElementById("context_zenEditWorkspace").doCommand();
-await wait(400);
-const editing = document.getElementById("tab-label-input");
+// (Zen's name field, open and taking the typing)
+const editing = await until(() => document.activeElement?.closest?.("#tab-label-input") && document.getElementById("tab-label-input"));
 EU.sendString("Work", window);
 EU.synthesizeKey("KEY_Enter", {}, window);
-await wait(1000);
-const renamed = label();
+// (each read once the label has followed, and held)
+await until(() => label()?.text === "Work");
+const renamed = await steady(label);
 
 document.getElementById("context_zenEditWorkspaceIcon").doCommand();
-await wait(1000);
 const panel = document.getElementById("PanelUI-zen-emojis-picker");
-const emoji = panel.querySelector('.zen-emojis-picker-emoji[label="🚀"]');
+const emoji = await until(() => panel.state === "open" && panel.querySelector('.zen-emojis-picker-emoji[label="🚀"]'));
 emoji?.doCommand();
-await wait(1000);
-const withEmoji = label();
+await until(() => label()?.attrs["zia-icon"] === "🚀");
+const withEmoji = await steady(label);
 
 const icon = panel.querySelector('.zen-emojis-picker-svg[icon="heart.svg"]') || panel.querySelector(".zen-emojis-picker-svg");
 const iconName = icon?.getAttribute("icon") || null;
 icon?.doCommand();
-await wait(1500);
-const withIcon = label();
+await until(() => label()?.attrs["zia-has-svg"] === "true" && label().children.some((child) => child.svg));
+const withIcon = await steady(label);
 EU.synthesizeKey("KEY_Escape", {}, window);
-await wait(600);
+await until(() => panel.state === "closed");
 
 done({
   original,

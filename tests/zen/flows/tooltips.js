@@ -4,8 +4,12 @@
 const [p] = await addTabs(["P"]);
 gBrowser.pinTab(p);
 const two = await gZenWorkspaces.createAndSaveWorkspace("Two", undefined, true);
-await wait(1000);
-const icons = [...gZenWorkspaces.workspaceIcons.querySelectorAll("toolbarbutton[zen-workspace-id]")];
+// (both spaces' icons in, with their tips stashed by Zia)
+const icons = await until(() => {
+  const all = [...gZenWorkspaces.workspaceIcons.querySelectorAll("toolbarbutton[zen-workspace-id]")];
+  return all.length === 2 && all.every((icon) => icon.hasAttribute("zia-tip-text")) && all;
+});
+await atRest();
 const home = icons.find((icon) => icon.getAttribute("zen-workspace-id") !== two.uuid);
 const other = icons.find((icon) => icon.getAttribute("zen-workspace-id") === two.uuid);
 const tipOf = (el) => ({ tooltiptext: el.getAttribute("tooltiptext"), stashed: el.getAttribute("zia-tip-text") });
@@ -28,24 +32,30 @@ const card = () => {
 const hover = (el) => EU.synthesizeMouseAtCenter(el, { type: "mousemove" }, window);
 
 const tips = { home: tipOf(home), other: tipOf(other) };
+// (a moment in, well before the beat: Zia's timer for it is due later, so always after this)
 hover(home);
 await wait(200);
 const beforeBeat = card();
-await wait(800);
-const first = card();
+// (each card read once it's shown and has come to rest, and held)
+await until(() => card()?.marks.includes("zia-open"));
+await atRest();
+const first = await steady(card);
 hover(other);
-await wait(100);
-const next = card();
+await until(() => card()?.text === "Two");
+await atRest();
+const next = await steady(card);
+// (and a moment after leaving, before its grace runs out, again on a timer of Zia's due later)
 EU.synthesizeMouse(document.documentElement, 4, 4, { type: "mousemove" }, window);
 await wait(150);
 const leaving = card();
-await wait(700);
-const left = card();
+await until(() => card()?.hidden);
+const left = await steady(card);
 
 const reset = p.querySelector(".tab-reset-button");
 const pinnedTip = { text: reset.getAttribute("tooltiptext"), marked: reset.hasAttribute("zia-tip") };
 gBrowser.unpinTab(p);
-await wait(500);
+// (Zen puts its own word back a moment later)
+await until(() => !p.pinned && !reset.hasAttribute("zia-tip") && reset.getAttribute("tooltiptext") !== "Unload tab");
 const unpinnedTip = { marked: reset.hasAttribute("zia-tip"), reworded: reset.getAttribute("tooltiptext") === "Unload tab" };
 
 done({
