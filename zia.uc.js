@@ -21671,6 +21671,13 @@
 //
 // Plain functions in a shared scope: no imports or exports. Needs glow.css.
 // Elements are created in the XHTML namespace so it works in a XUL chrome document.
+//
+// This file: the constants, the maths and the synthetic music. The look per theme and
+// size is in 28ta-ultra-glow-look.js, one frame in 28tb-ultra-glow-frame.js, and the
+// shared loop and ziaGlow() in 28tc-ultra-glow-loop.js.
+// Used elsewhere: the ZIA_GLOW_ constants, ziaGlowClamp, ziaGlowShape,
+// ziaGlowFollow, ziaGlowWrap, ziaGlowRingFade, ziaGlowBell, ziaGlowTail, ziaGlowCornerRadius,
+// ziaGlowArc, ziaGlowMusicNew, ziaGlowMusic, ziaGlowScaleFor, ziaGlowRadiusOf.
 
 const ZIA_GLOW_XHTML = "http://www.w3.org/1999/xhtml";
 const ZIA_GLOW_SVG = "http://www.w3.org/2000/svg";
@@ -21799,19 +21806,6 @@ const ZIA_GLOW_FADE_OUT_MS = 520;
 const ZIA_GLOW_BAND_POINTS = 56;
 const ZIA_GLOW_STILL = { gather: 0, offset: 0, stretch: 0, heldLevel: 0, cornerFollow: 0 };
 
-const ziaGlowLive = new Set(); // instances the loop draws
-const ziaGlowAll = new Set(); // every instance not destroyed, for media-query changes
-let ziaGlowRaf = null;
-let ziaGlowLastFrame = 0;
-let ziaGlowPrevTs = 0;
-let ziaGlowHalfRate = false;
-let ziaGlowSkip = false;
-let ziaGlowSlowSince = 0;
-let ziaGlowProbeAt = 0;
-let ziaGlowMotionQuery = null;
-let ziaGlowListening = false;
-let ziaGlowCount = 0;
-
 function ziaGlowClamp(v) {
   return v < 0 ? 0 : v > 1 ? 1 : v;
 }
@@ -21883,6 +21877,236 @@ function ziaGlowArc(x, w, r, inset = 0, n = 2) {
   }
   const k = (r - d) / r;
   return r - r * Math.pow(Math.max(0, 1 - Math.pow(k, n)), 1 / n);
+}
+
+// A believable, gentle "music is playing" level (0..1, before the gate and envelope):
+// a slow phrase swell, a slower sway, a soft beat and a wandering random energy.
+function ziaGlowMusicNew() {
+  const r = Math.random;
+  return {
+    swell: r() * ZIA_GLOW_TAU,
+    sway: r() * ZIA_GLOW_TAU,
+    beat: (92 + r() * 34) / 60, // 92-126 bpm
+    from: r(),
+    to: r(),
+    at: 0,
+    dur: 0.6,
+  };
+}
+
+function ziaGlowMusic(m, t) {
+  if (t >= m.at + m.dur || t < m.at) {
+    m.from = m.to;
+    m.to = Math.random();
+    m.at = t;
+    m.dur = 0.35 + Math.random() * 0.85;
+  }
+  const k = (1 - Math.cos(Math.PI * Math.min(1, (t - m.at) / m.dur))) / 2;
+  const energy = m.from + (m.to - m.from) * k;
+  const swell = 0.5 + 0.5 * Math.sin(t * 0.83 + m.swell); // ~7.6s phrases
+  const sway = 0.5 + 0.5 * Math.sin(t * 2.1 + m.sway); // ~3s
+  const beat = Math.pow(0.5 + 0.5 * Math.cos(ZIA_GLOW_TAU * m.beat * t), 6);
+  return 0.08 + 0.08 * swell + 0.04 * sway + 0.05 * beat + 0.08 * energy;
+}
+
+function ziaGlowScaleFor(width) {
+  const s = Math.min(1, width / ZIA_GLOW_HOST_WIDTH);
+  return Math.max(ZIA_GLOW_MIN_SCALE, Math.round(s * 50) / 50);
+}
+
+function ziaGlowRadiusOf(container) {
+  const r = parseFloat(getComputedStyle(container).borderTopLeftRadius);
+  return r > 0 ? r : 16;
+}
+// ---------- Zia glow: its look per theme and size, and the host's outline it's cut to
+// (see 28t-ultra-glow-engine.js)
+// Used elsewhere: ziaGlowBuild, ziaGlowOutline.
+
+// (where the glow's centre is, in the gradients)
+const ZIA_GLOW_AT = "calc(50% + var(--zg-cx) * var(--zg-w))";
+
+// Per theme and scale: the CSS the layers paint with. Everything that moves is a
+// custom property on the root that the loop writes each frame.
+function ziaGlowBuild(g, scale) {
+  const T = g.dark ? ZIA_GLOW_THEMES.dark : ZIA_GLOW_THEMES.light;
+  const P = ZIA_GLOW_TUNING;
+  const F = scale;
+  const cfg = ziaGlowConfig(g, T, P, F);
+  g.cfg = cfg;
+  g.dirty = false;
+  ziaGlowPaintLayers(g, cfg, T, P, F);
+  ziaGlowPaintRoot(g, T, P, F);
+  ziaGlowPaintCore(g, cfg, P, F);
+  if (g.turbulence) {
+    const detail = P.distortionDetail / F;
+    g.turbulence.setAttribute("baseFrequency", `${(0.012 * detail).toFixed(4)} ${(0.05 * detail).toFixed(4)}`);
+  }
+}
+
+function ziaGlowConfig(g, T, P, F) {
+  const cfg = {
+    dark: g.dark,
+    scale: F,
+    radius: ziaGlowRadiusOf(g.container),
+    cornerShape: ziaGlowCornerShapeOf(g.container, g.cornerShape),
+    threshold: P.threshold,
+    attack: P.attack,
+    release: P.release,
+    idle: P.idle,
+    breatheDuration: P.breatheDuration,
+    bands: P.bands,
+    flow: P.flow * F,
+    bend: P.bend * F,
+    reach: T.reach,
+    spread: T.spread,
+    lobeSpacing: P.lobeSpacing * F,
+    rangeWidth: P.rangeWidth * F,
+    rangeHeight: P.rangeHeight * F,
+    bandStrength: T.bandStrength,
+    bandWidth: P.bandWidth * F,
+    bandPosition: P.bandPosition,
+    bandCurve: P.bandCurve,
+    bandSpread: P.bandSpread,
+    bandSkew: P.bandSkew,
+    bandOffset: P.bandOffset * F,
+    bandTail: P.bandTail,
+    bandTailPosition: P.bandTailPosition,
+    bandTailCurve: P.bandTailCurve,
+    bandTailOverflow: P.bandTailOverflow * F,
+    bandAberration: P.bandAberration,
+    bandColors: g.colors ? ziaGlowBandFrom(g.colors, T) : T.band,
+    distortion: g.displace ? P.distortion : 0,
+    coreLight: T.coreLight,
+    // (a narrower drift for colours given, so they stay the picture's)
+    hueRange: g.colors ? Math.min(10, T.hueRange) : T.hueRange,
+    hueDuration: T.hueDuration,
+  };
+  cfg.cornerN = ziaGlowCornerExp(cfg.cornerShape);
+  return cfg;
+}
+
+function ziaGlowPaintLayers(g, cfg, T, P, F) {
+  const colors = g.colors || T.colors;
+  const glowWidth = P.glowWidth * F;
+  const glowHeight = P.glowHeight * F;
+  const coreSize = P.coreSize * F;
+  const fade = Math.round(Math.max(40, Math.min(95, 70 * P.softness)));
+  const edge = ziaGlowTenth(28 * F);
+  const strokeBg = `${ziaGlowSpot(g.dark, coreSize)}, ${ziaGlowLobes(colors, 1, glowWidth * P.strokeScale, glowHeight * P.strokeScale, 2, fade)}`;
+  const strokeMask = ziaGlowRange(cfg, 170, 64, 45, 0);
+  const innerBg = ziaGlowLobes(
+    colors,
+    0.46,
+    glowWidth * 0.9 * P.innerScale,
+    glowHeight * 0.9 * P.innerScale * P.innerHeight,
+    0,
+    fade
+  );
+  const innerMask =
+    `${ziaGlowRange(cfg, 170, 64, 45, 0.3)}, ` +
+    `linear-gradient(white, transparent ${edge}px, transparent calc(100% - ${edge}px), white), ` +
+    `linear-gradient(to right, white, transparent ${edge}px, transparent calc(100% - ${edge}px), white)`;
+  const bloomBg = ziaGlowLobes(
+    colors,
+    T.bloomAlpha,
+    glowWidth * 1.15 * P.bloomScale,
+    glowHeight * 1.5 * P.bloomScale * P.bloomHeight,
+    0,
+    Math.min(95, fade + 2)
+  );
+  const bloomMask = ziaGlowRange(cfg, 200, 130, 35, 0);
+
+  ziaGlowSet(g.stroke, "background", strokeBg);
+  ziaGlowSet(g.stroke, "mask-image", strokeMask);
+  for (const el of [g.inner, g.innerWarp]) {
+    ziaGlowSet(el, "background", innerBg);
+    ziaGlowSet(el, "mask-image", innerMask);
+  }
+  for (const el of [g.bloom, g.bloomWarp]) {
+    ziaGlowSet(el, "background", bloomBg);
+    ziaGlowSet(el, "mask-image", bloomMask);
+  }
+}
+
+function ziaGlowTenth(v) {
+  return Math.round(v * 10) / 10;
+}
+
+function ziaGlowSet(el, prop, value) {
+  return el && el.style.setProperty(prop, value);
+}
+
+function ziaGlowLobes(colors, alpha, sw, sh, y, stop) {
+  return ZIA_GLOW_LOBES.map((lobe, i) => {
+    const color =
+      alpha >= 1 ? colors[i] : colors[i].replace("rgb(", "rgba(").replace(")", `, ${alpha.toFixed(2)})`);
+    return (
+      `radial-gradient(ellipse calc(${Math.round(lobe.w * sw)}px * var(--zg-w)) ` +
+      `calc(${Math.round(lobe.h * sh)}px * var(--zg-h) * var(--zg-l${i})) ` +
+      `at calc(50% + (var(--zg-cx) + var(--zg-x${i})) * var(--zg-w)) calc(100% + ${y}px + var(--zg-y${i})), ` +
+      `${color} 0%, transparent ${stop}%)`
+    );
+  }).join(", ");
+}
+
+// The visible range: a centred ellipse whose top humps up with the bend.
+function ziaGlowRange(cfg, rw, rh, mid, rim) {
+  return (
+    `radial-gradient(ellipse calc(${ziaGlowTenth(rw * cfg.rangeWidth)}px * var(--zg-w) * var(--zg-mw)) ` +
+    `calc(${ziaGlowTenth(rh * cfg.rangeHeight)}px * var(--zg-h) + var(--zg-bh)) at ${ZIA_GLOW_AT} calc(100% + var(--zg-cy)), ` +
+    `white 0%, rgba(255, 255, 255, 0.5) ${mid}%${rim > 0 ? `, rgba(255, 255, 255, ${rim}) 85%` : ""}, transparent 100%)`
+  );
+}
+
+// The hot spot in the stroke: white on dark, an ink core on light.
+function ziaGlowSpot(dark, coreSize) {
+  return dark
+    ? `radial-gradient(ellipse calc(${ziaGlowTenth(30 * coreSize)}px * var(--zg-w)) calc(${ziaGlowTenth(30 * coreSize)}px * var(--zg-h)) ` +
+        `at ${ZIA_GLOW_AT} calc(100% + 2px + var(--zg-cy)), rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.14) 30%, transparent 65%)`
+    : `radial-gradient(ellipse calc(${ziaGlowTenth(40 * coreSize)}px * var(--zg-w)) calc(${ziaGlowTenth(30 * coreSize)}px * var(--zg-h)) ` +
+        `at ${ZIA_GLOW_AT} calc(100% + 2px + var(--zg-cy)), rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.22) 35%, transparent 70%)`;
+}
+
+function ziaGlowPaintRoot(g, T, P, F) {
+  const glowSize = P.glowSize * F;
+  const shadow = ziaGlowTenth(9 * F);
+  const root = g.root.style;
+  root.setProperty(
+    "--zg-tone",
+    `hue-rotate(calc(${T.hueBase}deg + var(--zg-hue))) brightness(${T.brightness.toFixed(2)}) saturate(${T.saturation.toFixed(2)})`
+  );
+  root.setProperty("--zg-blur", `${ziaGlowTenth(Math.max(0.5, Math.round(10 * glowSize * 100) / 100))}px`);
+  root.setProperty("--zg-shadow", `inset 0 0 ${shadow}px 1px ${T.innerShadow}`);
+  root.setProperty("--zg-stroke-k", T.strokeOpacity.toFixed(2));
+  root.setProperty("--zg-inner-k", T.innerOpacity.toFixed(2));
+  root.setProperty("--zg-bloom-k", T.bloomOpacity.toFixed(2));
+  root.setProperty("--zg-strength", String(T.strength));
+}
+
+// The epicentre: a white wash at the source under the band line (light theme).
+function ziaGlowPaintCore(g, cfg, P, F) {
+  const glowSize = P.glowSize * F;
+  const light = Math.max(0, Math.min(3, cfg.coreLight));
+  g.root.toggleAttribute("data-core", light > 0);
+  if (light > 0) {
+    const w = Math.max(0, Math.min(2, light - 1));
+    const a = Math.min(1, w);
+    const b = Math.max(0, w - 1);
+    const grow = 1 + 0.3 * w;
+    const solid = ziaGlowTenth(45 * a + 27 * b);
+    const mid = ziaGlowTenth(40 + 25 * a + 15 * b);
+    const midAlpha = Math.min(1, 0.55 + 0.35 * a + 0.1 * b).toFixed(2);
+    const end = ziaGlowTenth(72 + 14 * a + 8 * b);
+    ziaGlowSet(
+      g.coreFill,
+      "background",
+      `radial-gradient(ellipse calc(${ziaGlowTenth(120 * P.coreLightWidth * grow * F)}px * var(--zg-w)) ` +
+        `calc(${ziaGlowTenth(70 * P.coreLightHeight * grow * F)}px * var(--zg-h) + var(--zg-bh)) at ${ZIA_GLOW_AT} calc(100% + var(--zg-cy)), ` +
+        `white 0%, white ${solid}%, rgba(255, 255, 255, ${midAlpha}) ${mid}%, transparent ${end}%)`
+    );
+    g.root.style.setProperty("--zg-core-blur", `${ziaGlowTenth(Math.max(0.5, Math.round(8 * glowSize * 100) / 100))}px`);
+    g.root.style.setProperty("--zg-core-k", (Math.min(1, light) * (1.6 + 1.4 * w)).toFixed(2));
+  }
 }
 
 // The host's corner-shape: the one given, else its own.
@@ -21962,231 +22186,153 @@ function ziaGlowBandFrom(colors, T) {
     below: rgb(colors[2]),
   };
 }
+// ---------- Zia glow: one frame of one glow, from its level to its custom properties and
+// band (see 28t-ultra-glow-engine.js)
+// Used elsewhere: ziaGlowStep.
 
-// A believable, gentle "music is playing" level (0..1, before the gate and envelope):
-// a slow phrase swell, a slower sway, a soft beat and a wandering random energy.
-function ziaGlowMusicNew() {
-  const r = Math.random;
-  return {
-    swell: r() * ZIA_GLOW_TAU,
-    sway: r() * ZIA_GLOW_TAU,
-    beat: (92 + r() * 34) / 60, // 92-126 bpm
-    from: r(),
-    to: r(),
-    at: 0,
-    dur: 0.6,
+// (the band's strokes, widest and faintest first: width and alpha)
+const ZIA_GLOW_BAND_PASSES = [
+  [1, 0.16],
+  [0.72, 0.2],
+  [0.46, 0.26],
+  [0.22, 0.34],
+];
+
+// One frame of one instance: level -> envelope -> geometry -> custom properties.
+function ziaGlowStep(g, ts, reduced) {
+  const root = g.root;
+  const w = root.clientWidth;
+  const h = root.clientHeight;
+  if (!w || !h) {
+    return false;
+  }
+  const scale = ziaGlowScaleFor(w);
+  if (g.dirty || scale !== g.cfg?.scale) {
+    ziaGlowBuild(g, scale);
+  }
+  const cfg = g.cfg;
+  ziaGlowOutline(g, w, h);
+  const s = g.s;
+  const dt = s.lastTs ? Math.min(0.05, (ts - s.lastTs) / 1000) : 1 / 60;
+  s.lastTs = ts;
+  s.t += dt;
+  const t = s.t;
+  ziaGlowLevel(g, cfg, t, dt, reduced);
+  const v = ziaGlowEnvelope(g, cfg, t, dt, reduced);
+  const { e, radius, follow, spot } = ziaGlowPlace(g, cfg, v, w, h);
+  const pts = ziaGlowWarp(g, cfg, e, v, w, h, t, dt, reduced);
+  ziaGlowDrawBand(g, e, pts, w, h);
+
+  const st = root.style;
+  st.setProperty("--zg-glow", v.glow.toFixed(3));
+  st.setProperty("--zg-h", v.tall.toFixed(3));
+  st.setProperty("--zg-w", v.wide.toFixed(3));
+  ziaGlowLobeProps(g, cfg, v, w, radius, spot, follow);
+  const hue =
+    reduced || cfg.hueRange === 0
+      ? 0
+      : -cfg.hueRange + cfg.hueRange * (1 - Math.cos((ZIA_GLOW_TAU * t) / cfg.hueDuration));
+  st.setProperty("--zg-hue", `${hue.toFixed(2)}deg`);
+  return true;
+}
+
+// The level: synthetic music while playing, silence while paused. The bands are
+// synthesised from it the way VoiceBeam does for a `level` getter.
+function ziaGlowLevel(g, cfg, t, dt, reduced) {
+  const s = g.s;
+  const d = g.playing ? (reduced ? ZIA_GLOW_STEADY : ziaGlowClamp(ziaGlowMusic(g.music, t))) : 0;
+  const raw = reduced
+    ? [d, d * 0.72, d * 0.6]
+    : [d, d * (0.72 + 0.28 * Math.sin(t * 9.1)), d * (0.6 + 0.4 * Math.sin(t * 13.7 + 2))];
+  const level = ziaGlowShape(d, cfg.threshold);
+  s.level = reduced ? level : ziaGlowFollow(s.level, level, dt, cfg.attack, cfg.release);
+  for (let i = 0; i < 3; i++) {
+    const band = ziaGlowShape(raw[i], cfg.threshold * 0.6);
+    s.bands[i] = reduced ? band : ziaGlowFollow(s.bands[i], band, dt, cfg.attack, cfg.release * 1.15);
+  }
+}
+
+// The envelope: how tall, wide and bright the glow is from the level and the motion,
+// and the lobes flowing round the ring.
+function ziaGlowEnvelope(g, cfg, t, dt, reduced) {
+  const s = g.s;
+  const m = ziaGlowMotionOf(g);
+  const gather = m.gather;
+  const ring = ZIA_GLOW_SPAN * cfg.lobeSpacing;
+  const cx = reduced ? 0 : (m.offset * ring) / 2;
+  const pull = 1 - gather * 0.6;
+  const narrow = 1 - gather * 0.45;
+  const stretch = 1 + gather * 0.3 * m.stretch;
+  const breathe = reduced ? 0.5 : 0.5 + 0.5 * Math.sin((ZIA_GLOW_TAU * t) / cfg.breatheDuration);
+  const voiced = s.level + (1 - s.level) * cfg.idle * breathe;
+  const held = Math.max(0, Math.min(1, (gather - 0.25) / 0.75));
+  const R = Math.max(voiced, m.heldLevel * held * held * (3 - 2 * held));
+  const glow = 0.15 + 0.85 * R;
+  const tall = 0.5 + cfg.reach * R;
+  const wide = (0.85 + cfg.spread * R) * stretch;
+  if (cfg.flow !== 0 && !reduced) {
+    s.phase = (((s.phase + cfg.flow * R * dt) % ring) + ring) % ring;
+  }
+  return { m, gather, ring, cx, pull, narrow, R, glow, tall, wide };
+}
+
+// The geometry: where the glow's centre sits, how it bends, and the corner it follows.
+function ziaGlowPlace(g, cfg, v, w, h) {
+  const st = g.root.style;
+  st.setProperty("--zg-cx", `${v.cx.toFixed(1)}px`);
+  st.setProperty("--zg-mw", v.narrow.toFixed(3));
+  const lift = cfg.bend * v.R;
+  st.setProperty("--zg-bh", `${Math.max(0, lift).toFixed(1)}px`);
+  const e = {
+    cx: v.cx,
+    w: v.wide,
+    h: v.tall,
+    mw: v.narrow,
+    lift,
+    strength: cfg.bend > 0 ? Math.min(1, lift / cfg.bend) : 0,
+    level: g.s.level,
+    corner: v.gather,
   };
+  const radius = ziaGlowCornerRadius(cfg.radius, w, h);
+  const follow = v.gather * v.m.cornerFollow;
+  const spot = 30 * cfg.scale * v.wide;
+  st.setProperty("--zg-cy", `${(-ziaGlowArc(w / 2 + v.cx * v.wide, w, radius, spot * 1.4, cfg.cornerN) * follow).toFixed(1)}px`);
+  return { e, radius, follow, spot };
 }
 
-function ziaGlowMusic(m, t) {
-  if (t >= m.at + m.dur || t < m.at) {
-    m.from = m.to;
-    m.to = Math.random();
-    m.at = t;
-    m.dur = 0.35 + Math.random() * 0.85;
+// Distortion settles out while the glow is gathered, and is off under reduced motion.
+function ziaGlowWarp(g, cfg, e, v, w, h, t, dt, reduced) {
+  const s = g.s;
+  s.warp = ziaGlowFollow(s.warp, v.gather > 0.02 ? 0 : 1, dt, 0.35, 0.06);
+  const warpOff = !g.displace || cfg.distortion <= 0 || reduced || s.warp < 0.03;
+  if (warpOff !== g.warpOff) {
+    g.warpOff = warpOff;
+    g.root.toggleAttribute("data-warp-off", warpOff);
   }
-  const k = (1 - Math.cos(Math.PI * Math.min(1, (t - m.at) / m.dur))) / 2;
-  const energy = m.from + (m.to - m.from) * k;
-  const swell = 0.5 + 0.5 * Math.sin(t * 0.83 + m.swell); // ~7.6s phrases
-  const sway = 0.5 + 0.5 * Math.sin(t * 2.1 + m.sway); // ~3s
-  const beat = Math.pow(0.5 + 0.5 * Math.cos(ZIA_GLOW_TAU * m.beat * t), 6);
-  return 0.08 + 0.08 * swell + 0.04 * sway + 0.05 * beat + 0.08 * energy;
+  const pts = ziaGlowBandPoints(cfg, e, w, h);
+  if (!warpOff || cfg.coreLight > 0) {
+    ziaGlowClip(g, pts, w, h);
+  }
+  if (!warpOff) {
+    ziaGlowFilterRegion(g, pts, h);
+    g.displace.scale.baseVal = cfg.distortion * 120 * cfg.scale * (0.15 + 0.85 * v.R) * s.warp;
+    g.shift.dx.baseVal = 8 * cfg.scale * Math.sin(t * 0.9);
+    g.shift.dy.baseVal = 4 * cfg.scale * Math.sin(t * 0.6 + 1.3);
+  }
+  return pts;
 }
 
-function ziaGlowScaleFor(width) {
-  const s = Math.min(1, width / ZIA_GLOW_HOST_WIDTH);
-  return Math.max(ZIA_GLOW_MIN_SCALE, Math.round(s * 50) / 50);
-}
-
-function ziaGlowRadiusOf(container) {
-  const r = parseFloat(getComputedStyle(container).borderTopLeftRadius);
-  return r > 0 ? r : 16;
-}
-
-function ziaGlowReducedMotion() {
-  if (!ziaGlowMotionQuery && typeof matchMedia === "function") {
-    ziaGlowMotionQuery = matchMedia("(prefers-reduced-motion: reduce)");
-  }
-  return !!ziaGlowMotionQuery?.matches;
-}
-
-function ziaGlowListen() {
-  if (ziaGlowListening) {
-    return;
-  }
-  ziaGlowListening = true;
-  ziaGlowReducedMotion();
-  ziaGlowMotionQuery?.addEventListener("change", () => {
-    for (const g of ziaGlowAll) {
-      if (g.playing) {
-        ziaGlowWake(g);
-      }
-    }
-  });
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-      ziaGlowStop();
-    } else {
-      ziaGlowStart();
-    }
-  });
-}
-
-// Per theme and scale: the CSS the layers paint with. Everything that moves is a
-// custom property on the root that the loop writes each frame.
-function ziaGlowBuild(g, scale) {
-  const T = g.dark ? ZIA_GLOW_THEMES.dark : ZIA_GLOW_THEMES.light;
-  const P = ZIA_GLOW_TUNING;
-  const colors = g.colors || T.colors;
-  const F = scale;
-  const cfg = {
-    dark: g.dark,
-    scale: F,
-    radius: ziaGlowRadiusOf(g.container),
-    cornerShape: ziaGlowCornerShapeOf(g.container, g.cornerShape),
-    threshold: P.threshold,
-    attack: P.attack,
-    release: P.release,
-    idle: P.idle,
-    breatheDuration: P.breatheDuration,
-    bands: P.bands,
-    flow: P.flow * F,
-    bend: P.bend * F,
-    reach: T.reach,
-    spread: T.spread,
-    lobeSpacing: P.lobeSpacing * F,
-    rangeWidth: P.rangeWidth * F,
-    rangeHeight: P.rangeHeight * F,
-    bandStrength: T.bandStrength,
-    bandWidth: P.bandWidth * F,
-    bandPosition: P.bandPosition,
-    bandCurve: P.bandCurve,
-    bandSpread: P.bandSpread,
-    bandSkew: P.bandSkew,
-    bandOffset: P.bandOffset * F,
-    bandTail: P.bandTail,
-    bandTailPosition: P.bandTailPosition,
-    bandTailCurve: P.bandTailCurve,
-    bandTailOverflow: P.bandTailOverflow * F,
-    bandAberration: P.bandAberration,
-    bandColors: g.colors ? ziaGlowBandFrom(g.colors, T) : T.band,
-    distortion: g.displace ? P.distortion : 0,
-    coreLight: T.coreLight,
-    // (a narrower drift for colours given, so they stay the picture's)
-    hueRange: g.colors ? Math.min(10, T.hueRange) : T.hueRange,
-    hueDuration: T.hueDuration,
-  };
-  cfg.cornerN = ziaGlowCornerExp(cfg.cornerShape);
-  g.cfg = cfg;
-  g.dirty = false;
-
-  const r1 = (v) => Math.round(v * 10) / 10;
-  const glowWidth = P.glowWidth * F;
-  const glowHeight = P.glowHeight * F;
-  const coreSize = P.coreSize * F;
-  const glowSize = P.glowSize * F;
-  const fade = Math.round(Math.max(40, Math.min(95, 70 * P.softness)));
-  const edge = r1(28 * F);
-  const shadow = r1(9 * F);
-  const at = "calc(50% + var(--zg-cx) * var(--zg-w))";
-
-  const lobes = (alpha, sw, sh, y, stop) =>
-    ZIA_GLOW_LOBES.map((lobe, i) => {
-      const color =
-        alpha >= 1 ? colors[i] : colors[i].replace("rgb(", "rgba(").replace(")", `, ${alpha.toFixed(2)})`);
-      return (
-        `radial-gradient(ellipse calc(${Math.round(lobe.w * sw)}px * var(--zg-w)) ` +
-        `calc(${Math.round(lobe.h * sh)}px * var(--zg-h) * var(--zg-l${i})) ` +
-        `at calc(50% + (var(--zg-cx) + var(--zg-x${i})) * var(--zg-w)) calc(100% + ${y}px + var(--zg-y${i})), ` +
-        `${color} 0%, transparent ${stop}%)`
-      );
-    }).join(", ");
-
-  // The visible range: a centred ellipse whose top humps up with the bend.
-  const range = (rw, rh, mid, rim) =>
-    `radial-gradient(ellipse calc(${r1(rw * cfg.rangeWidth)}px * var(--zg-w) * var(--zg-mw)) ` +
-    `calc(${r1(rh * cfg.rangeHeight)}px * var(--zg-h) + var(--zg-bh)) at ${at} calc(100% + var(--zg-cy)), ` +
-    `white 0%, rgba(255, 255, 255, 0.5) ${mid}%${rim > 0 ? `, rgba(255, 255, 255, ${rim}) 85%` : ""}, transparent 100%)`;
-
-  // The hot spot in the stroke: white on dark, an ink core on light.
-  const spot = g.dark
-    ? `radial-gradient(ellipse calc(${r1(30 * coreSize)}px * var(--zg-w)) calc(${r1(30 * coreSize)}px * var(--zg-h)) ` +
-      `at ${at} calc(100% + 2px + var(--zg-cy)), rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.14) 30%, transparent 65%)`
-    : `radial-gradient(ellipse calc(${r1(40 * coreSize)}px * var(--zg-w)) calc(${r1(30 * coreSize)}px * var(--zg-h)) ` +
-      `at ${at} calc(100% + 2px + var(--zg-cy)), rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.22) 35%, transparent 70%)`;
-
-  const strokeBg = `${spot}, ${lobes(1, glowWidth * P.strokeScale, glowHeight * P.strokeScale, 2, fade)}`;
-  const strokeMask = range(170, 64, 45, 0);
-  const innerBg = lobes(
-    0.46,
-    glowWidth * 0.9 * P.innerScale,
-    glowHeight * 0.9 * P.innerScale * P.innerHeight,
-    0,
-    fade
-  );
-  const innerMask =
-    `${range(170, 64, 45, 0.3)}, ` +
-    `linear-gradient(white, transparent ${edge}px, transparent calc(100% - ${edge}px), white), ` +
-    `linear-gradient(to right, white, transparent ${edge}px, transparent calc(100% - ${edge}px), white)`;
-  const bloomBg = lobes(
-    T.bloomAlpha,
-    glowWidth * 1.15 * P.bloomScale,
-    glowHeight * 1.5 * P.bloomScale * P.bloomHeight,
-    0,
-    Math.min(95, fade + 2)
-  );
-  const bloomMask = range(200, 130, 35, 0);
-
-  const set = (el, prop, value) => el && el.style.setProperty(prop, value);
-  set(g.stroke, "background", strokeBg);
-  set(g.stroke, "mask-image", strokeMask);
-  for (const el of [g.inner, g.innerWarp]) {
-    set(el, "background", innerBg);
-    set(el, "mask-image", innerMask);
-  }
-  for (const el of [g.bloom, g.bloomWarp]) {
-    set(el, "background", bloomBg);
-    set(el, "mask-image", bloomMask);
-  }
-
-  const root = g.root.style;
-  root.setProperty(
-    "--zg-tone",
-    `hue-rotate(calc(${T.hueBase}deg + var(--zg-hue))) brightness(${T.brightness.toFixed(2)}) saturate(${T.saturation.toFixed(2)})`
-  );
-  root.setProperty("--zg-blur", `${r1(Math.max(0.5, Math.round(10 * glowSize * 100) / 100))}px`);
-  root.setProperty("--zg-shadow", `inset 0 0 ${shadow}px 1px ${T.innerShadow}`);
-  root.setProperty("--zg-stroke-k", T.strokeOpacity.toFixed(2));
-  root.setProperty("--zg-inner-k", T.innerOpacity.toFixed(2));
-  root.setProperty("--zg-bloom-k", T.bloomOpacity.toFixed(2));
-  root.setProperty("--zg-strength", String(T.strength));
-
-  // The epicentre: a white wash at the source under the band line (light theme).
-  const light = Math.max(0, Math.min(3, cfg.coreLight));
-  g.root.toggleAttribute("data-core", light > 0);
-  if (light > 0) {
-    const w = Math.max(0, Math.min(2, light - 1));
-    const a = Math.min(1, w);
-    const b = Math.max(0, w - 1);
-    const grow = 1 + 0.3 * w;
-    const solid = r1(45 * a + 27 * b);
-    const mid = r1(40 + 25 * a + 15 * b);
-    const midAlpha = Math.min(1, 0.55 + 0.35 * a + 0.1 * b).toFixed(2);
-    const end = r1(72 + 14 * a + 8 * b);
-    set(
-      g.coreFill,
-      "background",
-      `radial-gradient(ellipse calc(${r1(120 * P.coreLightWidth * grow * F)}px * var(--zg-w)) ` +
-        `calc(${r1(70 * P.coreLightHeight * grow * F)}px * var(--zg-h) + var(--zg-bh)) at ${at} calc(100% + var(--zg-cy)), ` +
-        `white 0%, white ${solid}%, rgba(255, 255, 255, ${midAlpha}) ${mid}%, transparent ${end}%)`
-    );
-    root.setProperty("--zg-core-blur", `${r1(Math.max(0.5, Math.round(8 * glowSize * 100) / 100))}px`);
-    root.setProperty("--zg-core-k", (Math.min(1, light) * (1.6 + 1.4 * w)).toFixed(2));
-  }
-
-  if (g.turbulence) {
-    const detail = P.distortionDetail / F;
-    g.turbulence.setAttribute("baseFrequency", `${(0.012 * detail).toFixed(4)} ${(0.05 * detail).toFixed(4)}`);
+function ziaGlowLobeProps(g, cfg, v, w, radius, spot, follow) {
+  const st = g.root.style;
+  const s = g.s;
+  for (let i = 0; i < ZIA_GLOW_LOBES.length; i++) {
+    const lobe = ZIA_GLOW_LOBES[i];
+    const x = ziaGlowWrap(lobe.x * cfg.lobeSpacing + s.phase, v.ring);
+    const gain = cfg.bands ? 0.6 + 0.7 * s.bands[lobe.band] : 1;
+    st.setProperty(`--zg-x${i}`, `${(x * v.pull).toFixed(1)}px`);
+    st.setProperty(`--zg-l${i}`, (gain * ziaGlowRingFade(x, v.ring)).toFixed(3));
+    const lx = w / 2 + (v.cx + x * v.pull) * v.wide;
+    st.setProperty(`--zg-y${i}`, `${(-ziaGlowArc(lx, w, radius, spot, cfg.cornerN) * follow).toFixed(1)}px`);
   }
 }
 
@@ -22276,12 +22422,6 @@ function ziaGlowDrawBand(g, e, pts, w, h) {
   const line = 14 * width;
   const blur = ((3.5 * cfg.bandWidth) / 2) * dpr;
   const colors = cfg.bandColors;
-  const passes = [
-    [1, 0.16],
-    [0.72, 0.2],
-    [0.46, 0.26],
-    [0.22, 0.34],
-  ];
   const fringes = [
     { rgb: colors.above, a: 1, ox: dx, oy: -dy },
     { rgb: colors.mid, a: 0.55, ox: dx * 0.35, oy: -dy * 0.35 },
@@ -22291,39 +22431,42 @@ function ziaGlowDrawBand(g, e, pts, w, h) {
   const x0 = pts[0][0];
   const x1 = pts[pts.length - 1][0];
   const k = cfg.bandTail > 0 ? 0.015 : 0.18;
-  const paint = (rgb, a) => {
-    const grad = ctx.createLinearGradient(x0, 0, x1, 0);
-    grad.addColorStop(0, `rgba(${rgb}, 0)`);
-    grad.addColorStop(k, `rgba(${rgb}, ${a.toFixed(3)})`);
-    grad.addColorStop(1 - k, `rgba(${rgb}, ${a.toFixed(3)})`);
-    grad.addColorStop(1, `rgba(${rgb}, 0)`);
-    return grad;
-  };
-  const trace = (ox, oy) => {
-    ctx.beginPath();
-    ctx.moveTo(pts[0][0] + ox, pts[0][1] + oy);
-    for (let i = 1; i < pts.length; i++) {
-      ctx.lineTo(pts[i][0] + ox, pts[i][1] + oy);
-    }
-  };
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   ctx.globalCompositeOperation = "source-over";
   ctx.filter = `blur(${(blur * 3).toFixed(1)}px)`;
-  ctx.strokeStyle = paint(colors.core, alpha * 0.3);
+  ctx.strokeStyle = ziaGlowBandPaint(ctx, x0, x1, k, colors.core, alpha * 0.3);
   ctx.lineWidth = line * 2.2;
-  trace(0, 0);
+  ziaGlowTrace(ctx, pts, 0, 0);
   ctx.stroke();
   ctx.filter = `blur(${blur.toFixed(1)}px)`;
   for (const f of fringes) {
-    for (const [lw, la] of passes) {
-      ctx.strokeStyle = paint(f.rgb, alpha * f.a * la);
+    for (const [lw, la] of ZIA_GLOW_BAND_PASSES) {
+      ctx.strokeStyle = ziaGlowBandPaint(ctx, x0, x1, k, f.rgb, alpha * f.a * la);
       ctx.lineWidth = Math.max(0.6, line * lw);
-      trace(f.ox, f.oy);
+      ziaGlowTrace(ctx, pts, f.ox, f.oy);
       ctx.stroke();
     }
   }
   ctx.filter = "none";
+}
+
+// One stroke's colour: faded in at its start and out at its end.
+function ziaGlowBandPaint(ctx, x0, x1, k, rgb, a) {
+  const grad = ctx.createLinearGradient(x0, 0, x1, 0);
+  grad.addColorStop(0, `rgba(${rgb}, 0)`);
+  grad.addColorStop(k, `rgba(${rgb}, ${a.toFixed(3)})`);
+  grad.addColorStop(1 - k, `rgba(${rgb}, ${a.toFixed(3)})`);
+  grad.addColorStop(1, `rgba(${rgb}, 0)`);
+  return grad;
+}
+
+function ziaGlowTrace(ctx, pts, ox, oy) {
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0] + ox, pts[0][1] + oy);
+  for (let i = 1; i < pts.length; i++) {
+    ctx.lineTo(pts[i][0] + ox, pts[i][1] + oy);
+  }
 }
 
 function ziaGlowMotionOf(g) {
@@ -22339,147 +22482,83 @@ function ziaGlowMotionOf(g) {
     cornerFollow: ziaGlowClamp(m.cornerFollow || 0),
   };
 }
+// ---------- Zia glow: the shared loop that draws every glow, and ziaGlow() (see
+// 28t-ultra-glow-engine.js for its use)
+// Used elsewhere: ziaGlow.
 
-// One frame of one instance: level -> envelope -> geometry -> custom properties.
-function ziaGlowStep(g, ts, reduced) {
-  const root = g.root;
-  const w = root.clientWidth;
-  const h = root.clientHeight;
-  if (!w || !h) {
-    return false;
-  }
-  const scale = ziaGlowScaleFor(w);
-  if (g.dirty || scale !== g.cfg?.scale) {
-    ziaGlowBuild(g, scale);
-  }
-  const cfg = g.cfg;
-  ziaGlowOutline(g, w, h);
-  const s = g.s;
-  const dt = s.lastTs ? Math.min(0.05, (ts - s.lastTs) / 1000) : 1 / 60;
-  s.lastTs = ts;
-  s.t += dt;
-  const t = s.t;
+// (slower than this between frames for longer than that: drop to every other frame, and try
+// full rate again a while on)
+const ZIA_GLOW_SLOW_GAP_MS = 22;
+const ZIA_GLOW_SLOW_FOR_MS = 500;
+const ZIA_GLOW_PROBE_MS = 4000;
 
-  // The level: synthetic music while playing, silence while paused. The bands are
-  // synthesised from it the way VoiceBeam does for a `level` getter.
-  const d = g.playing ? (reduced ? ZIA_GLOW_STEADY : ziaGlowClamp(ziaGlowMusic(g.music, t))) : 0;
-  const raw = reduced
-    ? [d, d * 0.72, d * 0.6]
-    : [d, d * (0.72 + 0.28 * Math.sin(t * 9.1)), d * (0.6 + 0.4 * Math.sin(t * 13.7 + 2))];
-  const level = ziaGlowShape(d, cfg.threshold);
-  s.level = reduced ? level : ziaGlowFollow(s.level, level, dt, cfg.attack, cfg.release);
-  for (let i = 0; i < 3; i++) {
-    const band = ziaGlowShape(raw[i], cfg.threshold * 0.6);
-    s.bands[i] = reduced ? band : ziaGlowFollow(s.bands[i], band, dt, cfg.attack, cfg.release * 1.15);
-  }
+const ziaGlowLive = new Set(); // instances the loop draws
+const ziaGlowAll = new Set(); // every instance not destroyed, for media-query changes
+// The loop's frame, the rate it's settled on, and when it last drew
+const ziaGlowLoop = { raf: null, lastFrame: 0, prevTs: 0, halfRate: false, skip: false, slowSince: 0, probeAt: 0 };
+let ziaGlowMotionQuery = null;
+let ziaGlowListening = false;
+let ziaGlowCount = 0;
 
-  const m = ziaGlowMotionOf(g);
-  const gather = m.gather;
-  const ring = ZIA_GLOW_SPAN * cfg.lobeSpacing;
-  const cx = reduced ? 0 : (m.offset * ring) / 2;
-  const pull = 1 - gather * 0.6;
-  const narrow = 1 - gather * 0.45;
-  const stretch = 1 + gather * 0.3 * m.stretch;
-  const breathe = reduced ? 0.5 : 0.5 + 0.5 * Math.sin((ZIA_GLOW_TAU * t) / cfg.breatheDuration);
-  const voiced = s.level + (1 - s.level) * cfg.idle * breathe;
-  const held = Math.max(0, Math.min(1, (gather - 0.25) / 0.75));
-  const R = Math.max(voiced, m.heldLevel * held * held * (3 - 2 * held));
-  const glow = 0.15 + 0.85 * R;
-  const tall = 0.5 + cfg.reach * R;
-  const wide = (0.85 + cfg.spread * R) * stretch;
-  if (cfg.flow !== 0 && !reduced) {
-    s.phase = (((s.phase + cfg.flow * R * dt) % ring) + ring) % ring;
+function ziaGlowReducedMotion() {
+  if (!ziaGlowMotionQuery && typeof matchMedia === "function") {
+    ziaGlowMotionQuery = matchMedia("(prefers-reduced-motion: reduce)");
   }
+  return !!ziaGlowMotionQuery?.matches;
+}
 
-  const st = root.style;
-  st.setProperty("--zg-cx", `${cx.toFixed(1)}px`);
-  st.setProperty("--zg-mw", narrow.toFixed(3));
-  const lift = cfg.bend * R;
-  st.setProperty("--zg-bh", `${Math.max(0, lift).toFixed(1)}px`);
-  const e = {
-    cx,
-    w: wide,
-    h: tall,
-    mw: narrow,
-    lift,
-    strength: cfg.bend > 0 ? Math.min(1, lift / cfg.bend) : 0,
-    level: s.level,
-    corner: gather,
-  };
-  const radius = ziaGlowCornerRadius(cfg.radius, w, h);
-  const follow = gather * m.cornerFollow;
-  const spot = 30 * cfg.scale * wide;
-  st.setProperty("--zg-cy", `${(-ziaGlowArc(w / 2 + cx * wide, w, radius, spot * 1.4, cfg.cornerN) * follow).toFixed(1)}px`);
-
-  // Distortion settles out while the glow is gathered, and is off under reduced motion.
-  s.warp = ziaGlowFollow(s.warp, gather > 0.02 ? 0 : 1, dt, 0.35, 0.06);
-  const warpOff = !g.displace || cfg.distortion <= 0 || reduced || s.warp < 0.03;
-  if (warpOff !== g.warpOff) {
-    g.warpOff = warpOff;
-    root.toggleAttribute("data-warp-off", warpOff);
+function ziaGlowListen() {
+  if (ziaGlowListening) {
+    return;
   }
-  const pts = ziaGlowBandPoints(cfg, e, w, h);
-  if (!warpOff || cfg.coreLight > 0) {
-    ziaGlowClip(g, pts, w, h);
-  }
-  if (!warpOff) {
-    ziaGlowFilterRegion(g, pts, h);
-    g.displace.scale.baseVal = cfg.distortion * 120 * cfg.scale * (0.15 + 0.85 * R) * s.warp;
-    g.shift.dx.baseVal = 8 * cfg.scale * Math.sin(t * 0.9);
-    g.shift.dy.baseVal = 4 * cfg.scale * Math.sin(t * 0.6 + 1.3);
-  }
-  ziaGlowDrawBand(g, e, pts, w, h);
-
-  st.setProperty("--zg-glow", glow.toFixed(3));
-  st.setProperty("--zg-h", tall.toFixed(3));
-  st.setProperty("--zg-w", wide.toFixed(3));
-  for (let i = 0; i < ZIA_GLOW_LOBES.length; i++) {
-    const lobe = ZIA_GLOW_LOBES[i];
-    const x = ziaGlowWrap(lobe.x * cfg.lobeSpacing + s.phase, ring);
-    const gain = cfg.bands ? 0.6 + 0.7 * s.bands[lobe.band] : 1;
-    st.setProperty(`--zg-x${i}`, `${(x * pull).toFixed(1)}px`);
-    st.setProperty(`--zg-l${i}`, (gain * ziaGlowRingFade(x, ring)).toFixed(3));
-    const lx = w / 2 + (cx + x * pull) * wide;
-    st.setProperty(`--zg-y${i}`, `${(-ziaGlowArc(lx, w, radius, spot, cfg.cornerN) * follow).toFixed(1)}px`);
-  }
-  const hue =
-    reduced || cfg.hueRange === 0
-      ? 0
-      : -cfg.hueRange + cfg.hueRange * (1 - Math.cos((ZIA_GLOW_TAU * t) / cfg.hueDuration));
-  st.setProperty("--zg-hue", `${hue.toFixed(2)}deg`);
-  return true;
+  ziaGlowListening = true;
+  ziaGlowReducedMotion();
+  ziaGlowMotionQuery?.addEventListener("change", () => {
+    for (const g of ziaGlowAll) {
+      if (g.playing) {
+        ziaGlowWake(g);
+      }
+    }
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      ziaGlowStop();
+    } else {
+      ziaGlowStart();
+    }
+  });
 }
 
 // The shared loop: capped at ~60 fps, every other frame on a device that cannot hold
 // 60 (probing full rate again after 4s), stopped when nothing is left to draw.
 function ziaGlowFrame(ts) {
-  ziaGlowRaf = requestAnimationFrame(ziaGlowFrame);
-  const gap = ziaGlowPrevTs ? ts - ziaGlowPrevTs : 0;
-  ziaGlowPrevTs = ts;
-  if (ziaGlowHalfRate) {
-    ziaGlowSkip = !ziaGlowSkip;
-    if (ziaGlowSkip) {
+  ziaGlowLoop.raf = requestAnimationFrame(ziaGlowFrame);
+  const gap = ziaGlowLoop.prevTs ? ts - ziaGlowLoop.prevTs : 0;
+  ziaGlowLoop.prevTs = ts;
+  if (ziaGlowLoop.halfRate) {
+    ziaGlowLoop.skip = !ziaGlowLoop.skip;
+    if (ziaGlowLoop.skip) {
       return;
     }
-    if (ts >= ziaGlowProbeAt) {
-      ziaGlowHalfRate = false;
-      ziaGlowSlowSince = 0;
+    if (ts >= ziaGlowLoop.probeAt) {
+      ziaGlowLoop.halfRate = false;
+      ziaGlowLoop.slowSince = 0;
     }
-  } else if (gap > 22) {
-    if (!ziaGlowSlowSince) {
-      ziaGlowSlowSince = ts;
-    } else if (ts - ziaGlowSlowSince > 500) {
-      ziaGlowHalfRate = true;
-      ziaGlowSkip = false;
-      ziaGlowProbeAt = ts + 4000;
+  } else if (gap > ZIA_GLOW_SLOW_GAP_MS) {
+    if (!ziaGlowLoop.slowSince) {
+      ziaGlowLoop.slowSince = ts;
+    } else if (ts - ziaGlowLoop.slowSince > ZIA_GLOW_SLOW_FOR_MS) {
+      ziaGlowLoop.halfRate = true;
+      ziaGlowLoop.skip = false;
+      ziaGlowLoop.probeAt = ts + ZIA_GLOW_PROBE_MS;
     }
   } else {
-    ziaGlowSlowSince = 0;
+    ziaGlowLoop.slowSince = 0;
   }
-  if (ts - ziaGlowLastFrame < 1000 / 60 - 2) {
+  if (ts - ziaGlowLoop.lastFrame < 1000 / 60 - 2) {
     return;
   }
-  ziaGlowLastFrame = ts;
+  ziaGlowLoop.lastFrame = ts;
 
   const reduced = ziaGlowReducedMotion();
   for (const g of ziaGlowLive) {
@@ -22511,18 +22590,18 @@ function ziaGlowFrame(ts) {
 }
 
 function ziaGlowStart() {
-  if (ziaGlowRaf == null && ziaGlowLive.size && !document.hidden) {
-    ziaGlowLastFrame = 0;
-    ziaGlowPrevTs = 0;
-    ziaGlowSlowSince = 0;
-    ziaGlowRaf = requestAnimationFrame(ziaGlowFrame);
+  if (ziaGlowLoop.raf == null && ziaGlowLive.size && !document.hidden) {
+    ziaGlowLoop.lastFrame = 0;
+    ziaGlowLoop.prevTs = 0;
+    ziaGlowLoop.slowSince = 0;
+    ziaGlowLoop.raf = requestAnimationFrame(ziaGlowFrame);
   }
 }
 
 function ziaGlowStop() {
-  if (ziaGlowRaf != null) {
-    cancelAnimationFrame(ziaGlowRaf);
-    ziaGlowRaf = null;
+  if (ziaGlowLoop.raf != null) {
+    cancelAnimationFrame(ziaGlowLoop.raf);
+    ziaGlowLoop.raf = null;
   }
 }
 
@@ -22542,73 +22621,8 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
   ziaGlowListen();
   const doc = container.ownerDocument;
   const id = `zia-glow-distort-${++ziaGlowCount}`;
-  const make = (cls, tag = "div") => {
-    const el = doc.createElementNS(ZIA_GLOW_XHTML, tag);
-    if (cls) {
-      el.className = cls;
-    }
-    return el;
-  };
-  const svgEl = (tag, attrs) => {
-    const el = doc.createElementNS(ZIA_GLOW_SVG, tag);
-    for (const [k, v] of Object.entries(attrs)) {
-      el.setAttribute(k, v);
-    }
-    return el;
-  };
-
-  // Layers, back to front as VoiceBeam stacks them: inner light (and its warp mirror),
-  // edge stroke, bloom (and its warp mirror), band canvas, epicentre.
-  const root = make("zia-glow");
-  root.setAttribute("aria-hidden", "true");
-  root.toggleAttribute("data-warp-off", true);
-  const inner = make("zia-glow-layer zia-glow-inner");
-  const innerWarp = make("zia-glow-layer zia-glow-inner zia-glow-warp");
-  const stroke = make("zia-glow-layer zia-glow-stroke");
-  const bloom = make("zia-glow-layer zia-glow-bloom");
-  const bloomWarp = make("zia-glow-layer zia-glow-bloom zia-glow-warp");
-  const canvas = make("zia-glow-layer zia-glow-band", "canvas");
-  const core = make("zia-glow-layer zia-glow-core");
-  const coreFill = make("");
-  core.append(coreFill);
-
-  // The distortion: drifting fractal noise, green pinned to 0.5 so only x displaces.
-  const svg = svgEl("svg", { width: "0", height: "0", class: "zia-glow-defs" });
-  const filter = svgEl("filter", {
-    id,
-    x: "-20%",
-    y: "-20%",
-    width: "140%",
-    height: "140%",
-    "color-interpolation-filters": "sRGB",
-  });
-  const turbulence = svgEl("feTurbulence", {
-    type: "fractalNoise",
-    baseFrequency: "0.04 0.17",
-    numOctaves: "2",
-    seed: "7",
-    result: "noise",
-  });
-  const shift = svgEl("feOffset", { in: "noise", dx: "0", dy: "0", result: "moved" });
-  const matrix = svgEl("feColorMatrix", {
-    in: "moved",
-    type: "matrix",
-    values: "1 0 0 0 0  0 0 0 0 0.5  0 0 0 0 0  0 0 0 0 1",
-    result: "map",
-  });
-  const displace = svgEl("feDisplacementMap", {
-    in: "SourceGraphic",
-    in2: "map",
-    scale: "0",
-    xChannelSelector: "R",
-    yChannelSelector: "G",
-  });
-  filter.append(turbulence, shift, matrix, displace);
-  svg.append(filter);
-  innerWarp.style.setProperty("filter", `var(--zg-tone) url(#${id})`);
-  bloomWarp.style.setProperty("filter", `blur(var(--zg-blur)) var(--zg-tone) url(#${id})`);
-
-  root.append(inner, innerWarp, stroke, bloom, bloomWarp, canvas, core, svg);
+  const { root, inner, innerWarp, stroke, bloom, bloomWarp, canvas, coreFill, filter, turbulence, shift, displace } =
+    ziaGlowLayers(doc, id);
   container.append(root);
 
   const g = {
@@ -22644,6 +22658,86 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     s: { level: 0, bands: [0, 0, 0], phase: 0, t: 0, lastTs: 0, warp: 1 },
   };
 
+  ziaGlowObserve(g);
+  return ziaGlowHandle(g);
+}
+
+// Layers, back to front as VoiceBeam stacks them: inner light (and its warp mirror),
+// edge stroke, bloom (and its warp mirror), band canvas, epicentre.
+function ziaGlowLayers(doc, id) {
+  const root = ziaGlowElement(doc, "zia-glow");
+  root.setAttribute("aria-hidden", "true");
+  root.toggleAttribute("data-warp-off", true);
+  const inner = ziaGlowElement(doc, "zia-glow-layer zia-glow-inner");
+  const innerWarp = ziaGlowElement(doc, "zia-glow-layer zia-glow-inner zia-glow-warp");
+  const stroke = ziaGlowElement(doc, "zia-glow-layer zia-glow-stroke");
+  const bloom = ziaGlowElement(doc, "zia-glow-layer zia-glow-bloom");
+  const bloomWarp = ziaGlowElement(doc, "zia-glow-layer zia-glow-bloom zia-glow-warp");
+  const canvas = ziaGlowElement(doc, "zia-glow-layer zia-glow-band", "canvas");
+  const core = ziaGlowElement(doc, "zia-glow-layer zia-glow-core");
+  const coreFill = ziaGlowElement(doc, "");
+  core.append(coreFill);
+  const { svg, filter, turbulence, shift, displace } = ziaGlowDistortion(doc, id);
+  innerWarp.style.setProperty("filter", `var(--zg-tone) url(#${id})`);
+  bloomWarp.style.setProperty("filter", `blur(var(--zg-blur)) var(--zg-tone) url(#${id})`);
+  root.append(inner, innerWarp, stroke, bloom, bloomWarp, canvas, core, svg);
+  return { root, inner, innerWarp, stroke, bloom, bloomWarp, canvas, coreFill, filter, turbulence, shift, displace };
+}
+
+// The distortion: drifting fractal noise, green pinned to 0.5 so only x displaces.
+function ziaGlowDistortion(doc, id) {
+  const svg = ziaGlowSvgElement(doc, "svg", { width: "0", height: "0", class: "zia-glow-defs" });
+  const filter = ziaGlowSvgElement(doc, "filter", {
+    id,
+    x: "-20%",
+    y: "-20%",
+    width: "140%",
+    height: "140%",
+    "color-interpolation-filters": "sRGB",
+  });
+  const turbulence = ziaGlowSvgElement(doc, "feTurbulence", {
+    type: "fractalNoise",
+    baseFrequency: "0.04 0.17",
+    numOctaves: "2",
+    seed: "7",
+    result: "noise",
+  });
+  const shift = ziaGlowSvgElement(doc, "feOffset", { in: "noise", dx: "0", dy: "0", result: "moved" });
+  const matrix = ziaGlowSvgElement(doc, "feColorMatrix", {
+    in: "moved",
+    type: "matrix",
+    values: "1 0 0 0 0  0 0 0 0 0.5  0 0 0 0 0  0 0 0 0 1",
+    result: "map",
+  });
+  const displace = ziaGlowSvgElement(doc, "feDisplacementMap", {
+    in: "SourceGraphic",
+    in2: "map",
+    scale: "0",
+    xChannelSelector: "R",
+    yChannelSelector: "G",
+  });
+  filter.append(turbulence, shift, matrix, displace);
+  svg.append(filter);
+  return { svg, filter, turbulence, shift, displace };
+}
+
+function ziaGlowElement(doc, cls, tag = "div") {
+  const el = doc.createElementNS(ZIA_GLOW_XHTML, tag);
+  if (cls) {
+    el.className = cls;
+  }
+  return el;
+}
+
+function ziaGlowSvgElement(doc, tag, attrs) {
+  const el = doc.createElementNS(ZIA_GLOW_SVG, tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    el.setAttribute(k, v);
+  }
+  return el;
+}
+
+function ziaGlowObserve(g) {
   // Offscreen (a collapsed or slid-out sidebar): leave the loop until it shows again.
   if (typeof IntersectionObserver === "function") {
     g.io = new IntersectionObserver(
@@ -22657,7 +22751,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
       },
       { rootMargin: "256px" }
     );
-    g.io.observe(root);
+    g.io.observe(g.root);
   }
   // A still frame (reduced motion) is redrawn when the card is resized.
   if (typeof ResizeObserver === "function") {
@@ -22666,9 +22760,11 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
         ziaGlowWake(g);
       }
     });
-    g.ro.observe(root);
+    g.ro.observe(g.root);
   }
+}
 
+function ziaGlowHandle(g) {
   return {
     setPlaying(on) {
       on = !!on;
@@ -22677,7 +22773,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
       }
       g.playing = on;
       g.offAt = 0;
-      root.toggleAttribute("data-on", on);
+      g.root.toggleAttribute("data-on", on);
       ziaGlowWake(g);
     },
     setDark(on) {
@@ -22715,20 +22811,24 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
       }
     },
     destroy() {
-      if (g.destroyed) {
-        return;
-      }
-      g.destroyed = true;
-      g.io?.disconnect();
-      g.ro?.disconnect();
-      ziaGlowLive.delete(g);
-      ziaGlowAll.delete(g);
-      root.remove();
-      if (!ziaGlowLive.size) {
-        ziaGlowStop();
-      }
+      ziaGlowDestroy(g);
     },
   };
+}
+
+function ziaGlowDestroy(g) {
+  if (g.destroyed) {
+    return;
+  }
+  g.destroyed = true;
+  g.io?.disconnect();
+  g.ro?.disconnect();
+  ziaGlowLive.delete(g);
+  ziaGlowAll.delete(g);
+  g.root.remove();
+  if (!ziaGlowLive.size) {
+    ziaGlowStop();
+  }
 }
   // ---------- Zia Settings: Zia's settings in a panel of their own, over a dimmed window as
   // the welcome tour is (29-settings-page.css), from the ⋯ menu. Built from
