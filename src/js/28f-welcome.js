@@ -1,17 +1,34 @@
   // The welcome tour (welcome/index.html): once on a first install, and once after
   // a release that bumps WELCOME_VERSION ("release + welcome card"), over a dimmed
   // window. Closed, it stays closed; settings can switch it off or show it again.
+  // Used elsewhere: watchWelcome.
   const WELCOME_VERSION = "2.102.0";
   const WELCOME_SEEN_PREF = "zia.welcome.seen";
   const WELCOME_UPDATES_PREF = "zia.welcome.show";
   const WELCOME_AGAIN_PREF = "zia.welcome.again";
   const WHATS_NEW_AGAIN_PREF = "zia.welcome.whats-new-again";
   const WELCOME_URL = "chrome://sine/content/zia/welcome/index.html";
+  const WELCOME_CLOSE_MS = 260;
+  const WELCOME_LOOK_EVERY = 250;
+  // (after the window has settled, so it isn't lost under the restore)
+  const WELCOME_DELAY = 1500;
 
   function showWelcome(mode) {
     if (document.getElementById("zia-welcome")) {
       return;
     }
+    const { overlay, frame } = makeWelcome(mode);
+    listenToWelcome(overlay, frame);
+    document.documentElement.appendChild(overlay);
+    try {
+      overlay.showPopover();
+    } catch (err) {
+      noteError("welcome: top layer", err);
+    }
+    requestAnimationFrame(() => overlay.setAttribute("shown", ""));
+  }
+
+  function makeWelcome(mode) {
     const overlay = document.createElementNS(XHTML_NS, "div");
     overlay.id = "zia-welcome";
     // In the top layer, as pop-ups are: above the toolbar and address bar,
@@ -23,26 +40,28 @@
     frame.setAttribute("src", `${WELCOME_URL}${ultra}#${mode === "update" ? `update-${WELCOME_VERSION}` : mode}`);
     frame.setAttribute("title", "Welcome to Zia");
     overlay.append(frame);
+    return { overlay, frame };
+  }
 
-    const close = () => {
-      if (!overlay.isConnected || overlay.hasAttribute("closing")) {
-        return;
-      }
-      overlay.setAttribute("closing", "");
-      setTimeout(() => {
-        try {
-          overlay.hidePopover?.();
-        } catch (err) {}
-        overlay.remove();
-      }, 260);
-      gBrowser.selectedBrowser?.focus();
-    };
-    // The page tells Zia what to do three ways (it runs apart from the
-    // window, so functions handed to it don't reach it): an event on its
-    // document, a message to this window, and a mark on the page, looked
-    // for every quarter second. The first to arrive counts.
+  function closeWelcome(overlay) {
+    if (!overlay.isConnected || overlay.hasAttribute("closing")) {
+      return;
+    }
+    overlay.setAttribute("closing", "");
+    // (never cancelled: once closing, it always goes)
+    setTimeout(() => {
+      try {
+        overlay.hidePopover?.();
+      } catch (err) {}
+      overlay.remove();
+    }, WELCOME_CLOSE_MS);
+    gBrowser.selectedBrowser?.focus();
+  }
+
+  // What the page asks for, as JSON: only the first ask counts
+  function welcomeAnswer(overlay) {
     let acted = false;
-    const act = (text) => {
+    return (text) => {
       if (acted) {
         return;
       }
@@ -58,9 +77,17 @@
       }
       if (message.action === "open" || message.action === "done") {
         acted = true;
-        close();
+        closeWelcome(overlay);
       }
     };
+  }
+
+  // The page tells Zia what to do three ways (it runs apart from the
+  // window, so functions handed to it don't reach it): an event on its
+  // document, a message to this window, and a mark on the page, looked
+  // for every quarter second. The first to arrive counts.
+  function listenToWelcome(overlay, frame) {
+    const act = welcomeAnswer(overlay);
     const onMessage = (event) => {
       if (event.source === frame.contentWindow && typeof event.data?.ziaWelcome === "string") {
         act(event.data.ziaWelcome);
@@ -82,7 +109,7 @@
       } catch (err) {
         noteError("welcome: look", err);
       }
-    }, 250);
+    }, WELCOME_LOOK_EVERY);
     frame.addEventListener("load", () => {
       try {
         frame.contentDocument?.addEventListener("ZiaWelcome", (event) => act(event.detail));
@@ -91,13 +118,6 @@
         noteError("welcome: hook", err);
       }
     });
-    document.documentElement.appendChild(overlay);
-    try {
-      overlay.showPopover();
-    } catch (err) {
-      noteError("welcome: top layer", err);
-    }
-    requestAnimationFrame(() => overlay.setAttribute("shown", ""));
   }
 
   function watchWelcome() {
@@ -108,8 +128,7 @@
       // show it too
       Services.prefs.setStringPref(WELCOME_SEEN_PREF, WELCOME_VERSION);
       if (firstTime || Services.prefs.getBoolPref(WELCOME_UPDATES_PREF, true)) {
-        // after the window has settled, so it isn't lost under the restore
-        setTimeout(() => showWelcome(firstTime ? "install" : "update"), 1500);
+        setTimeout(() => showWelcome(firstTime ? "install" : "update"), WELCOME_DELAY);
       }
     }
 

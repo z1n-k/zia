@@ -5,7 +5,9 @@
   // drops the ones nobody types (next/previous tab or space, plain reload), and
   // renames a few to the words people use. Commands run with the window they
   // were picked in, never this script's own, since the list outlives windows.
+  // Used elsewhere: setupAddressBarCommands.
   const ZEN_ICON = "chrome://browser/skin/zen-icons/";
+  const SINE_PAGE_LOOK_EVERY = 100;
 
   function ziaAction(label, icon, command, isAvailable = () => true) {
     return {
@@ -34,7 +36,7 @@
   async function openSineMods(win) {
     win.openPreferences("paneSineMods");
     for (let i = 0; i < 40; i++) {
-      await new Promise((resolve) => win.setTimeout(resolve, 100));
+      await new Promise((resolve) => win.setTimeout(resolve, SINE_PAGE_LOOK_EVERY));
       const browser = win.gBrowser.selectedBrowser;
       if (!browser.currentURI?.spec.startsWith("about:preferences")) {
         continue;
@@ -284,25 +286,27 @@
     }
     refreshSpaceActions(actions, window);
     gURLBar.inputField?.addEventListener("focus", () => refreshSpaceActions(actions, window));
-    window.addEventListener("unload", () => {
-      if (actions.ziaOwner !== window) {
-        // its "Move Tab to" entries may be this window's: made again on the next focus
-        removeZiaEntries(actions, true);
-        return;
+    window.addEventListener("unload", () => handOverAddressBarCommands(actions));
+  }
+
+  function handOverAddressBarCommands(actions) {
+    if (actions.ziaOwner !== window) {
+      // its "Move Tab to" entries may be this window's: made again on the next focus
+      removeZiaEntries(actions, true);
+      return;
+    }
+    removeZiaEntries(actions, false);
+    unmatchCommandsStrictly();
+    actions.ziaOwner = null;
+    try {
+      colourProvider?.manager.unregisterProvider(colourProvider.provider);
+    } catch (err) {}
+    for (const other of Services.wm.getEnumerator("navigator:browser")) {
+      if (other !== window && other.ZiaCommands) {
+        other.ZiaCommands.takeOver();
+        break;
       }
-      removeZiaEntries(actions, false);
-      unmatchCommandsStrictly();
-      actions.ziaOwner = null;
-      try {
-        colourProvider?.manager.unregisterProvider(colourProvider.provider);
-      } catch (err) {}
-      for (const other of Services.wm.getEnumerator("navigator:browser")) {
-        if (other !== window && other.ZiaCommands) {
-          other.ZiaCommands.takeOver();
-          break;
-        }
-      }
-    });
+    }
   }
 
   // ---------- Colour answers: a hex or rgb() colour, shown with its swatch and
@@ -344,25 +348,39 @@
   }
 
   function registerColourAnswer() {
-    let manager;
-    let UrlbarProvider;
-    let UrlbarResult;
-    let UrlbarShared;
-    try {
-      ({ ProvidersManager: manager } = ChromeUtils.importESModule("moz-src:///browser/components/urlbar/UrlbarProvidersManager.sys.mjs"));
-      manager = manager.getInstanceForSap("urlbar");
-      ({ UrlbarProvider } = ChromeUtils.importESModule("moz-src:///browser/components/urlbar/UrlbarUtils.sys.mjs"));
-      ({ UrlbarResult } = ChromeUtils.importESModule("chrome://browser/content/urlbar/UrlbarResult.mjs"));
-      ({ UrlbarShared } = ChromeUtils.importESModule("chrome://browser/content/urlbar/UrlbarShared.mjs"));
-    } catch (err) {
-      noteError("address bar commands: colour answer", err);
+    const urlbar = urlbarModules();
+    if (!urlbar) {
       return null;
     }
+    const { manager } = urlbar;
     const existing = manager.getProvider("ProviderZiaColour");
     if (existing) {
       manager.unregisterProvider(existing);
     }
-    class ProviderZiaColour extends UrlbarProvider {
+    const ProviderZiaColour = colourProviderClass(urlbar);
+    const provider = new ProviderZiaColour();
+    manager.registerProvider(provider);
+    return { manager, provider };
+  }
+
+  // Firefox's address bar parts the colour answer is made of
+  function urlbarModules() {
+    try {
+      const { ProvidersManager } = ChromeUtils.importESModule("moz-src:///browser/components/urlbar/UrlbarProvidersManager.sys.mjs");
+      const manager = ProvidersManager.getInstanceForSap("urlbar");
+      const { UrlbarProvider } = ChromeUtils.importESModule("moz-src:///browser/components/urlbar/UrlbarUtils.sys.mjs");
+      const { UrlbarResult } = ChromeUtils.importESModule("chrome://browser/content/urlbar/UrlbarResult.mjs");
+      const { UrlbarShared } = ChromeUtils.importESModule("chrome://browser/content/urlbar/UrlbarShared.mjs");
+      return { manager, UrlbarProvider, UrlbarResult, UrlbarShared };
+    } catch (err) {
+      noteError("address bar commands: colour answer", err);
+      return null;
+    }
+  }
+
+  // (a class, as Firefox's providers are: its name is the provider's)
+  function colourProviderClass({ UrlbarProvider, UrlbarResult, UrlbarShared }) {
+    return class ProviderZiaColour extends UrlbarProvider {
       get type() {
         return UrlbarShared.PROVIDER_TYPE.PROFILE;
       }
@@ -414,9 +432,6 @@
       onEngagement(queryContext, controller, details) {
         copyText(details.result.payload.hex);
       }
-    }
-    const provider = new ProviderZiaColour();
-    manager.registerProvider(provider);
-    return { manager, provider };
+    };
   }
 
