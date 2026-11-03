@@ -1,5 +1,7 @@
 // Zia: built from src/js by scripts/build.sh. Edit the parts in src/js, not this file.
 (() => {
+  // the script is running: takes away the stylesheet's card saying it isn't (30-script-notice)
+  document.documentElement?.setAttribute("zia-js", "");
   if (window.__ziaLoaded) {
     return;
   }
