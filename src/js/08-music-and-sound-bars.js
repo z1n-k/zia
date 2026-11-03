@@ -578,27 +578,23 @@
       swap();
       return;
     }
+    // one animation that holds nothing, the picture swapped halfway by a timer: the old
+    // two-part flip waited on the first half's finished promise, which Firefox can leave
+    // unresolved (seen in a real Zen on Twitch), leaving the picture edge-on, an empty card
     button.__ziaFlip?.cancel();
-    const turnAway = icon.animate(
-      [{ transform: "perspective(240px) rotateY(0deg)" }, { transform: "perspective(240px) rotateY(90deg)" }],
-      { duration: FLIP_OUT_MS, easing: "cubic-bezier(0.55, 0, 1, 0.45)", fill: "forwards" }
+    clearTimeout(button.__ziaFlipSwap);
+    const half = FLIP_OUT_MS / (FLIP_OUT_MS + FLIP_IN_MS);
+    button.__ziaFlip = icon.animate(
+      [
+        { offset: 0, transform: "perspective(240px) rotateY(0deg)", easing: "cubic-bezier(0.55, 0, 1, 0.45)" },
+        { offset: half, transform: "perspective(240px) rotateY(90deg)" },
+        { offset: half, transform: "perspective(240px) rotateY(-90deg)", easing: "cubic-bezier(0.2, 0.8, 0.3, 1)" },
+        { offset: half + 0.75 * (1 - half), transform: "perspective(240px) rotateY(8deg)", easing: "ease-in-out" },
+        { offset: 1, transform: "perspective(240px) rotateY(0deg)" },
+      ],
+      { duration: FLIP_OUT_MS + FLIP_IN_MS }
     );
-    button.__ziaFlip = turnAway;
-    turnAway.finished
-      .then(() => {
-        swap();
-        const turnBack = icon.animate(
-          [
-            { transform: "perspective(240px) rotateY(-90deg)" },
-            { transform: "perspective(240px) rotateY(8deg)", offset: 0.75 },
-            { transform: "perspective(240px) rotateY(0deg)" },
-          ],
-          { duration: FLIP_IN_MS, easing: "cubic-bezier(0.2, 0.8, 0.3, 1)" }
-        );
-        button.__ziaFlip = turnBack;
-        turnAway.cancel();
-      })
-      .catch(() => {});
+    button.__ziaFlipSwap = setTimeout(swap, FLIP_OUT_MS);
   }
 
   function setRing(card, fraction) {
@@ -914,6 +910,11 @@
       } catch (err) {
         noteError("music and sound bars: updateIcon", err);
       }
+      try {
+        dropCardEmoji(this);
+      } catch (err) {
+        noteError("music and sound bars: dropCardEmoji", err);
+      }
     };
     patched.__zia = true;
     proto.updateIcon = patched;
@@ -962,6 +963,55 @@
     showFaviconTile(card, button, art);
   }
 
+  // Titles and artist names lose their emoji (a stream's 🔴, say), on by default. Zen
+  // writes them just before it asks for the icon, so they're tidied there, before it
+  // measures them for scrolling; the full text is kept to put back when this is off.
+  const HIDE_EMOJI_PREF = "zia.media.hide-emoji";
+  const EMOJI =
+    /(?:[#*0-9]\uFE0F?\u20E3|\p{Regional_Indicator}{2}|(?:\p{Emoji_Presentation}|\p{Extended_Pictographic}\uFE0F)\p{Emoji_Modifier}?[\u{E0020}-\u{E007F}]*(?:\u200D\p{Extended_Pictographic}\uFE0F?\p{Emoji_Modifier}?)*)/gu;
+
+  function withoutEmoji(text) {
+    const bare = text.replace(EMOJI, " ").replace(/\s{2,}/g, " ").trim();
+    return bare || text;
+  }
+
+  function dropCardEmoji(card) {
+    let hide = true;
+    try {
+      hide = Services.prefs.getBoolPref(HIDE_EMOJI_PREF, true);
+    } catch (err) {
+      hide = true;
+    }
+    for (const label of [card.titleEl, card.artistEl]) {
+      if (!label) {
+        continue;
+      }
+      const text = label.textContent;
+      const full = label.__ziaShown === text ? label.__ziaFull : text;
+      const shown = hide ? withoutEmoji(full) : full;
+      label.__ziaFull = full;
+      label.__ziaShown = shown;
+      if (text !== shown) {
+        label.textContent = shown;
+      }
+    }
+  }
+
+  function redropCardEmoji() {
+    for (const element of document.querySelectorAll("#zen-media-controls-toolbar .zen-media-card")) {
+      const card = element.__ziaCard;
+      if (!card) {
+        continue;
+      }
+      try {
+        dropCardEmoji(card);
+        card.updateLabelOverflows?.();
+      } catch (err) {
+        noteError("music and sound bars: redropCardEmoji", err);
+      }
+    }
+  }
+
   function watchMediaGlow() {
     const toolbar = document.getElementById("zen-media-controls-toolbar");
     if (!toolbar) {
@@ -993,6 +1043,7 @@
       attributeFilter: ["src", "style", "image", "hidden", "zia-art", "zia-favicon"],
     });
     refresh();
+    watchPrefs(HIDE_EMOJI_PREF, redropCardEmoji);
   }
 
   // Zen drops a card if asking its media's position fails, and Kick's live player
