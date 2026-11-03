@@ -1,0 +1,51 @@
+
+/* When Zia's script isn't running (installed from GitHub with Sine's unofficial JS off, or
+   turned on without a restart), only this stylesheet loads, and half of Zia quietly does
+   nothing. A card at the foot of the window says so and how to fix it; the script marks
+   the window (zia-js, 00-core) as it starts, which takes the card away. It waits a few
+   seconds before showing, so a start where the script is merely slower never flashes it,
+   and lets clicks through to whatever is under it. */
+:root#main-window:not([zia-js]) #browser {
+  &::before,
+  &::after {
+    position: fixed;
+    left: 50%;
+    z-index: 2147483647;
+    box-sizing: border-box;
+    bottom: 16px;
+    width: 400px;
+    height: 84px;
+    max-width: calc(100vw - 32px);
+    translate: -50% 0;
+    padding-inline: 16px;
+    font: menu;
+    pointer-events: none;
+    animation: zia-script-notice 0.3s ease 8s both;
+  }
+
+  &::before {
+    content: "Zia's script isn't running";
+    padding-top: 14px;
+    border-radius: 12px;
+    background: rgb(24, 24, 27);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+    color: rgb(250, 250, 250);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  &::after {
+    /* (below the title, as one card with it) */
+    content: "Settings → Sine Mods → Sine's settings: tick “Enable installing JS from unofficial sources”, then restart Zen.";
+    padding-top: 37px;
+    color: rgb(161, 161, 170);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+}
+
+@keyframes zia-script-notice {
+  from {
+    opacity: 0;
+  }
+}

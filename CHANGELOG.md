@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.117.1] — 2026-11-03
+
+### Added
+
+- When Zia's script isn't running, a card at the foot of the window says so and how to
+  fix it: in Sine's settings, tick "Enable installing JS from unofficial sources", then
+  restart Zen. Installed from GitHub, Zia needs that for its features to work. The card
+  goes as soon as the script runs, and never shows when it does.
+
 ## [2.117.0] — 2026-11-03
 
 ### Added
