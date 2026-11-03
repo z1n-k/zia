@@ -4,6 +4,28 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.115.0] — 2026-11-03
+
+### Changed
+
+- A new tab extension's page (Yet another speed dial and the like) comes before
+  **New tabs open your search engine's page**: new tabs open the extension's page, and
+  the search page once it's gone. Zia's replaced it, though only on some starts, so the
+  extension looked broken; the setting now says so
+  ([#543](https://github.com/z1n-k/zia/issues/543), thanks @apoapostolov).
+
+### Removed
+
+- **Sidebar see-through** (added in 2.111.0). It faded Zen's own sidebar colour, not the
+  Liquid Glass it was taken for, which a theme can't draw; Zen's own see-through stays as
+  you set it ([#547](https://github.com/z1n-k/zia/issues/547), thanks @OneGunBullet).
+
+### Fixed
+
+- An open essential taken out of the essentials no longer keeps Ultra's drifting colour:
+  it went on turning round the tab it had become, as two slow lines
+  ([#548](https://github.com/z1n-k/zia/issues/548), thanks @LAutomate-dev).
+
 ## [2.114.1] — 2026-10-31
 
 ### Fixed

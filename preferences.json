@@ -60,19 +60,6 @@
     "defaultValue": false
   },
   {
-    "type": "dropdown",
-    "label": "Sidebar see-through, the desktop showing through it (macOS, and Windows and Linux where the window can be see-through)",
-    "property": "zia.sidebar.see-through",
-    "since": "2.111.0",
-    "defaultValue": "0",
-    "options": [
-      { "label": "Off", "value": "0" },
-      { "label": "A little", "value": "15" },
-      { "label": "Some", "value": "30" },
-      { "label": "Half", "value": "50" }
-    ]
-  },
-  {
     "type": "checkbox",
     "label": "Ultra: extra effects (a thinking orb while a tab loads, the colour round the open essential slowly moving, the music player glowing in its artwork's colours, the Library's chosen section springing to the next, the welcome tour's Zia in liquid metal)",
     "property": "zia.ultra",
@@ -516,7 +503,7 @@
   },
   {
     "type": "checkbox",
-    "label": "New tabs open your search engine's page (off: Zen's new tab page)",
+    "label": "New tabs open your search engine's page, unless an extension has its own new tab page (off: Zen's new tab page)",
     "property": "zia.newtab.search-engine",
     "defaultValue": true,
     "conditions": [
