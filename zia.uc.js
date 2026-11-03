@@ -2154,9 +2154,9 @@
     }
 
     syncSpaceLabel(indicator);
-    // (the name hidden and no icon to keep: the slot is blank, and steps out of the row as it
-    // does with the name above the tabs. Empty, it still stretched across the row and kept the
-    // buttons pushed to its end)
+    // (the name hidden and no icon to keep: the slot is blank, and where it starts the row it
+    // steps out, as with the name above the tabs. Empty, it still stretched across the row and
+    // kept the buttons pushed to its end; beside macOS's traffic lights it stays: the stylesheet)
     const label = indicator?.querySelector("#zia-space-label");
     const blank = !!label && Services.prefs.getBoolPref(HIDE_SPACE_NAME_PREF, false) && !label.matches("[zia-has-icon], [zia-has-svg]");
     setAttr(workspaceSlot, "zia-blank", blank ? "true" : null);

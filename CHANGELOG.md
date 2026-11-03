@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.115.2] — 2026-11-03
+
+### Fixed
+
+- On macOS, with **Hide the space's name** on and a space with no icon, the buttons at
+  the top of the sidebar stay at the row's far end, clear of the traffic lights, as before
+  2.115.1, which drew them in beside them. Only where the window buttons aren't in that
+  row (Windows and Linux) do the ⋯ menu and sidebar button move to its start.
+
 ## [2.115.1] — 2026-11-03
 
 ### Fixed

@@ -110,11 +110,14 @@
    slot it would go in is out of the top row too: empty, it still stretched across
    the row and kept its buttons pushed to the end, where Zia puts them, and moving
    them in Customize Toolbar didn't bring them back. The same with the name hidden and
-   no icon to keep (the slot blank), and while Customize Toolbar is open, so its box
-   has the whole row to arrange the buttons in: squeezed to the end beside the name,
-   there was nowhere to drop them */
+   no icon to keep (the slot blank), where the row starts with the slot (Windows and
+   Linux, the window buttons top right): the ⋯ menu and sidebar button start the row.
+   Beside macOS's traffic lights a blank slot stays, keeping the buttons at the row's
+   far end, clear of them. And while Customize Toolbar is open, so its box has the
+   whole row to arrange the buttons in: squeezed to the end beside the name, there was
+   nowhere to drop them */
 :root:is([zia-space-name-in-list], [customizing]) #zia-workspace-slot,
-#zia-workspace-slot[zia-blank] {
+#zia-workspace-slot[zia-blank]:not(.titlebar-buttonbox-container + *) {
   display: none !important;
 }
 
@@ -129,7 +132,7 @@
 /* With the space's name in the top row, it takes the room there: Zen's spacer among the
    row's buttons took half of it, and its ⋯ menu sat in the middle, apart from its back and
    reload (Windows and Linux layouts, and the sidebar on the right, #507) */
-:root:not([zia-space-name-in-list], [customizing]) #zen-sidebar-top-buttons:has(> #zia-workspace-slot:not([zia-blank])) {
+:root:not([zia-space-name-in-list], [customizing]) #zen-sidebar-top-buttons:has(> #zia-workspace-slot:is(:not([zia-blank]), .titlebar-buttonbox-container + *)) {
   & #zen-sidebar-top-buttons-customization-target {
     flex: 0 1 auto !important;
   }
