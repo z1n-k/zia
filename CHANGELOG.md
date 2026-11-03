@@ -4,6 +4,23 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.116.0] — 2026-11-03
+
+### Added
+
+- **Hidden**: the open space's name and icon can be left off the top of the sidebar
+  altogether, whether or not the space has an icon. The spaces at the foot of the sidebar
+  keep their icons, or their dots with **Space switcher… shows dots** (thanks PowerFactory).
+
+### Changed
+
+- **The open space's name and icon** (Sidebar and folders) is one choice in place of two
+  checkboxes: at the top of the sidebar, at the top as the icon only, above the tabs as
+  Zen does, or hidden. "Show the space's name above the tabs" and "Hide the space's name…
+  keeping its icon" carry over to it after Zen restarts.
+- The space switcher setting says what it does: **Space switcher at the foot of the
+  sidebar shows dots, the open space's icon among them**.
+
 ## [2.115.2] — 2026-11-03
 
 ### Fixed
