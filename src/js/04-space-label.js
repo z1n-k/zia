@@ -3,18 +3,41 @@
   let movedFromSpace = null;
   let spaceAttrObserver = null;
   const MIRRORED_SPACE_ATTRS = ["haspinnedtabs", "collapsedpinnedtabs"];
-  // The space's name left where Zen puts it, above the tabs, rather than
-  // moved up beside the window buttons
-  const SPACE_NAME_IN_LIST_PREF = "zia.sidebar.space-name-in-list";
-  const spaceNameInList = () => Services.prefs.getBoolPref(SPACE_NAME_IN_LIST_PREF, false);
-  // The name hidden, the space's icon kept (with none, the slot has nothing to show)
-  const HIDE_SPACE_NAME_PREF = "zia.sidebar.hide-space-name";
+  // Where the open space's name and icon show: "top" of the sidebar, beside the window
+  // buttons; the "icon" only there (with none, the slot has nothing to show); above the tabs,
+  // where Zen puts it ("list"); or "none", hidden
+  const SPACE_LABEL_PREF = "zia.sidebar.space-label";
+  const spaceLabelPlace = () => Services.prefs.getStringPref(SPACE_LABEL_PREF, "top");
+  const spaceNameInList = () => spaceLabelPlace() === "list";
+
+  // (until 2.116.0, two checkboxes: the name above the tabs, and the name hidden with the
+  // icon kept. Carried over once, unless a place has been chosen since)
+  // (only over the default, which Sine saves as soon as its settings are opened)
+  function carryOverSpaceLabelPrefs() {
+    const P = Services.prefs;
+    const IN_LIST = "zia.sidebar.space-name-in-list";
+    const HIDE_NAME = "zia.sidebar.hide-space-name";
+    try {
+      if (spaceLabelPlace() === "top") {
+        if (P.getBoolPref(IN_LIST, false)) {
+          P.setStringPref(SPACE_LABEL_PREF, "list");
+        } else if (P.getBoolPref(HIDE_NAME, false)) {
+          P.setStringPref(SPACE_LABEL_PREF, "icon");
+        }
+      }
+      P.clearUserPref(IN_LIST);
+      P.clearUserPref(HIDE_NAME);
+    } catch (err) {
+      noteError("space label: carry over", err);
+    }
+  }
 
   function createWorkspaceSlot() {
     const topButtons = document.getElementById("zen-sidebar-top-buttons");
     if (!topButtons || !window.gZenWorkspaces) {
       return;
     }
+    carryOverSpaceLabelPrefs();
     workspaceSlot = document.createElementNS(XHTML_NS, "div");
     workspaceSlot.id = "zia-workspace-slot";
     // (beside the window buttons only where they start the row: where they're elsewhere
@@ -31,7 +54,7 @@
     }
 
     const onSpaceSwitch = () => setTimeout(placeWorkspaceIndicator, 0);
-    watchPrefs([SPACE_NAME_IN_LIST_PREF, HIDE_SPACE_NAME_PREF], onSpaceSwitch);
+    watchPrefs(SPACE_LABEL_PREF, onSpaceSwitch);
     watchPrefs("zen.workspaces.active", onSpaceSwitch);
     gBrowser.tabContainer.addEventListener("TabSelect", onSpaceSwitch);
     placeWorkspaceIndicator();
@@ -213,11 +236,13 @@
     }
 
     syncSpaceLabel(indicator);
-    // (the name hidden and no icon to keep: the slot is blank, and where it starts the row it
-    // steps out, as with the name above the tabs. Empty, it still stretched across the row and
-    // kept the buttons pushed to its end; beside macOS's traffic lights it stays: the stylesheet)
+    // (hidden, or the icon only with no icon to show: the slot is blank, and where it starts the
+    // row it steps out, as with the name above the tabs. Empty, it still stretched across the
+    // row and kept the buttons pushed to its end; beside macOS's traffic lights it stays: the
+    // stylesheet)
     const label = indicator?.querySelector("#zia-space-label");
-    const blank = !!label && Services.prefs.getBoolPref(HIDE_SPACE_NAME_PREF, false) && !label.matches("[zia-has-icon], [zia-has-svg]");
+    const place = spaceLabelPlace();
+    const blank = !!label && (place === "none" || (place === "icon" && !label.matches("[zia-has-icon], [zia-has-svg]")));
     setAttr(workspaceSlot, "zia-blank", blank ? "true" : null);
 
     spaceAttrObserver?.disconnect();

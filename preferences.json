@@ -234,8 +234,33 @@
     ]
   },
   {
+    "type": "dropdown",
+    "label": "The open space's name and icon",
+    "property": "zia.sidebar.space-label",
+    "since": "2.116.0",
+    "defaultValue": "top",
+    "options": [
+      {
+        "label": "At the top of the sidebar",
+        "value": "top"
+      },
+      {
+        "label": "At the top, icon only",
+        "value": "icon"
+      },
+      {
+        "label": "Above the tabs, as Zen does",
+        "value": "list"
+      },
+      {
+        "label": "Hidden",
+        "value": "none"
+      }
+    ]
+  },
+  {
     "type": "checkbox",
-    "label": "Space icons at the foot of the sidebar collapse to dots, the open one shown (Zen's look when they don't fit)",
+    "label": "Space switcher at the foot of the sidebar shows dots, the open space's icon among them (Zen's look when they don't fit)",
     "property": "zia.spaces.collapse-icons",
     "since": "2.112.0",
     "defaultValue": false
@@ -263,26 +288,6 @@
     "label": "Name new folders and pick their icons with a local model (a ~25MB download, once)",
     "property": "zia.features.folder-icon-suggest",
     "defaultValue": false
-  },
-  {
-    "type": "checkbox",
-    "label": "Show the space's name above the tabs, as Zen does",
-    "property": "zia.sidebar.space-name-in-list",
-    "defaultValue": false
-  },
-  {
-    "type": "checkbox",
-    "label": "Hide the space's name at the top of the sidebar, keeping its icon",
-    "property": "zia.sidebar.hide-space-name",
-    "defaultValue": false,
-    "conditions": [
-      {
-        "if": {
-          "property": "zia.sidebar.space-name-in-list",
-          "value": false
-        }
-      }
-    ]
   },
   {
     "type": "checkbox",

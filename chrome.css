@@ -1571,10 +1571,17 @@
   transform: rotate(0deg);
 }
 
-/* Optional: the space's name hidden, its icon kept. The top row is as wide
+/* Optional: the space's icon only, its name hidden. The top row is as wide
    as the name, so a long one widened the sidebar and it changed size from
-   space to space; with no icon, nothing is left to show. */
-@media -moz-pref("zia.sidebar.hide-space-name") {
+   space to space; with no icon, nothing is left to show. Or neither, hidden
+   (the spaces at the foot of the sidebar keep their icons). */
+@media -moz-pref("zia.sidebar.space-label", "none") {
+  #zia-space-label {
+    display: none !important;
+  }
+}
+
+@media -moz-pref("zia.sidebar.space-label", "icon") {
   #zia-space-label {
     & > .zia-space-name {
       display: none;
@@ -1594,8 +1601,8 @@
 /* With the space's name left above the tabs, as Zen has it (Zia's settings), the
    slot it would go in is out of the top row too: empty, it still stretched across
    the row and kept its buttons pushed to the end, where Zia puts them, and moving
-   them in Customize Toolbar didn't bring them back. The same with the name hidden and
-   no icon to keep (the slot blank), where the row starts with the slot (Windows and
+   them in Customize Toolbar didn't bring them back. The same with nothing to show there,
+   hidden or no icon to keep (the slot blank), where the row starts with the slot (Windows and
    Linux, the window buttons top right): the ⋯ menu and sidebar button start the row.
    Beside macOS's traffic lights a blank slot stays, keeping the buttons at the row's
    far end, clear of them. And while Customize Toolbar is open, so its box has the
