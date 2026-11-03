@@ -1948,6 +1948,8 @@
   // moved up beside the window buttons
   const SPACE_NAME_IN_LIST_PREF = "zia.sidebar.space-name-in-list";
   const spaceNameInList = () => Services.prefs.getBoolPref(SPACE_NAME_IN_LIST_PREF, false);
+  // The name hidden, the space's icon kept (with none, the slot has nothing to show)
+  const HIDE_SPACE_NAME_PREF = "zia.sidebar.hide-space-name";
 
   function createWorkspaceSlot() {
     const topButtons = document.getElementById("zen-sidebar-top-buttons");
@@ -1970,7 +1972,7 @@
     }
 
     const onSpaceSwitch = () => setTimeout(placeWorkspaceIndicator, 0);
-    watchPrefs(SPACE_NAME_IN_LIST_PREF, onSpaceSwitch);
+    watchPrefs([SPACE_NAME_IN_LIST_PREF, HIDE_SPACE_NAME_PREF], onSpaceSwitch);
     watchPrefs("zen.workspaces.active", onSpaceSwitch);
     gBrowser.tabContainer.addEventListener("TabSelect", onSpaceSwitch);
     placeWorkspaceIndicator();
@@ -2152,6 +2154,12 @@
     }
 
     syncSpaceLabel(indicator);
+    // (the name hidden and no icon to keep: the slot is blank, and steps out of the row as it
+    // does with the name above the tabs. Empty, it still stretched across the row and kept the
+    // buttons pushed to its end)
+    const label = indicator?.querySelector("#zia-space-label");
+    const blank = !!label && Services.prefs.getBoolPref(HIDE_SPACE_NAME_PREF, false) && !label.matches("[zia-has-icon], [zia-has-svg]");
+    setAttr(workspaceSlot, "zia-blank", blank ? "true" : null);
 
     spaceAttrObserver?.disconnect();
     mirrorSpaceAttributes(space);
