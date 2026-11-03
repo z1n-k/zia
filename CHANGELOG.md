@@ -4,6 +4,18 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.115.1] — 2026-11-03
+
+### Fixed
+
+- With **Hide the space's name** on and a space with no icon, the buttons at the top of
+  the sidebar sit where Zen and Customize Toolbar put them (the ⋯ menu and sidebar button
+  on the left). The empty space-name area still stretched across the row and pushed them
+  all to the end. On macOS they follow the window buttons as before.
+- In Customize Toolbar, the sidebar's top row is yours to arrange from end to end: the
+  space's name made way only for a narrow box at the end, with nowhere to drop buttons
+  (thanks PowerFactory).
+
 ## [2.115.0] — 2026-11-03
 
 ### Changed
