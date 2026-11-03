@@ -4,6 +4,20 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.117.0] — 2026-11-03
+
+### Added
+
+- **The music player leaves emoji out of titles and artist names** (on by default): a
+  stream's "🔴 LIVE 🔴" title reads as plain text. Turn it off in Media to keep them.
+
+### Fixed
+
+- The music player's picture could vanish, leaving an empty frame, when it changed while
+  you were on the playing tab (seen on Twitch, which swaps in the channel's picture). The
+  flip between pictures could stop halfway with the picture turned edge-on; it now always
+  ends facing you.
+
 ## [2.116.0] — 2026-11-03
 
 ### Added

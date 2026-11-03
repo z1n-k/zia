@@ -629,6 +629,21 @@
   },
   {
     "type": "checkbox",
+    "label": "The music player leaves emoji out of titles and artist names",
+    "property": "zia.media.hide-emoji",
+    "since": "2.117.0",
+    "defaultValue": true,
+    "conditions": [
+      {
+        "if": {
+          "property": "zia.features.media-player",
+          "value": true
+        }
+      }
+    ]
+  },
+  {
+    "type": "checkbox",
     "label": "Zia's picture-in-picture controls (off: Firefox's)",
     "property": "zia.pip.dia-style",
     "defaultValue": true

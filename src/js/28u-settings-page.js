@@ -128,6 +128,7 @@
     "zia.features.media-player": ["Music player card", ""],
     "zia.media.keep-with-pip": ["Keep player with picture-in-picture", "The music player stays when its video pops out."],
     "zia.media.youtube-channel-art": ["YouTube channel art", "The player shows the channel's picture, not the video's."],
+    "zia.media.hide-emoji": ["No emoji in the player", "Titles and artist names leave out their emoji."],
     "zia.pip.dia-style": ["Zia picture-in-picture controls", "Off: Firefox's."],
     "zia.pip.tuck": ["Tuck picture-in-picture", "Push it against a screen edge, or right-click it."],
     "zia.pip.tuck-spot": ["Tuck into", ""],
