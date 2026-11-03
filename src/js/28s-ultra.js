@@ -330,24 +330,20 @@
         start(tab);
       }
     };
-    // (an essential chosen again: its colour is drawn anew, so its drift too. Left,
-    // the drift stops: the same layer is then the fine edge round its tile, which
-    // drifted, swelled and turned out of the tile, as two lines and then gone)
+    // (an essential chosen again: its colour is drawn anew, so its drift too. Left, or
+    // taken out of the essentials while open, the drift stops: the same layer is then
+    // the fine edge round its tile, or round the tab it's become, which drifted, swelled
+    // and turned out of it, as two lines going round, #548)
     new MutationObserver((records) => {
       if (!wanted()) {
         return;
       }
       for (const { target } of records) {
-        if (!target.hasAttribute("zen-essential")) {
-          continue;
-        }
-        if (target.hasAttribute("visuallyselected")) {
+        const background = backgroundOf(target);
+        if (target.hasAttribute("zen-essential") && target.hasAttribute("visuallyselected")) {
           start(target);
-        } else {
-          const background = backgroundOf(target);
-          if (background) {
-            halt(background);
-          }
+        } else if (drifting.has(background)) {
+          halt(background);
         }
       }
       for (const [background, animations] of drifting) {
@@ -356,7 +352,7 @@
           drifting.delete(background);
         }
       }
-    }).observe(gNavToolbox, { subtree: true, attributes: true, attributeFilter: ["visuallyselected"] });
+    }).observe(gNavToolbox, { subtree: true, attributes: true, attributeFilter: ["visuallyselected", "zen-essential"] });
     watchPrefs([ULTRA_PREF, "zen.theme.essentials-favicon-bg"], sync);
     still.addEventListener("change", sync);
     sync();

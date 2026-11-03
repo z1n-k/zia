@@ -2209,8 +2209,15 @@
     }
   }
 
+  // Firefox marks a new tab page an extension sets, kept over restarts, so it's known
+  // before the extension itself is back
+  const EXTENSION_NEW_TAB_PREF = "browser.newtab.extensionControlled";
+
+  // Zia's search page, unless an extension has a new tab page of its own: that comes
+  // first, as whoever added it wants it. Replaced by Zia's, the extension looked broken,
+  // and only on some starts, as the two raced (#543).
   function newTabSearchEnabled() {
-    return Services.prefs.getBoolPref("zia.newtab.search-engine", true);
+    return Services.prefs.getBoolPref("zia.newtab.search-engine", true) && !Services.prefs.getBoolPref(EXTENSION_NEW_TAB_PREF, false);
   }
 
   async function applyNewTabPage() {
@@ -2218,8 +2225,8 @@
       const AboutNewTabModule = aboutNewTab();
       if (!newTabSearchEnabled()) {
         searchHomeUrl = null;
-        // only Zia's own page is undone (turned off while running); one an
-        // extension set stays, and is put back if Zia had replaced it
+        // only Zia's own page is undone (turned off, or an extension taking over, while
+        // running); one an extension set stays, and is put back if Zia had replaced it
         if (ziaNewTabUrl && AboutNewTabModule.newTabURL === ziaNewTabUrl) {
           AboutNewTabModule.resetNewTabURL();
           await restoreExtensionNewTab(AboutNewTabModule);
@@ -2460,7 +2467,8 @@
     applyNewTabPage();
     gBrowser.tabContainer.addEventListener("TabOpen", (event) => closeNewTabUrlbar(event.target));
     Services.obs.addObserver(applyNewTabPage, "browser-search-engine-modified");
-    watchPrefs("zia.newtab.search-engine", applyNewTabPage);
+    // (and back to Zia's once the extension's gone or switched off)
+    watchPrefs(["zia.newtab.search-engine", EXTENSION_NEW_TAB_PREF], applyNewTabPage);
     window.addEventListener("unload", () => Services.obs.removeObserver(applyNewTabPage, "browser-search-engine-modified"));
   }
 
@@ -10751,17 +10759,7 @@
     window.addEventListener("unload", () => Services.obs.removeObserver(update, "zen-theme-change"), { once: true });
   }
 
-  // Optional: the sidebar see-through, by as much as chosen (zia.sidebar.see-through, a
-  // percentage): Zen's own see-through is one fixed amount (06-folders-and-sidebar.css)
-  const SEE_THROUGH_PREF = "zia.sidebar.see-through";
-  function applySidebarSeeThrough() {
-    const amount = Math.min(90, Math.max(0, parseInt(Services.prefs.getStringPref(SEE_THROUGH_PREF, "0"), 10) || 0));
-    setStyle(root, "--zia-sidebar-see-through", amount ? String(amount / 100) : null);
-  }
-
   function watchSidebarPaint() {
-    applySidebarSeeThrough();
-    watchPrefs(SEE_THROUGH_PREF, applySidebarSeeThrough);
     syncSidebarPaint();
     const watcher = new MutationObserver(syncSidebarPaint);
     for (const id of ["zen-browser-background", "zen-toolbar-background"]) {
@@ -20872,24 +20870,20 @@
         start(tab);
       }
     };
-    // (an essential chosen again: its colour is drawn anew, so its drift too. Left,
-    // the drift stops: the same layer is then the fine edge round its tile, which
-    // drifted, swelled and turned out of the tile, as two lines and then gone)
+    // (an essential chosen again: its colour is drawn anew, so its drift too. Left, or
+    // taken out of the essentials while open, the drift stops: the same layer is then
+    // the fine edge round its tile, or round the tab it's become, which drifted, swelled
+    // and turned out of it, as two lines going round, #548)
     new MutationObserver((records) => {
       if (!wanted()) {
         return;
       }
       for (const { target } of records) {
-        if (!target.hasAttribute("zen-essential")) {
-          continue;
-        }
-        if (target.hasAttribute("visuallyselected")) {
+        const background = backgroundOf(target);
+        if (target.hasAttribute("zen-essential") && target.hasAttribute("visuallyselected")) {
           start(target);
-        } else {
-          const background = backgroundOf(target);
-          if (background) {
-            halt(background);
-          }
+        } else if (drifting.has(background)) {
+          halt(background);
         }
       }
       for (const [background, animations] of drifting) {
@@ -20898,7 +20892,7 @@
           drifting.delete(background);
         }
       }
-    }).observe(gNavToolbox, { subtree: true, attributes: true, attributeFilter: ["visuallyselected"] });
+    }).observe(gNavToolbox, { subtree: true, attributes: true, attributeFilter: ["visuallyselected", "zen-essential"] });
     watchPrefs([ULTRA_PREF, "zen.theme.essentials-favicon-bg"], sync);
     still.addEventListener("change", sync);
     sync();
@@ -22083,7 +22077,6 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     "zia.glass": ["Glass edges", "Essentials, cards and Library buttons edged like macOS Tahoe's glass, lighting up where pressed. Off: Zia's fine shine."],
     "zia.page.rounding": ["Zia page corners", "Off: Zen's."],
     "zia.page.edge-to-edge": ["Edge-to-edge page", "No gap or shadow around the page."],
-    "zia.sidebar.see-through": ["Sidebar see-through", "How much the desktop shows through the sidebar, where the window can be see-through."],
     "zia.ultra": ["Ultra effects", "A loading orb, the open essential's colour drifting, the music player glowing in its artwork's colours, a springy Library and a metal welcome logo."],
     "zia.features.tab-hover-cards": ["Hover cards", "For tabs and folders."],
     "zia.cards.blur": ["See-through hover cards", "What's behind is blurred."],
@@ -22125,7 +22118,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     "zia.urlbar.position": ["Address bar position", ""],
     "zia.features.find-bar": ["Zia find bar", "For finding in the page."],
     "zia.newtab.real-tab": ["Real new tabs", "Cmd/Ctrl+T and + New Tab open a tab. Off: Zen's floating address bar."],
-    "zia.newtab.search-engine": ["Search page in new tabs", "Your search engine's page. Off: Zen's new tab page."],
+    "zia.newtab.search-engine": ["Search page in new tabs", "Your search engine's page, unless an extension has its own. Off: Zen's new tab page."],
     "zia.newtab.focus-address-bar": ["New tabs start in the address bar", "Ready to type."],
     "zia.swipe.dia-arrow": ["Swipe arrow", "Dia's round arrow when swiping back or forward. Hold it to list the pages."],
     "zia.split.drop-cards": ["Split drop cards", "When dragging a tab onto the page to split it. Off: Zen's."],

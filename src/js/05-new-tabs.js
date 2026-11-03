@@ -45,8 +45,15 @@
     }
   }
 
+  // Firefox marks a new tab page an extension sets, kept over restarts, so it's known
+  // before the extension itself is back
+  const EXTENSION_NEW_TAB_PREF = "browser.newtab.extensionControlled";
+
+  // Zia's search page, unless an extension has a new tab page of its own: that comes
+  // first, as whoever added it wants it. Replaced by Zia's, the extension looked broken,
+  // and only on some starts, as the two raced (#543).
   function newTabSearchEnabled() {
-    return Services.prefs.getBoolPref("zia.newtab.search-engine", true);
+    return Services.prefs.getBoolPref("zia.newtab.search-engine", true) && !Services.prefs.getBoolPref(EXTENSION_NEW_TAB_PREF, false);
   }
 
   async function applyNewTabPage() {
@@ -54,8 +61,8 @@
       const AboutNewTabModule = aboutNewTab();
       if (!newTabSearchEnabled()) {
         searchHomeUrl = null;
-        // only Zia's own page is undone (turned off while running); one an
-        // extension set stays, and is put back if Zia had replaced it
+        // only Zia's own page is undone (turned off, or an extension taking over, while
+        // running); one an extension set stays, and is put back if Zia had replaced it
         if (ziaNewTabUrl && AboutNewTabModule.newTabURL === ziaNewTabUrl) {
           AboutNewTabModule.resetNewTabURL();
           await restoreExtensionNewTab(AboutNewTabModule);
@@ -296,7 +303,8 @@
     applyNewTabPage();
     gBrowser.tabContainer.addEventListener("TabOpen", (event) => closeNewTabUrlbar(event.target));
     Services.obs.addObserver(applyNewTabPage, "browser-search-engine-modified");
-    watchPrefs("zia.newtab.search-engine", applyNewTabPage);
+    // (and back to Zia's once the extension's gone or switched off)
+    watchPrefs(["zia.newtab.search-engine", EXTENSION_NEW_TAB_PREF], applyNewTabPage);
     window.addEventListener("unload", () => Services.obs.removeObserver(applyNewTabPage, "browser-search-engine-modified"));
   }
 
