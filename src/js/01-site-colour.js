@@ -715,19 +715,31 @@
   // changes every session: Firefox caches these modules by address, and
   // would otherwise keep running an older copy after Zia updates.
   function registerPdfActor() {
-    registerActor("ZiaPdf", { DOMContentLoaded: {} }, "the PDF view", `?v=${Date.now()}`);
+    registerActor("ZiaPdf", { DOMContentLoaded: {} }, "the PDF view", { version: `?v=${Date.now()}` });
+  }
+
+  // Which tabs show a video on screen, in any of their frames, for the compact
+  // sidebar to go solid over them (actors/ZiaVideoChild.sys.mjs, 16-compact-mode.css)
+  function registerVideoActor() {
+    const media = { capture: true, mozSystemGroup: true };
+    registerActor(
+      "ZiaVideo",
+      { loadeddata: media, playing: media, pause: media, emptied: media, resize: media, pagehide: {} },
+      "the video helper",
+      { version: `?v=${Date.now()}`, allFrames: true }
+    );
   }
 
   function registerScrollActor() {
     registerActor("Zia", { scroll: { capture: true, mozSystemGroup: true }, DOMContentLoaded: {}, pageshow: {} }, "scroll helper");
   }
 
-  function registerActor(name, events, label, version = "") {
+  function registerActor(name, events, label, { version = "", allFrames = false } = {}) {
     try {
       ChromeUtils.registerWindowActor(name, {
         parent: { esModuleURI: `chrome://sine/content/zia/actors/${name}Parent.sys.mjs${version}` },
         child: { esModuleURI: `chrome://sine/content/zia/actors/${name}Child.sys.mjs${version}`, events },
-        allFrames: false,
+        allFrames,
         messageManagerGroups: ["browsers"],
         // Firefox only starts a helper inside a website's process when told it's
         // safe there; these only report back (the PDF one's browser side does nothing)

@@ -4,6 +4,19 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.117.3] — 2026-11-04
+
+### Fixed
+
+- A video looked a little duller while compact mode's sidebar was out on macOS (#564).
+  To blur the page behind the see-through sidebar, Zen has to draw the page itself, and
+  drawn that way a video comes out duller than macOS shows it, playing or paused. While
+  the open tab shows a video on screen, the sidebar (and top toolbar) is now solid, as Zen
+  paints it, so the video keeps its colours; everywhere else it stays see-through. Thanks
+  kcussiefil for spotting it.
+- The "Zia's script isn't running" card no longer shows after an update while the older
+  Zia's script is still running until Zen restarts.
+
 ## [2.117.2] — 2026-11-04
 
 ### Fixed

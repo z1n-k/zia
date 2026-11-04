@@ -347,28 +347,32 @@
    with the page blurred behind it; on by default, off in Zia's settings.
    Zen paints it as an opaque base with two cross-fading colour layers (the
    old space and the new one); the base goes and both layers are scaled
-   down, so switching spaces still fades as before. */
+   down, so switching spaces still fades as before. Solid, as Zen paints it,
+   while the page shows a video (zia-video, actors/ZiaVideoParent.sys.mjs):
+   to be blurred, a video is drawn duller than macOS shows it (#564). */
 @media -moz-pref("zia.compact.sidebar-blur") {
-  :root[zen-compact-mode="true"] .zen-toolbar-background {
-    background: transparent !important;
-    backdrop-filter: blur(28px) saturate(1.6) !important;
+  :root[zen-compact-mode="true"]:not(:has(#tabbrowser-tabpanels > .browserSidebarContainer:is(.deck-selected, [zen-split="true"]) browser[zia-video])) {
+    & .zen-toolbar-background {
+      background: transparent !important;
+      backdrop-filter: blur(28px) saturate(1.6) !important;
 
-    &::after {
-      opacity: calc(var(--zen-background-opacity, 1) * 0.78) !important;
+      &::after {
+        opacity: calc(var(--zen-background-opacity, 1) * 0.78) !important;
+      }
+
+      &::before {
+        opacity: calc((1 - var(--zen-background-opacity, 1)) * 0.78) !important;
+      }
     }
 
-    &::before {
-      opacity: calc((1 - var(--zen-background-opacity, 1)) * 0.78) !important;
+    /* On macOS a web page is a separate layer the blur can't see through to;
+       drawn as a layer Firefox composites itself, it can. (From Floaty UI.) Only
+       while the sidebar or toolbar is out over it (as Zen shows them): drawn that
+       way, an HDR video loses its HDR, washed out (#561) */
+    &:is([zen-renaming-tab="true"], :has(#navigator-toolbox:is([zen-has-hover], [zen-user-show], [zen-has-empty-tab], [flash-popup], [has-popup-menu], [movingtab], [zen-compact-mode-active], [animate="true"])), :has(#zen-appcontent-navbar-wrapper:is([zen-has-hover], [has-popup-menu], [zen-compact-mode-active]))) #tabbrowser-tabpanels .browserSidebarContainer {
+      will-change: transform !important;
+      backface-visibility: hidden !important;
     }
-  }
-
-  /* On macOS a web page is a separate layer the blur can't see through to;
-     drawn as a layer Firefox composites itself, it can. (From Floaty UI.) Only
-     while the sidebar or toolbar is out over it (as Zen shows them): drawn that
-     way, an HDR video loses its HDR, washed out (#561) */
-  :root[zen-compact-mode="true"]:is([zen-renaming-tab="true"], :has(#navigator-toolbox:is([zen-has-hover], [zen-user-show], [zen-has-empty-tab], [flash-popup], [has-popup-menu], [movingtab], [zen-compact-mode-active], [animate="true"])), :has(#zen-appcontent-navbar-wrapper:is([zen-has-hover], [has-popup-menu], [zen-compact-mode-active]))) #tabbrowser-tabpanels .browserSidebarContainer {
-    will-change: transform !important;
-    backface-visibility: hidden !important;
   }
 }
 

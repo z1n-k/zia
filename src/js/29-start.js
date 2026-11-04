@@ -287,6 +287,7 @@
     safely("setupAddressBarCommands", setupAddressBarCommands);
     safely("registerScrollActor", registerScrollActor);
     safely("registerPdfActor", registerPdfActor);
+    safely("registerVideoActor", registerVideoActor);
     safely("watchScrollInput", watchScrollInput);
     safely("createTitleElement", createTitleElement);
     safely("watchTitleOnly", watchTitleOnly);

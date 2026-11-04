@@ -101,7 +101,7 @@
     "zia.sidebar-panels.style": ["Zia-style panels", "Bookmarks, History and Synced Tabs."],
     "zia.sidebar-panels.beside": ["Panels beside the page", "Full height, as a second sidebar."],
     "zia.library.zen-look": ["Zen's Library look", "Off: Zia's."],
-    "zia.compact.sidebar-blur": ["See-through compact sidebar", "The page is blurred behind it."],
+    "zia.compact.sidebar-blur": ["See-through compact sidebar", "The page is blurred behind it. Solid while a video shows, which keeps its colours."],
     "zia.compact.hide-toolbar": ["Hide toolbar with sidebar out", "In compact mode, while the sidebar is showing."],
     "zia.compact.toolbar-over-page": ["Toolbar over the page", "The hidden toolbar fades in over the page. Off: it opens in the gap above, as Zen's does."],
     "zia.urlbar.zia-look": ["Zia address bar", "Off: Zen's own."],
