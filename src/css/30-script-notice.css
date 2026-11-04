@@ -4,8 +4,11 @@
    nothing. A card at the foot of the window says so and how to fix it; the script marks
    the window (zia-js, 00-core) as it starts, which takes the card away. It waits a few
    seconds before showing, so a start where the script is merely slower never flashes it,
-   and lets clicks through to whatever is under it. */
-:root#main-window:not([zia-js]) #browser {
+   and lets clicks through to whatever is under it. An older Zia's script, still running
+   until Zen restarts after an update (Sine loads the new stylesheet at once), never marked
+   the window that way: zia-urlbar-position (18-options), set as any Zia since 2.80 starts,
+   says it's running. */
+:root#main-window:not([zia-js], [zia-urlbar-position]) #browser {
   &::before,
   &::after {
     position: fixed;

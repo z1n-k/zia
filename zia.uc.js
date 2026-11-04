@@ -801,19 +801,31 @@
   // changes every session: Firefox caches these modules by address, and
   // would otherwise keep running an older copy after Zia updates.
   function registerPdfActor() {
-    registerActor("ZiaPdf", { DOMContentLoaded: {} }, "the PDF view", `?v=${Date.now()}`);
+    registerActor("ZiaPdf", { DOMContentLoaded: {} }, "the PDF view", { version: `?v=${Date.now()}` });
+  }
+
+  // Which tabs show a video on screen, in any of their frames, for the compact
+  // sidebar to go solid over them (actors/ZiaVideoChild.sys.mjs, 16-compact-mode.css)
+  function registerVideoActor() {
+    const media = { capture: true, mozSystemGroup: true };
+    registerActor(
+      "ZiaVideo",
+      { loadeddata: media, playing: media, pause: media, emptied: media, resize: media, pagehide: {} },
+      "the video helper",
+      { version: `?v=${Date.now()}`, allFrames: true }
+    );
   }
 
   function registerScrollActor() {
     registerActor("Zia", { scroll: { capture: true, mozSystemGroup: true }, DOMContentLoaded: {}, pageshow: {} }, "scroll helper");
   }
 
-  function registerActor(name, events, label, version = "") {
+  function registerActor(name, events, label, { version = "", allFrames = false } = {}) {
     try {
       ChromeUtils.registerWindowActor(name, {
         parent: { esModuleURI: `chrome://sine/content/zia/actors/${name}Parent.sys.mjs${version}` },
         child: { esModuleURI: `chrome://sine/content/zia/actors/${name}Child.sys.mjs${version}`, events },
-        allFrames: false,
+        allFrames,
         messageManagerGroups: ["browsers"],
         // Firefox only starts a helper inside a website's process when told it's
         // safe there; these only report back (the PDF one's browser side does nothing)
@@ -22188,7 +22200,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     "zia.sidebar-panels.style": ["Zia-style panels", "Bookmarks, History and Synced Tabs."],
     "zia.sidebar-panels.beside": ["Panels beside the page", "Full height, as a second sidebar."],
     "zia.library.zen-look": ["Zen's Library look", "Off: Zia's."],
-    "zia.compact.sidebar-blur": ["See-through compact sidebar", "The page is blurred behind it."],
+    "zia.compact.sidebar-blur": ["See-through compact sidebar", "The page is blurred behind it. Solid while a video shows, which keeps its colours."],
     "zia.compact.hide-toolbar": ["Hide toolbar with sidebar out", "In compact mode, while the sidebar is showing."],
     "zia.compact.toolbar-over-page": ["Toolbar over the page", "The hidden toolbar fades in over the page. Off: it opens in the gap above, as Zen's does."],
     "zia.urlbar.zia-look": ["Zia address bar", "Off: Zen's own."],
@@ -22953,6 +22965,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     safely("setupAddressBarCommands", setupAddressBarCommands);
     safely("registerScrollActor", registerScrollActor);
     safely("registerPdfActor", registerPdfActor);
+    safely("registerVideoActor", registerVideoActor);
     safely("watchScrollInput", watchScrollInput);
     safely("createTitleElement", createTitleElement);
     safely("watchTitleOnly", watchTitleOnly);
