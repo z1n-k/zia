@@ -4,6 +4,21 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.117.2] — 2026-11-04
+
+### Fixed
+
+- HDR video looked washed out on macOS with Zia on (#561). To blur the page behind its
+  see-through surfaces, Zia had Zen draw the page itself rather than hand it to macOS,
+  and drawn that way an HDR video loses its HDR. Zia now does that only while something
+  see-through is over the page (the address pop-up, a hover card, the find bar, the
+  compact sidebar, the swipe arrow, the screenshot buttons), so videos keep their HDR the
+  rest of the time. Thanks kcussiefil for tracking it down.
+- The address bar's pop-up is dark in a dark theme and light in a light one (#562). It
+  went by the light or dark setting for web pages, so a dark theme on a light system got
+  a white pop-up, and Zen's new-tab bar with it. For the pop-up in your theme's own
+  colour, turn on "The pop-up takes the toolbar's colour as it opens".
+
 ## [2.117.1] — 2026-11-03
 
 ### Added

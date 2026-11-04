@@ -4427,8 +4427,9 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
     backdrop-filter: blur(24px) saturate(1.6) !important;
   }
 
-  /* the page behind a card blurs too (the compositing trick from Floaty UI) */
-  #tabbrowser-tabpanels .browserSidebarContainer {
+  /* the page behind a card blurs too (the compositing trick from Floaty UI), only while
+     one is up: drawn that way, an HDR video loses its HDR, washed out (#561) */
+  :root:has(> :is(#zia-tab-card, #zia-folder-card, #zia-tip-card):not([hidden])) #tabbrowser-tabpanels .browserSidebarContainer {
     will-change: transform !important;
     backface-visibility: hidden !important;
   }
@@ -5556,6 +5557,14 @@ tab-group[split-view-group] .tab-group-container > .tabbrowser-tab::after {
 @media -moz-pref("zia.features.find-bar") {
 .browserContainer:has(> findbar) {
   position: relative;
+}
+
+/* the page under it blurs too while it's open, drawn as a layer Firefox composites itself
+   (the trick from Floaty UI, as for the address pop-up): only then, as an HDR video drawn
+   that way loses its HDR (#561) */
+#tabbrowser-tabpanels .browserSidebarContainer:has(findbar:not([hidden])) {
+  will-change: transform !important;
+  backface-visibility: hidden !important;
 }
 
 findbar {
@@ -7073,8 +7082,10 @@ findbar {
   }
 
   /* On macOS a web page is a separate layer the blur can't see through to;
-     drawn as a layer Firefox composites itself, it can. (From Floaty UI.) */
-  :root[zen-compact-mode="true"] #tabbrowser-tabpanels .browserSidebarContainer {
+     drawn as a layer Firefox composites itself, it can. (From Floaty UI.) Only
+     while the sidebar or toolbar is out over it (as Zen shows them): drawn that
+     way, an HDR video loses its HDR, washed out (#561) */
+  :root[zen-compact-mode="true"]:is([zen-renaming-tab="true"], :has(#navigator-toolbox:is([zen-has-hover], [zen-user-show], [zen-has-empty-tab], [flash-popup], [has-popup-menu], [movingtab], [zen-compact-mode-active], [animate="true"])), :has(#zen-appcontent-navbar-wrapper:is([zen-has-hover], [has-popup-menu], [zen-compact-mode-active]))) #tabbrowser-tabpanels .browserSidebarContainer {
     will-change: transform !important;
     backface-visibility: hidden !important;
   }
@@ -7204,53 +7215,52 @@ zen-folder .tab-reset-button {
     background-position: -30% 0;
   }
 }
-@media -moz-pref("layout.css.prefers-color-scheme.content-override", 1),
-       (-moz-pref("layout.css.prefers-color-scheme.content-override", 2)) and (not (-moz-system-dark-theme)) {
-  :root:not([privatebrowsingmode="temporary"]) #urlbar[breakout-extend]:not([zia-classic]),
-  :root[zia-site-light="true"]:not([privatebrowsingmode="temporary"]) #zen-appcontent-navbar-wrapper #urlbar[breakout-extend]:not([zia-classic]) {
-    color-scheme: light !important;
+/* The pop-up is light in a light space and dark in a dark one, as Zen's theme is (25-sidebar-paint's
+   zia-light): it went by the setting for web pages' light or dark, so a dark theme on a light
+   system got a white pop-up (#562) */
+:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar[breakout-extend]:not([zia-classic]) {
+  color-scheme: light !important;
+  color: rgb(28, 28, 30) !important;
+  --zia-urlbar-open-bg: rgb(248, 249, 250) !important;
+  --toolbar-field-color: rgb(28, 28, 30) !important;
+  --toolbar-field-focus-color: rgb(28, 28, 30) !important;
+  --urlbarView-highlight-background: rgba(28, 28, 30, 0.09) !important;
+  --urlbarView-highlight-color: rgb(28, 28, 30) !important;
+
+  & > .urlbar-background {
+    background: rgb(248, 249, 250) !important;
+    outline: none !important;
+    box-shadow: var(--zia-glass-edge-light), 0 16px 48px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  & .urlbar-input,
+  & .urlbarView,
+  & .urlbarView-title,
+  & .urlbarView-title strong {
     color: rgb(28, 28, 30) !important;
-    --zia-urlbar-open-bg: rgb(248, 249, 250) !important;
-    --toolbar-field-color: rgb(28, 28, 30) !important;
-    --toolbar-field-focus-color: rgb(28, 28, 30) !important;
-    --urlbarView-highlight-background: rgba(28, 28, 30, 0.09) !important;
-    --urlbarView-highlight-color: rgb(28, 28, 30) !important;
+  }
 
-    & > .urlbar-background {
-      background: rgb(248, 249, 250) !important;
-      outline: none !important;
-      box-shadow: var(--zia-glass-edge-light), 0 16px 48px rgba(0, 0, 0, 0.2) !important;
-    }
+  & .urlbar-input::placeholder {
+    color: rgb(100, 103, 108) !important;
+    opacity: 1 !important;
+  }
 
-    & .urlbar-input,
-    & .urlbarView,
-    & .urlbarView-title,
-    & .urlbarView-title strong {
-      color: rgb(28, 28, 30) !important;
-    }
+  & :is(.urlbarView-url, .urlbarView-action, .urlbarView-title-separator, .urlbarView-tags) {
+    color: rgb(90, 94, 100) !important;
+  }
 
-    & .urlbar-input::placeholder {
-      color: rgb(100, 103, 108) !important;
-      opacity: 1 !important;
-    }
+  & .urlbar-icon,
+  & .urlbarView-shortcutContent {
+    color: rgb(28, 28, 30) !important;
+    fill: currentColor !important;
+  }
 
-    & :is(.urlbarView-url, .urlbarView-action, .urlbarView-title-separator, .urlbarView-tags) {
-      color: rgb(90, 94, 100) !important;
-    }
+  & .urlbarView-row:hover {
+    background-color: rgba(28, 28, 30, 0.05) !important;
+  }
 
-    & .urlbar-icon,
-    & .urlbarView-shortcutContent {
-      color: rgb(28, 28, 30) !important;
-      fill: currentColor !important;
-    }
-
-    & .urlbarView-row:hover {
-      background-color: rgba(28, 28, 30, 0.05) !important;
-    }
-
-    & .urlbarView-row[selected] {
-      background-color: rgba(28, 28, 30, 0.09) !important;
-    }
+  & .urlbarView-row[selected] {
+    background-color: rgba(28, 28, 30, 0.09) !important;
   }
 }
 
@@ -7272,21 +7282,18 @@ zen-folder .tab-reset-button {
   }
 }
 
-@media -moz-pref("layout.css.prefers-color-scheme.content-override", 1),
-       (-moz-pref("layout.css.prefers-color-scheme.content-override", 2)) and (not (-moz-system-dark-theme)) {
-  :root:not([privatebrowsingmode="temporary"]) #urlbar#urlbar[breakout-extend]:not([zia-classic]):not([zia-pop-site="dark"]) :is(#identity-icon, .urlbarView-favicon, .urlbarView-type-icon) {
+:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar#urlbar[breakout-extend]:not([zia-classic]):not([zia-pop-site="dark"]) :is(#identity-icon, .urlbarView-favicon, .urlbarView-type-icon) {
+  fill: rgba(28, 28, 30, 0.72) !important;
+  fill-opacity: 1 !important;
+}
+
+:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar#urlbar[breakout-extend]:not([zia-classic]):not([zia-pop-site="dark"]) .urlbarView-row[selected] {
+  & .urlbarView-favicon {
     fill: rgba(28, 28, 30, 0.72) !important;
-    fill-opacity: 1 !important;
   }
 
-  :root:not([privatebrowsingmode="temporary"]) #urlbar#urlbar[breakout-extend]:not([zia-classic]):not([zia-pop-site="dark"]) .urlbarView-row[selected] {
-    & .urlbarView-favicon {
-      fill: rgba(28, 28, 30, 0.72) !important;
-    }
-
-    & .urlbarView-shortcutContent {
-      color: rgb(90, 94, 100) !important;
-    }
+  & .urlbarView-shortcutContent {
+    color: rgb(90, 94, 100) !important;
   }
 }
 
@@ -7478,8 +7485,10 @@ zen-folder .tab-reset-button {
   /* On macOS a web page is handed to the system as a layer of its own,
      which a blur in Zen's window can't see through to, so the blur only
      worked over Zen's own pages. Drawn as a layer Firefox composites
-     itself, the page can be blurred too. (From Floaty UI, by moktavizen.) */
-  #tabbrowser-tabpanels .browserSidebarContainer {
+     itself, the page can be blurred too. (From Floaty UI, by moktavizen.) Only
+     while the pop-up is open: drawn that way, an HDR video loses its HDR,
+     washed out (#561) */
+  :root:has(#urlbar:is([breakout-extend], [zen-floating-urlbar="true"]):not([zia-classic])) #tabbrowser-tabpanels .browserSidebarContainer {
     will-change: transform !important;
     backface-visibility: hidden !important;
   }
@@ -8553,6 +8562,13 @@ zen-folder .tab-reset-button {
   :root[zia-swipe-arrow] #zia-swipe {
     background: color-mix(in srgb, var(--zia-tab-card-bg) 76%, transparent);
     backdrop-filter: blur(24px) saturate(1.6);
+  }
+
+  /* (the page under it as a layer Firefox composites itself, so the blur sees it, while
+     it's there: as the cards, 07-hover-cards) */
+  :root[zia-swipe-arrow] #tabbrowser-tabpanels .browserSidebarContainer:has(#zia-swipe) {
+    will-change: transform !important;
+    backface-visibility: hidden !important;
   }
 }
 
@@ -10031,6 +10047,13 @@ zen-workspace-creation {
   border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow)) !important;
   corner-shape: var(--zia-squircle) !important;
   box-shadow: var(--zia-glass-edge-lit), var(--zia-glass-pop-lift) !important;
+}
+
+/* (the page under them as a layer Firefox composites itself, so the blur sees it, while
+   they're up: as the address pop-up's, 18-light-pop-up-and-late-overrides) */
+:root:not(#zia-none) #tabbrowser-tabpanels .browserSidebarContainer:has(screenshots-buttons):not(:has([hidden] screenshots-buttons)) {
+  will-change: transform !important;
+  backface-visibility: hidden !important;
 }
 
 :root[zia-light]:not(#zia-none) screenshots-buttons {
