@@ -363,8 +363,10 @@
   }
 
   /* On macOS a web page is a separate layer the blur can't see through to;
-     drawn as a layer Firefox composites itself, it can. (From Floaty UI.) */
-  :root[zen-compact-mode="true"] #tabbrowser-tabpanels .browserSidebarContainer {
+     drawn as a layer Firefox composites itself, it can. (From Floaty UI.) Only
+     while the sidebar or toolbar is out over it (as Zen shows them): drawn that
+     way, an HDR video loses its HDR, washed out (#561) */
+  :root[zen-compact-mode="true"]:is([zen-renaming-tab="true"], :has(#navigator-toolbox:is([zen-has-hover], [zen-user-show], [zen-has-empty-tab], [flash-popup], [has-popup-menu], [movingtab], [zen-compact-mode-active], [animate="true"])), :has(#zen-appcontent-navbar-wrapper:is([zen-has-hover], [has-popup-menu], [zen-compact-mode-active]))) #tabbrowser-tabpanels .browserSidebarContainer {
     will-change: transform !important;
     backface-visibility: hidden !important;
   }

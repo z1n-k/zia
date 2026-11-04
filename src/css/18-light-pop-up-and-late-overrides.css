@@ -1,50 +1,49 @@
-@media -moz-pref("layout.css.prefers-color-scheme.content-override", 1),
-       (-moz-pref("layout.css.prefers-color-scheme.content-override", 2)) and (not (-moz-system-dark-theme)) {
-  :root:not([privatebrowsingmode="temporary"]) #urlbar[breakout-extend]:not([zia-classic]),
-  :root[zia-site-light="true"]:not([privatebrowsingmode="temporary"]) #zen-appcontent-navbar-wrapper #urlbar[breakout-extend]:not([zia-classic]) {
-    color-scheme: light !important;
+/* The pop-up is light in a light space and dark in a dark one, as Zen's theme is (25-sidebar-paint's
+   zia-light): it went by the setting for web pages' light or dark, so a dark theme on a light
+   system got a white pop-up (#562) */
+:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar[breakout-extend]:not([zia-classic]) {
+  color-scheme: light !important;
+  color: rgb(28, 28, 30) !important;
+  --zia-urlbar-open-bg: rgb(248, 249, 250) !important;
+  --toolbar-field-color: rgb(28, 28, 30) !important;
+  --toolbar-field-focus-color: rgb(28, 28, 30) !important;
+  --urlbarView-highlight-background: rgba(28, 28, 30, 0.09) !important;
+  --urlbarView-highlight-color: rgb(28, 28, 30) !important;
+
+  & > .urlbar-background {
+    background: rgb(248, 249, 250) !important;
+    outline: none !important;
+    box-shadow: var(--zia-glass-edge-light), 0 16px 48px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  & .urlbar-input,
+  & .urlbarView,
+  & .urlbarView-title,
+  & .urlbarView-title strong {
     color: rgb(28, 28, 30) !important;
-    --zia-urlbar-open-bg: rgb(248, 249, 250) !important;
-    --toolbar-field-color: rgb(28, 28, 30) !important;
-    --toolbar-field-focus-color: rgb(28, 28, 30) !important;
-    --urlbarView-highlight-background: rgba(28, 28, 30, 0.09) !important;
-    --urlbarView-highlight-color: rgb(28, 28, 30) !important;
+  }
 
-    & > .urlbar-background {
-      background: rgb(248, 249, 250) !important;
-      outline: none !important;
-      box-shadow: var(--zia-glass-edge-light), 0 16px 48px rgba(0, 0, 0, 0.2) !important;
-    }
+  & .urlbar-input::placeholder {
+    color: rgb(100, 103, 108) !important;
+    opacity: 1 !important;
+  }
 
-    & .urlbar-input,
-    & .urlbarView,
-    & .urlbarView-title,
-    & .urlbarView-title strong {
-      color: rgb(28, 28, 30) !important;
-    }
+  & :is(.urlbarView-url, .urlbarView-action, .urlbarView-title-separator, .urlbarView-tags) {
+    color: rgb(90, 94, 100) !important;
+  }
 
-    & .urlbar-input::placeholder {
-      color: rgb(100, 103, 108) !important;
-      opacity: 1 !important;
-    }
+  & .urlbar-icon,
+  & .urlbarView-shortcutContent {
+    color: rgb(28, 28, 30) !important;
+    fill: currentColor !important;
+  }
 
-    & :is(.urlbarView-url, .urlbarView-action, .urlbarView-title-separator, .urlbarView-tags) {
-      color: rgb(90, 94, 100) !important;
-    }
+  & .urlbarView-row:hover {
+    background-color: rgba(28, 28, 30, 0.05) !important;
+  }
 
-    & .urlbar-icon,
-    & .urlbarView-shortcutContent {
-      color: rgb(28, 28, 30) !important;
-      fill: currentColor !important;
-    }
-
-    & .urlbarView-row:hover {
-      background-color: rgba(28, 28, 30, 0.05) !important;
-    }
-
-    & .urlbarView-row[selected] {
-      background-color: rgba(28, 28, 30, 0.09) !important;
-    }
+  & .urlbarView-row[selected] {
+    background-color: rgba(28, 28, 30, 0.09) !important;
   }
 }
 
@@ -66,21 +65,18 @@
   }
 }
 
-@media -moz-pref("layout.css.prefers-color-scheme.content-override", 1),
-       (-moz-pref("layout.css.prefers-color-scheme.content-override", 2)) and (not (-moz-system-dark-theme)) {
-  :root:not([privatebrowsingmode="temporary"]) #urlbar#urlbar[breakout-extend]:not([zia-classic]):not([zia-pop-site="dark"]) :is(#identity-icon, .urlbarView-favicon, .urlbarView-type-icon) {
+:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar#urlbar[breakout-extend]:not([zia-classic]):not([zia-pop-site="dark"]) :is(#identity-icon, .urlbarView-favicon, .urlbarView-type-icon) {
+  fill: rgba(28, 28, 30, 0.72) !important;
+  fill-opacity: 1 !important;
+}
+
+:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar#urlbar[breakout-extend]:not([zia-classic]):not([zia-pop-site="dark"]) .urlbarView-row[selected] {
+  & .urlbarView-favicon {
     fill: rgba(28, 28, 30, 0.72) !important;
-    fill-opacity: 1 !important;
   }
 
-  :root:not([privatebrowsingmode="temporary"]) #urlbar#urlbar[breakout-extend]:not([zia-classic]):not([zia-pop-site="dark"]) .urlbarView-row[selected] {
-    & .urlbarView-favicon {
-      fill: rgba(28, 28, 30, 0.72) !important;
-    }
-
-    & .urlbarView-shortcutContent {
-      color: rgb(90, 94, 100) !important;
-    }
+  & .urlbarView-shortcutContent {
+    color: rgb(90, 94, 100) !important;
   }
 }
 
@@ -272,8 +268,10 @@
   /* On macOS a web page is handed to the system as a layer of its own,
      which a blur in Zen's window can't see through to, so the blur only
      worked over Zen's own pages. Drawn as a layer Firefox composites
-     itself, the page can be blurred too. (From Floaty UI, by moktavizen.) */
-  #tabbrowser-tabpanels .browserSidebarContainer {
+     itself, the page can be blurred too. (From Floaty UI, by moktavizen.) Only
+     while the pop-up is open: drawn that way, an HDR video loses its HDR,
+     washed out (#561) */
+  :root:has(#urlbar:is([breakout-extend], [zen-floating-urlbar="true"]):not([zia-classic])) #tabbrowser-tabpanels .browserSidebarContainer {
     will-change: transform !important;
     backface-visibility: hidden !important;
   }

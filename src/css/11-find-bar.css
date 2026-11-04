@@ -3,6 +3,14 @@
   position: relative;
 }
 
+/* the page under it blurs too while it's open, drawn as a layer Firefox composites itself
+   (the trick from Floaty UI, as for the address pop-up): only then, as an HDR video drawn
+   that way loses its HDR (#561) */
+#tabbrowser-tabpanels .browserSidebarContainer:has(findbar:not([hidden])) {
+  will-change: transform !important;
+  backface-visibility: hidden !important;
+}
+
 findbar {
   grid-area: auto !important;
   position: absolute !important;

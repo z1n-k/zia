@@ -451,8 +451,9 @@
     backdrop-filter: blur(24px) saturate(1.6) !important;
   }
 
-  /* the page behind a card blurs too (the compositing trick from Floaty UI) */
-  #tabbrowser-tabpanels .browserSidebarContainer {
+  /* the page behind a card blurs too (the compositing trick from Floaty UI), only while
+     one is up: drawn that way, an HDR video loses its HDR, washed out (#561) */
+  :root:has(> :is(#zia-tab-card, #zia-folder-card, #zia-tip-card):not([hidden])) #tabbrowser-tabpanels .browserSidebarContainer {
     will-change: transform !important;
     backface-visibility: hidden !important;
   }
