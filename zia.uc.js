@@ -804,8 +804,8 @@
     registerActor("ZiaPdf", { DOMContentLoaded: {} }, "the PDF view", { version: `?v=${Date.now()}` });
   }
 
-  // Which tabs show a video on screen, in any of their frames, for the compact
-  // sidebar to go solid over them (actors/ZiaVideoChild.sys.mjs, 16-compact-mode.css)
+  // Which tabs show a video on screen, in any of their frames, for Zia's see-through
+  // surfaces to go solid over them (actors/ZiaVideoChild.sys.mjs, watchVideoInView)
   function registerVideoActor() {
     const media = { capture: true, mozSystemGroup: true };
     registerActor(
@@ -814,6 +814,20 @@
       "the video helper",
       { version: `?v=${Date.now()}`, allFrames: true }
     );
+  }
+
+  // The window marked zia-video while a tab in view (the open one, or a split's) shows a
+  // video: Zia's see-through surfaces go solid then, as to blur the page Zen draws it
+  // itself, and a video drawn that way comes out duller than macOS shows it (#564, #569)
+  function watchVideoInView() {
+    const panels = document.getElementById("tabbrowser-tabpanels");
+    if (!panels) {
+      return;
+    }
+    const update = () =>
+      setFlag("zia-video", !!panels.querySelector(':scope > .browserSidebarContainer:is(.deck-selected, [zen-split="true"]) browser[zia-video]'));
+    new MutationObserver(update).observe(panels, { subtree: true, attributeFilter: ["class", "zen-split", "zia-video"] });
+    update();
   }
 
   function registerScrollActor() {
@@ -22177,7 +22191,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     "zia.page.edge-to-edge": ["Edge-to-edge page", "No gap or shadow around the page."],
     "zia.ultra": ["Ultra effects", "A loading orb, the open essential's colour drifting, the music player glowing in its artwork's colours, a springy Library and a metal welcome logo."],
     "zia.features.tab-hover-cards": ["Hover cards", "For tabs and folders."],
-    "zia.cards.blur": ["See-through hover cards", "What's behind is blurred."],
+    "zia.cards.blur": ["See-through hover cards", "What's behind is blurred. Solid while a video shows, which keeps its colours."],
     "zia.folders.tint-card": ["Folder-coloured cards", "A coloured folder's hover card takes its colour."],
     "zia.tabs.sound-bars": ["Sound bars", "On playing tabs. Off: Zen's speaker."],
     "zia.sound-bars.always-move": ["Always animate sound bars", "Even when your system asks for less motion."],
@@ -22205,7 +22219,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     "zia.compact.toolbar-over-page": ["Toolbar over the page", "The hidden toolbar fades in over the page. Off: it opens in the gap above, as Zen's does."],
     "zia.urlbar.zia-look": ["Zia address bar", "Off: Zen's own."],
     "zia.urlbar.dia-style": ["Zia address pop-up", "Off: Zen's."],
-    "zia.urlbar.pop-up-blur": ["See-through pop-up", "The page is blurred behind it."],
+    "zia.urlbar.pop-up-blur": ["See-through pop-up", "The page is blurred behind it. Solid while a video shows, which keeps its colours."],
     "zia.urlbar.site-color": ["Site-coloured pop-up", "Takes the toolbar's colour as it opens."],
     "zia.urlbar.title-only": ["Title only", "Shows the page's title in the domain's colour until clicked."],
     "zia.urlbar.full-url": ["Full address", "Rather than the domain and title."],
@@ -22966,6 +22980,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     safely("registerScrollActor", registerScrollActor);
     safely("registerPdfActor", registerPdfActor);
     safely("registerVideoActor", registerVideoActor);
+    safely("watchVideoInView", watchVideoInView);
     safely("watchScrollInput", watchScrollInput);
     safely("createTitleElement", createTitleElement);
     safely("watchTitleOnly", watchTitleOnly);

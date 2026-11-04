@@ -251,7 +251,7 @@
 @media -moz-pref("zia.urlbar.pop-up-blur") {
   /* (the floating bar too while nothing's listed under it yet: never "extended"
      then, it was drawn solid) */
-  :root:not(#zia-none):not(#zia-none-2) #urlbar#urlbar:is([breakout-extend], [zen-floating-urlbar="true"]):not([zia-classic]) > .urlbar-background {
+  :root:not(#zia-none):not(#zia-none-2):not([zia-video]) #urlbar#urlbar:is([breakout-extend], [zen-floating-urlbar="true"]):not([zia-classic]) > .urlbar-background {
     background: color-mix(in srgb, var(--zia-urlbar-open-bg) 78%, transparent) !important;
     backdrop-filter: blur(24px) saturate(1.6) !important;
   }
@@ -270,8 +270,9 @@
      worked over Zen's own pages. Drawn as a layer Firefox composites
      itself, the page can be blurred too. (From Floaty UI, by moktavizen.) Only
      while the pop-up is open: drawn that way, an HDR video loses its HDR,
-     washed out (#561) */
-  :root:has(#urlbar:is([breakout-extend], [zen-floating-urlbar="true"]):not([zia-classic])) #tabbrowser-tabpanels .browserSidebarContainer {
+     washed out (#561). Solid while the page shows a video, as the compact
+     sidebar (16-compact-mode) */
+  :root:not([zia-video]):has(#urlbar:is([breakout-extend], [zen-floating-urlbar="true"]):not([zia-classic])) #tabbrowser-tabpanels .browserSidebarContainer {
     will-change: transform !important;
     backface-visibility: hidden !important;
   }

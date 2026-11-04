@@ -442,18 +442,17 @@
 }
 
 
-/* see-through cards (zia.cards.blur) */
+/* see-through cards (zia.cards.blur); solid while the page shows a video, as the
+   compact sidebar (16-compact-mode) */
 @media -moz-pref("zia.cards.blur") {
-  #zia-tab-card,
-  #zia-folder-card,
-  #zia-tip-card {
+  :root:not([zia-video]) :is(#zia-tab-card, #zia-folder-card, #zia-tip-card) {
     background-color: color-mix(in srgb, var(--zia-tab-card-bg) 76%, transparent) !important;
     backdrop-filter: blur(24px) saturate(1.6) !important;
   }
 
   /* the page behind a card blurs too (the compositing trick from Floaty UI), only while
      one is up: drawn that way, an HDR video loses its HDR, washed out (#561) */
-  :root:has(> :is(#zia-tab-card, #zia-folder-card, #zia-tip-card):not([hidden])) #tabbrowser-tabpanels .browserSidebarContainer {
+  :root:not([zia-video]):has(> :is(#zia-tab-card, #zia-folder-card, #zia-tip-card):not([hidden])) #tabbrowser-tabpanels .browserSidebarContainer {
     will-change: transform !important;
     backface-visibility: hidden !important;
   }
@@ -478,7 +477,7 @@
 
   /* see-through too: the blur setting's background overrode the tint, leaving it grey */
   @media -moz-pref("zia.cards.blur") {
-    #zia-folder-card[zia-folder-color]:not([zia-folder-color="white"]) {
+    :root:not([zia-video]) #zia-folder-card[zia-folder-color]:not([zia-folder-color="white"]) {
       background-color: color-mix(in srgb, var(--zia-folder-card-bg) 76%, transparent) !important;
     }
   }

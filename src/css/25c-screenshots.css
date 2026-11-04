@@ -18,9 +18,16 @@
   box-shadow: var(--zia-glass-edge-lit), var(--zia-glass-pop-lift) !important;
 }
 
+/* (solid while the page shows a video, as the compact sidebar, 16-compact-mode) */
+:root[zia-video]:not(#zia-none) screenshots-buttons {
+  background-color: var(--zia-shot-card, var(--zia-tab-card-bg)) !important;
+  backdrop-filter: none !important;
+}
+
 /* (the page under them as a layer Firefox composites itself, so the blur sees it, while
-   they're up: as the address pop-up's, 18-light-pop-up-and-late-overrides) */
-:root:not(#zia-none) #tabbrowser-tabpanels .browserSidebarContainer:has(screenshots-buttons):not(:has([hidden] screenshots-buttons)) {
+   they're up: as the address pop-up's, 18-light-pop-up-and-late-overrides; solid over a
+   video, as the compact sidebar, 16-compact-mode) */
+:root:not(#zia-none):not([zia-video]) #tabbrowser-tabpanels .browserSidebarContainer:has(screenshots-buttons):not(:has([hidden] screenshots-buttons)) {
   will-change: transform !important;
   backface-visibility: hidden !important;
 }

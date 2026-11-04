@@ -718,8 +718,8 @@
     registerActor("ZiaPdf", { DOMContentLoaded: {} }, "the PDF view", { version: `?v=${Date.now()}` });
   }
 
-  // Which tabs show a video on screen, in any of their frames, for the compact
-  // sidebar to go solid over them (actors/ZiaVideoChild.sys.mjs, 16-compact-mode.css)
+  // Which tabs show a video on screen, in any of their frames, for Zia's see-through
+  // surfaces to go solid over them (actors/ZiaVideoChild.sys.mjs, watchVideoInView)
   function registerVideoActor() {
     const media = { capture: true, mozSystemGroup: true };
     registerActor(
@@ -728,6 +728,20 @@
       "the video helper",
       { version: `?v=${Date.now()}`, allFrames: true }
     );
+  }
+
+  // The window marked zia-video while a tab in view (the open one, or a split's) shows a
+  // video: Zia's see-through surfaces go solid then, as to blur the page Zen draws it
+  // itself, and a video drawn that way comes out duller than macOS shows it (#564, #569)
+  function watchVideoInView() {
+    const panels = document.getElementById("tabbrowser-tabpanels");
+    if (!panels) {
+      return;
+    }
+    const update = () =>
+      setFlag("zia-video", !!panels.querySelector(':scope > .browserSidebarContainer:is(.deck-selected, [zen-split="true"]) browser[zia-video]'));
+    new MutationObserver(update).observe(panels, { subtree: true, attributeFilter: ["class", "zen-split", "zia-video"] });
+    update();
   }
 
   function registerScrollActor() {
