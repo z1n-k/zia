@@ -348,10 +348,10 @@
    Zen paints it as an opaque base with two cross-fading colour layers (the
    old space and the new one); the base goes and both layers are scaled
    down, so switching spaces still fades as before. Solid, as Zen paints it,
-   while the page shows a video (zia-video, actors/ZiaVideoParent.sys.mjs):
+   while the page shows a video (zia-video, 01-site-colour's watchVideoInView):
    to be blurred, a video is drawn duller than macOS shows it (#564). */
 @media -moz-pref("zia.compact.sidebar-blur") {
-  :root[zen-compact-mode="true"]:not(:has(#tabbrowser-tabpanels > .browserSidebarContainer:is(.deck-selected, [zen-split="true"]) browser[zia-video])) {
+  :root[zen-compact-mode="true"]:not([zia-video]) {
     & .zen-toolbar-background {
       background: transparent !important;
       backdrop-filter: blur(28px) saturate(1.6) !important;

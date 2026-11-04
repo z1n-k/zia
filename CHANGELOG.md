@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.117.4] — 2026-11-04
+
+### Fixed
+
+- A video looked a little duller while a hover card, the address pop-up, the find bar,
+  the swipe arrow or the screenshot buttons were open over it on macOS (#569), as it did
+  under the compact sidebar before 2.117.3. To blur the page behind them, Zen has to draw
+  the page itself, and drawn that way a video comes out duller than macOS shows it. While
+  the open tab shows a video on screen, they're all solid now, as the compact sidebar is,
+  so the video keeps its colours; everywhere else they stay see-through. Thanks kcussiefil.
+
 ## [2.117.3] — 2026-11-04
 
 ### Fixed

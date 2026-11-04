@@ -214,14 +214,14 @@
   }
 
 @media -moz-pref("zia.cards.blur") {
-  :root[zia-swipe-arrow] #zia-swipe {
+  :root[zia-swipe-arrow]:not([zia-video]) #zia-swipe {
     background: color-mix(in srgb, var(--zia-tab-card-bg) 76%, transparent);
     backdrop-filter: blur(24px) saturate(1.6);
   }
 
   /* (the page under it as a layer Firefox composites itself, so the blur sees it, while
-     it's there: as the cards, 07-hover-cards) */
-  :root[zia-swipe-arrow] #tabbrowser-tabpanels .browserSidebarContainer:has(#zia-swipe) {
+     it's there: as the cards, 07-hover-cards, solid over a video) */
+  :root[zia-swipe-arrow]:not([zia-video]) #tabbrowser-tabpanels .browserSidebarContainer:has(#zia-swipe) {
     will-change: transform !important;
     backface-visibility: hidden !important;
   }

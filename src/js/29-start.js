@@ -288,6 +288,7 @@
     safely("registerScrollActor", registerScrollActor);
     safely("registerPdfActor", registerPdfActor);
     safely("registerVideoActor", registerVideoActor);
+    safely("watchVideoInView", watchVideoInView);
     safely("watchScrollInput", watchScrollInput);
     safely("createTitleElement", createTitleElement);
     safely("watchTitleOnly", watchTitleOnly);

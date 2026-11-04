@@ -4418,18 +4418,17 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 }
 
 
-/* see-through cards (zia.cards.blur) */
+/* see-through cards (zia.cards.blur); solid while the page shows a video, as the
+   compact sidebar (16-compact-mode) */
 @media -moz-pref("zia.cards.blur") {
-  #zia-tab-card,
-  #zia-folder-card,
-  #zia-tip-card {
+  :root:not([zia-video]) :is(#zia-tab-card, #zia-folder-card, #zia-tip-card) {
     background-color: color-mix(in srgb, var(--zia-tab-card-bg) 76%, transparent) !important;
     backdrop-filter: blur(24px) saturate(1.6) !important;
   }
 
   /* the page behind a card blurs too (the compositing trick from Floaty UI), only while
      one is up: drawn that way, an HDR video loses its HDR, washed out (#561) */
-  :root:has(> :is(#zia-tab-card, #zia-folder-card, #zia-tip-card):not([hidden])) #tabbrowser-tabpanels .browserSidebarContainer {
+  :root:not([zia-video]):has(> :is(#zia-tab-card, #zia-folder-card, #zia-tip-card):not([hidden])) #tabbrowser-tabpanels .browserSidebarContainer {
     will-change: transform !important;
     backface-visibility: hidden !important;
   }
@@ -4454,7 +4453,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 
   /* see-through too: the blur setting's background overrode the tint, leaving it grey */
   @media -moz-pref("zia.cards.blur") {
-    #zia-folder-card[zia-folder-color]:not([zia-folder-color="white"]) {
+    :root:not([zia-video]) #zia-folder-card[zia-folder-color]:not([zia-folder-color="white"]) {
       background-color: color-mix(in srgb, var(--zia-folder-card-bg) 76%, transparent) !important;
     }
   }
@@ -5561,8 +5560,9 @@ tab-group[split-view-group] .tab-group-container > .tabbrowser-tab::after {
 
 /* the page under it blurs too while it's open, drawn as a layer Firefox composites itself
    (the trick from Floaty UI, as for the address pop-up): only then, as an HDR video drawn
-   that way loses its HDR (#561) */
-#tabbrowser-tabpanels .browserSidebarContainer:has(findbar:not([hidden])) {
+   that way loses its HDR (#561). Solid while the page shows a video, as the compact
+   sidebar (16-compact-mode) */
+:root:not([zia-video]) #tabbrowser-tabpanels .browserSidebarContainer:has(findbar:not([hidden])) {
   will-change: transform !important;
   backface-visibility: hidden !important;
 }
@@ -5734,6 +5734,16 @@ findbar {
    rule that rounds every other corner, 00-variables) */
 :root:not(#zia-none) findbar {
   corner-shape: var(--zia-squircle) !important;
+}
+
+/* solid while the page shows a video, as the compact sidebar (16-compact-mode) */
+:root[zia-video] findbar {
+  background: rgb(38, 38, 38) !important;
+  backdrop-filter: none;
+}
+
+:root[zia-video][zia-light] findbar {
+  background: rgb(248, 248, 250) !important;
 }
 
 /* Light mode (a light space, or no space colour in light mode): a pale
@@ -7067,10 +7077,10 @@ findbar {
    Zen paints it as an opaque base with two cross-fading colour layers (the
    old space and the new one); the base goes and both layers are scaled
    down, so switching spaces still fades as before. Solid, as Zen paints it,
-   while the page shows a video (zia-video, actors/ZiaVideoParent.sys.mjs):
+   while the page shows a video (zia-video, 01-site-colour's watchVideoInView):
    to be blurred, a video is drawn duller than macOS shows it (#564). */
 @media -moz-pref("zia.compact.sidebar-blur") {
-  :root[zen-compact-mode="true"]:not(:has(#tabbrowser-tabpanels > .browserSidebarContainer:is(.deck-selected, [zen-split="true"]) browser[zia-video])) {
+  :root[zen-compact-mode="true"]:not([zia-video]) {
     & .zen-toolbar-background {
       background: transparent !important;
       backdrop-filter: blur(28px) saturate(1.6) !important;
@@ -7472,7 +7482,7 @@ zen-folder .tab-reset-button {
 @media -moz-pref("zia.urlbar.pop-up-blur") {
   /* (the floating bar too while nothing's listed under it yet: never "extended"
      then, it was drawn solid) */
-  :root:not(#zia-none):not(#zia-none-2) #urlbar#urlbar:is([breakout-extend], [zen-floating-urlbar="true"]):not([zia-classic]) > .urlbar-background {
+  :root:not(#zia-none):not(#zia-none-2):not([zia-video]) #urlbar#urlbar:is([breakout-extend], [zen-floating-urlbar="true"]):not([zia-classic]) > .urlbar-background {
     background: color-mix(in srgb, var(--zia-urlbar-open-bg) 78%, transparent) !important;
     backdrop-filter: blur(24px) saturate(1.6) !important;
   }
@@ -7491,8 +7501,9 @@ zen-folder .tab-reset-button {
      worked over Zen's own pages. Drawn as a layer Firefox composites
      itself, the page can be blurred too. (From Floaty UI, by moktavizen.) Only
      while the pop-up is open: drawn that way, an HDR video loses its HDR,
-     washed out (#561) */
-  :root:has(#urlbar:is([breakout-extend], [zen-floating-urlbar="true"]):not([zia-classic])) #tabbrowser-tabpanels .browserSidebarContainer {
+     washed out (#561). Solid while the page shows a video, as the compact
+     sidebar (16-compact-mode) */
+  :root:not([zia-video]):has(#urlbar:is([breakout-extend], [zen-floating-urlbar="true"]):not([zia-classic])) #tabbrowser-tabpanels .browserSidebarContainer {
     will-change: transform !important;
     backface-visibility: hidden !important;
   }
@@ -8563,14 +8574,14 @@ zen-folder .tab-reset-button {
   }
 
 @media -moz-pref("zia.cards.blur") {
-  :root[zia-swipe-arrow] #zia-swipe {
+  :root[zia-swipe-arrow]:not([zia-video]) #zia-swipe {
     background: color-mix(in srgb, var(--zia-tab-card-bg) 76%, transparent);
     backdrop-filter: blur(24px) saturate(1.6);
   }
 
   /* (the page under it as a layer Firefox composites itself, so the blur sees it, while
-     it's there: as the cards, 07-hover-cards) */
-  :root[zia-swipe-arrow] #tabbrowser-tabpanels .browserSidebarContainer:has(#zia-swipe) {
+     it's there: as the cards, 07-hover-cards, solid over a video) */
+  :root[zia-swipe-arrow]:not([zia-video]) #tabbrowser-tabpanels .browserSidebarContainer:has(#zia-swipe) {
     will-change: transform !important;
     backface-visibility: hidden !important;
   }
@@ -10053,9 +10064,16 @@ zen-workspace-creation {
   box-shadow: var(--zia-glass-edge-lit), var(--zia-glass-pop-lift) !important;
 }
 
+/* (solid while the page shows a video, as the compact sidebar, 16-compact-mode) */
+:root[zia-video]:not(#zia-none) screenshots-buttons {
+  background-color: var(--zia-shot-card, var(--zia-tab-card-bg)) !important;
+  backdrop-filter: none !important;
+}
+
 /* (the page under them as a layer Firefox composites itself, so the blur sees it, while
-   they're up: as the address pop-up's, 18-light-pop-up-and-late-overrides) */
-:root:not(#zia-none) #tabbrowser-tabpanels .browserSidebarContainer:has(screenshots-buttons):not(:has([hidden] screenshots-buttons)) {
+   they're up: as the address pop-up's, 18-light-pop-up-and-late-overrides; solid over a
+   video, as the compact sidebar, 16-compact-mode) */
+:root:not(#zia-none):not([zia-video]) #tabbrowser-tabpanels .browserSidebarContainer:has(screenshots-buttons):not(:has([hidden] screenshots-buttons)) {
   will-change: transform !important;
   backface-visibility: hidden !important;
 }
