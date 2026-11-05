@@ -219,8 +219,12 @@
     backdrop-filter: blur(24px) saturate(1.6);
   }
 
+  :root[zia-swipe-arrow][zia-video] #zia-swipe {
+    background: color-mix(in srgb, var(--zia-tab-card-bg) 88%, transparent);
+  }
+
   /* (the page under it as a layer Firefox composites itself, so the blur sees it, while
-     it's there: as the cards, 07-hover-cards, solid over a video) */
+     it's there: as the cards, 07-hover-cards, not over a video) */
   :root[zia-swipe-arrow]:not([zia-video]) #tabbrowser-tabpanels .browserSidebarContainer:has(#zia-swipe) {
     will-change: transform !important;
     backface-visibility: hidden !important;

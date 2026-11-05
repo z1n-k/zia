@@ -5,7 +5,7 @@
 
 /* the page under it blurs too while it's open, drawn as a layer Firefox composites itself
    (the trick from Floaty UI, as for the address pop-up): only then, as an HDR video drawn
-   that way loses its HDR (#561). Solid while the page shows a video, as the compact
+   that way loses its HDR (#561). Not while the page shows a video, as the compact
    sidebar (16-compact-mode) */
 :root:not([zia-video]) #tabbrowser-tabpanels .browserSidebarContainer:has(findbar:not([hidden])) {
   will-change: transform !important;
@@ -181,14 +181,14 @@ findbar {
   corner-shape: var(--zia-squircle) !important;
 }
 
-/* solid while the page shows a video, as the compact sidebar (16-compact-mode) */
+/* without the blur while the page shows a video, as the compact sidebar (16-compact-mode) */
 :root[zia-video] findbar {
-  background: rgb(38, 38, 38) !important;
+  background: rgba(38, 38, 38, 0.88) !important;
   backdrop-filter: none;
 }
 
 :root[zia-video][zia-light] findbar {
-  background: rgb(248, 248, 250) !important;
+  background: rgba(248, 248, 250, 0.9) !important;
 }
 
 /* Light mode (a light space, or no space colour in light mode): a pale

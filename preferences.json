@@ -49,6 +49,13 @@
   },
   {
     "type": "checkbox",
+    "label": "See-through surfaces keep blurring a video behind them (it comes out duller, and HDR video loses its HDR; off: see-through without the blur over a video)",
+    "property": "zia.glass.blur-over-video",
+    "since": "2.118.0",
+    "defaultValue": false
+  },
+  {
+    "type": "checkbox",
     "label": "Zia's rounded page corners (off: Zen's)",
     "property": "zia.page.rounding",
     "defaultValue": true
