@@ -114,3 +114,11 @@
     }
   }
 
+  // Zen's gap round the page followed once it's been set (zen.theme.content-element-separation):
+  // Zia keeps its own 6px over Zen's default, and 0 was already followed (zen-no-padding)
+  function followZenGap() {
+    const name = "zen.theme.content-element-separation";
+    const update = () => setFlag("zia-zen-gap", Services.prefs.prefHasUserValue(name));
+    watchPrefs(name, update);
+    update();
+  }

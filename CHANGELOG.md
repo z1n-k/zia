@@ -4,6 +4,25 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.118.0] — 2026-11-05
+
+### Added
+
+- Blur over video, in Settings under Look (off by default): Zia's see-through surfaces
+  keep blurring the page while a video shows, for anyone who'd rather have the glass than
+  exact video colours (#573). With it on, a video behind them comes out a little duller,
+  and HDR video loses its HDR.
+
+### Changed
+
+- Over a video, the compact sidebar, hover cards, address pop-up, find bar, swipe arrow
+  and screenshot buttons stay see-through, without the blur, instead of going solid
+  (#573). The video shows through them, and its colours, HDR included, are kept as
+  macOS shows them. Thanks kcussiefil.
+- The gap round the page follows Zen's `zen.theme.content-element-separation` once
+  you've set it; Zia's own 6px is kept over Zen's default. Only 0 was followed before.
+  Thanks effor.
+
 ## [2.117.6] — 2026-11-05
 
 ### Fixed

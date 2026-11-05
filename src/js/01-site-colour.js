@@ -721,7 +721,7 @@
   }
 
   // Which tabs show a video on screen, in any of their frames, for Zia's see-through
-  // surfaces to go solid over them (actors/ZiaVideoChild.sys.mjs, watchVideoInView)
+  // surfaces to drop their blur over them (actors/ZiaVideoChild.sys.mjs, watchVideoInView)
   function registerVideoActor() {
     const media = { capture: true, mozSystemGroup: true };
     registerActor(
@@ -733,16 +733,22 @@
   }
 
   // The window marked zia-video while a tab in view (the open one, or a split's) shows a
-  // video: Zia's see-through surfaces go solid then, as to blur the page Zen draws it
-  // itself, and a video drawn that way comes out duller than macOS shows it (#564, #569)
+  // video: Zia's see-through surfaces drop their blur then (still see-through), as to blur
+  // the page Zen draws it itself, and a video drawn that way comes out duller than macOS
+  // shows it (#564, #569, #573). Never marked with "Blur over video" on, which keeps it.
   function watchVideoInView() {
     const panels = document.getElementById("tabbrowser-tabpanels");
     if (!panels) {
       return;
     }
     const update = () =>
-      setFlag("zia-video", !!panels.querySelector(':scope > .browserSidebarContainer:is(.deck-selected, [zen-split="true"]) browser[zia-video]'));
+      setFlag(
+        "zia-video",
+        !Services.prefs.getBoolPref("zia.glass.blur-over-video", false) &&
+          !!panels.querySelector(':scope > .browserSidebarContainer:is(.deck-selected, [zen-split="true"]) browser[zia-video]')
+      );
     new MutationObserver(update).observe(panels, { subtree: true, attributeFilter: ["class", "zen-split", "zia-video"] });
+    watchPrefs("zia.glass.blur-over-video", update);
     update();
   }
 

@@ -442,12 +442,16 @@
 }
 
 
-/* see-through cards (zia.cards.blur); solid while the page shows a video, as the
-   compact sidebar (16-compact-mode) */
+/* see-through cards (zia.cards.blur); without the blur while the page shows a video,
+   as the compact sidebar (16-compact-mode) */
 @media -moz-pref("zia.cards.blur") {
   :root:not([zia-video]) :is(#zia-tab-card, #zia-folder-card, #zia-tip-card) {
     background-color: color-mix(in srgb, var(--zia-tab-card-bg) 76%, transparent) !important;
     backdrop-filter: blur(24px) saturate(1.6) !important;
+  }
+
+  :root[zia-video] :is(#zia-tab-card, #zia-folder-card, #zia-tip-card) {
+    background-color: color-mix(in srgb, var(--zia-tab-card-bg) 88%, transparent) !important;
   }
 
   /* the page behind a card blurs too (the compositing trick from Floaty UI), only while
