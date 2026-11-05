@@ -12209,7 +12209,10 @@
       let atEnd = false;
       if (pf && nf === pf && !isFolderStart(next, pf)) {
         folder = pf;
-      } else if (pf && cut != null && visualMid < cut) {
+      } else if (pf && cut != null && visualMid < cut && !(drag.folder && isCollapsed(pf))) {
+        // (a folder dragged goes in at the end only of an open one: just below a closed
+        // one, where a tab goes in, it's beside it, as a folder lost in one it can't see
+        // into was hard to get out again, #567)
         folder = pf;
         atEnd = true;
       } else if (nf && !isFolderStart(next, nf)) {
