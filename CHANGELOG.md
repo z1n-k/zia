@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.117.6] — 2026-11-05
+
+### Fixed
+
+- With Zen's see-through pages on (`browser.tabs.allow_transparent_browser`), the
+  toolbar didn't take a website's colour (#542): it came out black, or the colour
+  of the space behind the page, since 2.100.5. Websites are read from their own
+  picture again; Settings, the other about: pages and the empty tab still take what
+  shows through them. Thanks SoaringGecko.
+
 ## [2.117.5] — 2026-11-05
 
 ### Fixed

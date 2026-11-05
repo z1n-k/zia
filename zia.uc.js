@@ -296,11 +296,13 @@
   // the empty tab can be see-through, showing the space's colour or gradient
   // behind them, which the page's own picture doesn't have: the toolbar took the
   // space's colour over a dark Settings page. These are read off the window,
-  // just as they show, along the top of the page.
+  // just as they show, along the top of the page. Websites aren't: the window's
+  // picture doesn't have them, so with Zen's see-through pages on (every page is
+  // then marked transparent) the toolbar took black, or the space behind (#542).
   function showsThrough(browser) {
     return (
       !browser.isRemoteBrowser ||
-      browser.getAttribute("transparent") === "true" ||
+      (browser.getAttribute("transparent") === "true" && !!browser.currentURI?.schemeIs("about")) ||
       !!gBrowser.getTabForBrowser(browser)?.hasAttribute("zen-empty-tab")
     );
   }
