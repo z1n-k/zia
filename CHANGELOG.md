@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.117.5] — 2026-11-05
+
+### Fixed
+
+- A folder dragged just below a closed folder went inside it, at its end, where it
+  couldn't be seen and was hard to get back out (#567). Dragged past a closed folder, a
+  folder now stays beside it, as its own row; it still goes inside an open folder,
+  dropped among or after its tabs. A tab dragged there still goes into the closed folder.
+
 ## [2.117.4] — 2026-11-04
 
 ### Fixed
