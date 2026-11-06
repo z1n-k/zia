@@ -14251,15 +14251,7 @@
           drag.tileShifts = null;
           hideProxy();
         }
-        // (once a frame: Windows sends several moves a frame, and each laid the list out
-        // again, so the drag lagged there, #566; a later move that frame waits for the
-        // frame's own pass, and a drop before it catches up first, below)
-        if (raf && drag.appliedThisFrame) {
-          drag.stale = true;
-        } else {
-          apply(dy);
-          drag.appliedThisFrame = true;
-        }
+        apply(dy);
       } catch (err) {
         console.error("[Zia] Tab drag failed:", err);
       }
@@ -14267,8 +14259,6 @@
         raf = requestAnimationFrame(() => {
           raf = 0;
           if (drag) {
-            drag.appliedThisFrame = false;
-            drag.stale = false;
             apply(lastDy);
           }
         });
@@ -15134,17 +15124,6 @@
     window.addEventListener("dragover", onOver, true);
     document.getElementById("tabbrowser-tabs")?.addEventListener("dragover", onOver, true);
     window.addEventListener("dragover", fixDrop);
-    window.addEventListener(
-      "drop",
-      (event) => {
-        if (drag?.stale) {
-          drag.stale = false;
-          apply(lastDy);
-          fixDrop(event);
-        }
-      },
-      true
-    );
     // Firefox moves the dragged tab too, after Zia, and stops it at the last tab: under the
     // list its move won, two of the tab showing. Zia's move is put back after Firefox's go.
     window.addEventListener("dragover", () => {
