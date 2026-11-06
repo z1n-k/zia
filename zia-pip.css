@@ -14,6 +14,16 @@
   --zia-pip-seek: clamp(24px, 12.5vh, 48px);
 }
 
+/* (resting over a playing video: the controls fade, and the pointer with them, zia-pip.js;
+   Firefox's own hover look kept them at 0.8) */
+:root[zia-pip-idle] #controls.playing:not([showing], [keying], [donthide]) {
+  cursor: none !important;
+
+  & .control-item {
+    opacity: 0 !important;
+  }
+}
+
 /* the dark tint */
 :root[zia-dia] #controls::before {
   content: "";
@@ -25,7 +35,7 @@
   transition: opacity 160ms ease;
 }
 
-:root[zia-dia] #controls:is(:hover, [showing], [keying])::before {
+:root[zia-dia] #controls:is(:hover, [showing], [keying]):not(:root[zia-pip-idle] .playing:not([showing], [keying]))::before {
   opacity: 1;
   transition-duration: 90ms;
 }
@@ -44,7 +54,7 @@
   transition: opacity 160ms ease, scale 200ms cubic-bezier(0.2, 0.9, 0.3, 1), background-color 120ms ease !important;
 }
 
-:root[zia-dia] #controls:is(:hover, [showing], [keying]) .control-item {
+:root[zia-dia] #controls:is(:hover, [showing], [keying]):not(:root[zia-pip-idle] .playing:not([showing], [keying])) .control-item {
   opacity: 1 !important;
   transition-duration: 90ms, 200ms, 120ms !important;
 }
@@ -259,7 +269,7 @@
   background-color: transparent !important;
 }
 
-:root[zia-dia] #controls:is(:hover, [showing], [keying]) .center-controls .control-button {
+:root[zia-dia] #controls:is(:hover, [showing], [keying]):not(:root[zia-pip-idle] .playing:not([showing], [keying])) .center-controls .control-button {
   scale: 1;
 }
 
