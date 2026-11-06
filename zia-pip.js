@@ -858,8 +858,21 @@
     veil(past);
   };
 
-  sliver.addEventListener("mouseenter", () => (pref("zia.pip.tuck-peek", false) ? peek(true) : nudge(true)));
+  // A peek waits for the pointer to stay on the strip a moment, and ends only once it's
+  // been off the window a moment: brushing past the strip, or slipping off the window for
+  // an instant, slid it out and back over and over (#576)
+  const PEEK_DELAY_MS = 250;
+  const UNPEEK_DELAY_MS = 400;
+  let peekTimer = 0;
+  const peekSoon = (out) => {
+    clearTimeout(peekTimer);
+    peekTimer = setTimeout(() => peek(out), out ? PEEK_DELAY_MS : UNPEEK_DELAY_MS);
+  };
+  sliver.addEventListener("mouseenter", () => (pref("zia.pip.tuck-peek", false) ? peekSoon(true) : nudge(true)));
   sliver.addEventListener("mouseleave", () => {
+    if (!root.hasAttribute("zia-peeking")) {
+      clearTimeout(peekTimer);
+    }
     if (!dragFrom && !root.hasAttribute("zia-peeking")) {
       nudge(false);
     }
@@ -868,9 +881,45 @@
   // from under it as the window comes out)
   window.addEventListener("mouseout", (event) => {
     if (!event.relatedTarget) {
-      peek(false);
+      if (root.hasAttribute("zia-peeking")) {
+        peekSoon(false);
+      } else {
+        clearTimeout(peekTimer);
+      }
     }
   });
+  window.addEventListener("mouseover", (event) => {
+    if (!event.relatedTarget && root.hasAttribute("zia-peeking")) {
+      clearTimeout(peekTimer);
+    }
+  });
+
+  // The controls fade once the pointer has rested a moment over a playing video, the
+  // pointer with them (Firefox keeps them up for as long as it's over the window), and
+  // any move brings them back. Not while it's on a control, or a menu or the spot picker
+  // is open; a paused video keeps them (zia-pip.css) (#576)
+  const IDLE_MS = 1500;
+  let idleTimer = 0;
+  const busy = () =>
+    !!document.querySelector("#controls :is(.control-item, .zia-pip-pill, input):hover") ||
+    root.hasAttribute("zia-picking") ||
+    !!document.querySelector("#controls :is([aria-expanded='true'], :focus-visible)");
+  const rest = () => {
+    if (busy()) {
+      idleTimer = setTimeout(rest, IDLE_MS);
+      return;
+    }
+    root.setAttribute("zia-pip-idle", "");
+  };
+  const wake = () => {
+    root.removeAttribute("zia-pip-idle");
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(rest, IDLE_MS);
+  };
+  for (const type of ["mousemove", "mousedown", "wheel", "keydown"]) {
+    window.addEventListener(type, wake, true);
+  }
+  window.addEventListener("mouseout", (event) => !event.relatedTarget && clearTimeout(idleTimer));
   sliver.addEventListener("pointerdown", (event) => {
     if (state !== "tucked" || event.button !== 0) {
       return;

@@ -17,6 +17,7 @@
     side: null,
     thumb: null,
     dragImageSet: false,
+    pageBox: null, // the page's box, measured once a drag
   };
 
   function draggedTabOf(event) {
@@ -412,7 +413,10 @@
         if (!open && !Services.prefs.getBoolPref("zia.split.drop-cards", true)) {
           return;
         }
-        const overPage = isOverPage(event);
+        // (the page's box measured once a drag, not on every move: each read laid the
+        // sidebar out again mid-drag, slow on Windows, #566)
+        splitDrop.pageBox ||= gBrowser.tabbox.getBoundingClientRect();
+        const overPage = pointIn(splitDrop.pageBox, event) && !isOverCollapsedSidebar(event);
         if (open) {
           if (overPage) {
             gBrowser.tabContainer.tabDragAndDrop?.clearSpaceSwitchTimer?.();
@@ -437,11 +441,20 @@
       true
     );
     window.addEventListener("dragend", hideSplitDrop, true);
+    window.addEventListener("dragend", () => (splitDrop.pageBox = null), true);
+    window.addEventListener("drop", () => (splitDrop.pageBox = null), true);
 
     gBrowser.tabContainer.addEventListener("TabSelect", (event) => {
       splitDrop.lastSelect = { tab: event.target, previous: event.detail?.previousTab || null, time: Date.now() };
     });
-    window.addEventListener("dragstart", () => (splitDrop.dragStartedAt = Date.now()), true);
+    window.addEventListener(
+      "dragstart",
+      () => {
+        splitDrop.dragStartedAt = Date.now();
+        splitDrop.pageBox = null;
+      },
+      true
+    );
     window.addEventListener(
       "drop",
       (event) => {

@@ -5003,6 +5003,7 @@
     side: null,
     thumb: null,
     dragImageSet: false,
+    pageBox: null, // the page's box, measured once a drag
   };
 
   function draggedTabOf(event) {
@@ -5398,7 +5399,10 @@
         if (!open && !Services.prefs.getBoolPref("zia.split.drop-cards", true)) {
           return;
         }
-        const overPage = isOverPage(event);
+        // (the page's box measured once a drag, not on every move: each read laid the
+        // sidebar out again mid-drag, slow on Windows, #566)
+        splitDrop.pageBox ||= gBrowser.tabbox.getBoundingClientRect();
+        const overPage = pointIn(splitDrop.pageBox, event) && !isOverCollapsedSidebar(event);
         if (open) {
           if (overPage) {
             gBrowser.tabContainer.tabDragAndDrop?.clearSpaceSwitchTimer?.();
@@ -5423,11 +5427,20 @@
       true
     );
     window.addEventListener("dragend", hideSplitDrop, true);
+    window.addEventListener("dragend", () => (splitDrop.pageBox = null), true);
+    window.addEventListener("drop", () => (splitDrop.pageBox = null), true);
 
     gBrowser.tabContainer.addEventListener("TabSelect", (event) => {
       splitDrop.lastSelect = { tab: event.target, previous: event.detail?.previousTab || null, time: Date.now() };
     });
-    window.addEventListener("dragstart", () => (splitDrop.dragStartedAt = Date.now()), true);
+    window.addEventListener(
+      "dragstart",
+      () => {
+        splitDrop.dragStartedAt = Date.now();
+        splitDrop.pageBox = null;
+      },
+      true
+    );
     window.addEventListener(
       "drop",
       (event) => {
@@ -14238,7 +14251,15 @@
           drag.tileShifts = null;
           hideProxy();
         }
-        apply(dy);
+        // (once a frame: Windows sends several moves a frame, and each laid the list out
+        // again, so the drag lagged there, #566; a later move that frame waits for the
+        // frame's own pass, and a drop before it catches up first, below)
+        if (raf && drag.appliedThisFrame) {
+          drag.stale = true;
+        } else {
+          apply(dy);
+          drag.appliedThisFrame = true;
+        }
       } catch (err) {
         console.error("[Zia] Tab drag failed:", err);
       }
@@ -14246,6 +14267,8 @@
         raf = requestAnimationFrame(() => {
           raf = 0;
           if (drag) {
+            drag.appliedThisFrame = false;
+            drag.stale = false;
             apply(lastDy);
           }
         });
@@ -15111,6 +15134,17 @@
     window.addEventListener("dragover", onOver, true);
     document.getElementById("tabbrowser-tabs")?.addEventListener("dragover", onOver, true);
     window.addEventListener("dragover", fixDrop);
+    window.addEventListener(
+      "drop",
+      (event) => {
+        if (drag?.stale) {
+          drag.stale = false;
+          apply(lastDy);
+          fixDrop(event);
+        }
+      },
+      true
+    );
     // Firefox moves the dragged tab too, after Zia, and stops it at the last tab: under the
     // list its move won, two of the tab showing. Zia's move is put back after Firefox's go.
     window.addEventListener("dragover", () => {
@@ -15284,30 +15318,34 @@
       const remember = (el, props) => {
         unclipped.push([el, props.map((prop) => [prop, el.style.getPropertyValue(prop), el.style.getPropertyPriority(prop)])]);
       };
-      const lift = (el) => {
+      // (every ancestor read first, then the clipping ones changed: a change before the
+      // next read made the browser lay the sidebar out again for each one, slow on
+      // Windows at the start of every drag, #566)
+      const clipping = (el) => {
         const style = getComputedStyle(el);
         const clips =
           ["hidden", "auto", "scroll", "clip"].includes(style.overflowY) || /paint|strict|content/.test(style.contain);
         const scrolls = el.scrollTop > 0 || el.scrollHeight > el.clientHeight + 1;
-        if (!clips || scrolls) {
-          return;
-        }
-        const props = ["overflow", "overflow-x", "overflow-y", "contain"];
-        remember(el, props);
-        for (const prop of props) {
-          el.style.setProperty(prop, prop === "contain" ? "none" : "visible", "important");
-        }
+        return clips && !scrolls;
       };
+      const lifted = [];
       let el = node?.parentNode;
       while (el && el !== stop && el !== document.documentElement) {
         if (el.nodeType === 1) {
-          lift(el);
+          lifted.push(el);
           const inner = el.shadowRoot?.querySelector?.('[part~="scrollbox"]');
           if (inner) {
-            lift(inner);
+            lifted.push(inner);
           }
         }
         el = el.parentNode || el.host;
+      }
+      const props = ["overflow", "overflow-x", "overflow-y", "contain"];
+      for (const each of lifted.filter(clipping)) {
+        remember(each, props);
+        for (const prop of props) {
+          each.style.setProperty(prop, prop === "contain" ? "none" : "visible", "important");
+        }
       }
     };
     const reclip = () => {

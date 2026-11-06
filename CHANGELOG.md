@@ -4,6 +4,25 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.119.0] — 2026-11-06
+
+### Changed
+
+- Tucked picture-in-picture with "shows all of it" on is calmer (#576): it comes out only
+  once the pointer has rested on the strip a moment (a quarter of a second), and tucks
+  away again only once the pointer has been off it a moment, so brushing past or slipping
+  off for an instant no longer slides it out and back. Thanks kcussiefil.
+- Picture-in-picture's controls fade, with the pointer, once it has rested over a playing
+  video for a second and a half, and come back as it moves (#576). They stay while the
+  pointer is on a control, a menu is open, or the video is paused.
+
+### Fixed
+
+- Dragging a tab was slow on Windows (#566): Zia laid the tab list out again for every
+  move Windows sends, several a frame, and at the start of a drag for each box around the
+  tab. It now does that once a frame and once a drag, so a drag starts with about a third
+  of the work and each move costs about half. Thanks ryee123123.
+
 ## [2.118.1] — 2026-11-06
 
 ### Fixed
