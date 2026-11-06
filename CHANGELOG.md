@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.118.1] — 2026-11-06
+
+### Fixed
+
+- Right-clicking the foot of the sidebar showed two separator lines in a row, under
+  Theme…: Zen hides Set Profile when there are no profiles to pick, but not the line
+  after it. The toolbar's right-click menu now never shows a line next to another, or
+  at either end. Thanks Poumpky.
+
 ## [2.118.0] — 2026-11-05
 
 ### Added
