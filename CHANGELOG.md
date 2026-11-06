@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.119.1] — 2026-11-06
+
+### Fixed
+
+- Dragging a tab lagged more in 2.119.0 than before (#566): its change to move the list
+  once a frame left the dragged tab trailing the pointer where the frames come slower than
+  the moves, as on Windows. That change is undone; 2.119.0's other two (less layout work
+  as a drag starts, and the page measured once a drag) stay. Thanks ryee123123.
+
 ## [2.119.0] — 2026-11-06
 
 ### Changed
