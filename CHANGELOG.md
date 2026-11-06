@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.119.2] — 2026-11-06
+
+### Fixed
+
+- A tab group from Advanced Tab Groups left without a colour showed no folder icon and a
+  dimmed name (#568): the mod gives such a group a transparent colour, and Zia drew the
+  icon and name in it. It now takes Zia's plain folder colour, as other groups without a
+  colour do. Thanks ryee123123.
+
 ## [2.119.1] — 2026-11-06
 
 ### Fixed

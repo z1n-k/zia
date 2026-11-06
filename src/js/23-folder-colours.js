@@ -169,14 +169,31 @@
 
   const GROUP_COLOR_TOKEN = /(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([^()]*\)|#[0-9a-f]{3,8}\b/i;
 
-  // Advanced Tab Groups' picker colours are gradients, which color-mix can't take: the group gets the first stop
+  // Advanced Tab Groups' picker colours are gradients, which color-mix can't take: the group gets
+  // the first stop. A group it leaves without a colour gets "transparent", which drew the folder
+  // icon and the name in nothing (#568): that group takes Zia's plain folder colour instead.
+  const clearColor = (color) => {
+    if (!color || color === "transparent") {
+      return true;
+    }
+    try {
+      return InspectorUtils.colorToRGBA(color)?.a === 0;
+    } catch (err) {
+      return false;
+    }
+  };
   function paintGroupSwatch(group) {
     if (group?.localName !== "tab-group" || group.hasAttribute("split-view-group")) {
       return;
     }
-    const color = getComputedStyle(group).getPropertyValue("--tab-group-color").trim();
+    const style = getComputedStyle(group);
+    const color = style.getPropertyValue("--tab-group-color").trim();
+    const native = style.getPropertyValue("--tab-group-background-color").trim();
     const stop = color.includes("gradient") ? color.match(GROUP_COLOR_TOKEN)?.[0] : null;
-    const swatch = stop ? `rgb(from ${stop} r g b)` : "";
+    let swatch = stop ? `rgb(from ${stop} r g b)` : "";
+    if (!stop && clearColor(native) && clearColor(color)) {
+      swatch = "var(--zia-fc-white)";
+    }
     if (group.style.getPropertyValue("--zia-group-swatch") === swatch) {
       return;
     }
