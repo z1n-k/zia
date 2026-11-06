@@ -6739,6 +6739,37 @@
     watchPrefs(name, update);
     update();
   }
+
+  // The toolbar's right-click menu without a separator next to another, or at either end:
+  // Zen hides Set Profile with no profiles to pick, but not the separator after it, so the
+  // sidebar's foot showed two in a row (thanks Poumpky). Run once Zen and Firefox have
+  // shown and hidden their items (the event bubbles to the window after them).
+  function tidyMenuSeparators() {
+    window.addEventListener("popupshowing", (event) => {
+      const menu = event.target;
+      if (menu.id !== "toolbar-context-menu") {
+        return;
+      }
+      for (const el of menu.querySelectorAll(":scope > menuseparator[zia-tidied]")) {
+        el.hidden = false;
+        el.removeAttribute("zia-tidied");
+      }
+      const shown = [...menu.children].filter((el) => !el.hidden && !el.collapsed && getComputedStyle(el).display !== "none");
+      let last = null;
+      for (const el of shown) {
+        if (el.localName === "menuseparator" && (!last || last.localName === "menuseparator")) {
+          el.hidden = true;
+          el.setAttribute("zia-tidied", "true");
+          continue;
+        }
+        last = el;
+      }
+      if (last?.localName === "menuseparator") {
+        last.hidden = true;
+        last.setAttribute("zia-tidied", "true");
+      }
+    });
+  }
   // ---------- Picture-in-picture: Dia's look, and tucking into the screen edge
   const PIP_PLAYER_URL = "chrome://global/content/pictureinpicture/player.xhtml";
   const PIP_SCRIPT_URL = "chrome://sine/content/zia/zia-pip.js";
@@ -22953,6 +22984,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
 
     safely("applyZenDefaults", applyZenDefaults);
     safely("followZenGap", followZenGap);
+    safely("tidyMenuSeparators", tidyMenuSeparators);
     safely("setupIconPack", setupIconPack);
     safely("watchOptions", watchOptions);
     safely("watchUrlbarPosition", watchUrlbarPosition);

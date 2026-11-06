@@ -241,6 +241,7 @@
 
     safely("applyZenDefaults", applyZenDefaults);
     safely("followZenGap", followZenGap);
+    safely("tidyMenuSeparators", tidyMenuSeparators);
     safely("setupIconPack", setupIconPack);
     safely("watchOptions", watchOptions);
     safely("watchUrlbarPosition", watchUrlbarPosition);
