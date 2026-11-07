@@ -11327,13 +11327,14 @@
       });
       row.appendChild(button);
     }
-    // (the picture in a box of its own, which clips it to the card's squircle: a canvas
-    // clipped itself to a plain round corner, which didn't follow the card's)
+    // (the picture is the box's background, painted from the canvas (-moz-element), which takes
+    // the card's squircle: clipped, the screen drew it with a plain round corner, not the card's)
     const shot = document.createElementNS(XHTML_NS, "div");
     shot.className = "zia-tab-card-shot";
     shot.hidden = true;
     const thumb = document.createElementNS(XHTML_NS, "canvas");
     thumb.className = "zia-tab-card-thumb";
+    thumb.id = "zia-tab-card-thumb";
     shot.append(thumb);
     card.append(shot, title, sub, row);
     root.appendChild(card);
