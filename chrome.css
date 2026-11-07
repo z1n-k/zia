@@ -4008,7 +4008,7 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   }
 }
 
-:is(#zia-tab-card, #zia-folder-card, #zia-tip-card, .zia-tab-card-thumb, .zia-tab-card-sub, #zia-tab-card-actions, .zia-tab-card-action)[hidden] {
+:is(#zia-tab-card, #zia-folder-card, #zia-tip-card, .zia-tab-card-shot, .zia-tab-card-sub, #zia-tab-card-actions, .zia-tab-card-action)[hidden] {
   display: none !important;
 }
 
@@ -4177,13 +4177,12 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 }
 
 /* the page's picture, set in from the card's edge by a hair (TAB_THUMB_INSET, 27-hover-cards)
-   with its top corners curving with the card's and a fine dark edge, as in Dia */
-.zia-tab-card-thumb {
+   with its top corners curving with the card's and a fine dark edge, as in Dia. The box
+   clips it: the canvas on its own clipped to a plain round corner, not the card's squircle */
+.zia-tab-card-shot {
   --zia-thumb-inset: 2px;
   display: block;
-  width: calc(100% + 28px - 2 * var(--zia-thumb-inset));
-  height: auto;
-  aspect-ratio: 1 / 0.55;
+  overflow: clip;
   margin: calc(var(--zia-thumb-inset) - 12px) calc(var(--zia-thumb-inset) - 14px) 10px;
   border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow) - var(--zia-thumb-inset)) calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow) - var(--zia-thumb-inset)) 0 0;
   corner-shape: var(--zia-squircle);
@@ -4191,7 +4190,14 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
   box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.55);
 }
 
-:root[zia-light] .zia-tab-card-thumb {
+.zia-tab-card-thumb {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 0.55;
+}
+
+:root[zia-light] .zia-tab-card-shot {
   background: rgba(0, 0, 0, 0.04);
   box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.14);
 }

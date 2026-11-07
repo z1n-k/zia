@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.120.1] — 2026-11-07
+
+### Fixed
+
+- A sleeping tab's hover card had no picture of its page, and after a restart most tabs
+  are asleep. Zia now keeps each tab's picture as you leave it (taken once the browser is
+  idle and saved in the background, the last 400, never in a private window) and shows the
+  last one on a sleeping tab's card.
+- The picture's top corners didn't follow the card's: the picture clipped itself to a plain
+  round corner, not the card's squircle. Now the gap between them is even all the way round.
+
 ## [2.120.0] — 2026-11-07
 
 ### Added
