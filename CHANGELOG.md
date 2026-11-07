@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.120.3] — 2026-11-07
+
+### Fixed
+
+- The hover card's page picture was empty after updating to 2.120.2 until Zen was restarted.
+  It's cut to the card's squircle by its own box again, which works whether or not Zen has
+  restarted since the update, with the gap between the corners still even.
+
 ## [2.120.2] — 2026-11-07
 
 ### Fixed

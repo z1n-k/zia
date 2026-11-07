@@ -4177,27 +4177,29 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 }
 
 /* the page's picture, set in from the card's edge by a hair (TAB_THUMB_INSET, 27-hover-cards)
-   with its top corners curving with the card's and a fine dark edge, as in Dia. It's the box's
-   background, painted from the canvas: the screen draws a background with the card's squircle
-   (as the card's own) */
+   with its top corners curving with the card's and a fine dark edge, as in Dia. Its box clips
+   it to the card's squircle (!important, with the id, to beat the rule that rounds every other
+   corner, 00-variables: without it, the picture was round inside the card's squircle) */
 #zia-tab-card .zia-tab-card-shot {
   --zia-thumb-inset: 2px;
   display: block;
-  aspect-ratio: 1 / 0.55;
+  overflow: clip;
   margin: calc(var(--zia-thumb-inset) - 12px) calc(var(--zia-thumb-inset) - 14px) 10px;
   border-radius: calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow) - var(--zia-thumb-inset)) calc(var(--zia-tab-card-radius) * var(--zia-squircle-grow) - var(--zia-thumb-inset)) 0 0;
-  /* (!important, with the id, to beat the rule that rounds every other corner, 00-variables) */
   corner-shape: var(--zia-squircle) !important;
-  background: -moz-element(#zia-tab-card-thumb) center / 100% 100% no-repeat, rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.05);
   box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.55);
 }
 
-.zia-tab-card-thumb {
-  display: none;
+#zia-tab-card .zia-tab-card-thumb {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 0.55;
 }
 
 :root[zia-light] #zia-tab-card .zia-tab-card-shot {
-  background: -moz-element(#zia-tab-card-thumb) center / 100% 100% no-repeat, rgba(0, 0, 0, 0.04);
+  background: rgba(0, 0, 0, 0.04);
   box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.14);
 }
 
