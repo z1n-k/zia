@@ -543,8 +543,12 @@
         requestAnimationFrame(step);
       } else {
         animating = false;
-        lastX = window.screenX;
-        lastY = window.screenY;
+        // (where it was sent, not where the window says it is: macOS reports a move a moment
+        // late, and the watch below took the late part for a drag, let go of the tuck and
+        // tucked it again with a spring, a shake as it went in, #576)
+        lastX = Math.round(x);
+        lastY = Math.round(y);
+        settleUntil = Math.max(settleUntil, Date.now() + 400);
         done?.();
       }
     };
@@ -582,9 +586,12 @@
     glide(...(out ? peekPos() : tuckedPos(spot)), 200);
   };
   // (flush with the side it's tucked into, not out by the margin: the pointer at the very
-  // edge of the screen would be off the window, and it would tuck and peek over and over)
+  // edge of the screen would be off the window, and it would tuck and peek over and over. The
+  // screen's own edge, not its usable area's: that stops short of it where a hidden Dock waits,
+  // and the pointer pushed to the edge left the window and tucked it, #576)
   const peekPos = () => {
-    const b = screenBox();
+    const s = window.screen;
+    const b = { left: s.left, top: s.top, right: s.left + s.width, bottom: s.top + s.height };
     let [x, y] = outPos();
     if (spot.endsWith("left")) {
       x = b.left;

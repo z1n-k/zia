@@ -4,6 +4,18 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.121.3] — 2026-11-07
+
+### Fixed
+
+- Tucked picture-in-picture shook as it slid back in (#576): macOS reports a window's move a
+  moment late, and Zia read the late part as the window being dragged, let go of the tuck and
+  tucked it again with a spring. A finished slide now keeps the place it was sent to.
+- Peeking out from a side, picture-in-picture now reaches the screen's very edge, not the
+  usable area's (which stops short of it where a hidden Dock waits). The pointer pushed to
+  the edge counted as leaving it, so it tucked away, and could peek and tuck over and over.
+  Thanks kcussiefil.
+
 ## [2.121.2] — 2026-11-07
 
 ### Fixed
