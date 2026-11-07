@@ -4,14 +4,19 @@
   // page reloads, short of it and the bubble goes. As on a phone.
   // Used elsewhere: addPullRefresh.
   const PULL_PREF = "zia.pull-refresh";
-  // (Firefox passes on little of a pull once the page is bouncing at its top: 150 was rarely reached)
-  const PULL_FULL = 90;
+  // (as ZiaChild's PULL_FULL: a real trackpad pull passes 200 in a tenth of a second, and lower
+  // went off with a casual scroll up at the top)
+  const PULL_FULL = 200;
   const PULL_RELOAD_SHOW_MS = 500;
+  // (after a pull reloads, the reloaded page still gets the rest of the trackpad's coast, from
+  // its top, and read it as another pull: none for this long)
+  const PULL_QUIET_MS = 1600;
 
   function addPullRefresh() {
     let bubble = null;
     let armed = false;
     let leaveTimer = 0;
+    let reloadedAt = 0;
 
     const bubbleFor = (browser) => {
       const stack = browser.closest(".browserStack");
@@ -39,7 +44,7 @@
     };
 
     window.ziaOnPagePull = (browser, data) => {
-      if (browser !== gBrowser.selectedBrowser || !Services.prefs.getBoolPref(PULL_PREF, true)) {
+      if (browser !== gBrowser.selectedBrowser || !Services.prefs.getBoolPref(PULL_PREF, true) || Date.now() - reloadedAt < PULL_QUIET_MS) {
         return;
       }
       const el = bubbleFor(browser);
@@ -68,6 +73,7 @@
         return;
       }
       el.setAttribute("reloading", "");
+      reloadedAt = Date.now();
       try {
         BrowserCommands.reload();
       } catch (err) {

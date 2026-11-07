@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.121.2] — 2026-11-07
+
+### Fixed
+
+- Pull to refresh still paused before reloading: a real trackpad pull goes on coasting for a
+  second or more once the fingers lift, and Zia waited for the coast to end. It now lets go as
+  the coast begins (the movement dropping well below its peak), so the page reloads about a
+  tenth of a second into the pull, and it's full after a longer pull (200 px), as a real
+  pull passes that at once. The reloaded page no longer reads the rest of the coast as
+  another pull and reloads again.
+
 ## [2.121.1] — 2026-11-07
 
 ### Fixed
