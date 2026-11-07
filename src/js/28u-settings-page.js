@@ -80,6 +80,7 @@
     "zia.ultra": ["Ultra effects", "A loading orb, the open essential's colour drifting, the music player glowing in its artwork's colours, a springy Library and a metal welcome logo."],
     "zia.features.tab-hover-cards": ["Hover cards", "For tabs and folders."],
     "zia.cards.blur": ["See-through hover cards", "What's behind is blurred, except over a video, which keeps its colours."],
+    "zia.cards.page-picture": ["Page pictures", "A picture of the tab's page at the top of its hover card."],
     "zia.folders.tint-card": ["Folder-coloured cards", "A coloured folder's hover card takes its colour."],
     "zia.tabs.sound-bars": ["Sound bars", "On playing tabs. Off: Zen's speaker."],
     "zia.sound-bars.always-move": ["Always animate sound bars", "Even when your system asks for less motion."],

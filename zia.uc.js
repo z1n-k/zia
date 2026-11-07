@@ -11335,15 +11335,15 @@
     return card;
   }
 
-  // the page's picture when Firefox's hover previews are on (Zia's card replaces Firefox's)
+  // the page's picture at the top of the card, as in Dia (zia.cards.page-picture), the open tab's
+  // too; set in from the card's edge by TAB_THUMB_INSET (07-hover-cards)
   const TAB_THUMB_RATIO = 0.55;
+  const TAB_THUMB_INSET = 2;
   let thumbToken = 0;
 
   function wantsTabThumb(tab) {
     return (
-      Services.prefs.getBoolPref("browser.tabs.hoverPreview.enabled", false) &&
-      Services.prefs.getBoolPref("browser.tabs.hoverPreview.showThumbnails", true) &&
-      !tab.selected &&
+      Services.prefs.getBoolPref("zia.cards.page-picture", true) &&
       !tab.hasAttribute("pending") &&
       !!tab.linkedPanel &&
       tabCardKind(tab) !== "new"
@@ -11412,7 +11412,7 @@
     if (!thumb.hidden) {
       const ratio = Math.max(1, window.devicePixelRatio || 1);
       // (the card's set width: it's still hidden here)
-      const width = parseFloat(getComputedStyle(root).getPropertyValue("--zia-tab-card-width")) || 260;
+      const width = (parseFloat(getComputedStyle(root).getPropertyValue("--zia-tab-card-width")) || 260) - 2 * TAB_THUMB_INSET;
       thumb.width = Math.round(width * ratio);
       thumb.height = Math.round(width * TAB_THUMB_RATIO * ratio);
       drawTabThumb(thumb, shown, token).catch((err) => noteError("hover card: thumbnail", err));
@@ -22277,6 +22277,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     "zia.ultra": ["Ultra effects", "A loading orb, the open essential's colour drifting, the music player glowing in its artwork's colours, a springy Library and a metal welcome logo."],
     "zia.features.tab-hover-cards": ["Hover cards", "For tabs and folders."],
     "zia.cards.blur": ["See-through hover cards", "What's behind is blurred, except over a video, which keeps its colours."],
+    "zia.cards.page-picture": ["Page pictures", "A picture of the tab's page at the top of its hover card."],
     "zia.folders.tint-card": ["Folder-coloured cards", "A coloured folder's hover card takes its colour."],
     "zia.tabs.sound-bars": ["Sound bars", "On playing tabs. Off: Zen's speaker."],
     "zia.sound-bars.always-move": ["Always animate sound bars", "Even when your system asks for less motion."],
