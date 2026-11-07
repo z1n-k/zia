@@ -22456,6 +22456,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     "zia.newtab.real-tab": ["Real new tabs", "Cmd/Ctrl+T and + New Tab open a tab. Off: Zen's floating address bar."],
     "zia.newtab.search-engine": ["Search page in new tabs", "Your search engine's page, unless an extension has its own. Off: Zen's new tab page."],
     "zia.newtab.focus-address-bar": ["New tabs start in the address bar", "Ready to type."],
+    "zia.pull-refresh": ["Pull to refresh", "Keep scrolling up at the top of a page, then let go to reload it."],
     "zia.swipe.dia-arrow": ["Swipe arrow", "Dia's round arrow when swiping back or forward. Hold it to list the pages."],
     "zia.split.drop-cards": ["Split drop cards", "When dragging a tab onto the page to split it. Off: Zen's."],
     "zia.pdf.dia-style": ["Zia PDF viewer", "Reopen a PDF to see it."],
@@ -22915,6 +22916,84 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     setTimeout(countInstallToday, 60 * 1000);
     setInterval(countInstallToday, 4 * 60 * 60 * 1000);
   }
+  // ---------- Pull to refresh (zia.pull-refresh): pulling the page down past its top (a trackpad
+  // or Magic Mouse scroll, read in the page by ZiaChild) brings a bubble with the refresh arrow
+  // down from the top of the page, the arrow turning as it comes; let go past PULL_FULL and the
+  // page reloads, short of it and the bubble goes. As on a phone.
+  // Used elsewhere: addPullRefresh.
+  const PULL_PREF = "zia.pull-refresh";
+  const PULL_FULL = 150;
+  const PULL_RELOAD_SHOW_MS = 500;
+
+  function addPullRefresh() {
+    let bubble = null;
+    let armed = false;
+    let leaveTimer = 0;
+
+    const bubbleFor = (browser) => {
+      const stack = browser.closest(".browserStack");
+      if (!stack) {
+        return null;
+      }
+      if (bubble?.parentNode !== stack) {
+        bubble?.remove();
+        bubble = document.createElementNS(XHTML_NS, "div");
+        bubble.id = "zia-pull";
+        const icon = document.createElementNS(XHTML_NS, "img");
+        icon.setAttribute("src", "chrome://sine/content/zia/icons/ui/refresh.svg");
+        icon.setAttribute("alt", "");
+        bubble.append(icon);
+        stack.append(bubble);
+      }
+      return bubble;
+    };
+
+    const leave = (el) => {
+      el.setAttribute("zia-leaving", "");
+      el.style.setProperty("--p", "0");
+      el.removeAttribute("armed");
+      el.removeAttribute("reloading");
+    };
+
+    window.ziaOnPagePull = (browser, data) => {
+      if (browser !== gBrowser.selectedBrowser || !Services.prefs.getBoolPref(PULL_PREF, true)) {
+        return;
+      }
+      const el = bubbleFor(browser);
+      if (!el) {
+        return;
+      }
+      clearTimeout(leaveTimer);
+      el.removeAttribute("zia-leaving");
+      const p = Math.min(1, Math.max(0, (Number(data?.pull) || 0) / PULL_FULL));
+      el.style.setProperty("--p", p.toFixed(3));
+      if (p >= 1 && !armed) {
+        armed = true;
+        el.setAttribute("armed", "");
+        swipeTap(true);
+      } else if (p < 1 && armed) {
+        armed = false;
+        el.removeAttribute("armed");
+      }
+      if (!data?.end) {
+        return;
+      }
+      const reload = armed;
+      armed = false;
+      if (!reload) {
+        leave(el);
+        return;
+      }
+      el.setAttribute("reloading", "");
+      try {
+        BrowserCommands.reload();
+      } catch (err) {
+        gBrowser.reloadTab(gBrowser.selectedTab);
+      }
+      leaveTimer = setTimeout(() => leave(el), PULL_RELOAD_SHOW_MS);
+    };
+    gBrowser.tabContainer.addEventListener("TabSelect", () => bubble && leave(bubble));
+  }
   function safely(name, fn) {
     try {
       fn();
@@ -23367,6 +23446,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     safely("watchUnloadable", watchUnloadable);
     safely("watchPageFullscreen", watchPageFullscreen);
     safely("watchSwipeArrow", watchSwipeArrow);
+    safely("addPullRefresh", addPullRefresh);
     safely("revertTypedTextOnLeave", () => revertTypedTextOnLeave(urlbar));
     safely("neverShowScheme", neverShowScheme);
     safely("dressLibrary", dressLibrary);
