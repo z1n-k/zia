@@ -11327,10 +11327,15 @@
       });
       row.appendChild(button);
     }
+    // (the picture in a box of its own, which clips it to the card's squircle: a canvas
+    // clipped itself to a plain round corner, which didn't follow the card's)
+    const shot = document.createElementNS(XHTML_NS, "div");
+    shot.className = "zia-tab-card-shot";
+    shot.hidden = true;
     const thumb = document.createElementNS(XHTML_NS, "canvas");
     thumb.className = "zia-tab-card-thumb";
-    thumb.hidden = true;
-    card.append(thumb, title, sub, row);
+    shot.append(thumb);
+    card.append(shot, title, sub, row);
     root.appendChild(card);
     return card;
   }
@@ -11341,59 +11346,196 @@
   const TAB_THUMB_INSET = 2;
   let thumbToken = 0;
 
-  function wantsTabThumb(tab) {
-    return (
-      Services.prefs.getBoolPref("zia.cards.page-picture", true) &&
-      !tab.hasAttribute("pending") &&
-      !!tab.linkedPanel &&
-      tabCardKind(tab) !== "new"
+  // A tab that's asleep (as most are after a restart: they load when opened) has no page to
+  // picture, so each tab's picture is kept as you leave it, in the profile by its address, and
+  // a sleeping tab's card shows the last one. Taken when the browser is idle and saved in the
+  // background, so it never holds up switching tabs; never kept in a private window.
+  const PICTURE_DIR = PathUtils.join(PathUtils.profileDir, "zia-page-pictures");
+  const PICTURES_KEPT = 400;
+  const PICTURE_RESAVE_MS = 60000;
+  const pictureFiles = new Set();
+  const pictureMemo = new Map();
+  const pictureSaved = new Map();
+
+  // (a 64-bit hash of the address, without its #part, as the file's name)
+  function pictureName(url) {
+    const text = String(url).split("#")[0];
+    let a = 0x811c9dc5;
+    let b = 0x5bd1e995;
+    for (let i = 0; i < text.length; i++) {
+      const c = text.charCodeAt(i);
+      a = Math.imul(a ^ c, 16777619);
+      b = Math.imul(b ^ c, 2246822507);
+    }
+    return `${(a >>> 0).toString(16).padStart(8, "0")}${(b >>> 0).toString(16).padStart(8, "0")}.webp`;
+  }
+
+  function tabAddress(tab) {
+    const spec = tab?.linkedBrowser?.currentURI?.spec;
+    if (spec && spec !== "about:blank") {
+      return spec;
+    }
+    try {
+      return window.SessionStore.getLazyTabValue(tab, "url") || "";
+    } catch (err) {
+      return "";
+    }
+  }
+
+  const keepsPictureOf = (url) =>
+    /^https?:/i.test(url) &&
+    Services.prefs.getBoolPref("zia.cards.page-picture", true) &&
+    !window.PrivateBrowsingUtils?.isWindowPrivate(window);
+
+  // the saved pictures, listed once; past PICTURES_KEPT, the oldest go
+  async function readPictureList() {
+    const files = (await IOUtils.getChildren(PICTURE_DIR, { ignoreAbsent: true })).filter((file) => file.endsWith(".webp"));
+    for (const file of files) {
+      pictureFiles.add(PathUtils.filename(file));
+    }
+    if (files.length <= PICTURES_KEPT) {
+      return;
+    }
+    const dated = await Promise.all(files.map(async (file) => [file, (await IOUtils.stat(file)).lastModified]));
+    dated.sort((x, y) => x[1] - y[1]);
+    for (const [file] of dated.slice(0, files.length - PICTURES_KEPT)) {
+      pictureFiles.delete(PathUtils.filename(file));
+      await IOUtils.remove(file, { ignoreAbsent: true });
+    }
+  }
+
+  async function savePicture(url, canvas) {
+    if (!keepsPictureOf(url)) {
+      return;
+    }
+    pictureSaved.set(url, Date.now());
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/webp", 0.82));
+    if (!blob) {
+      return;
+    }
+    const name = pictureName(url);
+    await IOUtils.makeDirectory(PICTURE_DIR, { ignoreExisting: true });
+    await IOUtils.write(PathUtils.join(PICTURE_DIR, name), new Uint8Array(await blob.arrayBuffer()));
+    pictureFiles.add(name);
+    pictureMemo.delete(name);
+  }
+
+  // (the last few read, held as pictures)
+  function loadPicture(url) {
+    const name = pictureName(url);
+    if (!pictureFiles.has(name)) {
+      return Promise.resolve(null);
+    }
+    if (!pictureMemo.has(name)) {
+      const read = IOUtils.read(PathUtils.join(PICTURE_DIR, name))
+        .then((bytes) => createImageBitmap(new Blob([bytes], { type: "image/webp" })))
+        .catch(() => null);
+      pictureMemo.set(name, read);
+      if (pictureMemo.size > 24) {
+        pictureMemo.delete(pictureMemo.keys().next().value);
+      }
+    }
+    return pictureMemo.get(name);
+  }
+
+  function sizeThumbCanvas(canvas) {
+    const ratio = Math.max(1, window.devicePixelRatio || 1);
+    // (the card's set width: it may still be hidden)
+    const width = (parseFloat(getComputedStyle(root).getPropertyValue("--zia-tab-card-width")) || 260) - 2 * TAB_THUMB_INSET;
+    canvas.width = Math.round(width * ratio);
+    canvas.height = Math.round(width * TAB_THUMB_RATIO * ratio);
+  }
+
+  // a loaded tab's page drawn into the canvas, there and then; true if it was
+  async function capturePage(canvas, tab) {
+    const browser = tab.linkedBrowser;
+    try {
+      const { PageThumbs } = ChromeUtils.importESModule("resource://gre/modules/PageThumbs.sys.mjs");
+      if (typeof PageThumbs?.captureTabPreviewThumbnail === "function" && (await PageThumbs.captureTabPreviewThumbnail(browser, canvas))) {
+        return true;
+      }
+    } catch (err) {
+      // (drawn below instead)
+    }
+    const windowGlobal = browser?.browsingContext?.currentWindowGlobal;
+    const width = browser?.clientWidth;
+    if (!windowGlobal || !width) {
+      return false;
+    }
+    let picture = null;
+    try {
+      picture = await windowGlobal.drawSnapshot(new DOMRect(0, 0, width, width * TAB_THUMB_RATIO), canvas.width / width, "white");
+    } catch (err) {
+      return false;
+    }
+    const ctx = canvas.getContext("2d");
+    const sw = picture.width;
+    const sh = Math.min(picture.height, sw * TAB_THUMB_RATIO);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(picture, 0, 0, sw, sh, 0, 0, canvas.width, canvas.height);
+    picture.close?.();
+    return true;
+  }
+
+  // the tab you've just left, pictured once the browser is idle
+  function keepPictureOf(tab) {
+    if (!tab?.linkedBrowser || tab.hasAttribute("pending") || !tab.linkedPanel || tab.closing) {
+      return;
+    }
+    const url = tabAddress(tab);
+    if (!keepsPictureOf(url)) {
+      return;
+    }
+    requestIdleCallback(
+      async () => {
+        if (!tab.isConnected || tab.selected || tab.hasAttribute("pending") || tabAddress(tab) !== url) {
+          return;
+        }
+        const canvas = document.createElementNS(XHTML_NS, "canvas");
+        sizeThumbCanvas(canvas);
+        if (await capturePage(canvas, tab)) {
+          await savePicture(url, canvas);
+        }
+      },
+      { timeout: 3000 }
     );
   }
 
-  async function drawTabThumb(canvas, tab, token) {
-    const browser = tab.linkedBrowser;
-    let captured = false;
-    try {
-      const { PageThumbs } = ChromeUtils.importESModule(
-        "resource://gre/modules/PageThumbs.sys.mjs",
-      );
-      if (typeof PageThumbs?.captureTabPreviewThumbnail === "function") {
-        // captureTabPreviewThumbnail draws directly onto the canvas and returns
-        // true on success, false on failure — it does not return an image object.
-        captured = await PageThumbs.captureTabPreviewThumbnail(browser, canvas);
-      }
-    } catch (err) {
-      captured = false;
+  function asleep(tab) {
+    return tab.hasAttribute("pending") || !tab.linkedPanel;
+  }
+
+  function wantsTabThumb(tab) {
+    if (!Services.prefs.getBoolPref("zia.cards.page-picture", true) || !tab.linkedBrowser || tabCardKind(tab) === "new") {
+      return false;
     }
-    if (!captured) {
-      // Fallback: drawSnapshot returns an ImageBitmap-like object we draw ourselves.
-      let picture = null;
-      const windowGlobal = browser?.browsingContext?.currentWindowGlobal;
-      const width = browser?.clientWidth;
-      if (windowGlobal && width) {
-        try {
-          picture = await windowGlobal.drawSnapshot(
-            new DOMRect(0, 0, width, width * TAB_THUMB_RATIO),
-            canvas.width / width,
-            "white",
-          );
-        } catch (err) {
-          picture = null;
-        }
+    return !asleep(tab) || pictureFiles.has(pictureName(tabAddress(tab)));
+  }
+
+  async function drawTabThumb(canvas, tab, token) {
+    const stale = () => token !== thumbToken || !canvas.isConnected;
+    const ctx = canvas.getContext("2d");
+    if (asleep(tab)) {
+      const picture = await loadPicture(tabAddress(tab));
+      if (picture && !stale()) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(picture, 0, 0, canvas.width, canvas.height);
       }
-      if (!picture || token !== thumbToken || !canvas.isConnected) {
-        picture?.close?.();
-        return;
-      }
-      const ctx = canvas.getContext("2d");
-      const sw = picture.width;
-      const sh = Math.min(picture.height, sw * TAB_THUMB_RATIO);
+      return;
+    }
+    const captured = await capturePage(canvas, tab);
+    if (stale()) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(picture, 0, 0, sw, sh, 0, 0, canvas.width, canvas.height);
-      picture.close?.();
-    } else if (token !== thumbToken || !canvas.isConnected) {
-      // captureTabPreviewThumbnail succeeded but the card is stale — clear it.
-      canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+      return;
+    }
+    // (what's shown is kept too, at most once a minute a page)
+    const url = tabAddress(tab);
+    if (captured && Date.now() - (pictureSaved.get(url) || 0) > PICTURE_RESAVE_MS) {
+      const copy = document.createElementNS(XHTML_NS, "canvas");
+      copy.width = canvas.width;
+      copy.height = canvas.height;
+      copy.getContext("2d").drawImage(canvas, 0, 0);
+      savePicture(url, copy).catch((err) => noteError("hover card: keep picture", err));
     }
   }
 
@@ -11408,13 +11550,9 @@
 
     const thumb = card.querySelector(".zia-tab-card-thumb");
     const token = ++thumbToken;
-    thumb.hidden = !wantsTabThumb(shown);
-    if (!thumb.hidden) {
-      const ratio = Math.max(1, window.devicePixelRatio || 1);
-      // (the card's set width: it's still hidden here)
-      const width = (parseFloat(getComputedStyle(root).getPropertyValue("--zia-tab-card-width")) || 260) - 2 * TAB_THUMB_INSET;
-      thumb.width = Math.round(width * ratio);
-      thumb.height = Math.round(width * TAB_THUMB_RATIO * ratio);
+    thumb.parentElement.hidden = !wantsTabThumb(shown);
+    if (!thumb.parentElement.hidden) {
+      sizeThumbCanvas(thumb);
       drawTabThumb(thumb, shown, token).catch((err) => noteError("hover card: thumbnail", err));
     }
 
@@ -11691,6 +11829,8 @@
       return;
     }
     quietZenFolderPopup();
+    readPictureList().catch((err) => noteError("hover card: saved pictures", err));
+    gBrowser.tabContainer.addEventListener("TabSelect", (event) => keepPictureOf(event.detail?.previousTab));
     let card = null;
     let folderCard = null;
     let current = null;
