@@ -4,6 +4,23 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.121.4] — 2026-11-07
+
+### Fixed
+
+- With the address bar near the window's top (a shorter toolbar, or the page edge to edge),
+  its text dropped a few pixels as the pop-up opened: the pop-up was moved down to stay in
+  the window, text and all. Now only its background is cut back to the window's top edge, and
+  the text stays exactly where it was in the closed bar.
+
+### Changed
+
+- Over a playing video, Zia's glass (address pop-up, find bar, hover cards, compact sidebar,
+  swipe arrow, screenshot buttons) is solid again, as before 2.118.0. Since 2.118.0 it was
+  see-through without the blur there, which kept the video's colours but left the moving
+  video showing behind the text. Solid keeps both the video's colours and the text easy to
+  read; "Blur over video" in Settings still keeps the glass for anyone who prefers it.
+
 ## [2.121.3] — 2026-11-07
 
 ### Fixed

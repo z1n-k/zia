@@ -256,11 +256,6 @@
     backdrop-filter: blur(24px) saturate(1.6) !important;
   }
 
-  /* (over a video without the blur, as the compact sidebar, 16-compact-mode) */
-  :root:not(#zia-none):not(#zia-none-2)[zia-video] #urlbar#urlbar:is([breakout-extend], [zen-floating-urlbar="true"]):not([zia-classic]) > .urlbar-background {
-    background: color-mix(in srgb, var(--zia-urlbar-open-bg) 88%, transparent) !important;
-  }
-
   /* ...but solid in the sidebar when it's in the toolbar's colour and that's dark over a
      light sidebar, or light over a dark one: there it's over the sidebar, not the page,
      and a dark page's pop-up over a light space came out a grey its white text barely

@@ -347,9 +347,11 @@
    with the page blurred behind it; on by default, off in Zia's settings.
    Zen paints it as an opaque base with two cross-fading colour layers (the
    old space and the new one); the base goes and both layers are scaled
-   down, so switching spaces still fades as before. Without the blur while
-   the page shows a video (zia-video, 01-site-colour's watchVideoInView): to
-   be blurred, a video is drawn duller than macOS shows it (#564, #573). */
+   down, so switching spaces still fades as before. Solid, as Zen paints it,
+   while the page shows a video (zia-video, 01-site-colour's watchVideoInView):
+   to be blurred, a video is drawn duller than macOS shows it (#564), and
+   see-through without the blur (2.118.0 to 2.121.3) left the moving video
+   showing behind the text. ("Blur over video" keeps the glass, 01-site-colour) */
 @media -moz-pref("zia.compact.sidebar-blur") {
   :root[zen-compact-mode="true"]:not([zia-video]) {
     & .zen-toolbar-background {
@@ -372,21 +374,6 @@
     &:is([zen-renaming-tab="true"], :has(#navigator-toolbox:is([zen-has-hover], [zen-user-show], [zen-has-empty-tab], [flash-popup], [has-popup-menu], [movingtab], [zen-compact-mode-active], [animate="true"])), :has(#zen-appcontent-navbar-wrapper:is([zen-has-hover], [has-popup-menu], [zen-compact-mode-active]))) #tabbrowser-tabpanels .browserSidebarContainer {
       will-change: transform !important;
       backface-visibility: hidden !important;
-    }
-  }
-
-  /* over a video, see-through with no blur: macOS draws the video as it is, and it
-     shows through, a touch more veiled than under the blur so text stays clear */
-  :root[zen-compact-mode="true"][zia-video] .zen-toolbar-background {
-    background: transparent !important;
-    backdrop-filter: none !important;
-
-    &::after {
-      opacity: calc(var(--zen-background-opacity, 1) * 0.88) !important;
-    }
-
-    &::before {
-      opacity: calc((1 - var(--zen-background-opacity, 1)) * 0.88) !important;
     }
   }
 }

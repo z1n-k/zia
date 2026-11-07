@@ -671,9 +671,10 @@
       corner-shape: var(--zia-squircle) !important;
       box-shadow: var(--zia-glass-edge), var(--zia-glass-pop-lift) !important;
       backdrop-filter: none !important;
-      /* (up to the window's top edge, zia.uc.js; and down past its last row,
-         where the pop-up's own height fell short of it, #450) */
-      top: calc(-1 * var(--zia-pop-reach-top, 0px)) !important;
+      /* (up to the window's top edge, or cut back to it where the pop-up went past it,
+         zia.uc.js; and down past its last row, where the pop-up's own height fell short
+         of it, #450) */
+      top: calc(var(--zia-pop-trim-top, 0px) - var(--zia-pop-reach-top, 0px)) !important;
       bottom: calc(-1 * var(--zia-pop-reach-bottom, 0px)) !important;
       transform-origin: 50% 0 !important;
       animation: zia-urlbar-open 0.18s cubic-bezier(0.2, 0.9, 0.3, 1) !important;
@@ -4437,16 +4438,12 @@ zen-folder:not([zia-folder-color]) > .tab-group-label-container .zia-fi {
 }
 
 
-/* see-through cards (zia.cards.blur); without the blur while the page shows a video,
-   as the compact sidebar (16-compact-mode) */
+/* see-through cards (zia.cards.blur); solid while the page shows a video, as the compact
+   sidebar (16-compact-mode) */
 @media -moz-pref("zia.cards.blur") {
   :root:not([zia-video]) :is(#zia-tab-card, #zia-folder-card, #zia-tip-card) {
     background-color: color-mix(in srgb, var(--zia-tab-card-bg) 76%, transparent) !important;
     backdrop-filter: blur(24px) saturate(1.6) !important;
-  }
-
-  :root[zia-video] :is(#zia-tab-card, #zia-folder-card, #zia-tip-card) {
-    background-color: color-mix(in srgb, var(--zia-tab-card-bg) 88%, transparent) !important;
   }
 
   /* the page behind a card blurs too (the compositing trick from Floaty UI), only while
@@ -5759,14 +5756,14 @@ findbar {
   corner-shape: var(--zia-squircle) !important;
 }
 
-/* without the blur while the page shows a video, as the compact sidebar (16-compact-mode) */
+/* solid while the page shows a video, as the compact sidebar (16-compact-mode) */
 :root[zia-video] findbar {
-  background: rgba(38, 38, 38, 0.88) !important;
+  background: rgb(38, 38, 38) !important;
   backdrop-filter: none;
 }
 
 :root[zia-video][zia-light] findbar {
-  background: rgba(248, 248, 250, 0.9) !important;
+  background: rgb(248, 248, 250) !important;
 }
 
 /* Light mode (a light space, or no space colour in light mode): a pale
@@ -7099,9 +7096,11 @@ findbar {
    with the page blurred behind it; on by default, off in Zia's settings.
    Zen paints it as an opaque base with two cross-fading colour layers (the
    old space and the new one); the base goes and both layers are scaled
-   down, so switching spaces still fades as before. Without the blur while
-   the page shows a video (zia-video, 01-site-colour's watchVideoInView): to
-   be blurred, a video is drawn duller than macOS shows it (#564, #573). */
+   down, so switching spaces still fades as before. Solid, as Zen paints it,
+   while the page shows a video (zia-video, 01-site-colour's watchVideoInView):
+   to be blurred, a video is drawn duller than macOS shows it (#564), and
+   see-through without the blur (2.118.0 to 2.121.3) left the moving video
+   showing behind the text. ("Blur over video" keeps the glass, 01-site-colour) */
 @media -moz-pref("zia.compact.sidebar-blur") {
   :root[zen-compact-mode="true"]:not([zia-video]) {
     & .zen-toolbar-background {
@@ -7124,21 +7123,6 @@ findbar {
     &:is([zen-renaming-tab="true"], :has(#navigator-toolbox:is([zen-has-hover], [zen-user-show], [zen-has-empty-tab], [flash-popup], [has-popup-menu], [movingtab], [zen-compact-mode-active], [animate="true"])), :has(#zen-appcontent-navbar-wrapper:is([zen-has-hover], [has-popup-menu], [zen-compact-mode-active]))) #tabbrowser-tabpanels .browserSidebarContainer {
       will-change: transform !important;
       backface-visibility: hidden !important;
-    }
-  }
-
-  /* over a video, see-through with no blur: macOS draws the video as it is, and it
-     shows through, a touch more veiled than under the blur so text stays clear */
-  :root[zen-compact-mode="true"][zia-video] .zen-toolbar-background {
-    background: transparent !important;
-    backdrop-filter: none !important;
-
-    &::after {
-      opacity: calc(var(--zen-background-opacity, 1) * 0.88) !important;
-    }
-
-    &::before {
-      opacity: calc((1 - var(--zen-background-opacity, 1)) * 0.88) !important;
     }
   }
 }
@@ -7543,11 +7527,6 @@ zen-folder .tab-reset-button {
   :root:not(#zia-none):not(#zia-none-2):not([zia-video]) #urlbar#urlbar:is([breakout-extend], [zen-floating-urlbar="true"]):not([zia-classic]) > .urlbar-background {
     background: color-mix(in srgb, var(--zia-urlbar-open-bg) 78%, transparent) !important;
     backdrop-filter: blur(24px) saturate(1.6) !important;
-  }
-
-  /* (over a video without the blur, as the compact sidebar, 16-compact-mode) */
-  :root:not(#zia-none):not(#zia-none-2)[zia-video] #urlbar#urlbar:is([breakout-extend], [zen-floating-urlbar="true"]):not([zia-classic]) > .urlbar-background {
-    background: color-mix(in srgb, var(--zia-urlbar-open-bg) 88%, transparent) !important;
   }
 
   /* ...but solid in the sidebar when it's in the toolbar's colour and that's dark over a
@@ -8640,10 +8619,6 @@ zen-folder .tab-reset-button {
   :root[zia-swipe-arrow]:not([zia-video]) #zia-swipe {
     background: color-mix(in srgb, var(--zia-tab-card-bg) 76%, transparent);
     backdrop-filter: blur(24px) saturate(1.6);
-  }
-
-  :root[zia-swipe-arrow][zia-video] #zia-swipe {
-    background: color-mix(in srgb, var(--zia-tab-card-bg) 88%, transparent);
   }
 
   /* (the page under it as a layer Firefox composites itself, so the blur sees it, while
@@ -10201,9 +10176,9 @@ zen-workspace-creation {
   box-shadow: var(--zia-glass-edge-lit), var(--zia-glass-pop-lift) !important;
 }
 
-/* (without the blur while the page shows a video, as the compact sidebar, 16-compact-mode) */
+/* (solid while the page shows a video, as the compact sidebar, 16-compact-mode) */
 :root[zia-video]:not(#zia-none) screenshots-buttons {
-  background-color: color-mix(in srgb, var(--zia-shot-card, var(--zia-tab-card-bg)) 88%, transparent) !important;
+  background-color: var(--zia-shot-card, var(--zia-tab-card-bg)) !important;
   backdrop-filter: none !important;
 }
 
