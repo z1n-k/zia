@@ -10,6 +10,13 @@ const PULL_FIRST_MOVES = 3;
 // Once the fingers lift, macOS goes on sending scroll events of next to nothing while the page
 // bounces back: only a move bigger than this keeps a pull going, or the bubble sat there
 const PULL_STILL_PX = 1;
+// A pull this far (the window's PULL_FULL, 28w-pull-refresh) lets go as the fingers lift: when
+// the movement drops under PULL_COAST of its peak for PULL_COAST_MOVES moves in a row, which is
+// macOS coasting on alone (Firefox doesn't say when the fingers lift; waiting for the coast to
+// end held the bubble a second or more)
+const PULL_FULL = 200;
+const PULL_COAST = 0.4;
+const PULL_COAST_MOVES = 3;
 
 export class ZiaChild extends JSWindowActorChild {
   #lastSent = 0;
@@ -88,14 +95,15 @@ export class ZiaChild extends JSWindowActorChild {
     const now = Date.now();
     const still = Math.abs(event.deltaY) <= PULL_STILL_PX;
     if (now - this.#lastWheel > PULL_GAP_MS && !still) {
-      this.#gesture = this.#pullAllowed(event, win) ? { pull: 0, moves: 0, shown: false } : null;
+      this.#gesture = this.#pullAllowed(event, win) ? { pull: 0, moves: 0, shown: false, peak: 0, calm: 0, released: false } : null;
     }
     // (a still event neither starts a pull nor keeps the last one's gap open)
     if (!still) {
       this.#lastWheel = now;
     }
     const gesture = this.#gesture;
-    if (!gesture) {
+    // (once let go, the rest of the gesture, the coast, is left alone)
+    if (!gesture || gesture.released) {
       return;
     }
     // (a sideways swipe is the back and forward gesture's, not a pull)
@@ -105,6 +113,16 @@ export class ZiaChild extends JSWindowActorChild {
     }
     gesture.pull = Math.max(0, gesture.pull - event.deltaY);
     gesture.moves++;
+    gesture.peak = Math.max(gesture.peak, Math.abs(event.deltaY));
+    if (gesture.pull >= PULL_FULL) {
+      gesture.calm = Math.abs(event.deltaY) < gesture.peak * PULL_COAST ? gesture.calm + 1 : 0;
+      if (gesture.calm >= PULL_COAST_MOVES && gesture.shown) {
+        gesture.released = true;
+        win.clearTimeout(this.#pullTimer);
+        this.#sendPull(gesture.pull, true);
+        return;
+      }
+    }
     if (Math.abs(event.deltaY) > PULL_STILL_PX || !gesture.shown) {
       win.clearTimeout(this.#pullTimer);
       this.#pullTimer = win.setTimeout(() => this.#endPull(false), PULL_GAP_MS);
@@ -151,7 +169,7 @@ export class ZiaChild extends JSWindowActorChild {
     const gesture = this.#gesture;
     this.#gesture = null;
     this.contentWindow?.clearTimeout(this.#pullTimer);
-    if (gesture?.shown) {
+    if (gesture?.shown && !gesture.released) {
       this.#sendPull(cancelled ? 0 : gesture.pull, true);
     }
   }
