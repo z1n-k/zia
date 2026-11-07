@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.121.1] — 2026-11-07
+
+### Fixed
+
+- Pull to refresh's bubble stopped part of the way down and sat there for a second or two,
+  and often didn't reload: once the fingers lift, macOS goes on sending scroll events of next
+  to nothing while the page bounces back, which kept the pull going, and Firefox passes on
+  less of a pull than expected once the page is bouncing. Only real movement keeps a pull
+  going now, so the bubble lets go as soon as you do, and it's full after a shorter pull.
+
 ## [2.121.0] — 2026-11-07
 
 ### Added
