@@ -4,6 +4,21 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.121.0] — 2026-11-07
+
+### Added
+
+- Pull to refresh: at the top of a page, keep scrolling up with the trackpad (or a Magic
+  Mouse) and a bubble with the refresh arrow comes down, its arrow turning as you pull; let
+  go once it's full and the page reloads, stop short and it goes. A scroll that only flicks
+  up to the top never reloads. "Pull to refresh" in Settings turns it off.
+
+### Fixed
+
+- Nothing a page reported reached the window (Firefox 159 dropped what Zia used to find it),
+  so the toolbar's site colour didn't follow a page as it scrolled until something else
+  changed. It follows again.
+
 ## [2.120.4] — 2026-11-07
 
 ### Fixed
