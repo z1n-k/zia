@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.120.2] — 2026-11-07
+
+### Fixed
+
+- The page picture's top corners still didn't follow the card's on screen: Zia rounds every
+  corner plainly unless a part says otherwise, and the picture didn't, so it came out round
+  inside the card's squircle. It's now painted with the card's own squircle, and the gap
+  between them is even all the way round.
+
 ## [2.120.1] — 2026-11-07
 
 ### Fixed
