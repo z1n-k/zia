@@ -7,6 +7,9 @@ const SETTLE_MS = 80;
 const PULL_GAP_MS = 140;
 // (the first few moves of a gesture say nothing, so a nudge never shows the bubble)
 const PULL_FIRST_MOVES = 3;
+// Once the fingers lift, macOS goes on sending scroll events of next to nothing while the page
+// bounces back: only a move bigger than this keeps a pull going, or the bubble sat there
+const PULL_STILL_PX = 1;
 
 export class ZiaChild extends JSWindowActorChild {
   #lastSent = 0;
@@ -83,10 +86,14 @@ export class ZiaChild extends JSWindowActorChild {
       return;
     }
     const now = Date.now();
-    if (now - this.#lastWheel > PULL_GAP_MS) {
+    const still = Math.abs(event.deltaY) <= PULL_STILL_PX;
+    if (now - this.#lastWheel > PULL_GAP_MS && !still) {
       this.#gesture = this.#pullAllowed(event, win) ? { pull: 0, moves: 0, shown: false } : null;
     }
-    this.#lastWheel = now;
+    // (a still event neither starts a pull nor keeps the last one's gap open)
+    if (!still) {
+      this.#lastWheel = now;
+    }
     const gesture = this.#gesture;
     if (!gesture) {
       return;
@@ -98,8 +105,10 @@ export class ZiaChild extends JSWindowActorChild {
     }
     gesture.pull = Math.max(0, gesture.pull - event.deltaY);
     gesture.moves++;
-    win.clearTimeout(this.#pullTimer);
-    this.#pullTimer = win.setTimeout(() => this.#endPull(false), PULL_GAP_MS);
+    if (Math.abs(event.deltaY) > PULL_STILL_PX || !gesture.shown) {
+      win.clearTimeout(this.#pullTimer);
+      this.#pullTimer = win.setTimeout(() => this.#endPull(false), PULL_GAP_MS);
+    }
     if (gesture.moves > PULL_FIRST_MOVES && (gesture.pull > 0 || gesture.shown) && !this.#pullFrame) {
       this.#pullFrame = win.requestAnimationFrame(() => {
         this.#pullFrame = 0;

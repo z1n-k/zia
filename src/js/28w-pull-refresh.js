@@ -4,7 +4,8 @@
   // page reloads, short of it and the bubble goes. As on a phone.
   // Used elsewhere: addPullRefresh.
   const PULL_PREF = "zia.pull-refresh";
-  const PULL_FULL = 150;
+  // (Firefox passes on little of a pull once the page is bouncing at its top: 150 was rarely reached)
+  const PULL_FULL = 90;
   const PULL_RELOAD_SHOW_MS = 500;
 
   function addPullRefresh() {
