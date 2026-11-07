@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.120.4] — 2026-11-07
+
+### Fixed
+
+- A tab's close (x) and unload (-) marks came out bigger and bolder on Zen 1.24.1b, which
+  draws them from two lines instead of icons. They're back to the icons' size in Zia's
+  buttons.
+
 ## [2.120.3] — 2026-11-07
 
 ### Fixed
