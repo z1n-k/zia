@@ -807,7 +807,7 @@
   }
 
   // Which tabs show a video on screen, in any of their frames, for Zia's see-through
-  // surfaces to drop their blur over them (actors/ZiaVideoChild.sys.mjs, watchVideoInView)
+  // surfaces to go solid over them (actors/ZiaVideoChild.sys.mjs, watchVideoInView)
   function registerVideoActor() {
     const media = { capture: true, mozSystemGroup: true };
     registerActor(
@@ -819,7 +819,7 @@
   }
 
   // The window marked zia-video while a tab in view (the open one, or a split's) shows a
-  // video: Zia's see-through surfaces drop their blur then (still see-through), as to blur
+  // video: Zia's see-through surfaces go solid then, as to blur
   // the page Zen draws it itself, and a video drawn that way comes out duller than macOS
   // shows it (#564, #569, #573). Never marked with "Blur over video" on, which keeps it.
   function watchVideoInView() {
@@ -1771,6 +1771,7 @@
     // keep the text where it was, it went past the window's left edge)
     if (urlbar) {
       setStyle(urlbar, "--zia-pop-reach-top", null);
+      setStyle(urlbar, "--zia-pop-trim-top", null);
     }
     if ((urlbar?.getAttribute("zen-floating-urlbar") === "true" && !urlbarAtBottom()) || single) {
       openOffset = 0;
@@ -1839,7 +1840,9 @@
 
   // Moved to keep the text where it was, the pop-up stays inside the window: with the page
   // edge to edge the bar sits against the window's edge, and the bigger pop-up round the
-  // same text went past it and was cut off
+  // same text went past it and was cut off. Past the top, only its background is cut back to
+  // the window's edge (--zia-pop-trim-top): moved down, the text came out a few pixels
+  // lower than in the closed bar
   function keepOpenedUrlbarInWindow(urlbar) {
     const box = urlbar.getBoundingClientRect();
     if (!box.width) {
@@ -1847,10 +1850,7 @@
     }
     const dy = box.top < 0 ? -box.top : 0;
     const dx = box.left < 0 ? -box.left : box.right > window.innerWidth ? window.innerWidth - box.right : 0;
-    if (dy > 0.5) {
-      openOffset += dy;
-      root.style.setProperty("--zia-urlbar-open-offset", `${openOffset}px`);
-    }
+    setStyle(urlbar, "--zia-pop-trim-top", dy > 0.5 ? `${dy}px` : null);
     if (Math.abs(dx) > 0.5) {
       openOffsetX += dx;
       root.style.setProperty("--zia-urlbar-open-offset-x", `${openOffsetX}px`);
@@ -22415,7 +22415,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     "zia.page.edge-to-edge": ["Edge-to-edge page", "No gap or shadow around the page."],
     "zia.ultra": ["Ultra effects", "A loading orb, the open essential's colour drifting, the music player glowing in its artwork's colours, a springy Library and a metal welcome logo."],
     "zia.features.tab-hover-cards": ["Hover cards", "For tabs and folders."],
-    "zia.cards.blur": ["See-through hover cards", "What's behind is blurred, except over a video, which keeps its colours."],
+    "zia.cards.blur": ["See-through hover cards", "What's behind is blurred. Solid while a video shows, which keeps its colours."],
     "zia.cards.page-picture": ["Page pictures", "A picture of the tab's page at the top of its hover card."],
     "zia.folders.tint-card": ["Folder-coloured cards", "A coloured folder's hover card takes its colour."],
     "zia.tabs.sound-bars": ["Sound bars", "On playing tabs. Off: Zen's speaker."],
@@ -22439,12 +22439,12 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     "zia.sidebar-panels.style": ["Zia-style panels", "Bookmarks, History and Synced Tabs."],
     "zia.sidebar-panels.beside": ["Panels beside the page", "Full height, as a second sidebar."],
     "zia.library.zen-look": ["Zen's Library look", "Off: Zia's."],
-    "zia.compact.sidebar-blur": ["See-through compact sidebar", "The page is blurred behind it, except over a video, which keeps its colours."],
+    "zia.compact.sidebar-blur": ["See-through compact sidebar", "The page is blurred behind it. Solid while a video shows, which keeps its colours."],
     "zia.compact.hide-toolbar": ["Hide toolbar with sidebar out", "In compact mode, while the sidebar is showing."],
     "zia.compact.toolbar-over-page": ["Toolbar over the page", "The hidden toolbar fades in over the page. Off: it opens in the gap above, as Zen's does."],
     "zia.urlbar.zia-look": ["Zia address bar", "Off: Zen's own."],
     "zia.urlbar.dia-style": ["Zia address pop-up", "Off: Zen's."],
-    "zia.urlbar.pop-up-blur": ["See-through pop-up", "The page is blurred behind it, except over a video, which keeps its colours."],
+    "zia.urlbar.pop-up-blur": ["See-through pop-up", "The page is blurred behind it. Solid while a video shows, which keeps its colours."],
     "zia.urlbar.site-color": ["Site-coloured pop-up", "Takes the toolbar's colour as it opens."],
     "zia.urlbar.title-only": ["Title only", "Shows the page's title in the domain's colour until clicked."],
     "zia.urlbar.full-url": ["Full address", "Rather than the domain and title."],

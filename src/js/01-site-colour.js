@@ -721,7 +721,7 @@
   }
 
   // Which tabs show a video on screen, in any of their frames, for Zia's see-through
-  // surfaces to drop their blur over them (actors/ZiaVideoChild.sys.mjs, watchVideoInView)
+  // surfaces to go solid over them (actors/ZiaVideoChild.sys.mjs, watchVideoInView)
   function registerVideoActor() {
     const media = { capture: true, mozSystemGroup: true };
     registerActor(
@@ -733,7 +733,7 @@
   }
 
   // The window marked zia-video while a tab in view (the open one, or a split's) shows a
-  // video: Zia's see-through surfaces drop their blur then (still see-through), as to blur
+  // video: Zia's see-through surfaces go solid then, as to blur
   // the page Zen draws it itself, and a video drawn that way comes out duller than macOS
   // shows it (#564, #569, #573). Never marked with "Blur over video" on, which keeps it.
   function watchVideoInView() {

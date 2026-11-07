@@ -524,6 +524,7 @@
     // keep the text where it was, it went past the window's left edge)
     if (urlbar) {
       setStyle(urlbar, "--zia-pop-reach-top", null);
+      setStyle(urlbar, "--zia-pop-trim-top", null);
     }
     if ((urlbar?.getAttribute("zen-floating-urlbar") === "true" && !urlbarAtBottom()) || single) {
       openOffset = 0;
@@ -592,7 +593,9 @@
 
   // Moved to keep the text where it was, the pop-up stays inside the window: with the page
   // edge to edge the bar sits against the window's edge, and the bigger pop-up round the
-  // same text went past it and was cut off
+  // same text went past it and was cut off. Past the top, only its background is cut back to
+  // the window's edge (--zia-pop-trim-top): moved down, the text came out a few pixels
+  // lower than in the closed bar
   function keepOpenedUrlbarInWindow(urlbar) {
     const box = urlbar.getBoundingClientRect();
     if (!box.width) {
@@ -600,10 +603,7 @@
     }
     const dy = box.top < 0 ? -box.top : 0;
     const dx = box.left < 0 ? -box.left : box.right > window.innerWidth ? window.innerWidth - box.right : 0;
-    if (dy > 0.5) {
-      openOffset += dy;
-      root.style.setProperty("--zia-urlbar-open-offset", `${openOffset}px`);
-    }
+    setStyle(urlbar, "--zia-pop-trim-top", dy > 0.5 ? `${dy}px` : null);
     if (Math.abs(dx) > 0.5) {
       openOffsetX += dx;
       root.style.setProperty("--zia-urlbar-open-offset-x", `${openOffsetX}px`);

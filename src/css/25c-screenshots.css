@@ -18,9 +18,9 @@
   box-shadow: var(--zia-glass-edge-lit), var(--zia-glass-pop-lift) !important;
 }
 
-/* (without the blur while the page shows a video, as the compact sidebar, 16-compact-mode) */
+/* (solid while the page shows a video, as the compact sidebar, 16-compact-mode) */
 :root[zia-video]:not(#zia-none) screenshots-buttons {
-  background-color: color-mix(in srgb, var(--zia-shot-card, var(--zia-tab-card-bg)) 88%, transparent) !important;
+  background-color: var(--zia-shot-card, var(--zia-tab-card-bg)) !important;
   backdrop-filter: none !important;
 }
 

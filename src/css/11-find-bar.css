@@ -181,14 +181,14 @@ findbar {
   corner-shape: var(--zia-squircle) !important;
 }
 
-/* without the blur while the page shows a video, as the compact sidebar (16-compact-mode) */
+/* solid while the page shows a video, as the compact sidebar (16-compact-mode) */
 :root[zia-video] findbar {
-  background: rgba(38, 38, 38, 0.88) !important;
+  background: rgb(38, 38, 38) !important;
   backdrop-filter: none;
 }
 
 :root[zia-video][zia-light] findbar {
-  background: rgba(248, 248, 250, 0.9) !important;
+  background: rgb(248, 248, 250) !important;
 }
 
 /* Light mode (a light space, or no space colour in light mode): a pale
