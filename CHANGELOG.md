@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.120.0] — 2026-11-07
+
+### Added
+
+- Tab hover cards show a picture of the tab's page at the top, as in Dia, the open tab's
+  too: set in from the card's edge by a hair, its corners curving with the card's. On by
+  default, "Page pictures" in Settings under Tabs and essentials turns it off. Before, the
+  picture only showed with Firefox's own hover previews turned on in about:config.
+
 ## [2.119.2] — 2026-11-06
 
 ### Fixed
