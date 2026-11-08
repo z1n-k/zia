@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.121.6] — 2026-11-08
+
+### Fixed
+
+- Scrolling Reddit's chat still reloaded the page: its messages scroll inside a web
+  component, which hides what's inside it, so pull to refresh saw nothing there that
+  scrolls. It now looks inside components too, closed ones included.
+- Zia's in-page helper is versioned again, so a newer one always loads after an update and a
+  restart, rather than one kept from before.
+
 ## [2.121.5] — 2026-11-08
 
 ### Fixed

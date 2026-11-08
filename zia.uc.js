@@ -839,7 +839,9 @@
   }
 
   function registerScrollActor() {
-    registerActor("Zia", { scroll: { capture: true, mozSystemGroup: true }, DOMContentLoaded: {}, pageshow: {} }, "scroll helper");
+    // (versioned, as the ZiaVideo one: the start-up cache otherwise kept an older helper after an
+    // update, even across a restart, so fixes to it didn't reach the page)
+    registerActor("Zia", { scroll: { capture: true, mozSystemGroup: true }, DOMContentLoaded: {}, pageshow: {} }, "scroll helper", { version: `?v=${Date.now()}` });
   }
 
   function registerActor(name, events, label, { version = "", allFrames = false } = {}) {
