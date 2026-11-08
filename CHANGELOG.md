@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.121.5] — 2026-11-08
+
+### Fixed
+
+- Scrolling a chat (or any box that scrolls on its own inside a page) could reload the page:
+  pull to refresh only stepped aside for a box scrolled away from its top, which missed chats
+  that scroll from the bottom, and lists at their top. A pull now only counts where nothing
+  under the pointer scrolls but the page itself.
+
 ## [2.121.4] — 2026-11-07
 
 ### Fixed
