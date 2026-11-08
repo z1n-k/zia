@@ -95,7 +95,10 @@ export class ZiaChild extends JSWindowActorChild {
     const now = Date.now();
     const still = Math.abs(event.deltaY) <= PULL_STILL_PX;
     if (now - this.#lastWheel > PULL_GAP_MS && !still) {
-      this.#gesture = this.#pullAllowed(event, win) ? { pull: 0, moves: 0, shown: false, peak: 0, calm: 0, released: false } : null;
+      this.#gesture =
+        this.#pullAllowed(event, win) && !this.#scrollsInside(event.target)
+          ? { pull: 0, moves: 0, shown: false, peak: 0, calm: 0, released: false }
+          : null;
     }
     // (a still event neither starts a pull nor keeps the last one's gap open)
     if (!still) {
@@ -139,7 +142,7 @@ export class ZiaChild extends JSWindowActorChild {
   }
 
   // a trackpad's (in pixels) or a Magic Mouse's scroll, not a pinch or a page that takes its
-  // own scrolling, with the page at its top and nothing inside it still able to scroll up
+  // own scrolling, with the page at its top
   #pullAllowed(event, win) {
     return (
       event.deltaMode === 0 &&
@@ -147,17 +150,21 @@ export class ZiaChild extends JSWindowActorChild {
       !event.metaKey &&
       !event.defaultPrevented &&
       win.scrollY <= 0 &&
-      !this.#scrollsInside(event.target) &&
       Services.prefs.getBoolPref("zia.pull-refresh", true)
     );
   }
 
+  // Anything under the pointer that scrolls on its own, a chat's messages or a side panel,
+  // whether or not it's at its top: only the page itself pulls to refresh. (Checking only for
+  // a box scrolled away from its top missed chats that scroll from the bottom, which read a
+  // scroll through their messages as a pull and reloaded the page.) Once, as a gesture starts.
   #scrollsInside(target) {
-    for (let el = target; el?.nodeType === 1; el = el.parentElement) {
-      if (el === el.ownerDocument.scrollingElement || el === el.ownerDocument.body) {
+    const doc = target?.ownerDocument;
+    for (let el = target; el?.nodeType === 1; el = el.parentElement || el.getRootNode()?.host) {
+      if (el === doc.scrollingElement || el === doc.body || el === doc.documentElement) {
         return false;
       }
-      if (el.scrollTop > 0) {
+      if (el.scrollHeight > el.clientHeight + 1 && /auto|scroll|overlay/.test(doc.defaultView.getComputedStyle(el).overflowY)) {
         return true;
       }
     }
