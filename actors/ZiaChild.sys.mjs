@@ -96,7 +96,7 @@ export class ZiaChild extends JSWindowActorChild {
     const still = Math.abs(event.deltaY) <= PULL_STILL_PX;
     if (now - this.#lastWheel > PULL_GAP_MS && !still) {
       this.#gesture =
-        this.#pullAllowed(event, win) && !this.#scrollsInside(event.target)
+        this.#pullAllowed(event, win) && !this.#scrollsInside(event)
           ? { pull: 0, moves: 0, shown: false, peak: 0, calm: 0, released: false }
           : null;
     }
@@ -157,14 +157,30 @@ export class ZiaChild extends JSWindowActorChild {
   // Anything under the pointer that scrolls on its own, a chat's messages or a side panel,
   // whether or not it's at its top: only the page itself pulls to refresh. (Checking only for
   // a box scrolled away from its top missed chats that scroll from the bottom, which read a
-  // scroll through their messages as a pull and reloaded the page.) Once, as a gesture starts.
-  #scrollsInside(target) {
-    const doc = target?.ownerDocument;
-    for (let el = target; el?.nodeType === 1; el = el.parentElement || el.getRootNode()?.host) {
+  // scroll through their messages as a pull and reloaded the page.) Into web components too,
+  // closed ones included: Reddit's chat scrolls inside one, and the event only names the
+  // component outside it. Once, as a gesture starts.
+  #scrollsInside(event) {
+    const doc = event.target?.ownerDocument;
+    const win = doc?.defaultView;
+    if (!win) {
+      return false;
+    }
+    // (down to what's really under the pointer, through each component's shadow)
+    let el = event.target;
+    for (let depth = 0; depth < 20 && el?.nodeType === 1; depth++) {
+      const shadow = el.openOrClosedShadowRoot;
+      const inner = shadow?.elementFromPoint?.(event.clientX, event.clientY);
+      if (!inner || inner === el) {
+        break;
+      }
+      el = inner;
+    }
+    for (; el?.nodeType === 1; el = el.parentElement || el.getRootNode()?.host) {
       if (el === doc.scrollingElement || el === doc.body || el === doc.documentElement) {
         return false;
       }
-      if (el.scrollHeight > el.clientHeight + 1 && /auto|scroll|overlay/.test(doc.defaultView.getComputedStyle(el).overflowY)) {
+      if (el.scrollHeight > el.clientHeight + 1 && /auto|scroll|overlay/.test(win.getComputedStyle(el).overflowY)) {
         return true;
       }
     }
