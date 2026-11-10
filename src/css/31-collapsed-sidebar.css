@@ -1,0 +1,44 @@
+/* Zen's Collapsed Sidebar layout (the icon column, the toolbar on top): the column is too
+   narrow for macOS's window buttons, which Zen pulls over it from the toolbar and drops the
+   column below; with Zia's page card starting beside the column, the card covered the
+   third button. They stay at the start of the card's toolbar instead, before back and
+   forward, as Safari's compact layout has them, and the column starts at the window's top.
+   Zen's sidebar button stays hidden, as Zia has it. */
+:root:not([zen-compact-mode="true"]):not([zen-sidebar-expanded="true"]):not([zen-single-toolbar="true"]):not(#zia-none) {
+  & #navigator-toolbox {
+    margin-top: 0 !important;
+  }
+
+  /* (its first row level with the card's top: less the space each tab keeps above its box) */
+  & #titlebar {
+    padding-top: calc(var(--zia-card-top-gap) - var(--tab-block-margin, 2px)) !important;
+  }
+
+}
+
+/* (compact mode too: there the toolbar keeps them as well, the column holding only tabs) */
+:root:not([zen-sidebar-expanded="true"]):not([zen-single-toolbar="true"]):not(#zia-none) {
+  & #nav-bar > .titlebar-buttonbox-container {
+    margin-left: 7px !important;
+    margin-right: 10px !important;
+  }
+
+  & #zen-toggle-compact-mode {
+    display: none !important;
+  }
+}
+
+/* In the icon column (plain or compact): the icon in the middle of its tab, with no room kept
+   at the row's end for a close button, which Zen puts at the tab's corner here; and no glow
+   round the open tab, which Firefox clips to the tab's own box there, a square with nowhere
+   to fade out in the gap beside the page */
+:root:not([zen-sidebar-expanded="true"]):not(#zia-none) {
+  & .tabbrowser-tab:not([zen-essential]) .tab-content {
+    padding-inline-end: 0 !important;
+  }
+
+  & .tabbrowser-tab > .tab-stack > .tab-background,
+  & tab-group[split-view-group] > .tab-group-container {
+    --zia-active-glow-color: transparent !important;
+  }
+}

@@ -4,6 +4,40 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.122.0] — 2026-11-10
+
+### Added
+
+- Links open in Glance (#592): a new setting under Tabs and essentials. Links to other sites
+  only, or every link, open in Glance; Shift+click opens a new tab instead. Links to a place
+  on the same page, downloads and mail links work as usual, and a link clicked inside a
+  Glance stays in it.
+- Zen's Collapsed Sidebar layout: the window buttons sit at the start of the toolbar, the icon
+  column starts level with the page with the space's icon back in it, icons are centred and
+  the open tab has no clipped glow. In compact mode the column floats below the toolbar.
+
+### Changed
+
+- Music player (#595): play/pause sits between previous and next when the card opens, and the
+  sound bars stay where they are, so pausing no longer means chasing the button.
+
+### Fixed
+
+- Dragging a tab or folder started late, worst on Windows with many tabs (#566, #567): the tab
+  list was rebuilt at the start and end of every drag. It now builds about as much as Zen
+  without Zia.
+- High CPU use (#593): the loading orb drew on every screen refresh while any tab loaded (now 30
+  times a second), the drift round an open essential did the same (now 15), page pictures were
+  saved on every tab switch (now once a minute per page), the address bar's title laid out the
+  whole window on tab switches and hovers, and the top-glow check measured every row.
+- Frame drops switching spaces and toggling compact mode (#594): the music card's colour was
+  worked out on every frame of a space change, once per colour stop of a gradient theme, and
+  compact mode measured the sidebar panel on every frame of its slide.
+- With "Toolbar in the site's colour" off, compact mode's toolbar stayed near-black (#337); it
+  now takes the theme's colour there too.
+- Customize Collapsed Sidebar's top and bottom margins in compact mode are kept (#544).
+- Undo close (Cmd/Ctrl+Z) on Zen 1.24, which removed the function it called first.
+
 ## [2.121.6] — 2026-11-08
 
 ### Fixed

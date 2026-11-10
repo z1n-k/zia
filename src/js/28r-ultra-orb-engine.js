@@ -1033,6 +1033,7 @@
 
   function orbTick(now) {
     orbLoop = 0;
+    orbLast = now;
     if (document.hidden || orbStill()) {
       return;
     }
@@ -1053,8 +1054,20 @@
       orbDraw(orb, now, frames, copies);
     }
     if (drawing) {
-      orbLoop = requestAnimationFrame(orbTick);
+      orbNext();
     }
+  }
+
+  // the next frame a 30th of a second on, from a timer that then waits for the screen's
+  // refresh: a frame asked for on every refresh kept the whole window refreshing at the
+  // screen's rate while any tab loaded (a 120 Hz Mac's parent process about 15% of a core
+  // busy for three loading tabs, about 5% at 30 frames a second; #593)
+  const ORB_FRAME_MS = 1000 / 30;
+  let orbLast = 0;
+  function orbNext() {
+    orbLoop = setTimeout(() => {
+      orbLoop = requestAnimationFrame(orbTick);
+    }, Math.max(0, ORB_FRAME_MS - (performance.now() - orbLast) - 4));
   }
 
   // one frame onto the orb's canvas: the package's shared clock (seconds

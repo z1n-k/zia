@@ -357,11 +357,18 @@
     position: relative;
   }
 
+  /* (shown and hidden, never taken out: brought back with display, the title made Firefox lay
+     the whole window out again, sidebar and all, at every tab switch and every pointing at
+     the bar, as the bar marks itself invalid for a moment as a tab is switched to; #593) */
   #zia-url-title,
   #zia-url-plain {
     position: absolute;
     inset: 0;
-    display: none;
+    display: flex;
+    visibility: hidden;
+    /* (its size is the bar's, never its text's: a new title at each switch laid the
+       whole window out again, sidebar and all, without this) */
+    contain: strict;
     align-items: center;
     white-space: nowrap;
     overflow: hidden;
@@ -384,11 +391,11 @@
   }
 
   #urlbar[zia-has-title="true"]:not(:hover):not([focused]):not([breakout-extend]) #zia-url-title {
-    display: flex;
+    visibility: visible;
   }
 
   #urlbar[zia-has-title="true"]:hover:not([focused]):not([breakout-extend]) #zia-url-plain {
-    display: flex;
+    visibility: visible;
   }
 
   #urlbar[zia-has-title="true"]:not([focused]):not([breakout-extend]) .urlbar-input {
@@ -406,11 +413,11 @@
 
     #urlbar[zia-has-title="true"]:hover:not([focused]):not([breakout-extend]) {
       & #zia-url-title {
-        display: flex;
+        visibility: visible;
       }
 
       & #zia-url-plain {
-        display: none;
+        visibility: hidden;
       }
     }
   }

@@ -452,10 +452,19 @@
       }
     };
     let clamping = false;
-    const cap = () => {
+    // (only when the limit or the panel's own width has changed: Zen restyles the tab
+    // sidebar on every frame as compact mode slides it, and reading its limit and
+    // measuring the panel then laid the window out in every frame; #594)
+    let capped = "";
+    const cap = (force) => {
       if (clamping) {
         return;
       }
+      const key = `${gNavToolbox?.style.maxWidth}|${box.getAttribute("width")}|${box.style.width}|${box.style.maxWidth}`;
+      if (key === capped && force !== true) {
+        return;
+      }
+      capped = key;
       const beside = Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true);
       const max = maxWidth();
       if (!beside || !(max > 0)) {
@@ -470,11 +479,12 @@
         box.setAttribute("width", String(max));
         clamping = false;
       }
+      capped = `${gNavToolbox?.style.maxWidth}|${box.getAttribute("width")}|${box.style.width}|${box.style.maxWidth}`;
     };
-    cap();
+    cap(true);
     new MutationObserver(cap).observe(box, { attributes: true, attributeFilter: ["width", "style"] });
     new MutationObserver(cap).observe(gNavToolbox, { attributes: true, attributeFilter: ["style"] });
-    watchPrefs([MAX_PREF, SIDEBAR_BESIDE_PREF], cap);
+    watchPrefs([MAX_PREF, SIDEBAR_BESIDE_PREF], () => cap(true));
     // moving it to the other side
     new MutationObserver(place).observe(box, { attributes: true, attributeFilter: ["sidebar-positionend"] });
 

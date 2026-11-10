@@ -153,17 +153,14 @@
 
   function watchEdgeGlow() {
     let pending = 0;
-    const update = () => {
-      pending = 0;
-      if (!gBrowser?.selectedTab) {
-        return;
-      }
-      for (const el of document.querySelectorAll("[zia-no-glow]")) {
-        el.removeAttribute("zia-no-glow");
-      }
-      const tab = gBrowser.selectedTab;
-      if (tab.hasAttribute("zen-essential")) {
-        return;
+    // the row that goes without the glow, if any: the open tab (or its split) when nothing
+    // sits above it. It stops at the first row that settles it, and only touches the mark
+    // when it moves (it ran over every row, and took the mark off and on again, at every
+    // tab switch and once a second; #593)
+    const unglowed = () => {
+      const tab = gBrowser?.selectedTab;
+      if (!tab || tab.hasAttribute("zen-essential")) {
+        return null;
       }
       // (a split glows as a whole: at the top, it's the split that goes
       // without, whichever of its tabs is open)
@@ -174,27 +171,22 @@
         window.gZenWorkspaces?.activeWorkspaceStrip,
       ].filter(Boolean);
       if (sections.length) {
-        const rows = [];
         for (const section of sections) {
           for (const row of section.querySelectorAll(
             ".tabbrowser-tab:not([zen-essential], [zen-empty-tab], [hidden]), .tab-group-label-container"
           )) {
             const box = row.getBoundingClientRect();
             if (box.height > 4 && row.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) !== false) {
-              rows.push(row);
+              return row === tab || (split && split.contains(row)) ? glowing : null;
             }
           }
         }
-        if (rows[0] === tab || (split && split.contains(rows[0]))) {
-          glowing.setAttribute("zia-no-glow", "true");
-        }
-        return;
+        return null;
       }
       const mine = glowing.getBoundingClientRect();
       if (!mine.height) {
-        return;
+        return null;
       }
-      let above = false;
       for (const row of document.querySelectorAll(
         "#tabbrowser-tabs .tabbrowser-tab:not([zen-essential], [zen-empty-tab], [hidden]), #tabbrowser-tabs .tab-group-label-container"
       )) {
@@ -208,18 +200,34 @@
         if (row.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) === false) {
           continue;
         }
-        above ||= box.bottom <= mine.top + 1;
+        if (box.bottom <= mine.top + 1) {
+          return null;
+        }
       }
-      if (!above) {
-        glowing.setAttribute("zia-no-glow", "true");
+      return glowing;
+    };
+    const update = () => {
+      pending = 0;
+      const cut = unglowed();
+      for (const el of document.querySelectorAll("[zia-no-glow]")) {
+        if (el !== cut) {
+          el.removeAttribute("zia-no-glow");
+        }
+      }
+      if (cut && !cut.hasAttribute("zia-no-glow")) {
+        cut.setAttribute("zia-no-glow", "true");
       }
     };
+    // (at once and in the next frame, once however many tab events a frame brings: changing
+    // space hides and shows every tab of both, and each laid the list out again; #594)
+    let late = 0;
     const soon = () => {
-      update();
       if (!pending) {
+        update();
         pending = requestAnimationFrame(update);
       }
-      setTimeout(update, 250);
+      clearTimeout(late);
+      late = setTimeout(update, 250);
     };
     for (const type of [
       "TabSelect", "TabOpen", "TabClose", "TabMove", "TabPinned", "TabUnpinned", "TabGrouped",
@@ -282,6 +290,7 @@
     ifOn("tab-numbers", "watchTabNumbers", watchTabNumbers);
     safely("watchWelcome", watchWelcome);
     safely("watchGlanceThumbs", watchGlanceThumbs);
+    safely("watchGlanceLinks", watchGlanceLinks);
     safely("watchButtonTooltips", watchButtonTooltips);
     safely("watchTipCards", watchTipCards);
     safely("watchSidebarPanels", watchSidebarPanels);

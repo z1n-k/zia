@@ -394,9 +394,10 @@
    round. Drawn as the toolbar, it showed as a dark strip across the top.
    The same with "Toolbar in the site's colour" off: the toolbar in Zen's
    own colour, the window's (the sidebar's), rather than Zia's near-black
-   (zia-theme-toolbar, zia.uc.js; not in compact mode, where the toolbar
-   floats over the page) */
-:root:is([zen-single-toolbar="true"], [zia-theme-toolbar]:not([zen-compact-mode="true"])):not(#zia-none):not([inDOMFullscreen="true"]):not([popup-window]) {
+   (zia-theme-toolbar, zia.uc.js); in compact mode too, where it had stayed
+   near-black (#337; floating over the page, it's on Zen's own toolbar colour:
+   16-compact-mode) */
+:root:is([zen-single-toolbar="true"], [zia-theme-toolbar]):not(#zia-none):not([inDOMFullscreen="true"]):not([popup-window]) {
   & #zen-appcontent-wrapper {
     box-shadow: none !important;
   }
@@ -906,11 +907,18 @@
     position: relative;
   }
 
+  /* (shown and hidden, never taken out: brought back with display, the title made Firefox lay
+     the whole window out again, sidebar and all, at every tab switch and every pointing at
+     the bar, as the bar marks itself invalid for a moment as a tab is switched to; #593) */
   #zia-url-title,
   #zia-url-plain {
     position: absolute;
     inset: 0;
-    display: none;
+    display: flex;
+    visibility: hidden;
+    /* (its size is the bar's, never its text's: a new title at each switch laid the
+       whole window out again, sidebar and all, without this) */
+    contain: strict;
     align-items: center;
     white-space: nowrap;
     overflow: hidden;
@@ -933,11 +941,11 @@
   }
 
   #urlbar[zia-has-title="true"]:not(:hover):not([focused]):not([breakout-extend]) #zia-url-title {
-    display: flex;
+    visibility: visible;
   }
 
   #urlbar[zia-has-title="true"]:hover:not([focused]):not([breakout-extend]) #zia-url-plain {
-    display: flex;
+    visibility: visible;
   }
 
   #urlbar[zia-has-title="true"]:not([focused]):not([breakout-extend]) .urlbar-input {
@@ -955,11 +963,11 @@
 
     #urlbar[zia-has-title="true"]:hover:not([focused]):not([breakout-extend]) {
       & #zia-url-title {
-        display: flex;
+        visibility: visible;
       }
 
       & #zia-url-plain {
-        display: none;
+        visibility: hidden;
       }
     }
   }
@@ -4813,7 +4821,7 @@ zen-workspace arrowscrollbox::part(scrollbox) {
     align-content: center;
     display: grid !important;
 
-    grid-template-columns: var(--zia-media-ring-size) minmax(0, 1fr) auto auto auto auto;
+    grid-template-columns: var(--zia-media-ring-size) minmax(0, 1fr) auto auto auto auto auto;
     grid-template-rows: auto auto auto;
     column-gap: 0;
     row-gap: 0;
@@ -4926,7 +4934,7 @@ zen-workspace arrowscrollbox::part(scrollbox) {
   }
 
   .zen-media-info-vbox {
-    grid-column: 2 / 6;
+    grid-column: 2 / 7;
     grid-row: 1;
     min-width: 0;
     padding-inline: 8px 4px;
@@ -4956,8 +4964,6 @@ zen-workspace arrowscrollbox::part(scrollbox) {
     font-weight: var(--zia-tab-weight) !important;
     font-size: 0.95em !important;
   }
-
-  .zen-media-playpause-button { grid-column: 6; grid-row: 1; }
 
   .zen-media-progress-hbox {
     grid-column: 1 / -1;
@@ -5054,14 +5060,17 @@ zen-workspace arrowscrollbox::part(scrollbox) {
     }
   }
 
-  .zen-media-mute-button { grid-column: 1; grid-row: 3; justify-self: start !important; }
+  /* the sound bars stay at the title's end; play/pause sits between previous and next, as in
+     Zen, so opening the card never moves it from under the pointer */
+  .zen-media-mute-button { grid-column: 7; grid-row: 1; }
   .zen-media-previoustrack-button { grid-column: 3; grid-row: 3; }
-  .zen-media-nexttrack-button { grid-column: 4; grid-row: 3; }
+  .zen-media-playpause-button { grid-column: 4; grid-row: 3; }
+  .zen-media-nexttrack-button { grid-column: 5; grid-row: 3; }
   /* Zen hides it unless the page has exactly one video; it picks the main video anyway */
-  .zen-media-pip-button { grid-column: 5; grid-row: 3; display: flex !important; }
-  .zen-media-close-button { grid-column: 6; grid-row: 3; }
+  .zen-media-pip-button { grid-column: 6; grid-row: 3; display: flex !important; }
+  .zen-media-close-button { grid-column: 7; grid-row: 3; }
 
-  :is(.zen-media-mute-button, .zen-media-previoustrack-button, .zen-media-nexttrack-button, .zen-media-pip-button, .zen-media-close-button) {
+  :is(.zen-media-playpause-button, .zen-media-previoustrack-button, .zen-media-nexttrack-button, .zen-media-pip-button, .zen-media-close-button) {
     max-height: 0 !important;
     opacity: 0 !important;
     overflow: hidden !important;
@@ -5158,7 +5167,7 @@ zen-workspace arrowscrollbox::part(scrollbox) {
       }
     }
 
-    :is(.zen-media-mute-button, .zen-media-previoustrack-button, .zen-media-nexttrack-button, .zen-media-pip-button, .zen-media-close-button) {
+    :is(.zen-media-playpause-button, .zen-media-previoustrack-button, .zen-media-nexttrack-button, .zen-media-pip-button, .zen-media-close-button) {
       max-height: 30px !important;
       opacity: 1 !important;
       translate: 0 0;
@@ -5235,28 +5244,6 @@ zen-workspace arrowscrollbox::part(scrollbox) {
   .zen-media-card[media-sharing] .media-device-buttons {
     display: flex !important;
   }
-}
-
-#zen-media-controls-toolbar:not(:hover) {
-  & .zen-media-mute-button {
-    grid-column: 6;
-    grid-row: 1;
-    justify-self: center !important;
-    max-height: 30px !important;
-    opacity: 1 !important;
-    translate: 0 0 !important;
-    margin-top: 0 !important;
-    pointer-events: auto !important;
-  }
-
-  & .zen-media-playpause-button {
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
-}
-
-#zen-media-controls-toolbar .zen-media-playpause-button {
-  transition: opacity 0.2s var(--zia-media-ease) !important;
 }
 
 /* not while the front card fades away: the one behind showed almost empty until it took its place */
@@ -6792,6 +6779,29 @@ findbar {
   top: calc(max(var(--zia-card-gap), 6px) / 2 + var(--zen-sidebar-compact-top-offset, 0px)) !important;
 }
 
+/* The Customize Collapsed Sidebar mod (#544): its gaps above and below the collapsed sidebar
+   in compact mode are kept in place of Zia's (the mod sets them only while it's on and the
+   sidebar's collapsed); Zia's own placing had the sidebar start at the window's top. */
+:root[zen-compact-mode="true"]:not([zen-sidebar-expanded="true"]) #navigator-toolbox:not([animate="true"]) {
+  top: var(--custom-sidebar-compact-top-margin, calc(max(var(--zia-card-gap), 6px) / 2)) !important;
+  bottom: var(--custom-sidebar-compact-bottom-margin, calc(max(var(--zia-card-gap), 6px) / 2)) !important;
+}
+
+:root[zen-compact-mode="true"][zen-single-toolbar="true"]:not([zen-sidebar-expanded="true"]) #navigator-toolbox:not([animate="true"]) {
+  top: var(--custom-sidebar-compact-top-margin, calc(max(var(--zia-card-gap), 6px) / 2 + var(--zen-sidebar-compact-top-offset, 0px))) !important;
+}
+
+/* Zen's collapsed sidebar, the toolbar staying up while it's out: the toolbar keeps the
+   window buttons there (31-collapsed-sidebar), so the icon column floats below it, as Zen's
+   does, rather than over them */
+@media not -moz-pref("zen.view.compact.hide-toolbar") {
+  @media not -moz-pref("zia.compact.hide-toolbar") {
+    :root[zen-compact-mode="true"]:not([zen-single-toolbar="true"]):not([zen-sidebar-expanded="true"]) #navigator-toolbox:not([animate="true"]) {
+      top: var(--custom-sidebar-compact-top-margin, calc(var(--zia-card-top-gap) + var(--zen-toolbar-height) + max(var(--zia-card-gap), 6px) / 2)) !important;
+    }
+  }
+}
+
 :root[zen-compact-mode="true"]:not([zen-right-side="true"]) #navigator-toolbox:not([animate="true"]) {
   left: calc(max(var(--zia-card-gap), 6px) / 2 - var(--zen-compact-float, 6px)) !important;
 }
@@ -6974,6 +6984,14 @@ findbar {
          the page's colour alone, as in the other layouts */
       & #zen-appcontent-navbar-wrapper .zen-toolbar-background {
         display: none !important;
+      }
+
+      /* (with "Toolbar in the site's colour" off, it's on Zen's own toolbar colour, the
+         space's, lined up with the window's as Zen's is: clear over the page, it couldn't be
+         read; #337) */
+      &[zia-theme-toolbar] #zen-appcontent-navbar-wrapper:is([zen-has-hover], [has-popup-menu], [zen-compact-mode-active]) {
+        background: var(--zen-main-browser-background-toolbar) !important;
+        background-attachment: fixed !important;
       }
 
       /* (hiding, it keeps its height till its contents have faded, as they fade in: it shut
@@ -11298,5 +11316,49 @@ zen-workspace-creation {
 @keyframes zia-script-notice {
   from {
     opacity: 0;
+  }
+}
+/* Zen's Collapsed Sidebar layout (the icon column, the toolbar on top): the column is too
+   narrow for macOS's window buttons, which Zen pulls over it from the toolbar and drops the
+   column below; with Zia's page card starting beside the column, the card covered the
+   third button. They stay at the start of the card's toolbar instead, before back and
+   forward, as Safari's compact layout has them, and the column starts at the window's top.
+   Zen's sidebar button stays hidden, as Zia has it. */
+:root:not([zen-compact-mode="true"]):not([zen-sidebar-expanded="true"]):not([zen-single-toolbar="true"]):not(#zia-none) {
+  & #navigator-toolbox {
+    margin-top: 0 !important;
+  }
+
+  /* (its first row level with the card's top: less the space each tab keeps above its box) */
+  & #titlebar {
+    padding-top: calc(var(--zia-card-top-gap) - var(--tab-block-margin, 2px)) !important;
+  }
+
+}
+
+/* (compact mode too: there the toolbar keeps them as well, the column holding only tabs) */
+:root:not([zen-sidebar-expanded="true"]):not([zen-single-toolbar="true"]):not(#zia-none) {
+  & #nav-bar > .titlebar-buttonbox-container {
+    margin-left: 7px !important;
+    margin-right: 10px !important;
+  }
+
+  & #zen-toggle-compact-mode {
+    display: none !important;
+  }
+}
+
+/* In the icon column (plain or compact): the icon in the middle of its tab, with no room kept
+   at the row's end for a close button, which Zen puts at the tab's corner here; and no glow
+   round the open tab, which Firefox clips to the tab's own box there, a square with nowhere
+   to fade out in the gap beside the page */
+:root:not([zen-sidebar-expanded="true"]):not(#zia-none) {
+  & .tabbrowser-tab:not([zen-essential]) .tab-content {
+    padding-inline-end: 0 !important;
+  }
+
+  & .tabbrowser-tab > .tab-stack > .tab-background,
+  & tab-group[split-view-group] > .tab-group-container {
+    --zia-active-glow-color: transparent !important;
   }
 }

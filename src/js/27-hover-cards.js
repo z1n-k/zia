@@ -227,7 +227,9 @@
       return;
     }
     const url = tabAddress(tab);
-    if (!keepsPictureOf(url)) {
+    // (at most once a minute a page, as for a card: switching back and forth between two
+    // tabs took, encoded and wrote both pictures again on every switch; #593)
+    if (!keepsPictureOf(url) || Date.now() - (pictureSaved.get(url) || 0) <= PICTURE_RESAVE_MS) {
       return;
     }
     requestIdleCallback(

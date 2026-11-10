@@ -43,6 +43,29 @@
   top: calc(max(var(--zia-card-gap), 6px) / 2 + var(--zen-sidebar-compact-top-offset, 0px)) !important;
 }
 
+/* The Customize Collapsed Sidebar mod (#544): its gaps above and below the collapsed sidebar
+   in compact mode are kept in place of Zia's (the mod sets them only while it's on and the
+   sidebar's collapsed); Zia's own placing had the sidebar start at the window's top. */
+:root[zen-compact-mode="true"]:not([zen-sidebar-expanded="true"]) #navigator-toolbox:not([animate="true"]) {
+  top: var(--custom-sidebar-compact-top-margin, calc(max(var(--zia-card-gap), 6px) / 2)) !important;
+  bottom: var(--custom-sidebar-compact-bottom-margin, calc(max(var(--zia-card-gap), 6px) / 2)) !important;
+}
+
+:root[zen-compact-mode="true"][zen-single-toolbar="true"]:not([zen-sidebar-expanded="true"]) #navigator-toolbox:not([animate="true"]) {
+  top: var(--custom-sidebar-compact-top-margin, calc(max(var(--zia-card-gap), 6px) / 2 + var(--zen-sidebar-compact-top-offset, 0px))) !important;
+}
+
+/* Zen's collapsed sidebar, the toolbar staying up while it's out: the toolbar keeps the
+   window buttons there (31-collapsed-sidebar), so the icon column floats below it, as Zen's
+   does, rather than over them */
+@media not -moz-pref("zen.view.compact.hide-toolbar") {
+  @media not -moz-pref("zia.compact.hide-toolbar") {
+    :root[zen-compact-mode="true"]:not([zen-single-toolbar="true"]):not([zen-sidebar-expanded="true"]) #navigator-toolbox:not([animate="true"]) {
+      top: var(--custom-sidebar-compact-top-margin, calc(var(--zia-card-top-gap) + var(--zen-toolbar-height) + max(var(--zia-card-gap), 6px) / 2)) !important;
+    }
+  }
+}
+
 :root[zen-compact-mode="true"]:not([zen-right-side="true"]) #navigator-toolbox:not([animate="true"]) {
   left: calc(max(var(--zia-card-gap), 6px) / 2 - var(--zen-compact-float, 6px)) !important;
 }
@@ -225,6 +248,14 @@
          the page's colour alone, as in the other layouts */
       & #zen-appcontent-navbar-wrapper .zen-toolbar-background {
         display: none !important;
+      }
+
+      /* (with "Toolbar in the site's colour" off, it's on Zen's own toolbar colour, the
+         space's, lined up with the window's as Zen's is: clear over the page, it couldn't be
+         read; #337) */
+      &[zia-theme-toolbar] #zen-appcontent-navbar-wrapper:is([zen-has-hover], [has-popup-menu], [zen-compact-mode-active]) {
+        background: var(--zen-main-browser-background-toolbar) !important;
+        background-attachment: fixed !important;
       }
 
       /* (hiding, it keeps its height till its contents have faded, as they fade in: it shut

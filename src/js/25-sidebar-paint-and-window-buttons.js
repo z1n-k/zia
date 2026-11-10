@@ -2,6 +2,13 @@
     if (!text) {
       return null;
     }
+    // (a plain colour read as it is, without a style pass: a space's gradient has dozens of
+    // stops, and restyling the probe for each took tens of milliseconds a reading; #594)
+    // (light-dark() and currentcolor depend on the element, so those still go through it)
+    const plain = /light-dark|currentcolor/i.test(text) ? null : InspectorUtils.colorToRGBA(text.trim());
+    if (plain) {
+      return [Math.round(plain.r), Math.round(plain.g), Math.round(plain.b), Math.round(plain.a * 255)];
+    }
     let probe = document.getElementById("zia-color-probe");
     if (!probe) {
       probe = document.createElementNS(XHTML_NS, "div");
@@ -77,15 +84,22 @@
 
   function watchSidebarPaint() {
     syncSidebarPaint();
-    const watcher = new MutationObserver(syncSidebarPaint);
+    // (once the space's colour has settled: Zen restyles these layers on every frame as it
+    // blends one space's colours into the next, and reading each colour stop then
+    // recalculated styles several times a frame, more for a gradient with more stops; #594)
+    let settling = 0;
+    const settled = new MutationObserver(() => {
+      clearTimeout(settling);
+      settling = setTimeout(syncSidebarPaint, 120);
+    });
     for (const id of ["zen-browser-background", "zen-toolbar-background"]) {
       const layer = document.getElementById(id);
       if (layer) {
-        watcher.observe(layer, { attributes: true, attributeFilter: ["style"] });
+        settled.observe(layer, { attributes: true, attributeFilter: ["style"] });
       }
     }
-    // (a light space has its own, white music card)
-    watcher.observe(root, { attributes: true, attributeFilter: ["zen-compact-mode", "zen-should-be-dark-mode", "zia-light"] });
+    // (a light space has its own, white music card; compact mode too once it has slid)
+    settled.observe(root, { attributes: true, attributeFilter: ["zen-compact-mode", "zen-should-be-dark-mode", "zia-light"] });
   }
 
   function keepWindowButtonsInSidebar() {

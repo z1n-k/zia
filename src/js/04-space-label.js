@@ -8,7 +8,10 @@
   // where Zen puts it ("list"); or "none", hidden
   const SPACE_LABEL_PREF = "zia.sidebar.space-label";
   const spaceLabelPlace = () => Services.prefs.getStringPref(SPACE_LABEL_PREF, "top");
-  const spaceNameInList = () => spaceLabelPlace() === "list";
+  // (in Zen's collapsed sidebar the icon column has no room beside the window buttons: the
+  // space's icon goes back above the tabs, where Zen puts it)
+  const spaceNameInList = () =>
+    spaceLabelPlace() === "list" || document.documentElement.getAttribute("zen-sidebar-expanded") !== "true";
 
   // (until 2.116.0, two checkboxes: the name above the tabs, and the name hidden with the
   // icon kept. Carried over once, unless a place has been chosen since)
@@ -55,6 +58,7 @@
 
     const onSpaceSwitch = () => setTimeout(placeWorkspaceIndicator, 0);
     watchPrefs(SPACE_LABEL_PREF, onSpaceSwitch);
+    new MutationObserver(onSpaceSwitch).observe(document.documentElement, { attributes: true, attributeFilter: ["zen-sidebar-expanded"] });
     watchPrefs("zen.workspaces.active", onSpaceSwitch);
     gBrowser.tabContainer.addEventListener("TabSelect", onSpaceSwitch);
     placeWorkspaceIndicator();

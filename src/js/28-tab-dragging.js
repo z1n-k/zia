@@ -3405,7 +3405,11 @@
         el = el.parentNode || el.host;
       }
       const props = ["overflow", "overflow-x", "overflow-y", "contain"];
-      for (const each of lifted.filter(clipping)) {
+      // (never a scroll box, such as the tab list's own: let out, Firefox builds it and every
+      // row in it again, and once more as it's put back, about 1,000 rows' worth at the start
+      // of every drag and as many at the drop, the drag starting late on Windows; #566)
+      const scrollBox = (style) => ["hidden", "auto", "scroll"].includes(style.overflowY) || ["hidden", "auto", "scroll"].includes(style.overflowX);
+      for (const each of lifted.filter(clipping).filter((el) => !scrollBox(getComputedStyle(el)))) {
         remember(each, props);
         for (const prop of props) {
           each.style.setProperty(prop, prop === "contain" ? "none" : "visible", "important");

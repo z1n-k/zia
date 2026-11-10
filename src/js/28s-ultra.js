@@ -286,8 +286,31 @@
     [[{ scale: 1.1, easing: "ease-in-out" }, { scale: 1.35 }], { duration: 17000, direction: "alternate" }],
   ];
 
+  // (moved on a timer DRIFT_FPS times a second rather than at every screen refresh: Firefox
+  // can't run it off the main thread, so each frame restyled and painted the window again, a
+  // 120 Hz Mac about a sixth of a core busy while an essential was open; this slow, blurred,
+  // it looks the same; #593)
+  const DRIFT_FPS = 15;
+
   function watchUltraEssentialDrift() {
     const drifting = new Map();
+    let ticker = 0;
+    const tick = () => {
+      if (!drifting.size) {
+        clearInterval(ticker);
+        ticker = 0;
+        return;
+      }
+      if (document.hidden) {
+        return;
+      }
+      const now = document.timeline.currentTime;
+      for (const animations of drifting.values()) {
+        for (const animation of animations) {
+          animation.currentTime = now;
+        }
+      }
+    };
     const still = matchMedia("(prefers-reduced-motion: reduce)");
     const wanted = () => ultraOn() && Services.prefs.getBoolPref("zen.theme.essentials-favicon-bg", false) && !still.matches;
     const stop = () => {
@@ -315,11 +338,14 @@
         background,
         ESSENTIAL_DRIFT.map(([keyframes, timing]) => {
           const animation = background.animate(keyframes, { ...timing, iterations: Infinity, pseudoElement: "::after" });
-          // (the page's clock: wherever it's started, it's where the others are)
-          animation.startTime = 0;
+          // (held, and set to the page's clock at each tick: wherever it's started, it's where
+          // the others are)
+          animation.pause();
+          animation.currentTime = document.timeline.currentTime;
           return animation;
         })
       );
+      ticker ||= setInterval(tick, 1000 / DRIFT_FPS);
     };
     const sync = () => {
       stop();

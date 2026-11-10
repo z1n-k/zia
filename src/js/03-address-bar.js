@@ -501,7 +501,8 @@
     }
     const title = document.getElementById("zia-url-title");
     const input = urlbar.querySelector(".urlbar-input");
-    const titleRect = title?.getBoundingClientRect();
+    // (only while it shows: hidden, it's still laid out, at the bar's width)
+    const titleRect = title?.checkVisibility({ visibilityProperty: true }) ? title.getBoundingClientRect() : null;
     const rect = titleRect?.width ? titleRect : input?.getBoundingClientRect();
     if (rect?.width) {
       closedTextRect = { left: rect.left, centerY: rect.top + rect.height / 2, at: Date.now() };
