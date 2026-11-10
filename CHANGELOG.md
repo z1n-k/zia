@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.122.2] — 2026-11-10
+
+### Changed
+
+- Zia is out of beta: it now works with all three of Zen's layouts, Collapsed Sidebar
+  included.
+- The README lists every setting as Zia Settings shows it (Links open in Glance, Pull to
+  refresh, Page pictures, Blur over video, Space name and icon, No emoji in the player), and
+  no longer the removed Sidebar see-through.
+
 ## [2.122.1] — 2026-11-10
 
 ### Fixed
