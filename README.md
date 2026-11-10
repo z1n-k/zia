@@ -26,7 +26,7 @@ A [Sine](https://github.com/CosmoCreeper/Sine) mod that reshapes Zen Browser fro
 2. In Zen, open **Settings → Sine Mods**, and in Sine's settings turn on **installing JS from unofficial sources**.
 3. Paste `z1n-k/zia` into the box under the marketplace, then restart Zen.
 
-Use Zen's **Sidebar and Top Toolbar** or **Only Sidebar** layout. If Zia doesn't load, open `about:support` and click **Clear startup cache**.
+Zia works with all three of Zen's layouts: **Sidebar and Top Toolbar**, **Only Sidebar** and **Collapsed Sidebar**. If Zia doesn't load, open `about:support` and click **Clear startup cache**.
 
 > [!TIP]
 > Space and folder icons carry much of the look. [Watch how to set them up](https://vimeo.com/1228144298).
@@ -85,7 +85,7 @@ Essentials become tiles, a space's colour carries through, and folders get colou
 <summary>Tabs and spaces</summary>
 
 - Drag a tab and the rows slide aside for it; over the essentials it becomes a tile.
-- Hover a tab for a card with its title and a few actions.
+- Hover a tab for a card with a picture of the page, its title and a few actions. Tabs asleep keep their last picture.
 - Hold **Cmd** (**Ctrl** on Windows and Linux) to number your tabs, type a number and let go to go there.
 - **Cmd/Ctrl+Z** reopens what you just closed, folders and splits included.
 - Space icons at the foot of the sidebar can shrink to dots, each showing as you point at it.
@@ -122,6 +122,8 @@ Essentials become tiles, a space's colour carries through, and folders get colou
 
 Zen's link preview gets its own look: a card that springs from an essential, or a small picture of the page tucked under its tab.
 
+Links can open in Glance as you click them: every link, or only links to other sites. Shift+click opens a new tab instead.
+
 <p>
   <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/glance-essential.png" alt="A glance card from an essential" width="49%">
   <img src="https://raw.githubusercontent.com/z1n-k/zia/readme-images/glance-tab-picture.png" alt="A glanced page tucked under its tab" width="49%">
@@ -131,7 +133,7 @@ Zen's link preview gets its own look: a card that springs from an essential, or 
 
 ### Frosted where it floats
 
-The compact sidebar, hover cards and address pop-up are frosted, the page blurred behind them. The sidebar can let your desktop show through, too.
+The compact sidebar, hover cards and address pop-up are frosted, the page blurred behind them. Over a playing video they turn solid, which keeps the video's colours; **Blur over video** keeps the glass. The sidebar can let your desktop show through, too.
 
 ![The compact sidebar as frosted glass over a photo](https://raw.githubusercontent.com/z1n-k/zia/readme-images/glass-compact-sidebar.webp)
 
@@ -163,6 +165,7 @@ Right-click a video and choose **Add to Multiview**. Up to four videos or live s
 
 ### And more
 
+- **Pull to refresh:** keep scrolling up at the top of a page, then let go to reload it.
 - **Bookmarks and History** as a second sidebar beside the page.
 - **The Library** drawn the way Zia draws the sidebar.
 - **PDFs** in a cleaner viewer.
@@ -186,13 +189,14 @@ Open **Zia Settings** from the **⋯** menu, or find them under Zia in Sine. Alm
 | Dim asleep tabs | Off |
 | Hide pinned-tab slash | Off |
 | Glass edges | Off |
+| Blur over video | Off |
 | Zia page corners | On |
 | Edge-to-edge page | Off |
-| Sidebar see-through (macOS; Windows and Linux where supported) | Off |
 | Ultra effects | On |
 | **Tabs and essentials** | — |
 | Hover cards | On |
 | See-through hover cards | On |
+| Page pictures | On |
 | Folder-coloured cards | Off |
 | Sound bars | On |
 | Always animate sound bars | Off |
@@ -201,19 +205,19 @@ Open **Zia Settings** from the **⋯** menu, or find them under Zia in Sine. Alm
 | Typed number colour | Zia blue |
 | Cmd/Ctrl+Z reopens tabs | On |
 | Glance thumbnails | On |
+| Links open in Glance | Off |
 | Narrower essentials | On |
 | Two essentials per row | Off |
 | Stretch the last essential | Off |
 | Split essentials | On |
 | **Sidebar and folders** | — |
 | Sidebar text size | Default |
-| Collapsed space icons | Off |
+| Space name and icon | At the top of the sidebar |
+| Space switcher as dots | Off |
 | Springy folders | On |
 | Folder colour on hover only | Off |
 | Icon picker | On |
 | Smart folder names | Off |
-| Space name above tabs | Off |
-| Hide space name | Off |
 | Zia-style panels | On |
 | Panels beside the page | On |
 | Zen's Library look | Off |
@@ -237,6 +241,7 @@ Open **Zia Settings** from the **⋯** menu, or find them under Zia in Sine. Alm
 | New tabs start in the address bar | Off |
 | **Page** | — |
 | Swipe arrow | On |
+| Pull to refresh | On |
 | Split drop cards | On |
 | Zia PDF viewer | On |
 | Link previews | Off |
@@ -247,6 +252,7 @@ Open **Zia Settings** from the **⋯** menu, or find them under Zia in Sine. Alm
 | Music player card | On |
 | Keep player with picture-in-picture | On |
 | YouTube channel art | Off |
+| No emoji in the player | On |
 | Zia picture-in-picture controls | On |
 | Tuck picture-in-picture | On |
 | Tuck into | The nearest side |
@@ -296,8 +302,7 @@ Mostly as defaults, so a value you set yourself in `about:config` is kept. The e
 
 ## Good to know
 
-- Zia is in beta. It's tested on macOS, Windows and Linux, and looks its best in dark mode.
-- **Collapsed Sidebar** isn't supported yet.
+- Zia is tested on macOS, Windows and Linux, and looks its best in dark mode.
 - **Install count:** once a day, Zia downloads a tiny file from this repository so GitHub can count how many use it. Nothing about you or your browsing is sent, and there's no ID. Turn it off with **Count this install** in Zia Settings.
 - Other mods may conflict. If something looks off, turn them off and add them back one at a time, or [open an issue](https://github.com/z1n-k/zia/issues).
 
