@@ -10,7 +10,7 @@
 
 # Zia
 
-**Zen, made calm.**
+**Zen, made better.**
 
 A [Sine](https://github.com/CosmoCreeper/Sine) mod that reshapes Zen Browser from the frame in.
 
