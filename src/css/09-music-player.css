@@ -69,7 +69,7 @@
     align-content: center;
     display: grid !important;
 
-    grid-template-columns: var(--zia-media-ring-size) minmax(0, 1fr) auto auto auto auto;
+    grid-template-columns: var(--zia-media-ring-size) minmax(0, 1fr) auto auto auto auto auto;
     grid-template-rows: auto auto auto;
     column-gap: 0;
     row-gap: 0;
@@ -182,7 +182,7 @@
   }
 
   .zen-media-info-vbox {
-    grid-column: 2 / 6;
+    grid-column: 2 / 7;
     grid-row: 1;
     min-width: 0;
     padding-inline: 8px 4px;
@@ -212,8 +212,6 @@
     font-weight: var(--zia-tab-weight) !important;
     font-size: 0.95em !important;
   }
-
-  .zen-media-playpause-button { grid-column: 6; grid-row: 1; }
 
   .zen-media-progress-hbox {
     grid-column: 1 / -1;
@@ -310,14 +308,17 @@
     }
   }
 
-  .zen-media-mute-button { grid-column: 1; grid-row: 3; justify-self: start !important; }
+  /* the sound bars stay at the title's end; play/pause sits between previous and next, as in
+     Zen, so opening the card never moves it from under the pointer */
+  .zen-media-mute-button { grid-column: 7; grid-row: 1; }
   .zen-media-previoustrack-button { grid-column: 3; grid-row: 3; }
-  .zen-media-nexttrack-button { grid-column: 4; grid-row: 3; }
+  .zen-media-playpause-button { grid-column: 4; grid-row: 3; }
+  .zen-media-nexttrack-button { grid-column: 5; grid-row: 3; }
   /* Zen hides it unless the page has exactly one video; it picks the main video anyway */
-  .zen-media-pip-button { grid-column: 5; grid-row: 3; display: flex !important; }
-  .zen-media-close-button { grid-column: 6; grid-row: 3; }
+  .zen-media-pip-button { grid-column: 6; grid-row: 3; display: flex !important; }
+  .zen-media-close-button { grid-column: 7; grid-row: 3; }
 
-  :is(.zen-media-mute-button, .zen-media-previoustrack-button, .zen-media-nexttrack-button, .zen-media-pip-button, .zen-media-close-button) {
+  :is(.zen-media-playpause-button, .zen-media-previoustrack-button, .zen-media-nexttrack-button, .zen-media-pip-button, .zen-media-close-button) {
     max-height: 0 !important;
     opacity: 0 !important;
     overflow: hidden !important;
@@ -414,7 +415,7 @@
       }
     }
 
-    :is(.zen-media-mute-button, .zen-media-previoustrack-button, .zen-media-nexttrack-button, .zen-media-pip-button, .zen-media-close-button) {
+    :is(.zen-media-playpause-button, .zen-media-previoustrack-button, .zen-media-nexttrack-button, .zen-media-pip-button, .zen-media-close-button) {
       max-height: 30px !important;
       opacity: 1 !important;
       translate: 0 0;
@@ -491,28 +492,6 @@
   .zen-media-card[media-sharing] .media-device-buttons {
     display: flex !important;
   }
-}
-
-#zen-media-controls-toolbar:not(:hover) {
-  & .zen-media-mute-button {
-    grid-column: 6;
-    grid-row: 1;
-    justify-self: center !important;
-    max-height: 30px !important;
-    opacity: 1 !important;
-    translate: 0 0 !important;
-    margin-top: 0 !important;
-    pointer-events: auto !important;
-  }
-
-  & .zen-media-playpause-button {
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
-}
-
-#zen-media-controls-toolbar .zen-media-playpause-button {
-  transition: opacity 0.2s var(--zia-media-ease) !important;
 }
 
 /* not while the front card fades away: the one behind showed almost empty until it took its place */

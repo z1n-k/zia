@@ -755,7 +755,7 @@
   function registerScrollActor() {
     // (versioned, as the ZiaVideo one: the start-up cache otherwise kept an older helper after an
     // update, even across a restart, so fixes to it didn't reach the page)
-    registerActor("Zia", { scroll: { capture: true, mozSystemGroup: true }, DOMContentLoaded: {}, pageshow: {} }, "scroll helper", { version: `?v=${Date.now()}` });
+    registerActor("Zia", { scroll: { capture: true, mozSystemGroup: true }, DOMContentLoaded: {}, pageshow: {}, mousedown: { capture: true }, click: { capture: true } }, "scroll helper", { version: `?v=${Date.now()}` });
   }
 
   function registerActor(name, events, label, { version = "", allFrames = false } = {}) {
@@ -766,7 +766,8 @@
         allFrames,
         messageManagerGroups: ["browsers"],
         // Firefox only starts a helper inside a website's process when told it's
-        // safe there; these only report back (the PDF one's browser side does nothing)
+        // safe there; these only report back (the PDF one's browser side does nothing,
+        // and a link the Zia one hands over is checked again before it opens)
         safeForUntrustedWebProcess: true,
       });
     } catch (err) {

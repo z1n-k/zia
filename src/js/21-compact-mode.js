@@ -14,6 +14,18 @@
       if (!titlebar || !topButtons) {
         return;
       }
+      // Zen's collapsed sidebar, an icon column: too narrow for the row. It stays in the
+      // toolbar, where Zen keeps it, the window buttons first (31-collapsed-sidebar)
+      if (root.getAttribute("zen-sidebar-expanded") !== "true") {
+        if (topButtons.parentElement === titlebar) {
+          navBar.prepend(topButtons);
+          const buttons = window.gZenVerticalTabsManager?.actualWindowButtons;
+          if (buttons && buttons.parentElement === topButtons && !window.gZenVerticalTabsManager?.isWindowsStyledButtons) {
+            navBar.prepend(buttons);
+          }
+        }
+        return;
+      }
       if (topButtons.parentElement !== titlebar) {
         titlebar.prepend(topButtons);
       }
@@ -107,7 +119,7 @@
     new MutationObserver(() => {
       moveTopRow();
       syncPanelOpen();
-    }).observe(root, { attributes: true, attributeFilter: ["zen-compact-mode"] });
+    }).observe(root, { attributes: true, attributeFilter: ["zen-compact-mode", "zen-sidebar-expanded"] });
 
     moveTopRow();
     syncPanelOpen();

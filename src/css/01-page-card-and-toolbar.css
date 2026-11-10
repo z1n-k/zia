@@ -133,9 +133,10 @@
    round. Drawn as the toolbar, it showed as a dark strip across the top.
    The same with "Toolbar in the site's colour" off: the toolbar in Zen's
    own colour, the window's (the sidebar's), rather than Zia's near-black
-   (zia-theme-toolbar, zia.uc.js; not in compact mode, where the toolbar
-   floats over the page) */
-:root:is([zen-single-toolbar="true"], [zia-theme-toolbar]:not([zen-compact-mode="true"])):not(#zia-none):not([inDOMFullscreen="true"]):not([popup-window]) {
+   (zia-theme-toolbar, zia.uc.js); in compact mode too, where it had stayed
+   near-black (#337; floating over the page, it's on Zen's own toolbar colour:
+   16-compact-mode) */
+:root:is([zen-single-toolbar="true"], [zia-theme-toolbar]):not(#zia-none):not([inDOMFullscreen="true"]):not([popup-window]) {
   & #zen-appcontent-wrapper {
     box-shadow: none !important;
   }

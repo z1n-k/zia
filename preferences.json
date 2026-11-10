@@ -203,6 +203,27 @@
     "defaultValue": true
   },
   {
+    "type": "dropdown",
+    "label": "Open links in Glance (Shift+click opens a tab)",
+    "property": "zia.glance.links",
+    "since": "2.122.0",
+    "defaultValue": "off",
+    "options": [
+      {
+        "label": "Off",
+        "value": "off"
+      },
+      {
+        "label": "Links to other sites",
+        "value": "other"
+      },
+      {
+        "label": "Every link",
+        "value": "all"
+      }
+    ]
+  },
+  {
     "type": "checkbox",
     "label": "Zia's narrower essentials (off: Zen's widths)",
     "property": "zia.essentials.zia-width",
@@ -489,8 +510,7 @@
           "value": true
         }
       }
-    ]
-,
+    ],
     "operator": "AND"
   },
   {

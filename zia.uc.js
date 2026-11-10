@@ -841,7 +841,7 @@
   function registerScrollActor() {
     // (versioned, as the ZiaVideo one: the start-up cache otherwise kept an older helper after an
     // update, even across a restart, so fixes to it didn't reach the page)
-    registerActor("Zia", { scroll: { capture: true, mozSystemGroup: true }, DOMContentLoaded: {}, pageshow: {} }, "scroll helper", { version: `?v=${Date.now()}` });
+    registerActor("Zia", { scroll: { capture: true, mozSystemGroup: true }, DOMContentLoaded: {}, pageshow: {}, mousedown: { capture: true }, click: { capture: true } }, "scroll helper", { version: `?v=${Date.now()}` });
   }
 
   function registerActor(name, events, label, { version = "", allFrames = false } = {}) {
@@ -852,7 +852,8 @@
         allFrames,
         messageManagerGroups: ["browsers"],
         // Firefox only starts a helper inside a website's process when told it's
-        // safe there; these only report back (the PDF one's browser side does nothing)
+        // safe there; these only report back (the PDF one's browser side does nothing,
+        // and a link the Zia one hands over is checked again before it opens)
         safeForUntrustedWebProcess: true,
       });
     } catch (err) {
@@ -1750,7 +1751,8 @@
     }
     const title = document.getElementById("zia-url-title");
     const input = urlbar.querySelector(".urlbar-input");
-    const titleRect = title?.getBoundingClientRect();
+    // (only while it shows: hidden, it's still laid out, at the bar's width)
+    const titleRect = title?.checkVisibility({ visibilityProperty: true }) ? title.getBoundingClientRect() : null;
     const rect = titleRect?.width ? titleRect : input?.getBoundingClientRect();
     if (rect?.width) {
       closedTextRect = { left: rect.left, centerY: rect.top + rect.height / 2, at: Date.now() };
@@ -1987,7 +1989,10 @@
   // where Zen puts it ("list"); or "none", hidden
   const SPACE_LABEL_PREF = "zia.sidebar.space-label";
   const spaceLabelPlace = () => Services.prefs.getStringPref(SPACE_LABEL_PREF, "top");
-  const spaceNameInList = () => spaceLabelPlace() === "list";
+  // (in Zen's collapsed sidebar the icon column has no room beside the window buttons: the
+  // space's icon goes back above the tabs, where Zen puts it)
+  const spaceNameInList = () =>
+    spaceLabelPlace() === "list" || document.documentElement.getAttribute("zen-sidebar-expanded") !== "true";
 
   // (until 2.116.0, two checkboxes: the name above the tabs, and the name hidden with the
   // icon kept. Carried over once, unless a place has been chosen since)
@@ -2034,6 +2039,7 @@
 
     const onSpaceSwitch = () => setTimeout(placeWorkspaceIndicator, 0);
     watchPrefs(SPACE_LABEL_PREF, onSpaceSwitch);
+    new MutationObserver(onSpaceSwitch).observe(document.documentElement, { attributes: true, attributeFilter: ["zen-sidebar-expanded"] });
     watchPrefs("zen.workspaces.active", onSpaceSwitch);
     gBrowser.tabContainer.addEventListener("TabSelect", onSpaceSwitch);
     placeWorkspaceIndicator();
@@ -6145,7 +6151,12 @@
     // folders coming back keep their names (zia.uc.js, folder names)
     window.ziaReopeningUntil = Date.now() + 3000;
     try {
-      window.undoCloseTab();
+      // (Zen 1.24 dropped window.undoCloseTab; Firefox's own now lives on SessionWindowUI)
+      if (typeof window.undoCloseTab === "function") {
+        window.undoCloseTab();
+      } else {
+        window.SessionWindowUI.undoCloseTab(window);
+      }
     } catch (err) {
       noteError("essentials and undo: reopenLastClose", err);
     }
@@ -8248,6 +8259,18 @@
       if (!titlebar || !topButtons) {
         return;
       }
+      // Zen's collapsed sidebar, an icon column: too narrow for the row. It stays in the
+      // toolbar, where Zen keeps it, the window buttons first (31-collapsed-sidebar)
+      if (root.getAttribute("zen-sidebar-expanded") !== "true") {
+        if (topButtons.parentElement === titlebar) {
+          navBar.prepend(topButtons);
+          const buttons = window.gZenVerticalTabsManager?.actualWindowButtons;
+          if (buttons && buttons.parentElement === topButtons && !window.gZenVerticalTabsManager?.isWindowsStyledButtons) {
+            navBar.prepend(buttons);
+          }
+        }
+        return;
+      }
       if (topButtons.parentElement !== titlebar) {
         titlebar.prepend(topButtons);
       }
@@ -8341,7 +8364,7 @@
     new MutationObserver(() => {
       moveTopRow();
       syncPanelOpen();
-    }).observe(root, { attributes: true, attributeFilter: ["zen-compact-mode"] });
+    }).observe(root, { attributes: true, attributeFilter: ["zen-compact-mode", "zen-sidebar-expanded"] });
 
     moveTopRow();
     syncPanelOpen();
@@ -10877,6 +10900,13 @@
     if (!text) {
       return null;
     }
+    // (a plain colour read as it is, without a style pass: a space's gradient has dozens of
+    // stops, and restyling the probe for each took tens of milliseconds a reading; #594)
+    // (light-dark() and currentcolor depend on the element, so those still go through it)
+    const plain = /light-dark|currentcolor/i.test(text) ? null : InspectorUtils.colorToRGBA(text.trim());
+    if (plain) {
+      return [Math.round(plain.r), Math.round(plain.g), Math.round(plain.b), Math.round(plain.a * 255)];
+    }
     let probe = document.getElementById("zia-color-probe");
     if (!probe) {
       probe = document.createElementNS(XHTML_NS, "div");
@@ -10952,15 +10982,22 @@
 
   function watchSidebarPaint() {
     syncSidebarPaint();
-    const watcher = new MutationObserver(syncSidebarPaint);
+    // (once the space's colour has settled: Zen restyles these layers on every frame as it
+    // blends one space's colours into the next, and reading each colour stop then
+    // recalculated styles several times a frame, more for a gradient with more stops; #594)
+    let settling = 0;
+    const settled = new MutationObserver(() => {
+      clearTimeout(settling);
+      settling = setTimeout(syncSidebarPaint, 120);
+    });
     for (const id of ["zen-browser-background", "zen-toolbar-background"]) {
       const layer = document.getElementById(id);
       if (layer) {
-        watcher.observe(layer, { attributes: true, attributeFilter: ["style"] });
+        settled.observe(layer, { attributes: true, attributeFilter: ["style"] });
       }
     }
-    // (a light space has its own, white music card)
-    watcher.observe(root, { attributes: true, attributeFilter: ["zen-compact-mode", "zen-should-be-dark-mode", "zia-light"] });
+    // (a light space has its own, white music card; compact mode too once it has slid)
+    settled.observe(root, { attributes: true, attributeFilter: ["zen-compact-mode", "zen-should-be-dark-mode", "zia-light"] });
   }
 
   function keepWindowButtonsInSidebar() {
@@ -11484,7 +11521,9 @@
       return;
     }
     const url = tabAddress(tab);
-    if (!keepsPictureOf(url)) {
+    // (at most once a minute a page, as for a card: switching back and forth between two
+    // tabs took, encoded and wrote both pictures again on every switch; #593)
+    if (!keepsPictureOf(url) || Date.now() - (pictureSaved.get(url) || 0) <= PICTURE_RESAVE_MS) {
       return;
     }
     requestIdleCallback(
@@ -15478,7 +15517,11 @@
         el = el.parentNode || el.host;
       }
       const props = ["overflow", "overflow-x", "overflow-y", "contain"];
-      for (const each of lifted.filter(clipping)) {
+      // (never a scroll box, such as the tab list's own: let out, Firefox builds it and every
+      // row in it again, and once more as it's put back, about 1,000 rows' worth at the start
+      // of every drag and as many at the drop, the drag starting late on Windows; #566)
+      const scrollBox = (style) => ["hidden", "auto", "scroll"].includes(style.overflowY) || ["hidden", "auto", "scroll"].includes(style.overflowX);
+      for (const each of lifted.filter(clipping).filter((el) => !scrollBox(getComputedStyle(el)))) {
         remember(each, props);
         for (const prop of props) {
           each.style.setProperty(prop, prop === "contain" ? "none" : "visible", "important");
@@ -17886,10 +17929,19 @@
       }
     };
     let clamping = false;
-    const cap = () => {
+    // (only when the limit or the panel's own width has changed: Zen restyles the tab
+    // sidebar on every frame as compact mode slides it, and reading its limit and
+    // measuring the panel then laid the window out in every frame; #594)
+    let capped = "";
+    const cap = (force) => {
       if (clamping) {
         return;
       }
+      const key = `${gNavToolbox?.style.maxWidth}|${box.getAttribute("width")}|${box.style.width}|${box.style.maxWidth}`;
+      if (key === capped && force !== true) {
+        return;
+      }
+      capped = key;
       const beside = Services.prefs.getBoolPref(SIDEBAR_BESIDE_PREF, true);
       const max = maxWidth();
       if (!beside || !(max > 0)) {
@@ -17904,11 +17956,12 @@
         box.setAttribute("width", String(max));
         clamping = false;
       }
+      capped = `${gNavToolbox?.style.maxWidth}|${box.getAttribute("width")}|${box.style.width}|${box.style.maxWidth}`;
     };
-    cap();
+    cap(true);
     new MutationObserver(cap).observe(box, { attributes: true, attributeFilter: ["width", "style"] });
     new MutationObserver(cap).observe(gNavToolbox, { attributes: true, attributeFilter: ["style"] });
-    watchPrefs([MAX_PREF, SIDEBAR_BESIDE_PREF], cap);
+    watchPrefs([MAX_PREF, SIDEBAR_BESIDE_PREF], () => cap(true));
     // moving it to the other side
     new MutationObserver(place).observe(box, { attributes: true, attributeFilter: ["sidebar-positionend"] });
 
@@ -20724,6 +20777,7 @@
 
   function orbTick(now) {
     orbLoop = 0;
+    orbLast = now;
     if (document.hidden || orbStill()) {
       return;
     }
@@ -20744,8 +20798,20 @@
       orbDraw(orb, now, frames, copies);
     }
     if (drawing) {
-      orbLoop = requestAnimationFrame(orbTick);
+      orbNext();
     }
+  }
+
+  // the next frame a 30th of a second on, from a timer that then waits for the screen's
+  // refresh: a frame asked for on every refresh kept the whole window refreshing at the
+  // screen's rate while any tab loaded (a 120 Hz Mac's parent process about 15% of a core
+  // busy for three loading tabs, about 5% at 30 frames a second; #593)
+  const ORB_FRAME_MS = 1000 / 30;
+  let orbLast = 0;
+  function orbNext() {
+    orbLoop = setTimeout(() => {
+      orbLoop = requestAnimationFrame(orbTick);
+    }, Math.max(0, ORB_FRAME_MS - (performance.now() - orbLast) - 4));
   }
 
   // one frame onto the orb's canvas: the package's shared clock (seconds
@@ -21163,8 +21229,31 @@
     [[{ scale: 1.1, easing: "ease-in-out" }, { scale: 1.35 }], { duration: 17000, direction: "alternate" }],
   ];
 
+  // (moved on a timer DRIFT_FPS times a second rather than at every screen refresh: Firefox
+  // can't run it off the main thread, so each frame restyled and painted the window again, a
+  // 120 Hz Mac about a sixth of a core busy while an essential was open; this slow, blurred,
+  // it looks the same; #593)
+  const DRIFT_FPS = 15;
+
   function watchUltraEssentialDrift() {
     const drifting = new Map();
+    let ticker = 0;
+    const tick = () => {
+      if (!drifting.size) {
+        clearInterval(ticker);
+        ticker = 0;
+        return;
+      }
+      if (document.hidden) {
+        return;
+      }
+      const now = document.timeline.currentTime;
+      for (const animations of drifting.values()) {
+        for (const animation of animations) {
+          animation.currentTime = now;
+        }
+      }
+    };
     const still = matchMedia("(prefers-reduced-motion: reduce)");
     const wanted = () => ultraOn() && Services.prefs.getBoolPref("zen.theme.essentials-favicon-bg", false) && !still.matches;
     const stop = () => {
@@ -21192,11 +21281,14 @@
         background,
         ESSENTIAL_DRIFT.map(([keyframes, timing]) => {
           const animation = background.animate(keyframes, { ...timing, iterations: Infinity, pseudoElement: "::after" });
-          // (the page's clock: wherever it's started, it's where the others are)
-          animation.startTime = 0;
+          // (held, and set to the page's clock at each tick: wherever it's started, it's where
+          // the others are)
+          animation.pause();
+          animation.currentTime = document.timeline.currentTime;
           return animation;
         })
       );
+      ticker ||= setInterval(tick, 1000 / DRIFT_FPS);
     };
     const sync = () => {
       stop();
@@ -22427,6 +22519,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     "zia.tab-numbers.color": ["Typed number colour", ""],
     "zia.features.undo-close": ["Cmd/Ctrl+Z reopens tabs", "Brings back the last closed tab."],
     "zia.glance.thumbnail": ["Glance thumbnails", "A glance shows on its tab as a small picture of the page."],
+    "zia.glance.links": ["Links open in Glance", "Shift+click opens a tab instead. Other sites: links within a site open as usual."],
     "zia.essentials.zia-width": ["Narrower essentials", "Off: Zen's widths."],
     "zia.essentials.two-per-row": ["Two essentials per row", "For a narrower sidebar."],
     "zia.essentials.fill-row": ["Stretch the last essential", "It fills the rest of its row."],
@@ -23003,6 +23096,72 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     };
     gBrowser.tabContainer.addEventListener("TabSelect", () => bubble && leave(bubble));
   }
+  // ---------- Links in Glance (zia.glance.links, #592): with it on, a plain click on a link
+  // opens it in Glance, every link or only those to another site, and Shift+click opens it in
+  // a new tab. ZiaChild takes the click in the page; here it's checked again (the setting, a web
+  // address, one the page itself may open) and opened. The setting and Glance's own tabs (a
+  // glance can't open another: links inside one go on as usual) are shared with the pages.
+  // Used elsewhere: watchGlanceLinks.
+  const GLANCE_LINKS_PREF = "zia.glance.links";
+
+  function watchGlanceLinks() {
+    window.ziaOpenLink = (browser, data) => {
+      const mode = Services.prefs.getStringPref(GLANCE_LINKS_PREF, "off");
+      if ((mode !== "other" && mode !== "all") || !browser?.isConnected || typeof data?.url !== "string") {
+        return;
+      }
+      try {
+        const uri = Services.io.newURI(data.url);
+        if (!uri.schemeIs("http") && !uri.schemeIs("https")) {
+          return;
+        }
+        const principal = browser.contentPrincipal;
+        Services.scriptSecurityManager.checkLoadURIWithPrincipal(principal, uri, Ci.nsIScriptSecurityManager.STANDARD);
+        if (data.tab) {
+          const referrerInfo = Cc["@mozilla.org/referrer-info;1"].createInstance(Ci.nsIReferrerInfo);
+          referrerInfo.init(Ci.nsIReferrerInfo.STRICT_ORIGIN_WHEN_CROSS_ORIGIN, true, browser.currentURI);
+          openLinkIn(uri.spec, "tab", {
+            triggeringPrincipal: principal,
+            referrerInfo,
+            relatedToCurrent: true,
+            inBackground: false,
+            userContextId: Number(browser.getAttribute("usercontextid")) || 0,
+          });
+        } else {
+          window.gZenGlanceManager?.openGlance({ url: uri.spec, triggeringPrincipal: principal });
+        }
+      } catch (err) {
+        noteError("links in glance: open", err);
+      }
+    };
+
+    // the setting, for the pages to read (a website's process isn't shown Zia's own settings)
+    const shareMode = () => {
+      Services.ppmm.sharedData.set("zia:glance-links", Services.prefs.getStringPref(GLANCE_LINKS_PREF, "off"));
+      Services.ppmm.sharedData.flush();
+    };
+    watchPrefs(GLANCE_LINKS_PREF, shareMode);
+    shareMode();
+
+    // the browsers showing a glance, in every window, for the pages to read
+    const listGlances = () => {
+      const ids = [];
+      for (const win of Services.wm.getEnumerator("navigator:browser")) {
+        for (const tab of win.gBrowser?.tabs || []) {
+          if (tab.hasAttribute("zen-glance-tab") && tab.linkedBrowser?.browserId) {
+            ids.push(tab.linkedBrowser.browserId);
+          }
+        }
+      }
+      Services.ppmm.sharedData.set("zia:glance-browsers", ids);
+      Services.ppmm.sharedData.flush();
+    };
+    new MutationObserver(listGlances).observe(gBrowser.tabContainer, { subtree: true, attributes: true, attributeFilter: ["zen-glance-tab"] });
+    gBrowser.tabContainer.addEventListener("TabClose", () => setTimeout(listGlances, 0));
+    window.addEventListener("unload", () => setTimeout(listGlances, 0), { once: true });
+    listGlances();
+  }
+
   function safely(name, fn) {
     try {
       fn();
@@ -23158,17 +23317,14 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
 
   function watchEdgeGlow() {
     let pending = 0;
-    const update = () => {
-      pending = 0;
-      if (!gBrowser?.selectedTab) {
-        return;
-      }
-      for (const el of document.querySelectorAll("[zia-no-glow]")) {
-        el.removeAttribute("zia-no-glow");
-      }
-      const tab = gBrowser.selectedTab;
-      if (tab.hasAttribute("zen-essential")) {
-        return;
+    // the row that goes without the glow, if any: the open tab (or its split) when nothing
+    // sits above it. It stops at the first row that settles it, and only touches the mark
+    // when it moves (it ran over every row, and took the mark off and on again, at every
+    // tab switch and once a second; #593)
+    const unglowed = () => {
+      const tab = gBrowser?.selectedTab;
+      if (!tab || tab.hasAttribute("zen-essential")) {
+        return null;
       }
       // (a split glows as a whole: at the top, it's the split that goes
       // without, whichever of its tabs is open)
@@ -23179,27 +23335,22 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
         window.gZenWorkspaces?.activeWorkspaceStrip,
       ].filter(Boolean);
       if (sections.length) {
-        const rows = [];
         for (const section of sections) {
           for (const row of section.querySelectorAll(
             ".tabbrowser-tab:not([zen-essential], [zen-empty-tab], [hidden]), .tab-group-label-container"
           )) {
             const box = row.getBoundingClientRect();
             if (box.height > 4 && row.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) !== false) {
-              rows.push(row);
+              return row === tab || (split && split.contains(row)) ? glowing : null;
             }
           }
         }
-        if (rows[0] === tab || (split && split.contains(rows[0]))) {
-          glowing.setAttribute("zia-no-glow", "true");
-        }
-        return;
+        return null;
       }
       const mine = glowing.getBoundingClientRect();
       if (!mine.height) {
-        return;
+        return null;
       }
-      let above = false;
       for (const row of document.querySelectorAll(
         "#tabbrowser-tabs .tabbrowser-tab:not([zen-essential], [zen-empty-tab], [hidden]), #tabbrowser-tabs .tab-group-label-container"
       )) {
@@ -23213,18 +23364,34 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
         if (row.checkVisibility?.({ opacityProperty: true, visibilityProperty: true }) === false) {
           continue;
         }
-        above ||= box.bottom <= mine.top + 1;
+        if (box.bottom <= mine.top + 1) {
+          return null;
+        }
       }
-      if (!above) {
-        glowing.setAttribute("zia-no-glow", "true");
+      return glowing;
+    };
+    const update = () => {
+      pending = 0;
+      const cut = unglowed();
+      for (const el of document.querySelectorAll("[zia-no-glow]")) {
+        if (el !== cut) {
+          el.removeAttribute("zia-no-glow");
+        }
+      }
+      if (cut && !cut.hasAttribute("zia-no-glow")) {
+        cut.setAttribute("zia-no-glow", "true");
       }
     };
+    // (at once and in the next frame, once however many tab events a frame brings: changing
+    // space hides and shows every tab of both, and each laid the list out again; #594)
+    let late = 0;
     const soon = () => {
-      update();
       if (!pending) {
+        update();
         pending = requestAnimationFrame(update);
       }
-      setTimeout(update, 250);
+      clearTimeout(late);
+      late = setTimeout(update, 250);
     };
     for (const type of [
       "TabSelect", "TabOpen", "TabClose", "TabMove", "TabPinned", "TabUnpinned", "TabGrouped",
@@ -23287,6 +23454,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     ifOn("tab-numbers", "watchTabNumbers", watchTabNumbers);
     safely("watchWelcome", watchWelcome);
     safely("watchGlanceThumbs", watchGlanceThumbs);
+    safely("watchGlanceLinks", watchGlanceLinks);
     safely("watchButtonTooltips", watchButtonTooltips);
     safely("watchTipCards", watchTipCards);
     safely("watchSidebarPanels", watchSidebarPanels);

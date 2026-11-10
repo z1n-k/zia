@@ -88,7 +88,12 @@
     // folders coming back keep their names (zia.uc.js, folder names)
     window.ziaReopeningUntil = Date.now() + 3000;
     try {
-      window.undoCloseTab();
+      // (Zen 1.24 dropped window.undoCloseTab; Firefox's own now lives on SessionWindowUI)
+      if (typeof window.undoCloseTab === "function") {
+        window.undoCloseTab();
+      } else {
+        window.SessionWindowUI.undoCloseTab(window);
+      }
     } catch (err) {
       noteError("essentials and undo: reopenLastClose", err);
     }
