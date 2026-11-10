@@ -9,9 +9,11 @@
     margin-top: 0 !important;
   }
 
-  /* (its first row level with the card's top: less the space each tab keeps above its box) */
+  /* (its first row level with the card's top, less the space each tab keeps above its box;
+     never closer to the window's top than the essentials sit from the column's sides: with
+     Zen's gap set to 1px they were pressed against the top) */
   & #titlebar {
-    padding-top: calc(var(--zia-card-top-gap) - var(--tab-block-margin, 2px)) !important;
+    padding-top: calc(max(var(--zia-card-top-gap), 6px) - var(--tab-block-margin, 2px)) !important;
   }
 
 }
@@ -31,10 +33,15 @@
 /* In the icon column (plain or compact): the icon in the middle of its tab, with no room kept
    at the row's end for a close button, which Zen puts at the tab's corner here; and no glow
    round the open tab, which Firefox clips to the tab's own box there, a square with nowhere
-   to fade out in the gap beside the page */
+   to fade out in the gap beside the page. Nor the Delete Folder button on a folder's hover:
+   with no row end to sit at, it covered the icon (the folder's menu still deletes it) */
 :root:not([zen-sidebar-expanded="true"]):not(#zia-none) {
   & .tabbrowser-tab:not([zen-essential]) .tab-content {
     padding-inline-end: 0 !important;
+  }
+
+  & zen-folder > .tab-group-label-container > .zia-folder-close {
+    display: none !important;
   }
 
   & .tabbrowser-tab > .tab-stack > .tab-background,

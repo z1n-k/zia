@@ -518,6 +518,13 @@
   margin-block: calc(var(--zia-top-row-space) - 2.5px) !important;
 }
 
+/* (beside the toolbar, the row follows the page's top gap, so the window buttons and the
+   space's name stay level with the toolbar's buttons: set for Zia's 6px, they sat 5px low
+   with Zen's gap at 1px, and high with a wider one or the page edge to edge) */
+:root[zen-sidebar-expanded="true"]:not([zen-single-toolbar="true"], [zen-compact-mode="true"]) #zen-sidebar-top-buttons {
+  margin-block-start: calc(var(--zia-top-row-space) - 2.5px + var(--zia-card-top-gap) - 6px) !important;
+}
+
 #zen-sidebar-foot-buttons {
   margin-block: var(--zia-bottom-row-space) calc(var(--zia-bottom-row-space) - 4.5px) !important;
 }

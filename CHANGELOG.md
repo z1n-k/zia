@@ -4,6 +4,19 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.122.1] — 2026-11-10
+
+### Fixed
+
+- Collapsed sidebar: with a small page gap (Zen's set to 1px, say) the essentials sat pressed
+  against the window's top. The column now starts at least as far down as the essentials sit
+  from its sides.
+- Collapsed sidebar: pointing at a folder showed its Delete Folder button squeezed beside the
+  icon; it's hidden in the icon column (the folder's menu still deletes it).
+- The window buttons and the space's name now stay level with the toolbar's buttons whatever
+  the page gap: with Zen's gap set below 6px, or the page edge to edge, they sat lower or
+  higher than the back and reload buttons.
+
 ## [2.122.0] — 2026-11-10
 
 ### Added
