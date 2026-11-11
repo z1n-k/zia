@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.122.4] — 2026-11-11
+
+### Fixed
+
+- Picture-in-picture hides the site name whenever the buttons beside it would run into it,
+  instead of only below 460px wide; in a mid-sized window it showed under Minimise and the
+  tuck button ([#600](https://github.com/z1n-k/zia/issues/600)).
+
 ## [2.122.3] — 2026-11-11
 
 ### Fixed
