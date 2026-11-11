@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.122.3] — 2026-11-11
+
+### Fixed
+
+- Advanced Tab Groups' groups follow the pointer when dragged, sliding through the list as
+  Zen folders do, and land where they're shown; before, nothing moved under the pointer
+  ([#567](https://github.com/z1n-k/zia/issues/567)). Plain tab groups keep Zen's own drag.
+
 ## [2.122.2] — 2026-11-10
 
 ### Changed
