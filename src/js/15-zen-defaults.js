@@ -72,6 +72,17 @@
     } catch (err) {
       noteError("zen defaults: acrylic", err);
     }
+    // Zia 2.104–2.106's "Wallpaper tint" setting switched Zen's see-through window off
+    // (zen.widget.macos.window-vibrancy), and 2.107 took the setting away, leaving it off
+    // with nothing to turn it back on: back to Zen's own once (from the next start).
+    try {
+      if (!Services.prefs.getBoolPref("zia.vibrancy-reset", false)) {
+        Services.prefs.clearUserPref("zen.widget.macos.window-vibrancy");
+        Services.prefs.setBoolPref("zia.vibrancy-reset", true);
+      }
+    } catch (err) {
+      noteError("zen defaults: vibrancy", err);
+    }
     // Optional: a playing video goes picture-in-picture as its tab is left (Firefox's own).
     // Zia's setting starts as Firefox's is and passes on a change made in Zia's settings,
     // so one made in Firefox's own stays.

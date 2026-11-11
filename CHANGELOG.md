@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.122.5] — 2026-11-11
+
+### Fixed
+
+- The sidebar is see-through again for anyone who'd turned off the "Wallpaper tint" option
+  that Zia 2.104 to 2.106 had: it switched off Zen's see-through window, and once the option
+  went there was nothing left to turn it back on. Zen's own setting comes back once, after a
+  restart of Zen.
+
 ## [2.122.4] — 2026-11-11
 
 ### Fixed
