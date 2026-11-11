@@ -46,11 +46,18 @@
     // (handed to Zen mid-drag, by a switch of space: Zen's own picture of the tab, as Zia's
     // rows stay in the space it left, releaseToZen)
     let zenDragImage = false;
-    window.addEventListener("dragstart", () => (zenDragImage = false), true);
+    // (Zen's picture is swapped for a blank one only in a drag Zia moves itself, a tab or a
+    // Zen folder with its drag on: anything else, as Advanced Tab Groups' groups, keeps it,
+    // or nothing at all showed moving under the pointer, #567)
+    let ziaMoves = false;
+    window.addEventListener("dragstart", (event) => {
+      zenDragImage = false;
+      ziaMoves = featureOn("dia-tab-drag") && !!tabFromEvent(event);
+    }, true);
     const isTabGhost = (node) =>
       !libraryDragging &&
       !zenDragImage &&
-      (!!(node?.querySelector?.("[drag-image]") || node?.hasAttribute?.("drag-image")) ||
+      ((ziaMoves && !!(node?.querySelector?.("[drag-image]") || node?.hasAttribute?.("drag-image"))) ||
       !!essentialDragging ||
       !!node?.closest?.("#zen-essentials, .zen-essentials-container") ||
       !!node?.querySelector?.(".tabbrowser-tab[zen-essential]"));
@@ -70,7 +77,10 @@
           if (node.classList?.contains("tabbrowser-tab")) {
             return node.hasAttribute("zen-essential") ? null : node;
           }
-          if (node.localName === "zen-folder" || node.isZenFolder) {
+          // (an Advanced Tab Groups group slides as a folder does: it was left to Zen's picture,
+          // the row standing still while that went with the pointer, #567. Plain Firefox groups,
+          // off in Zen and shaped differently, keep Zen's picture)
+          if (node.localName === "zen-folder" || node.isZenFolder || (isTabGroup(node) && !!window.advancedTabGroups)) {
             return node;
           }
           node = node.parentElement || node.getRootNode?.()?.host;
@@ -206,6 +216,7 @@
 
     const isFolderEl = (el) =>
       !!el && (el.localName === "zen-folder" || el.isZenFolder || (el.localName === "tab-group" && !el.hasAttribute("split-view-group")));
+    const isTabGroup = (el) => el?.localName === "tab-group" && !el.isZenFolder && !el.hasAttribute("split-view-group");
     const headerOf = (folder) => folder?.querySelector?.(":scope > .tab-group-label-container") || null;
     const isCollapsed = (folder) => !!folder && (folder.collapsed === true || folder.hasAttribute("collapsed"));
 
@@ -813,6 +824,11 @@
       if (drag.folder && !drag.essentials && Math.abs(drag.folder.getBoundingClientRect().height - drag.height) > 3) {
         remeasureFolderDrag(drag.folder);
       }
+      // A tab group stays on its side of the separator, stopping there (Zen folders live
+      // above it, and a group taken across landed among the pinned ones, #567)
+      if (drag.group && drag.sepTop != null) {
+        dy = drag.origin > drag.sepTop ? Math.max(dy, drag.sepTop + 1 - drag.origin) : Math.min(dy, drag.sepTop - 1 - drag.height - drag.origin);
+      }
       const visualMid = drag.origin + dy + drag.height / 2;
       place(moving, dy, true);
 
@@ -894,7 +910,7 @@
         place(row.node, delta, false);
         rowsMoved = true;
       }
-      if (drag.sepTop != null) {
+      if (drag.sepTop != null && !drag.group) {
         const startedBelow = drag.origin > drag.sepTop;
         let sepDelta = 0;
         // Coming up from below, it's over the separator a fifth of the way into the space that
@@ -1182,7 +1198,7 @@
     };
     const outermostRow = (node) => {
       let row = topLevel({ node });
-      for (let up = row.parentElement?.closest?.("zen-folder"); up; up = up.parentElement?.closest?.("zen-folder")) {
+      for (let up = row.parentElement?.closest?.(FOLDER_SELECTOR); up; up = up.parentElement?.closest?.(FOLDER_SELECTOR)) {
         row = up;
       }
       return row;
@@ -1191,7 +1207,7 @@
       if (!folder?.isConnected || !target) {
         return;
       }
-      const nestedIn = folder.parentElement?.closest?.("zen-folder") || null;
+      const nestedIn = folder.parentElement?.closest?.(FOLDER_SELECTOR) || null;
       // (the folder it comes out of, emptied, shuts itself: without the bounce, as when a
       // tab is taken out, or the line below jolted)
       if (nestedIn) {
@@ -1230,18 +1246,26 @@
           jumpToEnd(into);
         }
       } else {
-        const next = target.next && target.sameNext && !target.below ? outermostRow(target.next.node) : null;
+        const group = isTabGroup(folder);
+        const next = target.next && target.sameNext && (group || !target.below) ? outermostRow(target.next.node) : null;
         if (next && next !== folder && !folder.contains(next)) {
           placeBefore(folder, next);
+        } else if (group) {
+          // (a group let go below the last row: the end of its own section)
+          const section = folder.closest(".zen-workspace-tabs-section") || folder.parentElement;
+          const last = [...section.children].reverse().find((item) => item !== folder && !item.hasAttribute?.("zen-empty-tab") && (gBrowser.isTab(item) || isFolderEl(item)));
+          if (last && last.nextElementSibling !== folder) {
+            placeAfter(folder, last);
+          }
         } else if (currentSeparator()) {
           placeBefore(folder, currentSeparator());
         }
-        if (folder.parentElement?.closest?.("zen-folder")) {
+        if (folder.parentElement?.closest?.(FOLDER_SELECTOR)) {
           console.warn("[Zia] The dropped folder is still inside another folder");
         }
       }
       // a closed folder it was taken back out of fits its new contents
-      if (nestedIn && nestedIn !== folder.parentElement?.closest?.("zen-folder") && isCollapsed(nestedIn)) {
+      if (nestedIn && nestedIn !== folder.parentElement?.closest?.(FOLDER_SELECTOR) && isCollapsed(nestedIn)) {
         try {
           window.gZenFolders?.on_TabGroupCollapse?.({ target: nestedIn });
         } catch (err) {
@@ -1980,7 +2004,7 @@
       if (!target || target.hasAttribute?.("zen-essential")) {
         return;
       }
-      const folder = target.localName === "zen-folder" || target.isZenFolder ? target : null;
+      const folder = isFolderEl(target) ? target : null;
 
       // an open folder that the drag caught before it shut: shut now
       if (folder && !isCollapsed(folder)) {
@@ -2093,6 +2117,8 @@
         widthKey: target.group && isFolderEl(target.group) ? target.group : "plain",
         tab: target,
         folder,
+        // (a tab group, not a Zen folder: kept to its own side of the separator, #567)
+        group: !!folder && isTabGroup(folder),
         moving,
         rows,
         origin: box.top,
@@ -2150,8 +2176,8 @@
         return;
       }
       const label = event.target?.closest?.(".tab-group-label-container");
-      const folder = label?.closest?.("zen-folder");
-      if (!folder || label.parentElement !== folder || isCollapsed(folder)) {
+      const folder = label?.closest?.(FOLDER_SELECTOR);
+      if (!folder || label.parentElement !== folder || isCollapsed(folder) || (isTabGroup(folder) && !window.advancedTabGroups)) {
         return;
       }
       snapping = { folder, x: event.screenX, y: event.screenY, shut: false };
