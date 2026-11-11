@@ -13,7 +13,6 @@
 **Zen, made better.**
 
 A [Sine](https://github.com/CosmoCreeper/Sine) mod that reshapes Zen Browser from the frame in. 
-The most feature-rich and complex Sine theme in the market.
 
 [Install](#install) · [Highlights](#highlights) · [Settings](#settings) · [Good to know](#good-to-know) · [Changelog](CHANGELOG.md)
 
