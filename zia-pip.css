@@ -145,6 +145,11 @@
   pointer-events: none !important;
 }
 
+/* the site, where it would meet the buttons beside it (zia-pip.js) */
+#controls .zia-pip-host[zia-off] {
+  visibility: hidden;
+}
+
 /* small windows: drop the site and Minimise's word, then the pill labels */
 @media (max-width: 459px) {
   #controls .zia-pip-host {

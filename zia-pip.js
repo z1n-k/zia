@@ -96,6 +96,22 @@
     }
   });
 
+  // The site shows centred only while it clears both sides: the buttons on the
+  // right (tuck, subtitles, Minimise, Close) took more than their third of the
+  // bar in a mid-sized window and ran over it (#600). Measured, not a fixed
+  // width, as the buttons there change.
+  const fitHost = () => {
+    const gap = (el) => parseFloat(getComputedStyle(el).columnGap) || 0;
+    const shown = [...end.children].filter((el) => el.offsetWidth);
+    const right = shown.reduce((sum, el) => sum + el.offsetWidth, 0) + Math.max(0, shown.length - 1) * gap(end);
+    const side = Math.max(back.offsetWidth, right);
+    host.toggleAttribute("zia-off", !host.textContent || host.scrollWidth + 2 * (side + gap(topBar)) > topBar.clientWidth);
+  };
+  const fitWatch = new ResizeObserver(fitHost);
+  fitWatch.observe(topBar);
+  fitWatch.observe(end);
+  new MutationObserver(fitHost).observe(end, { childList: true, subtree: true, attributes: true });
+
   const sliver = make("div", "zia-pip-sliver", document.body);
 
   // Sound and time, bottom left: Firefox's own mute button, volume line and
