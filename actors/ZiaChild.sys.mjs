@@ -18,12 +18,18 @@ const PULL_FIRST_MOVES = 3;
 // Once the fingers lift, macOS goes on sending scroll events of next to nothing while the page
 // bounces back: only a move bigger than this keeps a pull going, or the bubble sat there
 const PULL_STILL_PX = 1;
+const PULL_SIDEWAYS_PX = 3;
 // Past PULL_FULL (the window's, 28w-pull-refresh) the reload waits for the fingers to let go,
 // so pushing back up first cancels it and a form isn't lost to a pull that went too far.
-// Firefox doesn't say when they lift: the pull ends when the scrolling stops, or fades to
-// macOS's coast of a few pixels a move (PULL_FADE_PX), for PULL_LET_GO_MS, a little longer than
-// an ordinary gap so that slowing down to push back isn't taken for letting go
+// Firefox doesn't tell a page when they lift, and while they rest on the trackpad nothing comes
+// at all; but a pull past the top stretches the page (macOS's overscroll), and only once
+// they've lifted does it spring back, which ends with APZ's "APZ:TransformEnd". A pull past
+// the mark waits for that, up to PULL_LIFT_WAIT_MS, then gives up without reloading.
 const PULL_FULL = 200;
+const PULL_LIFT_WAIT_MS = 4000;
+// Where the page doesn't stretch (overscroll off, or overscroll-behavior: none) there's no
+// spring back to wait for: the pull ends when the scrolling stops, or fades to macOS's coast of
+// a few pixels a move (PULL_FADE_PX), for PULL_LET_GO_MS
 const PULL_FADE_PX = 3;
 const PULL_LET_GO_MS = 200;
 // (a pull counts up to this far, so pushing back under PULL_FULL is a short move)
@@ -37,6 +43,7 @@ export class ZiaChild extends JSWindowActorChild {
   #lastWheel = 0;
   #pullTimer = null;
   #pullFrame = 0;
+  #liftWatch = null;
   #down = null;
 
   handleEvent(event) {
@@ -162,10 +169,13 @@ export class ZiaChild extends JSWindowActorChild {
     }
     const now = Date.now();
     const still = Math.abs(event.deltaY) <= PULL_STILL_PX;
-    if (now - this.#lastWheel > PULL_GAP_MS && !still) {
+    // (a pull past the mark that waits for the spring back stays, whatever comes in the
+    // meantime: macOS sends a scroll or two as the fingers lift, after a gap)
+    const waiting = this.#gesture?.springs && this.#gesture.pull >= PULL_FULL;
+    if (now - this.#lastWheel > PULL_GAP_MS && !still && !waiting) {
       this.#gesture =
         this.#pullAllowed(event, win) && !this.#scrollsInside(event)
-          ? { pull: 0, moves: 0, shown: false }
+          ? { pull: 0, moves: 0, shown: false, springs: this.#springsBack(win) }
           : null;
     }
     // (a still event neither starts a pull nor keeps the last one's gap open)
@@ -176,19 +186,27 @@ export class ZiaChild extends JSWindowActorChild {
     if (!gesture) {
       return;
     }
-    // (a sideways swipe is the back and forward gesture's, not a pull)
-    if (!this.#pullAllowed(event, win) || Math.abs(event.deltaX) > Math.abs(event.deltaY) * 1.5) {
+    // (a sideways swipe is the back and forward gesture's, not a pull; a slow pull's drift of a
+    // pixel or two sideways is still a pull)
+    if (!this.#pullAllowed(event, win) || (Math.abs(event.deltaX) > PULL_SIDEWAYS_PX && Math.abs(event.deltaX) > Math.abs(event.deltaY) * 1.5)) {
       this.#endPull(true);
       return;
     }
     gesture.pull = Math.min(PULL_MAX, Math.max(0, gesture.pull - event.deltaY));
     gesture.moves++;
-    // (past PULL_FULL, macOS's fading coast doesn't hold the pull open, and pushing back does)
+    // (past PULL_FULL, a pull waits for the spring back, or else for the scrolling to fade;
+    // pushing back holds it open)
     const armed = gesture.pull >= PULL_FULL;
-    const holds = armed ? event.deltaY > PULL_STILL_PX || -event.deltaY > PULL_FADE_PX : Math.abs(event.deltaY) > PULL_STILL_PX;
-    if (holds || !gesture.shown) {
+    if (armed && gesture.springs) {
+      this.#watchLift();
       win.clearTimeout(this.#pullTimer);
-      this.#pullTimer = win.setTimeout(() => this.#endPull(false), armed ? PULL_LET_GO_MS : PULL_GAP_MS);
+      this.#pullTimer = win.setTimeout(() => this.#endPull(true), PULL_LIFT_WAIT_MS);
+    } else {
+      const holds = armed ? event.deltaY > PULL_STILL_PX || -event.deltaY > PULL_FADE_PX : Math.abs(event.deltaY) > PULL_STILL_PX;
+      if (holds || !gesture.shown) {
+        win.clearTimeout(this.#pullTimer);
+        this.#pullTimer = win.setTimeout(() => this.#endPull(false), armed ? PULL_LET_GO_MS : PULL_GAP_MS);
+      }
     }
     if (gesture.moves > PULL_FIRST_MOVES && (gesture.pull > 0 || gesture.shown) && !this.#pullFrame) {
       this.#pullFrame = win.requestAnimationFrame(() => {
@@ -199,6 +217,33 @@ export class ZiaChild extends JSWindowActorChild {
         }
       });
     }
+  }
+
+  // Whether a pull past the top stretches this page, so letting go springs it back
+  #springsBack(win) {
+    try {
+      const doc = win.document;
+      const stops = [doc.documentElement, doc.body].some((el) => el && win.getComputedStyle(el).overscrollBehaviorY === "none");
+      return !stops && win.windowUtils.asyncPanZoomEnabled && Services.prefs.getBoolPref("apz.overscroll.enabled", false);
+    } catch (err) {
+      return false;
+    }
+  }
+
+  // The fingers have lifted: APZ ends its transform once the stretched page has sprung back
+  // (one notice for the whole content process, so it only counts during a pull past the mark)
+  #watchLift() {
+    if (this.#liftWatch) {
+      return;
+    }
+    this.#liftWatch = {
+      observe: () => {
+        if (this.#gesture?.springs && this.#gesture.pull >= PULL_FULL) {
+          this.#endPull(false);
+        }
+      },
+    };
+    Services.obs.addObserver(this.#liftWatch, "APZ:TransformEnd");
   }
 
   // a trackpad's (in pixels) or a Magic Mouse's scroll, not a pinch or a page that takes its
@@ -328,6 +373,11 @@ export class ZiaChild extends JSWindowActorChild {
 
   didDestroy() {
     this.contentWindow?.clearTimeout(this.#trailingTimer);
+    this.contentWindow?.clearTimeout(this.#pullTimer);
+    if (this.#liftWatch) {
+      Services.obs.removeObserver(this.#liftWatch, "APZ:TransformEnd");
+      this.#liftWatch = null;
+    }
   }
 }
 
