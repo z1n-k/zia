@@ -121,7 +121,6 @@
     "zia.newtab.real-tab": ["Real new tabs", "Cmd/Ctrl+T and + New Tab open a tab. Off: Zen's floating address bar."],
     "zia.newtab.search-engine": ["Search page in new tabs", "Your search engine's page, unless an extension has its own. Off: Zen's new tab page."],
     "zia.newtab.focus-address-bar": ["New tabs start in the address bar", "Ready to type."],
-    "zia.pull-refresh": ["Pull to refresh", "Keep scrolling up at the top of a page, then let go to reload it. Push back up first to cancel."],
     "zia.swipe.dia-arrow": ["Swipe arrow", "Dia's round arrow when swiping back or forward. Hold it to list the pages."],
     "zia.split.drop-cards": ["Split drop cards", "When dragging a tab onto the page to split it. Off: Zen's."],
     "zia.pdf.dia-style": ["Zia PDF viewer", "Reopen a PDF to see it."],
