@@ -4,6 +4,16 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.122.6] — 2026-11-13
+
+### Fixed
+
+- Advanced Tab Groups' groups show their folder icon in the Library's Spaces too; there the
+  name sat beside an empty space ([#567](https://github.com/z1n-k/zia/issues/567)).
+- Pull to refresh waits for you to let go before it reloads, so pushing back up first cancels
+  it and nothing typed in a form is lost to a pull that went too far. Before, it reloaded as
+  soon as the pull slowed down past the mark.
+
 ## [2.122.5] — 2026-11-11
 
 ### Fixed
