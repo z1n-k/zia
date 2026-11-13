@@ -4,6 +4,15 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.122.7] — 2026-11-13
+
+### Fixed
+
+- Pull to refresh really waits for you to let go now. 2.122.6 took a pull held still past the
+  arrow for letting go and reloaded; now it reloads only once the page springs back, which
+  happens after your fingers lift. Hold still past the arrow for four seconds and it gives
+  up without reloading; push back up and it cancels.
+
 ## [2.122.6] — 2026-11-13
 
 ### Fixed
