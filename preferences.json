@@ -589,13 +589,6 @@
   },
   {
     "type": "checkbox",
-    "label": "Pull to refresh: keep scrolling up at the top of a page and let go to reload it",
-    "property": "zia.pull-refresh",
-    "since": "2.121.0",
-    "defaultValue": true
-  },
-  {
-    "type": "checkbox",
     "label": "Drop cards when dragging a tab onto the page to split it (off: Zen's)",
     "property": "zia.split.drop-cards",
     "defaultValue": true

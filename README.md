@@ -165,7 +165,6 @@ Right-click a video and choose **Add to Multiview**. Up to four videos or live s
 
 ### And more
 
-- **Pull to refresh:** keep scrolling up at the top of a page, then let go to reload it.
 - **Bookmarks and History** as a second sidebar beside the page.
 - **The Library** drawn the way Zia draws the sidebar.
 - **PDFs** in a cleaner viewer.
@@ -241,7 +240,6 @@ Open **Zia Settings** from the **⋯** menu, or find them under Zia in Sine. Alm
 | New tabs start in the address bar | Off |
 | **Page** | — |
 | Swipe arrow | On |
-| Pull to refresh | On |
 | Split drop cards | On |
 | Zia PDF viewer | On |
 | Link previews | Off |

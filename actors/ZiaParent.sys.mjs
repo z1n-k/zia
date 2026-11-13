@@ -8,8 +8,6 @@ export class ZiaParent extends JSWindowActorParent {
       win?.ziaOnPageScroll?.(browser, message.data);
     } else if (message.name === "Zia:Painted") {
       win?.ziaOnPagePainted?.(browser);
-    } else if (message.name === "Zia:Pull") {
-      win?.ziaOnPagePull?.(browser, message.data);
     } else if (message.name === "Zia:OpenLink") {
       win?.ziaOpenLink?.(browser, message.data);
     }

@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.122.9] — 2026-11-13
+
+### Removed
+
+- Pull to refresh, for now. It still reloaded pages it shouldn't have, on sites like X and in
+  Glance, and couldn't always be cancelled. It'll come back once it works everywhere.
+
 ## [2.122.8] — 2026-11-13
 
 ### Fixed
