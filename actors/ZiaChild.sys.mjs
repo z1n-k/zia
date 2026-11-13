@@ -34,6 +34,19 @@ const PULL_FADE_PX = 3;
 const PULL_LET_GO_MS = 200;
 // (a pull counts up to this far, so pushing back under PULL_FULL is a short move)
 const PULL_MAX = 260;
+// Pushing back counts this many times over: the stretch a pull leaves is a sliver of the
+// scrolling that made it (Olly's trackpad: a 260 pull's stretch was gone after 17px of pushing
+// back, and the page scrolled on under a bubble still nearly full). So the bubble goes as the
+// stretch does, gone by about 13px, before the page scrolls.
+const PULL_BACK_GAIN = 20;
+// Pushing a pull back cancels it and nothing else: the page holds still for the rest of that
+// gesture, its coast included (Olly: it scrolled down as the arrow went), until the scrolling
+// has stopped for PULL_HOLD_GAP_MS (at most PULL_HOLD_MAX_MS). Held by a user sheet, so nothing of
+// the page's is touched (and its !important outranks the page's; an agent sheet loaded by address
+// can't be taken off again).
+const PULL_HOLD_GAP_MS = 250;
+const PULL_HOLD_MAX_MS = 4000;
+const PULL_HOLD_SHEET = "data:text/css,:root{overflow:hidden!important}";
 
 export class ZiaChild extends JSWindowActorChild {
   #lastSent = 0;
@@ -44,6 +57,7 @@ export class ZiaChild extends JSWindowActorChild {
   #pullTimer = null;
   #pullFrame = 0;
   #liftWatch = null;
+  #hold = null;
   #down = null;
 
   handleEvent(event) {
@@ -169,10 +183,17 @@ export class ZiaChild extends JSWindowActorChild {
     }
     const now = Date.now();
     const still = Math.abs(event.deltaY) <= PULL_STILL_PX;
+    if (this.#hold) {
+      this.#holdOn(win);
+    }
     // (a pull past the mark that waits for the spring back stays, whatever comes in the
     // meantime: macOS sends a scroll or two as the fingers lift, after a gap)
     const waiting = this.#gesture?.springs && this.#gesture.pull >= PULL_FULL;
     if (now - this.#lastWheel > PULL_GAP_MS && !still && !waiting) {
+      // (a pull still on show is over: it went without a word before, and its bubble stayed)
+      if (this.#gesture?.shown) {
+        this.#endPull(true);
+      }
       this.#gesture =
         this.#pullAllowed(event, win) && !this.#scrollsInside(event)
           ? { pull: 0, moves: 0, shown: false, springs: this.#springsBack(win) }
@@ -186,14 +207,25 @@ export class ZiaChild extends JSWindowActorChild {
     if (!gesture) {
       return;
     }
+    // (a resting finger's pixel of jitter isn't pushing back; held before anything else, as
+    // a quick push back has the page off its top by its first move)
+    const pushesBack = gesture.shown && event.deltaY > PULL_STILL_PX;
+    if (pushesBack) {
+      this.#holdOn(win);
+    }
     // (a sideways swipe is the back and forward gesture's, not a pull; a slow pull's drift of a
     // pixel or two sideways is still a pull)
     if (!this.#pullAllowed(event, win) || (Math.abs(event.deltaX) > PULL_SIDEWAYS_PX && Math.abs(event.deltaX) > Math.abs(event.deltaY) * 1.5)) {
       this.#endPull(true);
       return;
     }
-    gesture.pull = Math.min(PULL_MAX, Math.max(0, gesture.pull - event.deltaY));
+    gesture.pull = Math.min(PULL_MAX, Math.max(0, gesture.pull - event.deltaY * (pushesBack ? PULL_BACK_GAIN : 1)));
     gesture.moves++;
+    // (pushed all the way back: over now, not after the scrolling stops, as the page scrolls on)
+    if (gesture.shown && gesture.pull === 0 && event.deltaY > 0) {
+      this.#endPull(true);
+      return;
+    }
     // (past PULL_FULL, a pull waits for the spring back, or else for the scrolling to fade;
     // pushing back holds it open)
     const armed = gesture.pull >= PULL_FULL;
@@ -216,6 +248,41 @@ export class ZiaChild extends JSWindowActorChild {
           this.#sendPull(this.#gesture.pull, false);
         }
       });
+    }
+  }
+
+  // The page held still while a pull is pushed back, until the scrolling stops
+  #holdOn(win) {
+    if (!this.#hold) {
+      try {
+        win.windowUtils.loadSheetUsingURIString(PULL_HOLD_SHEET, win.windowUtils.USER_SHEET);
+      } catch (err) {
+        return;
+      }
+      this.#hold = { win, since: Date.now(), timer: 0 };
+      // (and back to the top, for what scrolled before the hold took)
+      if (win.scrollY > 0) {
+        win.scrollTo({ top: 0, behavior: "instant" });
+      }
+    }
+    win.clearTimeout(this.#hold.timer);
+    const left = PULL_HOLD_MAX_MS - (Date.now() - this.#hold.since);
+    this.#hold.timer = win.setTimeout(() => this.#holdOff(), Math.max(0, Math.min(PULL_HOLD_GAP_MS, left)));
+  }
+
+  #holdOff() {
+    const hold = this.#hold;
+    this.#hold = null;
+    if (!hold) {
+      return;
+    }
+    try {
+      hold.win.clearTimeout(hold.timer);
+      if (hold.win.scrollY > 0) {
+        hold.win.scrollTo({ top: 0, behavior: "instant" });
+      }
+      hold.win.windowUtils.removeSheetUsingURIString(PULL_HOLD_SHEET, hold.win.windowUtils.USER_SHEET);
+    } catch (err) {
     }
   }
 
@@ -374,6 +441,7 @@ export class ZiaChild extends JSWindowActorChild {
   didDestroy() {
     this.contentWindow?.clearTimeout(this.#trailingTimer);
     this.contentWindow?.clearTimeout(this.#pullTimer);
+    this.#holdOff();
     if (this.#liftWatch) {
       Services.obs.removeObserver(this.#liftWatch, "APZ:TransformEnd");
       this.#liftWatch = null;

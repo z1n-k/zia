@@ -4,6 +4,19 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.122.8] — 2026-11-13
+
+### Fixed
+
+- Pushing back to cancel a pull to refresh just cancels it now: the arrow goes as you push
+  back, and the page stays at the top instead of scrolling down under it, coast and all. The
+  arrow no longer gets stuck on the page when you rest your fingers before pushing back.
+
+### Changed
+
+- Once you let go, the refresh arrow keeps spinning until the page has reloaded, so you can
+  see the refresh was taken.
+
 ## [2.122.7] — 2026-11-13
 
 ### Fixed

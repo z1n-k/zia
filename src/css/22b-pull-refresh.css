@@ -1,6 +1,6 @@
 /* Pull to refresh's bubble (28w-pull-refresh.js): it comes down from the top of the page as the
    page is pulled past its top, its arrow turning with it; far enough (armed) it pops a touch and
-   its arrow goes bright, and it spins while the page reloads */
+   its arrow goes bright, and it spins from the let go until the page has reloaded */
 #zia-pull {
   --p: 0;
   position: absolute;
@@ -55,9 +55,13 @@
   fill: rgb(28, 28, 32);
 }
 
+/* (on from where the pull left the arrow, 300deg, not a jump back to upright) */
 @keyframes zia-pull-spin {
+  from {
+    rotate: 300deg;
+  }
   to {
-    rotate: 360deg;
+    rotate: 660deg;
   }
 }
 
