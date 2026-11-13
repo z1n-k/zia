@@ -23081,7 +23081,10 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
   // (as ZiaChild's PULL_FULL: a real trackpad pull passes 200 in a tenth of a second, and lower
   // went off with a casual scroll up at the top)
   const PULL_FULL = 200;
-  const PULL_RELOAD_SHOW_MS = 500;
+  // (the arrow spins from the let go until the page has loaded, at least this long, at most
+  // PULL_RELOAD_MAX_MS)
+  const PULL_RELOAD_SHOW_MS = 600;
+  const PULL_RELOAD_MAX_MS = 8000;
   // (after a pull reloads, the reloaded page still gets the rest of the trackpad's coast, from
   // its top, and read it as another pull: none for this long)
   const PULL_QUIET_MS = 1600;
@@ -23125,6 +23128,9 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
       if (!el) {
         return;
       }
+      if (el.hasAttribute("reloading")) {
+        return;
+      }
       clearTimeout(leaveTimer);
       el.removeAttribute("zia-leaving");
       const p = Math.min(1, Math.max(0, (Number(data?.pull) || 0) / PULL_FULL));
@@ -23153,7 +23159,15 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
       } catch (err) {
         gBrowser.reloadTab(gBrowser.selectedTab);
       }
-      leaveTimer = setTimeout(() => leave(el), PULL_RELOAD_SHOW_MS);
+      const loaded = () => {
+        const waited = Date.now() - reloadedAt;
+        if (waited >= PULL_RELOAD_MAX_MS || !browser.webProgress?.isLoadingDocument || !el.hasAttribute("reloading")) {
+          leave(el);
+        } else {
+          leaveTimer = setTimeout(loaded, 100);
+        }
+      };
+      leaveTimer = setTimeout(loaded, PULL_RELOAD_SHOW_MS);
     };
     gBrowser.tabContainer.addEventListener("TabSelect", () => bubble && leave(bubble));
   }
