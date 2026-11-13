@@ -18,13 +18,16 @@ const PULL_FIRST_MOVES = 3;
 // Once the fingers lift, macOS goes on sending scroll events of next to nothing while the page
 // bounces back: only a move bigger than this keeps a pull going, or the bubble sat there
 const PULL_STILL_PX = 1;
-// A pull this far (the window's PULL_FULL, 28w-pull-refresh) lets go as the fingers lift: when
-// the movement drops under PULL_COAST of its peak for PULL_COAST_MOVES moves in a row, which is
-// macOS coasting on alone (Firefox doesn't say when the fingers lift; waiting for the coast to
-// end held the bubble a second or more)
+// Past PULL_FULL (the window's, 28w-pull-refresh) the reload waits for the fingers to let go,
+// so pushing back up first cancels it and a form isn't lost to a pull that went too far.
+// Firefox doesn't say when they lift: the pull ends when the scrolling stops, or fades to
+// macOS's coast of a few pixels a move (PULL_FADE_PX), for PULL_LET_GO_MS, a little longer than
+// an ordinary gap so that slowing down to push back isn't taken for letting go
 const PULL_FULL = 200;
-const PULL_COAST = 0.4;
-const PULL_COAST_MOVES = 3;
+const PULL_FADE_PX = 3;
+const PULL_LET_GO_MS = 200;
+// (a pull counts up to this far, so pushing back under PULL_FULL is a short move)
+const PULL_MAX = 260;
 
 export class ZiaChild extends JSWindowActorChild {
   #lastSent = 0;
@@ -162,7 +165,7 @@ export class ZiaChild extends JSWindowActorChild {
     if (now - this.#lastWheel > PULL_GAP_MS && !still) {
       this.#gesture =
         this.#pullAllowed(event, win) && !this.#scrollsInside(event)
-          ? { pull: 0, moves: 0, shown: false, peak: 0, calm: 0, released: false }
+          ? { pull: 0, moves: 0, shown: false }
           : null;
     }
     // (a still event neither starts a pull nor keeps the last one's gap open)
@@ -170,8 +173,7 @@ export class ZiaChild extends JSWindowActorChild {
       this.#lastWheel = now;
     }
     const gesture = this.#gesture;
-    // (once let go, the rest of the gesture, the coast, is left alone)
-    if (!gesture || gesture.released) {
+    if (!gesture) {
       return;
     }
     // (a sideways swipe is the back and forward gesture's, not a pull)
@@ -179,21 +181,14 @@ export class ZiaChild extends JSWindowActorChild {
       this.#endPull(true);
       return;
     }
-    gesture.pull = Math.max(0, gesture.pull - event.deltaY);
+    gesture.pull = Math.min(PULL_MAX, Math.max(0, gesture.pull - event.deltaY));
     gesture.moves++;
-    gesture.peak = Math.max(gesture.peak, Math.abs(event.deltaY));
-    if (gesture.pull >= PULL_FULL) {
-      gesture.calm = Math.abs(event.deltaY) < gesture.peak * PULL_COAST ? gesture.calm + 1 : 0;
-      if (gesture.calm >= PULL_COAST_MOVES && gesture.shown) {
-        gesture.released = true;
-        win.clearTimeout(this.#pullTimer);
-        this.#sendPull(gesture.pull, true);
-        return;
-      }
-    }
-    if (Math.abs(event.deltaY) > PULL_STILL_PX || !gesture.shown) {
+    // (past PULL_FULL, macOS's fading coast doesn't hold the pull open, and pushing back does)
+    const armed = gesture.pull >= PULL_FULL;
+    const holds = armed ? event.deltaY > PULL_STILL_PX || -event.deltaY > PULL_FADE_PX : Math.abs(event.deltaY) > PULL_STILL_PX;
+    if (holds || !gesture.shown) {
       win.clearTimeout(this.#pullTimer);
-      this.#pullTimer = win.setTimeout(() => this.#endPull(false), PULL_GAP_MS);
+      this.#pullTimer = win.setTimeout(() => this.#endPull(false), armed ? PULL_LET_GO_MS : PULL_GAP_MS);
     }
     if (gesture.moves > PULL_FIRST_MOVES && (gesture.pull > 0 || gesture.shown) && !this.#pullFrame) {
       this.#pullFrame = win.requestAnimationFrame(() => {
@@ -257,7 +252,7 @@ export class ZiaChild extends JSWindowActorChild {
     const gesture = this.#gesture;
     this.#gesture = null;
     this.contentWindow?.clearTimeout(this.#pullTimer);
-    if (gesture?.shown && !gesture.released) {
+    if (gesture?.shown) {
       this.#sendPull(cancelled ? 0 : gesture.pull, true);
     }
   }

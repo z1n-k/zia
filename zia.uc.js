@@ -18526,6 +18526,29 @@
     }
   }
 
+  // Advanced Tab Groups' groups in the Library's Spaces get their folder icon too: Zen copies
+  // each row bare and fills a folder's icon box itself, but a group's box is one Advanced Tab
+  // Groups adds to the real group (its folder look), so the copy had none and its name sat
+  // beside an empty space (#567). The copy takes the real group's box as it is now.
+  function iconLibraryGroups(library) {
+    for (const copy of library.querySelectorAll("tab-group[zen-library-copy][atg-folder-look]:not([split-view-group])")) {
+      const head = copy.querySelector(":scope > .tab-group-label-container");
+      if (!head || head.querySelector(":scope > .tab-group-folder-icon") || !copy.id.endsWith("-copy")) {
+        continue;
+      }
+      const real = document.getElementById(copy.id.slice(0, -"-copy".length));
+      const box = real?.localName === "tab-group" ? real.querySelector(":scope > .tab-group-label-container > .tab-group-folder-icon") : null;
+      if (!box) {
+        continue;
+      }
+      const clone = box.cloneNode(true);
+      for (const el of clone.querySelectorAll("[id]")) {
+        el.removeAttribute("id");
+      }
+      head.prepend(clone);
+    }
+  }
+
   // How far the page beside the open Library covers its edge, measured as it is (24-library.css
   // keeps the Library clear of it by that much): Zen moves the page aside by its own reckoning
   // of the gaps round it, not Zia's, so it fell short or over by a few pixels, more or less
@@ -18685,6 +18708,7 @@
     const sectionWatcher = new MutationObserver((records) => {
       addButtons(watched);
       safely("library: space inks", () => inkLibrarySpaces(watched));
+      safely("library: group icons", () => iconLibraryGroups(watched));
       if (!records.every((record) => record.target.classList?.contains("zia-library-rail"))) {
         safely("library: rail", () => railLibrarySections(watched));
       }
@@ -22588,7 +22612,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     "zia.newtab.real-tab": ["Real new tabs", "Cmd/Ctrl+T and + New Tab open a tab. Off: Zen's floating address bar."],
     "zia.newtab.search-engine": ["Search page in new tabs", "Your search engine's page, unless an extension has its own. Off: Zen's new tab page."],
     "zia.newtab.focus-address-bar": ["New tabs start in the address bar", "Ready to type."],
-    "zia.pull-refresh": ["Pull to refresh", "Keep scrolling up at the top of a page, then let go to reload it."],
+    "zia.pull-refresh": ["Pull to refresh", "Keep scrolling up at the top of a page, then let go to reload it. Push back up first to cancel."],
     "zia.swipe.dia-arrow": ["Swipe arrow", "Dia's round arrow when swiping back or forward. Hold it to list the pages."],
     "zia.split.drop-cards": ["Split drop cards", "When dragging a tab onto the page to split it. Off: Zen's."],
     "zia.pdf.dia-style": ["Zia PDF viewer", "Reopen a PDF to see it."],
