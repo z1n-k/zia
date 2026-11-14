@@ -71,6 +71,12 @@ Cu.evalInSandbox(arguments[0], EU);
 const SYSTEM = Services.scriptSecurityManager.getSystemPrincipal();
 
 async function ready() {
+  // (ZIA_OFF: Zen and Sine alone, so only the window's own start)
+  if (ZIA_OFF) {
+    await until(() => window.gBrowserInit?.delayedStartupFinished, { what: "Zen to start", timeout: 30000 });
+    await wait(1500);
+    return;
+  }
   // (half a minute: Zia is in within seconds even on a busy Mac; past that, Sine never loaded,
   // which run.py tries again in a fresh profile, so it says so in its own words)
   await until(() => window.__ziaLoaded, { timeout: 30000, every: 250 }).catch(() => {});

@@ -8,6 +8,16 @@ baseline/<flow>.json (what an unchanged Zia sees).
     tests/zen/run.sh --show          a visible window instead of a hidden one
     tests/zen/run.sh --jobs=1        one Zen at a time (three by default)
 
+Set in the environment, for one run:
+    ZIA_ZEN=<folder holding Zen.app>  another Zen (a new release, before it's installed)
+    ZIA_OFF=1                         Zen and Sine without Zia, to tell Zia's doing from Zen's
+    ZIA_ATG=<folder>                  Advanced Tab Groups loaded beside Zia
+    ZIA_PREFS='user_pref(...);'       prefs set from the first start
+    ZIA_FLOW_TIMEOUT=<seconds>        a flow's time limit (90 by default)
+
+A flow with a line `// uses: trackpad.js` gets that file of this folder put before it (trackpad.js:
+real trackpad scrolls, needs --show).
+
 The baseline holds exact pixels and timings, as Zia's motion is what it tests: after a Zen or
 Sine update (start-up.js records both), check the differences and re-record.
 """
@@ -17,6 +27,7 @@ import difflib
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -34,6 +45,8 @@ BASELINE = os.path.join(HERE, "baseline")  # one file per flow, beside its flows
 # (what this checkout's last run saw: each checkout keeps its own)
 LATEST = os.path.join(ROOT, "latest-" + hashlib.sha1(HERE.encode()).hexdigest()[:8] + ".json")
 JOBS = 3
+ZIA_OFF = os.environ.get("ZIA_OFF") == "1"
+FLOW_TIMEOUT = int(os.environ.get("ZIA_FLOW_TIMEOUT") or 90)
 EVENT_UTILS = os.path.join(ROOT, "EventUtils.js")
 # (pinned, and checked, so the helpers never change under the tests)
 EVENT_UTILS_URL = "https://raw.githubusercontent.com/mozilla-firefox/firefox/8b0aa3525257ad862f6f6c88c1d48e8c774f96c7/testing/mochitest/tests/SimpleTest/EventUtils.js"
@@ -48,9 +61,11 @@ def warm_template(headless):
     shutil.copytree(TEMPLATE, warm, symlinks=True)
     zen = Zen(warm, headless=headless)
     try:
+        # (without Zia, the window's own start is what there is to wait for)
+        loaded = "window.gBrowserInit?.delayedStartupFinished" if ZIA_OFF else "window.__ziaLoaded"
         zen.run("const done = arguments[arguments.length - 1]; "
-                "(async () => { for (let i = 0; i < 120 && !window.__ziaLoaded; i++) "
-                "await new Promise((r) => setTimeout(r, 250)); done(!!window.__ziaLoaded); })();")
+                f"(async () => {{ for (let i = 0; i < 120 && !{loaded}; i++) "
+                f"await new Promise((r) => setTimeout(r, 250)); done(!!{loaded}); }})();")
     finally:
         zen.quit()
     for name in ("startupCache", "compatibility.ini"):
@@ -79,11 +94,14 @@ def run_flow(name, helpers, utils, headless):
     shutil.rmtree(profile, ignore_errors=True)
     shutil.copytree(TEMPLATE, profile, symlinks=True)
     body = open(os.path.join(HERE, "flows", name + ".js")).read()
+    uses = [open(os.path.join(HERE, used)).read() for used in re.findall(r"^// uses: (\S+)$", body, re.M)]
     script = "\n".join([
+        f"const ZIA_OFF = {'true' if ZIA_OFF else 'false'};",
         helpers,
         "(async () => {",
         "  try {",
         "    await ready();",
+        *uses,
         body,
         "  } catch (e) {",
         "    done({ error: String(e), stack: String(e.stack).split('\\n').slice(0, 4) });",
@@ -92,7 +110,7 @@ def run_flow(name, helpers, utils, headless):
     ])
     zen = Zen(profile, headless=headless)
     try:
-        return zen.run(script, utils, timeout=90)
+        return zen.run(script, utils, timeout=FLOW_TIMEOUT)
     finally:
         zen.quit()
 

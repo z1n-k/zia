@@ -7,7 +7,9 @@ import socket
 import subprocess
 import time
 
-ZEN = "/Applications/Zen.app/Contents/MacOS/zen"
+# (ZIA_ZEN=<folder holding Zen.app>: another Zen, say a new release downloaded to test before
+# it's installed)
+ZEN = os.path.join(os.environ.get("ZIA_ZEN") or "/Applications", "Zen.app/Contents/MacOS/zen")
 
 
 def free_port():
