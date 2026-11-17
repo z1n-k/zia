@@ -260,6 +260,12 @@
     }
   }
 
+  // Another mod's provider that never answers leaves the bar with no list
+  // (#607): those get a second (ZiaUrlbarGuard.sys.mjs).
+  function guardAddressBarProviders() {
+    ChromeUtils.importESModule("chrome://sine/content/zia/actors/ZiaUrlbarGuard.sys.mjs").guardAddressBarProviders();
+  }
+
   function setupAddressBarCommands() {
     const actions = addressBarActions();
     if (!actions) {

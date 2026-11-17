@@ -296,6 +296,7 @@
     safely("watchSidebarPanels", watchSidebarPanels);
     safely("watchTypedAddress", watchTypedAddress);
     safely("setupAddressBarCommands", setupAddressBarCommands);
+    safely("guardAddressBarProviders", guardAddressBarProviders);
     safely("registerScrollActor", registerScrollActor);
     safely("registerPdfActor", registerPdfActor);
     safely("registerVideoActor", registerVideoActor);
