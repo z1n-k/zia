@@ -16100,7 +16100,30 @@
           addTo(node);
         }
       }
+      // (once it's laid out: Zen shows the container as the toast goes in)
+      requestAnimationFrame(() => placeToasts(container));
     }).observe(container, { childList: true });
+  }
+
+  // Zen puts its toasts a few pixels from the top of the page. Where the
+  // toolbar stays across the top over that corner (Windows' single toolbar
+  // keeps a row there for the extensions and window buttons), the toast
+  // came up underneath it, cut off; it sits just below the toolbar instead.
+  const TOAST_TOOLBAR_GAP = 6;
+  const TOAST_HEIGHT = 48; // (about a toast's height)
+  function placeToasts(container) {
+    container.style.removeProperty("margin-top");
+    const bar = document.getElementById("nav-bar")?.getBoundingClientRect();
+    // (the container has no size: the toasts hang from its corner, where they
+    // land once they've slid in; measured mid-slide they're elsewhere)
+    const corner = container.getBoundingClientRect();
+    if (!bar?.height || !container.children.length) {
+      return;
+    }
+    const across = bar.left <= corner.left && bar.right >= corner.left;
+    if (across && bar.top < corner.top + TOAST_HEIGHT && bar.bottom + TOAST_TOOLBAR_GAP > corner.top) {
+      container.style.setProperty("margin-top", `${Math.ceil(bar.bottom + TOAST_TOOLBAR_GAP - corner.top)}px`);
+    }
   }
   // A page glanced at from an essential: a small card springs out from behind its
   // icon (CSS) and, as Zen takes the tab away at once, a stand-in is sucked back in.
@@ -19530,6 +19553,12 @@
         actions.splice(i, 1);
       }
     }
+  }
+
+  // Another mod's provider that never answers leaves the bar with no list
+  // (#607): those get a second (ZiaUrlbarGuard.sys.mjs).
+  function guardAddressBarProviders() {
+    ChromeUtils.importESModule("chrome://sine/content/zia/actors/ZiaUrlbarGuard.sys.mjs").guardAddressBarProviders();
   }
 
   function setupAddressBarCommands() {
@@ -23435,6 +23464,7 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     safely("watchSidebarPanels", watchSidebarPanels);
     safely("watchTypedAddress", watchTypedAddress);
     safely("setupAddressBarCommands", setupAddressBarCommands);
+    safely("guardAddressBarProviders", guardAddressBarProviders);
     safely("registerScrollActor", registerScrollActor);
     safely("registerPdfActor", registerPdfActor);
     safely("registerVideoActor", registerVideoActor);

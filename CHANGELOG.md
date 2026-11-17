@@ -4,6 +4,17 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.122.10] — 2026-11-17
+
+### Fixed
+
+- The address bar's list no longer stays shut when another mod's address bar search stops
+  answering (Zen Command Palette's, after the Mac had slept): Zia gives a mod's search one
+  second, then shows the list without it. Restart Zen once after updating.
+- Zen's little notes in the corner (like "Copied" after Ctrl+Shift+C) no longer come up
+  half hidden under the toolbar on Windows: where a toolbar runs across the top, they sit just
+  below it.
+
 ## [2.122.9] — 2026-11-13
 
 ### Removed
