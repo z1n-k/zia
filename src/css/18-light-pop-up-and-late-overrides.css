@@ -1,7 +1,7 @@
 /* The pop-up is light in a light space and dark in a dark one, as Zen's theme is (25-sidebar-paint's
    zia-light): it went by the setting for web pages' light or dark, so a dark theme on a light
    system got a white pop-up (#562) */
-:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar[breakout-extend]:not([zia-classic]) {
+:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar[breakout-extend]:not([zia-classic], [zia-pop-site]) {
   color-scheme: light !important;
   color: rgb(28, 28, 30) !important;
   --zia-urlbar-open-bg: rgb(248, 249, 250) !important;
@@ -49,13 +49,13 @@
 
 /* The pop-up's icons in its light look: the search glass by the typing and
    the rows' globes and glasses stayed white */
-:is(:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar, #urlbar#urlbar[zia-pop-site="light"])[breakout-extend]:not([zia-classic]) :is(#identity-icon, .urlbarView-favicon, .urlbarView-type-icon) {
+:is(:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar:not([zia-pop-site]), #urlbar#urlbar[zia-pop-site="light"])[breakout-extend]:not([zia-classic]) :is(#identity-icon, .urlbarView-favicon, .urlbarView-type-icon) {
   fill: rgba(28, 28, 30, 0.72) !important;
   fill-opacity: 1 !important;
 }
 
 /* and on the selected row, which Zen darkens for its white chip */
-:is(:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar, #urlbar#urlbar[zia-pop-site="light"])[breakout-extend]:not([zia-classic]) .urlbarView-row[selected] {
+:is(:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar:not([zia-pop-site]), #urlbar#urlbar[zia-pop-site="light"])[breakout-extend]:not([zia-classic]) .urlbarView-row[selected] {
   & .urlbarView-favicon {
     fill: rgba(28, 28, 30, 0.72) !important;
   }
@@ -188,7 +188,7 @@
    the pop-up the same light look, whatever the websites' own appearance
    setting: it stayed dark there, under a light sidebar. The same look for
    the pop-up in a light toolbar's colour. */
-:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar[breakout-extend]:not([zia-classic]),
+:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar[breakout-extend]:not([zia-classic], [zia-pop-site]),
 :root:not(#zia-none) #urlbar#urlbar[breakout-extend][zia-pop-site="light"]:not([zia-classic]) {
   color-scheme: light !important;
   color: rgb(28, 28, 30) !important;
@@ -233,7 +233,7 @@
   }
 }
 
-:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar[breakout-extend]:not([zia-classic]) {
+:root[zia-light]:not([privatebrowsingmode="temporary"]) #urlbar[breakout-extend]:not([zia-classic], [zia-pop-site]) {
   --zia-urlbar-open-bg: rgb(248, 249, 250) !important;
 
   & > .urlbar-background {

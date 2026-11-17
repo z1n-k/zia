@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.122.11] — 2026-11-17
+
+### Fixed
+
+- With the address bar's pop-up in the toolbar's colour, a dark site's pop-up in Zen's light
+  mode now has light text: its text and icons stayed dark, on a dark pop-up.
+
 ## [2.122.10] — 2026-11-17
 
 ### Fixed
