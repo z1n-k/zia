@@ -86,7 +86,7 @@ Essentials become tiles, a space's colour carries through, and folders get colou
 
 - Drag a tab and the rows slide aside for it; over the essentials it becomes a tile.
 - Hover a tab for a card with a picture of the page, its title and a few actions. Tabs asleep keep their last picture.
-- Hold **Cmd** (**Ctrl** on Windows and Linux) to number your tabs, type a number and let go to go there.
+- Hold **Cmd** (**Ctrl** on Windows and Linux) to number your tabs, type a number and let go to go there. Settings can make it **Option** (**Alt**) instead.
 - **Cmd/Ctrl+Z** reopens what you just closed, folders and splits included.
 - Space icons at the foot of the sidebar can shrink to dots, each showing as you point at it.
 
