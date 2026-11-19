@@ -16816,8 +16816,10 @@
   // Tab numbers: hold Cmd (Ctrl elsewhere) and a key shows on every visible tab and
   // essential, Zia taking over Cmd/Ctrl+digit so all are reachable (Firefox's stop at
   // 8). The typed number lights up and is chosen only on letting go, so nothing loads
-  // by accident; past nine, type the digits in turn. Optionally shown all the time.
+  // by accident; past nine, type the digits in turn. Optionally shown all the time, or
+  // held on Option/Alt instead, leaving Cmd/Ctrl+digit to Zen (#612).
   const TAB_NUMBERS_ALWAYS_PREF = "zia.tab-numbers.always";
+  const TAB_NUMBERS_KEY_PREF = "zia.tab-numbers.key";
   const TAB_NUMBERS_COLOR_PREF = "zia.tab-numbers.color";
 
   // The tabs the keys go to, in order: what's on screen, in the tab strip's
@@ -16869,9 +16871,15 @@
 
   function watchTabNumbers() {
     const mac = AppConstants.platform === "macosx";
-    const isModKey = (event) => event.key === (mac ? "Meta" : "Control");
-    const modHeld = (event) =>
-      (mac ? event.metaKey && !event.ctrlKey : event.ctrlKey && !event.metaKey) && !event.altKey && !event.shiftKey;
+    // Read on every key, so a change in Settings counts at once
+    const onAlt = () => Services.prefs.getStringPref(TAB_NUMBERS_KEY_PREF, "cmd") === "alt";
+    const isModKey = (event) => event.key === (onAlt() ? "Alt" : mac ? "Meta" : "Control");
+    // Only the one key held: AltGr (Ctrl and Alt together) still types its characters
+    const modHeld = (event) => {
+      const held = { Meta: event.metaKey, Control: event.ctrlKey, Alt: event.altKey, Shift: event.shiftKey };
+      const want = onAlt() ? "Alt" : mac ? "Meta" : "Control";
+      return Object.entries(held).every(([key, down]) => down === (key === want));
+    };
 
     let tabs = [];
     let typed = "";
@@ -16962,6 +16970,10 @@
         "keyup",
         (event) => {
           if (isModKey(event)) {
+            // Alt let go after a number: no menu bar on Windows and Linux
+            if (typed && onAlt()) {
+              event.preventDefault();
+            }
             commit();
           }
         },
@@ -16970,7 +16982,7 @@
     }
     // Should the letting go of Cmd still be missed, the next key or move
     // of the mouse without it held puts the keys away
-    const heldStill = (event) => (mac ? event.metaKey : event.ctrlKey);
+    const heldStill = (event) => (onAlt() ? event.altKey : mac ? event.metaKey : event.ctrlKey);
     for (const type of ["mousemove", "mousedown", "wheel", "keyup"]) {
       window.addEventListener(
         type,
@@ -22604,7 +22616,8 @@ function ziaGlow(container, { dark = true, cornerShape = "" } = {}) {
     "zia.folders.tint-card": ["Folder-coloured cards", "A coloured folder's hover card takes its colour."],
     "zia.tabs.sound-bars": ["Sound bars", "On playing tabs. Off: Zen's speaker."],
     "zia.sound-bars.always-move": ["Always animate sound bars", "Even when your system asks for less motion."],
-    "zia.features.tab-numbers": ["Tab numbers", "Hold Cmd/Ctrl to number your tabs, then type one to go to it."],
+    "zia.features.tab-numbers": ["Tab numbers", "Hold Cmd/Ctrl (or Option/Alt) to number your tabs, then type one to go to it."],
+    "zia.tab-numbers.key": ["Key to hold", "Option/Alt leaves Cmd/Ctrl and a number to Zen."],
     "zia.tab-numbers.always": ["Always show tab numbers", ""],
     "zia.tab-numbers.color": ["Typed number colour", ""],
     "zia.features.undo-close": ["Cmd/Ctrl+Z reopens tabs", "Brings back the last closed tab."],

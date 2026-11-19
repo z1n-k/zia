@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.122.12] — 2026-11-19
+
+### Added
+
+- Tab numbers can be held on Option (Alt on Windows and Linux) instead of Cmd/Ctrl, in
+  Settings under Tab numbers. Cmd/Ctrl and a number then go back to Zen's own shortcuts.
+
 ## [2.122.11] — 2026-11-17
 
 ### Fixed

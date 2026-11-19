@@ -153,6 +153,30 @@
     "defaultValue": true
   },
   {
+    "type": "dropdown",
+    "label": "Key to hold for tab numbers",
+    "property": "zia.tab-numbers.key",
+    "defaultValue": "cmd",
+    "options": [
+      {
+        "label": "Cmd (Ctrl on Windows and Linux)",
+        "value": "cmd"
+      },
+      {
+        "label": "Option (Alt on Windows and Linux)",
+        "value": "alt"
+      }
+    ],
+    "conditions": [
+      {
+        "if": {
+          "property": "zia.features.tab-numbers",
+          "value": true
+        }
+      }
+    ]
+  },
+  {
     "type": "checkbox",
     "label": "Tab numbers always showing",
     "property": "zia.tab-numbers.always",
