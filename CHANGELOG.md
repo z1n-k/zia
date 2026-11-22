@@ -4,6 +4,13 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.122.13] — 2026-11-22
+
+### Fixed
+
+- In compact mode with the toolbar staying up, the sidebar's top row (its toggle and the
+  space's name) now lines up with the toolbar's buttons: it sat 3px lower, whatever the gap.
+
 ## [2.122.12] — 2026-11-19
 
 ### Added

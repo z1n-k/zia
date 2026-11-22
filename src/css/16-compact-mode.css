@@ -15,6 +15,17 @@
   margin-block-start: calc(var(--zia-top-row-space) - 8px) !important;
 }
 
+/* With the toolbar staying up beside it, the flyout sidebar's top row lines up with the
+   toolbar's buttons: the sidebar floats half a card gap down (below), and the row came out
+   that much lower than the back and reload buttons (thanks sapphired) */
+@media not -moz-pref("zen.view.compact.hide-toolbar") {
+  @media not -moz-pref("zia.compact.hide-toolbar") {
+    :root[zen-compact-mode="true"]:not([zen-single-toolbar="true"]) #titlebar > #zen-sidebar-top-buttons {
+      margin-block-start: calc(var(--zia-top-row-space) - 8px + var(--zia-card-top-gap) - 6px - max(var(--zia-card-gap), 6px) / 2) !important;
+    }
+  }
+}
+
 /* While Zen slides the sidebar in or out on switching compact mode, the
    top row keeps the spacing it has outside compact mode: with compact's,
    the row and everything under it rode 5.5px high through the slide and
