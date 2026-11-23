@@ -62,7 +62,7 @@
   },
   {
     "type": "checkbox",
-    "label": "Page fills its space edge to edge, with no gap or shadow",
+    "label": "Page fills its space edge to edge, with no gap or rounded corners",
     "property": "zia.page.edge-to-edge",
     "defaultValue": false
   },

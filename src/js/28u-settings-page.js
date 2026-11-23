@@ -76,7 +76,7 @@
     "zia.glass": ["Glass edges", "Essentials, cards and Library buttons edged like macOS Tahoe's glass, lighting up where pressed. Off: Zia's fine shine."],
     "zia.glass.blur-over-video": ["Blur over video", "See-through surfaces keep blurring a video behind them. The video comes out duller, and HDR video loses its HDR."],
     "zia.page.rounding": ["Zia page corners", "Off: Zen's."],
-    "zia.page.edge-to-edge": ["Edge-to-edge page", "No gap or shadow around the page."],
+    "zia.page.edge-to-edge": ["Edge-to-edge page", "No gap or rounded corners around the page."],
     "zia.ultra": ["Ultra effects", "A loading orb, the open essential's colour drifting, the music player glowing in its artwork's colours, a springy Library and a metal welcome logo."],
     "zia.features.tab-hover-cards": ["Hover cards", "For tabs and folders."],
     "zia.cards.blur": ["See-through hover cards", "What's behind is blurred. Solid while a video shows, which keeps its colours."],
