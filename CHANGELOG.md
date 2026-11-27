@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- "Real new tabs" off gives Cmd/Ctrl+T back to Zen's floating address bar again: a value of
+  Zen's own saved for it (from about:config, another mod or an older Zia) kept new tabs opening.
+  Restart Zen once after updating (#618).
+
 ## [2.122.14] — 2026-11-23
 
 ### Changed
