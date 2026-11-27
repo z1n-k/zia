@@ -167,7 +167,14 @@ Instructions:
       throw new Error(failureReason(response.status, await response.text()));
     }
     const data = await response.json();
-    const text = (ai.id === "anthropic" ? data.content?.[0]?.text : data.choices?.[0]?.message?.content) || "";
+    const choice = data.choices?.[0];
+    if (ai.id === "anthropic" ? data.stop_reason === "max_tokens" : choice?.finish_reason === "length") {
+      throw new Error("the AI service reached its output token limit before returning a complete filename");
+    }
+    const text = (ai.id === "anthropic" ? data.content?.[0]?.text : choice?.message?.content) || "";
+    if (!text.trim()) {
+      throw new Error("the AI service returned no filename");
+    }
     const name = text.trim().replace(/^["']|["']$/g, "");
     // a chatty answer rather than a name
     if (/^(based on|here is|i have|the filename|new filename|renamed file|unknown|file name)/i.test(name)) {
@@ -214,7 +221,7 @@ Instructions:
       body = {
         model: ai.model,
         temperature: 0.1,
-        max_tokens: 50,
+        max_tokens: ai.id === "openai_compat" ? 512 : 50,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: question },
