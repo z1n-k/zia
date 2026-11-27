@@ -4,7 +4,7 @@
     tests/zen/ci/remote.py <checkout> [--show] [--record] <flow…>
 
 <checkout> is the Zia to test, as it is now, saved or not (a release worktree, or ~/Sites/zia).
-The harness and these scripts are taken from the cleanup branch as committed. ZIA_PREFS, ZIA_OFF
+The harness and these scripts are taken from ~/Sites/zia/tests/zen as they are on disk. ZIA_PREFS, ZIA_OFF
 and ZEN_TAG (a Zen release, the latest by default) are passed on from the environment.
 
 A commit is made without touching any working copy (its own index), pushed as zen-test/<name>,
@@ -21,8 +21,8 @@ import tempfile
 import time
 
 REPO = os.path.expanduser("~/Sites/zia")
-HARNESS_REF = "cleanup"
 OUT = os.path.expanduser("~/Library/Caches/zia-test/ci")
+EXECUTABLE = ("run.sh", "make-profile.sh", "ci/setup.sh", "ci/run-ci.sh", "ci/remote.py")
 PASSED_ON = ("ZIA_PREFS", "ZIA_OFF", "ZIA_ATG", "ZIA_FLOW_TIMEOUT", "ZEN_TAG")
 
 
@@ -48,8 +48,11 @@ def main():
         git("add", "-A", ".", cwd=checkout, env=env)
         git("rm", "-r", "-q", "--cached", "--ignore-unmatch", "tests/zen", ".zen-test",
             ".github/workflows/zen-tests.yml", cwd=checkout, env=env)
-        git("read-tree", f"--prefix=tests/zen/", f"{HARNESS_REF}:tests/zen", cwd=checkout, env=env)
-        workflow = git("rev-parse", f"{HARNESS_REF}:tests/zen/ci/zen-tests.yml")
+        # the harness as it is on disk in ~/Sites/zia (temporary flows included, unsaved or not)
+        git("add", "-A", "-f", "tests/zen", cwd=REPO, env=env)
+        # (this Mac keeps no file modes, core.fileMode false: the scripts made runnable again)
+        git("update-index", "--chmod=+x", *(f"tests/zen/{s}" for s in EXECUTABLE), cwd=REPO, env=env)
+        workflow = git("hash-object", "-w", os.path.join(REPO, "tests/zen/ci/zen-tests.yml"))
         settings = [f"FLOWS={shlex.quote(' '.join(flows))}", f"ARGS={shlex.quote(' '.join(args))}"]
         settings += [f"{key}={shlex.quote(os.environ[key])}" for key in PASSED_ON if os.environ.get(key)]
         config = git("hash-object", "-w", "--stdin", input="\n".join(settings) + "\n")

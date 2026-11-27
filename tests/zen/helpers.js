@@ -303,3 +303,20 @@ function toolbarColour() {
   const marks = [...document.documentElement.attributes].map((a) => a.name).filter((n) => /^zia-(site-|theme-toolbar)/.test(n)).sort();
   return { props, marks };
 }
+
+// A real screen capture of part of the window (screencapture, not drawWindow), saved as
+// ~/Library/Caches/zia-test/out/<name>.png; on GitHub's Macs it comes back with the results
+// (ci/run-ci.sh). `area` is an element or { x, y, width, height } in window coordinates, the
+// whole window by default. Needs --show.
+async function capture(name, area = null) {
+  const box = area?.getBoundingClientRect?.() ?? area ?? { x: 0, y: 0, width: innerWidth, height: innerHeight };
+  const out = Services.dirsvc.get("Home", Ci.nsIFile).path + "/Library/Caches/zia-test/out";
+  await IOUtils.makeDirectory(out, { ignoreExisting: true });
+  const exe = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
+  exe.initWithPath("/usr/sbin/screencapture");
+  const process = Cc["@mozilla.org/process/util;1"].createInstance(Ci.nsIProcess);
+  process.init(exe);
+  const rect = [mozInnerScreenX + box.x, mozInnerScreenY + box.y, box.width, box.height].map(Math.round).join(",");
+  process.run(true, ["-x", `-R${rect}`, `${out}/${name}.png`], 3);
+  return process.exitValue === 0;
+}
