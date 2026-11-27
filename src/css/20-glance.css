@@ -289,3 +289,9 @@
 .tabbrowser-tab:not([zen-glance-tab]) > .tab-stack > .zia-glance-thumb {
   display: none !important;
 }
+
+/* Glance's genie opening (28y-glance-genie.js): Zen's frame hidden while the genie is drawn
+   over it, and shown again where it lands */
+.browserContainer[zia-genie] {
+  opacity: 0 !important;
+}

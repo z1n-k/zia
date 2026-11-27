@@ -8200,6 +8200,12 @@ zen-folder .tab-reset-button {
 .tabbrowser-tab:not([zen-glance-tab]) > .tab-stack > .zia-glance-thumb {
   display: none !important;
 }
+
+/* Glance's genie opening (28y-glance-genie.js): Zen's frame hidden while the genie is drawn
+   over it, and shown again where it lands */
+.browserContainer[zia-genie] {
+  opacity: 0 !important;
+}
 /* Firefox's own sidebar panels (Bookmarks, History, Synced Tabs: Cmd+B,
    Cmd+Shift+H, or View > Sidebar), in Zia's look. Beside the page (Zia
    moves it there, zia-panels-beside on the root) it's a second sidebar,

@@ -91,6 +91,7 @@
     "zia.features.undo-close": ["Cmd/Ctrl+Z reopens tabs", "Brings back the last closed tab."],
     "zia.glance.thumbnail": ["Glance thumbnails", "A glance shows on its tab as a small picture of the page."],
     "zia.glance.links": ["Links open in Glance", "Shift+click opens a tab instead. Other sites: links within a site open as usual."],
+    "zia.glance.genie": ["Genie opening", "Glance pages grow out of the link, as a genie."],
     "zia.essentials.zia-width": ["Narrower essentials", "Off: Zen's widths."],
     "zia.essentials.two-per-row": ["Two essentials per row", "For a narrower sidebar."],
     "zia.essentials.fill-row": ["Stretch the last essential", "It fills the rest of its row."],

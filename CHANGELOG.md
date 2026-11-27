@@ -6,6 +6,12 @@ Every release of Zia, newest first. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Glance can open with a genie effect, as Dia's Peek does: the page grows out of the link,
+  flared at the top with curved sides, and lands as the glance. Off by default: Settings, Sine,
+  Zia, "Glance pages open with a genie effect" (#619).
+
 ### Fixed
 
 - "Real new tabs" off gives Cmd/Ctrl+T back to Zen's floating address bar again: a value of
