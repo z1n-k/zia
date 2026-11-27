@@ -9,6 +9,10 @@ out="$HOME/zia-ci-out"
 mkdir -p "$out" "$HOME/Library/Caches/zia-test/out"
 FLOWS="" ARGS=""
 [ -f "$cfg" ] && { set -a; . "$cfg"; set +a; }
+# (dark, as the Mac the baselines were recorded on: GitHub's Macs run light; a ZIA_PREFS
+# setting of its own comes after, so it wins)
+ZIA_PREFS="user_pref(\"ui.systemUsesDarkTheme\", 1); ${ZIA_PREFS:-}"
+export ZIA_PREFS
 cd "$here"
 # shellcheck disable=SC2086
 ./run.sh $ARGS $FLOWS > "$out/run.txt" 2>&1
