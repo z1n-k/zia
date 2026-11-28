@@ -291,6 +291,7 @@
     safely("watchWelcome", watchWelcome);
     safely("watchGlanceThumbs", watchGlanceThumbs);
     safely("watchGlanceLinks", watchGlanceLinks);
+    safely("watchGlanceGenie", watchGlanceGenie);
     safely("watchButtonTooltips", watchButtonTooltips);
     safely("watchTipCards", watchTipCards);
     safely("watchSidebarPanels", watchSidebarPanels);

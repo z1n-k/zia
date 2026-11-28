@@ -12,6 +12,12 @@
     IOUtils.remove(PathUtils.join(PathUtils.profileDir, "zia-icon-vectors.json"), { ignoreAbsent: true }).catch(() => {});
     set("zen.widget.mac.mono-window-controls", false);
     set("zen.urlbar.replace-newtab", !Services.prefs.getBoolPref("zia.newtab.real-tab", true));
+    // (Zia's "Real new tabs" decides, over a value of Zen's own saved for it, #618)
+    try {
+      Services.prefs.clearUserPref("zen.urlbar.replace-newtab");
+    } catch (err) {
+      noteError("zen defaults: replace-newtab", err);
+    }
     set("zen.splitView.enable-tab-drop", !Services.prefs.getBoolPref("zia.split.drop-cards", true));
     // (not with "Full address" on, which shows the address as it is, #519; a choice of your own
     // in about:config stays)

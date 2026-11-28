@@ -4,6 +4,23 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.122.15] — 2026-11-28
+
+### Added
+
+- Glance can open with a genie effect, as Dia's Peek does: the page grows out of the link,
+  flared at the top with curved sides, and lands as the glance. Off by default: Settings, Sine,
+  Zia, "Glance pages open with a genie effect" (#619).
+
+### Fixed
+
+- "Real new tabs" off gives Cmd/Ctrl+T back to Zen's floating address bar again: a value of
+  Zen's own saved for it (from about:config, another mod or an older Zia) kept new tabs opening.
+  Restart Zen once after updating (#618).
+- With "Real new tabs" off, the search page in new tabs (still on underneath) no longer stops
+  Cmd/Ctrl+T opening Zen's floating address bar: Zen gives the keys to a tab whenever the new tab
+  page isn't its own (#618).
+
 ## [2.122.14] — 2026-11-23
 
 ### Changed

@@ -249,6 +249,13 @@
   },
   {
     "type": "checkbox",
+    "label": "Glance pages open with a genie effect, growing out of the link",
+    "property": "zia.glance.genie",
+    "since": "2.122.15",
+    "defaultValue": false
+  },
+  {
+    "type": "checkbox",
     "label": "Zia's narrower essentials (off: Zen's widths)",
     "property": "zia.essentials.zia-width",
     "defaultValue": true

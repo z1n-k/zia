@@ -120,7 +120,7 @@ Essentials become tiles, a space's colour carries through, and folders get colou
 <details>
 <summary>Glance</summary>
 
-Zen's link preview gets its own look: a card that springs from an essential, or a small picture of the page tucked under its tab.
+Zen's link preview gets its own look: a card that springs from an essential, or a small picture of the page tucked under its tab. Optionally, a glance opens with a genie effect, growing out of the link.
 
 Links can open in Glance as you click them: every link, or only links to other sites. Shift+click opens a new tab instead.
 
