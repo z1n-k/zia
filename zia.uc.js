@@ -4243,26 +4243,16 @@
     repaintSoundTabs();
   }
 
-  // a tab's bars are drawn before its player's colours are known: recolour them as
-  // they arrive (tabs whose colours haven't changed are left alone)
+  // every playing tab's bars redrawn (tabs whose colours haven't changed are left alone)
   function repaintSoundTabs() {
     for (const tab of gBrowser.tabs) {
       paintTabSoundBars(tab);
     }
   }
 
-  function tabMediaColors(tab) {
-    const toolbar = document.getElementById("zen-media-controls-toolbar");
-    for (const element of toolbar?.querySelectorAll(".zen-media-card") || []) {
-      if (element.__ziaCard?.browser === tab.linkedBrowser) {
-        return element.__ziaColors ?? null;
-      }
-    }
-    return null;
-  }
-
-  // Until the player has the artwork's colours, the site's own colours stand in.
-  function tabFallbackColors(tab) {
+  // A tab's bars take the site's own colours, as its glow does, and never the player's
+  // artwork: they switched between the two as the player came and went (Discord, 28 Nov)
+  function tabSiteColors(tab) {
     const url = tab.getAttribute("image") || "";
     const palette = faviconPaletteCache.get(url);
     if (palette === undefined) {
@@ -4280,7 +4270,7 @@
   function applyTabSoundBars(tab) {
     const essential = tab.hasAttribute("zen-essential");
     const tinted = !essential && Services.prefs.getBoolPref("zia.tabs.favicon-glow", false);
-    const colors = tinted ? tabMediaColors(tab) || tabFallbackColors(tab) : null;
+    const colors = tinted ? tabSiteColors(tab) : null;
     const key = `${colors ? colors.join("|") : plainBarInk()}|${essential}|${tab.hasAttribute("soundplaying")}|${tab.hasAttribute("muted")}|${soundBarsAlwaysMove()}`;
     if (tab.__ziaSoundKey === key) {
       return;

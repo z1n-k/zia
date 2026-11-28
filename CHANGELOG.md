@@ -4,6 +4,19 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.122.16] — 2026-11-28
+
+### Fixed
+
+- A playing tab's sound bars, with "Tint the selected tab's glow and sound bars with the site's
+  colours" on, always take the site's colours, as its glow does. They switched between the site's
+  colours and the music artwork's as the player came and went.
+- A playing tab shows one set of sound bars: a second, smaller set on the favicon's corner is gone
+  in the open sidebar.
+- Renaming downloads with AI through an OpenAI-compatible endpoint works with reasoning models,
+  which used up the old token budget before giving a name; a reply cut short now says why and
+  keeps the original name (#620, thanks @jasonboi).
+
 ## [2.122.15] — 2026-11-28
 
 ### Added
