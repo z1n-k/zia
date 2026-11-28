@@ -14,7 +14,8 @@ mkdir -p "$app" "$root/sine" "$dl"
 cd "$dl"
 gh release download "$tag" -R zen-browser/desktop -p zen.macos-universal.dmg --clobber
 hdiutil attach -nobrowse -readonly -mountpoint "$dl/mnt" zen.macos-universal.dmg >/dev/null
-cp -R "$dl/mnt/Zen.app" "$app/"
+# (Twilight builds name the app "Zen Twilight.app": copied as Zen.app either way)
+cp -R "$(ls -d "$dl/mnt/"*.app | head -n 1)" "$app/Zen.app"
 hdiutil detach "$dl/mnt" >/dev/null
 gh release download -R sineorg/bootloader -p program.zip -p profile.zip --clobber
 gh release download -R CosmoCreeper/Sine -p engine.zip --clobber
