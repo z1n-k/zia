@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Runs Zia's real-Zen flows on one of GitHub's Macs, so no Zen is needed on this Mac.
 
-    tests/zen/ci/remote.py <checkout> [--show] [--record] <flow…>
+    tests/zen/ci/remote.py <checkout> [--windows] [--show] [--record] <flow…>
 
 <checkout> is the Zia to test, as it is now, saved or not (a release worktree, or ~/Sites/zia).
 The harness and these scripts are taken from ~/Sites/zia/tests/zen as they are on disk. ZIA_PREFS, ZIA_OFF
@@ -10,7 +10,9 @@ and ZEN_TAG (a Zen release, the latest by default) are passed on from the enviro
 A commit is made without touching any working copy (its own index), pushed as zen-test/<name>,
 and the "Zen tests" workflow (ci/zen-tests.yml) runs it. The results land in
 ~/Library/Caches/zia-test/ci/<name>/ (run.txt, latest-*.json, captures/) and the branch is
-deleted. Exits 1 if the run itself failed.
+deleted. --windows runs it on GitHub's Windows runner instead (ci/setup-windows.sh): the
+baselines are the Mac's, so read what a Windows run saw rather than its diffs. Exits 1 if the run
+itself failed.
 """
 
 import os
@@ -22,7 +24,7 @@ import time
 
 REPO = os.path.expanduser("~/Sites/zia")
 OUT = os.path.expanduser("~/Library/Caches/zia-test/ci")
-EXECUTABLE = ("run.sh", "make-profile.sh", "ci/setup.sh", "ci/run-ci.sh", "ci/remote.py")
+EXECUTABLE = ("run.sh", "make-profile.sh", "ci/setup.sh", "ci/setup-windows.sh", "ci/run-ci.sh", "ci/remote.py")
 PASSED_ON = ("ZIA_PREFS", "ZIA_OFF", "ZIA_ATG", "ZIA_FLOW_TIMEOUT", "ZEN_TAG")
 
 
@@ -32,13 +34,14 @@ def git(*args, cwd=REPO, env=None, input=None):
 
 
 def main():
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         sys.exit(__doc__)
     checkout = os.path.abspath(os.path.expanduser(sys.argv[1]))
-    args = [a for a in sys.argv[2:] if a.startswith("--")]
+    windows = "--windows" in sys.argv[2:]
+    args = [a for a in sys.argv[2:] if a.startswith("--") and a != "--windows"]
     flows = [a for a in sys.argv[2:] if not a.startswith("--")]
     name = time.strftime("%Y%m%d-%H%M%S") + "-" + (flows[0] if flows else "all")[:30]
-    branch = f"zen-test/{name}"
+    branch = f"zen-test/{'win-' if windows else ''}{name}"
 
     index = tempfile.NamedTemporaryFile(delete=False).name
     env = dict(os.environ, GIT_INDEX_FILE=index)

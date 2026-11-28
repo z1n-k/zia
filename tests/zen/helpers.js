@@ -310,8 +310,21 @@ function toolbarColour() {
 // whole window by default. Needs --show.
 async function capture(name, area = null) {
   const box = area?.getBoundingClientRect?.() ?? area ?? { x: 0, y: 0, width: innerWidth, height: innerHeight };
-  const out = Services.dirsvc.get("Home", Ci.nsIFile).path + "/Library/Caches/zia-test/out";
+  const out = PathUtils.join(Services.dirsvc.get("Home", Ci.nsIFile).path, "Library", "Caches", "zia-test", "out");
   await IOUtils.makeDirectory(out, { ignoreExisting: true });
+  // (Windows: PowerShell copies that part of the screen; the rect in screen pixels)
+  if (AppConstants.platform === "win") {
+    const scale = window.devicePixelRatio || 1;
+    const [x, y, w, h] = [mozInnerScreenX + box.x, mozInnerScreenY + box.y, box.width, box.height].map((v) => Math.round(v * scale));
+    const file = PathUtils.join(out, `${name}.png`).replace(/'/g, "''");
+    const ps = `Add-Type -AssemblyName System.Drawing; $b = New-Object System.Drawing.Bitmap ${w}, ${h}; $g = [System.Drawing.Graphics]::FromImage($b); $g.CopyFromScreen(${x}, ${y}, 0, 0, $b.Size); $b.Save('${file}', [System.Drawing.Imaging.ImageFormat]::Png)`;
+    const shell = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
+    shell.initWithPath(PathUtils.join(Services.dirsvc.get("WinD", Ci.nsIFile).path, "System32", "WindowsPowerShell", "v1.0", "powershell.exe"));
+    const run = Cc["@mozilla.org/process/util;1"].createInstance(Ci.nsIProcess);
+    run.init(shell);
+    run.run(true, ["-NoProfile", "-NonInteractive", "-Command", ps], 4);
+    return run.exitValue === 0;
+  }
   const exe = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsIFile);
   exe.initWithPath("/usr/sbin/screencapture");
   const process = Cc["@mozilla.org/process/util;1"].createInstance(Ci.nsIProcess);

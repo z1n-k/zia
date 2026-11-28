@@ -9,7 +9,11 @@ import time
 
 # (ZIA_ZEN=<folder holding Zen.app>: another Zen, say a new release downloaded to test before
 # it's installed)
-ZEN = os.path.join(os.environ.get("ZIA_ZEN") or "/Applications", "Zen.app/Contents/MacOS/zen")
+# On Windows (GitHub's Windows runners, ci/setup-windows.sh) ZIA_ZEN is the folder holding zen.exe.
+if os.name == "nt":
+    ZEN = os.path.join(os.environ["ZIA_ZEN"], "zen.exe")
+else:
+    ZEN = os.path.join(os.environ.get("ZIA_ZEN") or "/Applications", "Zen.app/Contents/MacOS/zen")
 
 
 def free_port():

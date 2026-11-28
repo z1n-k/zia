@@ -7,6 +7,12 @@ set -eu
 here=$(cd "$(dirname "$0")/../.." && pwd)
 test_root="$HOME/Library/Caches/zia-test"
 profile="$1"
+# (Windows, in Git's bash: the profile comes as a Windows path, and Python reads Windows paths)
+winpath() { printf '%s' "$1"; }
+if command -v cygpath >/dev/null 2>&1; then
+  profile=$(cygpath -u "$profile")
+  winpath() { cygpath -w "$1"; }
+fi
 zen_profiles="$HOME/Library/Application Support/zen/Profiles"
 
 case "$profile" in
@@ -38,7 +44,7 @@ fi
 
 # Sine's list of mods: Zia (and any mod above), never updated from the store (it would replace
 # the link)
-python3 - "$profile/chrome/sine-mods" "$here/theme.json" <<'PY'
+"${PYTHON:-python3}" - "$(winpath "$profile/chrome/sine-mods")" "$(winpath "$here/theme.json")" <<'PY'
 import json, os, sys
 mods_dir, zia_theme = sys.argv[1], sys.argv[2]
 mods = {}

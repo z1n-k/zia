@@ -11,8 +11,10 @@ on:
 permissions:
   contents: read
 
+# A branch named zen-test/win-... (remote.py --windows) runs on Windows instead.
 jobs:
   zen:
+    if: ${{ !startsWith(github.ref_name, 'zen-test/win-') }}
     runs-on: macos-15
     timeout-minutes: 45
     steps:
@@ -21,6 +23,28 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: tests/zen/ci/setup.sh
+      - name: Run the flows
+        run: tests/zen/ci/run-ci.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zen-test
+          path: ~/zia-ci-out
+          if-no-files-found: warn
+
+  zen-windows:
+    if: ${{ startsWith(github.ref_name, 'zen-test/win-') }}
+    runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Zen and Sine, a test copy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: tests/zen/ci/setup-windows.sh
       - name: Run the flows
         run: tests/zen/ci/run-ci.sh
       - uses: actions/upload-artifact@v4

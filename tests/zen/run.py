@@ -160,7 +160,10 @@ def main(args):
     headless = "--show" not in args
     jobs = next((int(a.split("=")[1]) for a in args if a.startswith("--jobs=")), JOBS)
     only = [a for a in args if not a.startswith("--")]
-    subprocess.run([os.path.join(HERE, "make-profile.sh"), TEMPLATE], check=True, stdout=subprocess.DEVNULL)
+    # (Windows runs shell scripts through Git's bash, found on the PATH: a bare "bash" there is
+    # System32's, WSL's)
+    shell = [shutil.which("bash")] if os.name == "nt" else []
+    subprocess.run([*shell, os.path.join(HERE, "make-profile.sh"), TEMPLATE], check=True, stdout=subprocess.DEVNULL)
     warm_template(headless)
     helpers = open(os.path.join(HERE, "helpers.js")).read()
     utils = event_utils()
