@@ -1,0 +1,50 @@
+{
+ "checks": {
+  "no extension, no menu": true,
+  "so has the space's": true,
+  "the folder's menu has Zia's in place of Zen's": true
+ },
+ "onFolder": {
+  "open": "open",
+  "zensHidden": true,
+  "zia": {
+   "hidden": false,
+   "items": [
+    "Choose an SVG\u2026",
+    "Pick from Zia's icons\u2026",
+    "menuseparator",
+    "Keep the SVG's own colours hidden",
+    "Remove icon disabled"
+   ]
+  }
+ },
+ "onSpace": {
+  "zensHidden": true,
+  "zia": {
+   "hidden": false,
+   "items": [
+    "Choose an SVG\u2026",
+    "Pick from Zia's icons\u2026",
+    "menuseparator",
+    "Keep the SVG's own colours hidden",
+    "Remove icon disabled"
+   ]
+  }
+ },
+ "toolbar": {
+  "menu": {
+   "hidden": true,
+   "items": [
+    "This extension changes its own icon disabled",
+    "menuseparator",
+    "Choose an SVG\u2026",
+    "Pick from Zia's icons\u2026",
+    "menuseparator",
+    "Keep the SVG's own colours",
+    "Reset to the original icon"
+   ]
+  },
+  "separator": true
+ },
+ "ziaErrors": []
+}

@@ -1,0 +1,54 @@
+{
+ "added": {
+  "essentials": 1,
+  "list": [
+   "A",
+   "B",
+   "New Tab"
+  ],
+  "tags": [
+   "A: a",
+   "B: b"
+  ],
+  "tile": {
+   "focus": "a",
+   "glow": false,
+   "halves": [
+    "a: A",
+    "b: B"
+   ],
+   "selected": true
+  }
+ },
+ "checks": {
+  "closed, the split is ordinary again": true,
+  "it becomes a tile of both": true,
+  "the menu offers it": true,
+  "the tile shows the half you're in": true
+ },
+ "closed": {
+  "essentials": 0,
+  "list": [
+   "A",
+   "B",
+   "New Tab"
+  ],
+  "split": true,
+  "tags": [],
+  "tile": null
+ },
+ "offered": {
+  "ours": true,
+  "zens": false
+ },
+ "onB": {
+  "focus": "b",
+  "glow": false,
+  "halves": [
+   "a: A",
+   "b: B"
+  ],
+  "selected": true
+ },
+ "ziaErrors": []
+}

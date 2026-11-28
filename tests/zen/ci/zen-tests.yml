@@ -1,0 +1,55 @@
+name: Zen tests
+
+# Zia's real-Zen tests on one of GitHub's Macs, so no Zen is needed on Olly's own Mac. A run is
+# a branch pushed by tests/zen/ci/remote.py (zen-test/...): Zia as it is in the checkout under
+# test, this harness, and a .zen-test file naming the flows and settings. The results come back
+# as an artifact, and remote.py deletes the branch.
+on:
+  push:
+    branches: ["zen-test/**"]
+
+permissions:
+  contents: read
+
+# A branch named zen-test/win-... (remote.py --windows) runs on Windows instead.
+jobs:
+  zen:
+    if: ${{ !startsWith(github.ref_name, 'zen-test/win-') }}
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Zen and Sine, a test copy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: tests/zen/ci/setup.sh
+      - name: Run the flows
+        run: tests/zen/ci/run-ci.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zen-test
+          path: ~/zia-ci-out
+          if-no-files-found: warn
+
+  zen-windows:
+    if: ${{ startsWith(github.ref_name, 'zen-test/win-') }}
+    runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Zen and Sine, a test copy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: tests/zen/ci/setup-windows.sh
+      - name: Run the flows
+        run: tests/zen/ci/run-ci.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zen-test
+          path: ~/zia-ci-out
+          if-no-files-found: warn

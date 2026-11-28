@@ -1,0 +1,40 @@
+{
+ "checks": {
+  "the line bounces with the open tab in a folder": true,
+  "they spring with the open tab below": true,
+  "they tuck away and back": true
+ },
+ "openTabBelow": {
+  "back": true,
+  "closing": [
+   "div.zen-tab-group-start marginTop:0px>-158>-156px 420"
+  ],
+  "opening": [
+   "div.zen-tab-group-start marginTop:-156px>-156>0px 420",
+   "hbox.tab-group-label-container height:38px>38>38px minHeight:0px>0>0px opacity:1>1>1 180",
+   "tab:P height:38px>38>38px minHeight:0px>0>0px opacity:1>1>1 180",
+   "tab:X height:38px>38>38px minHeight:0px>0>0px opacity:1>1>1 180",
+   "tab:Y height:38px>38>38px minHeight:0px>0>0px opacity:1>1>1 180"
+  ],
+  "tucked": true
+ },
+ "openTabInFolder": {
+  "back": true,
+  "closing": [
+   "div.zen-tab-group-start marginTop:0px>0>0px 180",
+   "hbox.pinned-tabs-container-separator marginTop:0px>-1>0px 420",
+   "hbox.tab-group-label-container height:38px>38>0px opacity:1>1>0 420",
+   "tab:P height:38px>38>0px opacity:1>1>0 420"
+  ],
+  "opening": [
+   "div.zen-tab-group-start marginTop:0px>0>0px 180",
+   "hbox.pinned-tabs-container-separator marginTop:0px>2>0px 420",
+   "hbox.tab-group-label-container height:38px>38>38px minHeight:0px>0>0px opacity:1>1>1 180",
+   "tab:P height:0px>38>38px minHeight:0px>0>0px opacity:0>1>1 420",
+   "tab:X height:38px>38>38px minHeight:0px>0>0px opacity:1>1>1 180",
+   "tab:Y height:0px>0>0px opacity:0>0>0 180"
+  ],
+  "tucked": true
+ },
+ "ziaErrors": []
+}

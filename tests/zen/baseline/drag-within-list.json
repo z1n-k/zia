@@ -1,0 +1,30 @@
+{
+ "after": [
+  "D",
+  "A",
+  "C",
+  "B",
+  "New Tab"
+ ],
+ "before": [
+  "D",
+  "C",
+  "B",
+  "A",
+  "New Tab"
+ ],
+ "checks": {
+  "A moved below D": true,
+  "Zia drove the drag": true
+ },
+ "seen": {
+  "dragging": true,
+  "slides": {
+   "A": "translateY(-104px)",
+   "B": "translateY(38px)",
+   "C": "translateY(38px)",
+   "D": "translateY(38px)"
+  }
+ },
+ "ziaErrors": []
+}

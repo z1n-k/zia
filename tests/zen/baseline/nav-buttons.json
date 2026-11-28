@@ -1,0 +1,19 @@
+{
+ "checks": {
+  "back slides as it's clicked": true,
+  "reload turns into stop and back": true,
+  "reload's arrowhead springs back on hover": true
+ },
+ "cut": {
+  "hovered": "20deg",
+  "left": "0deg"
+ },
+ "morphs": [
+  "to-stop",
+  "to-reload",
+  "(none)"
+ ],
+ "slide": "true",
+ "slideCleared": true,
+ "ziaErrors": []
+}

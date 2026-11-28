@@ -1,0 +1,58 @@
+{
+ "checks": {
+  "Zen's animation is patched": true,
+  "and is gone after": true,
+  "the ring shows the download going": true,
+  "the row flies": true
+ },
+ "flight": {
+  "animations": [
+   "zia-df-dim 1420+0",
+   "zia-df-beam 1100+40",
+   "zia-df-bloom 1420+0",
+   "zia-df-row 1100+0"
+  ],
+  "at": [
+   "600px",
+   "371px"
+  ],
+  "icon": "moz-icon://.txt?size=16",
+  "name": "notes.txt",
+  "parts": [
+   "zia-df-dim",
+   "zia-df-beam",
+   "zia-df-bloom",
+   "zia-df-row"
+  ],
+  "path": [
+   "0.000 translate(0px, 28.8px) translate(-50%, -50%) rotate(0deg) scale(0.45) 0",
+   "0.239 translate(-1.92238px, -16.249px) translate(-50%, -50%) rotate(2.63deg) scale(1) 1",
+   "0.388 translate(-34.4318px, -54.4676px) translate(-50%, -50%) rotate(6.78deg) scale(1) 1",
+   "0.536 translate(-144.195px, -48.106px) translate(-50%, -50%) rotate(6.92deg) scale(0.9981) 1",
+   "0.684 translate(-323.497px, 69.257px) translate(-50%, -50%) rotate(4.18deg) scale(0.6818) 0.9858",
+   "0.833 translate(-497.027px, 260.265px) translate(-50%, -50%) rotate(0.69deg) scale(0.3911) 0.1924",
+   "0.981 translate(-578.92px, 373.706px) translate(-50%, -50%) rotate(0deg) scale(0.35) 0"
+  ]
+ },
+ "gone": true,
+ "landing": [
+  "toolbarbutton#zen-library-button.toolbarbutton-1 transform:scale(1)>>scale(1) 360"
+ ],
+ "patched": true,
+ "rings": {
+  "before": {
+   "downloading": null,
+   "drawn": 0
+  },
+  "done": {
+   "downloading": null,
+   "drawn": 0
+  },
+  "half": {
+   "downloading": "true",
+   "drawn": 0.5
+  }
+ },
+ "running": true,
+ "ziaErrors": []
+}

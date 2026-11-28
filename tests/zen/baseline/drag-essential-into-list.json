@@ -1,0 +1,22 @@
+{
+ "checks": {
+  "E is in the list": true,
+  "E is no longer an essential": true
+ },
+ "essentials": [],
+ "list": [
+  "B",
+  "E",
+  "A",
+  "New Tab"
+ ],
+ "seen": {
+  "dragging": false,
+  "slides": {
+   "A": "translateY(38px)",
+   "E": "-50% -50%",
+   "New Tab": "translateY(38px)"
+  }
+ },
+ "ziaErrors": []
+}

@@ -1,0 +1,24 @@
+{
+ "checks": {
+  "only commands named so": true,
+  "picking it opens its page": true,
+  "picking the colour copies its hex": true,
+  "the colour is answered": true,
+  "the command is found": true
+ },
+ "colour": {
+  "forms": "rgb(51 102 153) \u00b7 hsl(210 50% 40%)",
+  "output": "#336699",
+  "swatch": "rgb(51, 102, 153)"
+ },
+ "copied": "#336699",
+ "opened": {
+  "newTab": 1,
+  "page": "about:keyboard"
+ },
+ "shortcuts": [
+  "search: keyboard sh",
+  "dynamic: Keyboard Shortcuts"
+ ],
+ "ziaErrors": []
+}

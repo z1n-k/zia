@@ -1,0 +1,20 @@
+{
+ "checks": {
+  "A is an essential": true
+ },
+ "essentials": [
+  "A"
+ ],
+ "list": [
+  "B",
+  "New Tab"
+ ],
+ "seen": {
+  "dragging": true,
+  "slides": {
+   "A": "translateY(-109px)",
+   "New Tab": "translateY(-38px)"
+  }
+ },
+ "ziaErrors": []
+}

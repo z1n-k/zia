@@ -1,0 +1,19 @@
+{
+ "checks": {
+  "E1 moved past E3": true
+ },
+ "essentials": [
+  "E2",
+  "E3",
+  "E1"
+ ],
+ "seen": {
+  "dragging": false,
+  "slides": {
+   "E1": "translate(147px)",
+   "E2": "translate(-74.6667px)",
+   "E3": "translate(-74.6667px)"
+  }
+ },
+ "ziaErrors": []
+}

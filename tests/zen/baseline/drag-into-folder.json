@@ -1,0 +1,29 @@
+{
+ "checks": {
+  "A is in F": true
+ },
+ "inFolder": [
+  "(empty)",
+  "X",
+  "A",
+  "Y"
+ ],
+ "list": [
+  "B",
+  "New Tab"
+ ],
+ "pinned": [
+  "X",
+  "A",
+  "Y"
+ ],
+ "seen": {
+  "dragging": true,
+  "slides": {
+   "A": "translateY(-141px)",
+   "B": "translateY(38px)",
+   "Y": "translateY(38px)"
+  }
+ },
+ "ziaErrors": []
+}

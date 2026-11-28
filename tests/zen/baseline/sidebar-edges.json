@@ -1,0 +1,65 @@
+{
+ "checks": {
+  "its box ends the gap below the inner one's": true,
+  "left again is as before": true,
+  "the outer folder ends in the inner one": true,
+  "the sidebar changes side": true,
+  "the tab and folder edges are measured": true
+ },
+ "innerInOuter": true,
+ "left": {
+  "folders": {
+   "F": {
+    "endsTheGapBelow": true,
+    "lastIsFolder": true
+   },
+   "G": {
+    "lastIsFolder": false
+   }
+  },
+  "side": "left",
+  "sidebarLeft": 0,
+  "window": {
+   "--zia-folder-left-fix": "2px",
+   "--zia-folder-right-fix": "2px",
+   "--zia-tab-right-fix": "2px"
+  }
+ },
+ "leftAgain": {
+  "folders": {
+   "F": {
+    "endsTheGapBelow": true,
+    "lastIsFolder": true
+   },
+   "G": {
+    "lastIsFolder": false
+   }
+  },
+  "side": "left",
+  "sidebarLeft": 0,
+  "window": {
+   "--zia-folder-left-fix": "2px",
+   "--zia-folder-right-fix": "2px",
+   "--zia-tab-right-fix": "2px"
+  }
+ },
+ "right": {
+  "folders": {
+   "F": {
+    "endsTheGapBelow": true,
+    "lastIsFolder": true
+   },
+   "G": {
+    "lastIsFolder": false
+   }
+  },
+  "side": "right",
+  "sidebarLeft": 1136,
+  "window": {
+   "--zia-folder-left-fix": "2px",
+   "--zia-folder-right-fix": "2px",
+   "--zia-tab-right-fix": "2px"
+  }
+ },
+ "ziaErrors": []
+}

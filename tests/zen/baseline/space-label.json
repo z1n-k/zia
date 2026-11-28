@@ -1,0 +1,90 @@
+{
+ "before": {
+  "attrs": {
+   "id": "zia-space-label"
+  },
+  "children": [
+   {
+    "class": "zia-space-name",
+    "src": null,
+    "svg": null,
+    "tag": "span"
+   }
+  ],
+  "in": "zia-workspace-slot",
+  "text": "Space"
+ },
+ "checks": {
+  "it draws Zen's icon": true,
+  "it follows a rename": true,
+  "it shows the emoji": true,
+  "it shows the space's name": true
+ },
+ "editorOpened": true,
+ "iconName": "heart.svg",
+ "original": {
+  "icon": "",
+  "name": "Space"
+ },
+ "renamed": {
+  "attrs": {
+   "id": "zia-space-label"
+  },
+  "children": [
+   {
+    "class": "zia-space-name",
+    "src": null,
+    "svg": null,
+    "tag": "span"
+   }
+  ],
+  "in": "zia-workspace-slot",
+  "text": "Work"
+ },
+ "withEmoji": {
+  "attrs": {
+   "id": "zia-space-label",
+   "zia-has-icon": "true",
+   "zia-icon": "\ud83d\ude80"
+  },
+  "children": [
+   {
+    "class": "zia-space-name",
+    "src": null,
+    "svg": null,
+    "tag": "span"
+   }
+  ],
+  "in": "zia-workspace-slot",
+  "text": "Work"
+ },
+ "withIcon": {
+  "attrs": {
+   "id": "zia-space-label",
+   "zia-has-svg": "true"
+  },
+  "children": [
+   {
+    "class": "zia-space-svg",
+    "src": "chrome://browser/skin/zen-icons/selectable/heart.svg",
+    "svg": [
+     "fill",
+     "fill-opacity",
+     "viewBox",
+     "xmlns",
+     "xmlns:svg"
+    ],
+    "tag": "span"
+   },
+   {
+    "class": "zia-space-name",
+    "src": null,
+    "svg": null,
+    "tag": "span"
+   }
+  ],
+  "in": "zia-workspace-slot",
+  "text": "Work"
+ },
+ "ziaErrors": []
+}

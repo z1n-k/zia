@@ -1,0 +1,21 @@
+{
+ "checks": {
+  "A and B stay together": true
+ },
+ "order": [
+  "B",
+  "A",
+  "D",
+  "C",
+  "New Tab"
+ ],
+ "seen": {
+  "dragging": true,
+  "slides": {
+   "A": "translateY(-104px)",
+   "C": "translateY(38px)",
+   "D": "translateY(38px)"
+  }
+ },
+ "ziaErrors": []
+}

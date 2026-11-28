@@ -1,0 +1,99 @@
+{
+ "checks": {
+  "a small swipe shows the arrow part way": true,
+  "a swipe let go early just leaves": true,
+  "far enough, it will go": true,
+  "held, it opens into the pages back": true,
+  "it stays after the lift": true,
+  "the second page goes back two": true
+ },
+ "clicked": {
+  "count": "2",
+  "inStack": true,
+  "marks": [
+   "will",
+   "open",
+   "settled",
+   "leaving",
+   "commit"
+  ],
+  "pages": [
+   "P2 (selected)",
+   "P1"
+  ],
+  "progress": "1",
+  "side": "back"
+ },
+ "early": {
+  "count": "",
+  "inStack": true,
+  "marks": [],
+  "pages": [],
+  "progress": "0.4",
+  "side": "forward"
+ },
+ "earlyGone": null,
+ "earlyLeaving": {
+  "count": "",
+  "inStack": true,
+  "marks": [
+   "leaving"
+  ],
+  "pages": [],
+  "progress": "0.4",
+  "side": "forward"
+ },
+ "far": {
+  "count": "",
+  "inStack": true,
+  "marks": [
+   "will"
+  ],
+  "pages": [],
+  "progress": "1",
+  "side": "back"
+ },
+ "gone": null,
+ "held": {
+  "backdrop": true,
+  "count": "2",
+  "inStack": true,
+  "marks": [
+   "will",
+   "open",
+   "settled"
+  ],
+  "pages": [
+   "P2 (selected)",
+   "P1"
+  ],
+  "progress": "1",
+  "side": "back"
+ },
+ "lifted": {
+  "count": "2",
+  "inStack": true,
+  "marks": [
+   "will",
+   "open",
+   "settled"
+  ],
+  "pages": [
+   "P2 (selected)",
+   "P1"
+  ],
+  "progress": "1",
+  "side": "back"
+ },
+ "marked": true,
+ "page": "P1",
+ "partWay": {
+  "count": "",
+  "inStack": true,
+  "marks": [],
+  "pages": [],
+  "progress": "0.4",
+  "side": "back"
+ },
+ "ziaErrors": []
+}

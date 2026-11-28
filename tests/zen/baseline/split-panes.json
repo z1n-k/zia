@@ -1,0 +1,134 @@
+{
+ "checks": {
+  "closing one takes them away": true,
+  "each pane has its toolbar": true,
+  "it follows its page": true,
+  "the left one is first": true
+ },
+ "closed": {
+  "bars": 0,
+  "flag": null
+ },
+ "moved": {
+  "box": [
+   230,
+   6,
+   562,
+   41
+  ],
+  "buttons": [
+   "Toggle sidebar",
+   "Back",
+   "Forward (off)",
+   "Reload",
+   "Copy link",
+   "Site settings and extensions",
+   "Close"
+  ],
+  "colour": "rgb(255, 255, 255)",
+  "host": "data:text/html,<title>Next</title>Next",
+  "marks": [
+   "class",
+   "first",
+   "light"
+  ],
+  "parts": [
+   "zia-pane-button zia-pane-sidebar",
+   "zia-pane-button zia-pane-back",
+   "zia-pane-button zia-pane-forward",
+   "zia-pane-button zia-pane-reload",
+   "zia-pane-address",
+   "zia-pane-extensions",
+   "zia-pane-button zia-pane-copy-link",
+   "zia-pane-button zia-pane-site-settings",
+   "zia-pane-button zia-pane-close"
+  ],
+  "reloadIcon": "reload.svg",
+  "rest": " / Next"
+ },
+ "split": {
+  "bars": [
+   {
+    "box": [
+     230,
+     6,
+     562,
+     41
+    ],
+    "buttons": [
+     "Toggle sidebar",
+     "Back (off)",
+     "Forward (off)",
+     "Reload",
+     "Copy link",
+     "Site settings and extensions",
+     "Close"
+    ],
+    "colour": "rgb(255, 255, 255)",
+    "host": "data:text/html,<title>A</title>A",
+    "marks": [
+     "class",
+     "first",
+     "light"
+    ],
+    "parts": [
+     "zia-pane-button zia-pane-sidebar",
+     "zia-pane-button zia-pane-back",
+     "zia-pane-button zia-pane-forward",
+     "zia-pane-button zia-pane-reload",
+     "zia-pane-address",
+     "zia-pane-extensions",
+     "zia-pane-button zia-pane-copy-link",
+     "zia-pane-button zia-pane-site-settings",
+     "zia-pane-button zia-pane-close"
+    ],
+    "reloadIcon": "reload.svg",
+    "rest": " / A"
+   },
+   {
+    "box": [
+     798,
+     6,
+     562,
+     41
+    ],
+    "buttons": [
+     "Toggle sidebar",
+     "Back (off)",
+     "Forward (off)",
+     "Reload",
+     "Copy link",
+     "Site settings and extensions",
+     "Close"
+    ],
+    "colour": "rgb(255, 255, 255)",
+    "host": "data:text/html,<title>B</title>B",
+    "marks": [
+     "class",
+     "light"
+    ],
+    "parts": [
+     "zia-pane-button zia-pane-sidebar",
+     "zia-pane-button zia-pane-back",
+     "zia-pane-button zia-pane-forward",
+     "zia-pane-button zia-pane-reload",
+     "zia-pane-address",
+     "zia-pane-extensions",
+     "zia-pane-button zia-pane-copy-link",
+     "zia-pane-button zia-pane-site-settings",
+     "zia-pane-button zia-pane-close"
+    ],
+    "reloadIcon": "reload.svg",
+    "rest": " / B"
+   }
+  ],
+  "flag": "true",
+  "vars": {
+   "--zia-pane-url-bottom": "725px",
+   "--zia-pane-url-left": "236px",
+   "--zia-pane-url-top": "10px",
+   "--zia-pane-url-width": "550px"
+  }
+ },
+ "ziaErrors": []
+}

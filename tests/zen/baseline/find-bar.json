@@ -1,0 +1,23 @@
+{
+ "again": {
+  "count": "2/3"
+ },
+ "checks": {
+  "it opens empty": true,
+  "it reopens empty": true,
+  "the count reads as n/m": true
+ },
+ "opened": {
+  "field": "",
+  "hidden": false
+ },
+ "reopened": {
+  "field": "",
+  "hidden": false
+ },
+ "searched": {
+  "count": "1/3",
+  "field": "apple"
+ },
+ "ziaErrors": []
+}

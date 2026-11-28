@@ -1,0 +1,73 @@
+{
+ "checks": {
+  "Solid switches their style": true,
+  "a search narrows them": true,
+  "clicking one sets it on the folder": true,
+  "no match says so": true,
+  "the picker opens on Zia's icons": true
+ },
+ "closed": "closed",
+ "filled": {
+  "count": 4,
+  "empty": "",
+  "first": [
+   "heart url(\"resource://zia-tabler/filled/heart.svg\")",
+   "heart broken url(\"resource://zia-tabler/filled/heart-broken.svg\")",
+   "device heart monitor url(\"resource://zia-tabler/filled/device-heart-monitor.svg\")",
+   "play card url(\"resource://zia-tabler/filled/play-card.svg\")"
+  ],
+  "pref": "filled",
+  "style": [
+   "Solid"
+  ]
+ },
+ "icon": "resource://zia-tabler/outline/wallet.svg",
+ "nothing": {
+  "count": 0,
+  "empty": "No icons found",
+  "first": [],
+  "style": [
+   "Outline"
+  ]
+ },
+ "searched": {
+  "count": 81,
+  "empty": "",
+  "first": [
+   "heart url(\"resource://zia-tabler/outline/heart.svg\")",
+   "heart x url(\"resource://zia-tabler/outline/heart-x.svg\")",
+   "heart up url(\"resource://zia-tabler/outline/heart-up.svg\")",
+   "heart cog url(\"resource://zia-tabler/outline/heart-cog.svg\")",
+   "heart off url(\"resource://zia-tabler/outline/heart-off.svg\")",
+   "heart pin url(\"resource://zia-tabler/outline/heart-pin.svg\")"
+  ],
+  "style": [
+   "Outline"
+  ]
+ },
+ "shown": {
+  "count": 360,
+  "empty": "",
+  "first": [
+   "a b url(\"resource://zia-tabler/outline/a-b.svg\")",
+   "a b 2 url(\"resource://zia-tabler/outline/a-b-2.svg\")",
+   "a b off url(\"resource://zia-tabler/outline/a-b-off.svg\")",
+   "abacus url(\"resource://zia-tabler/outline/abacus.svg\")",
+   "abacus off url(\"resource://zia-tabler/outline/abacus-off.svg\")",
+   "abc url(\"resource://zia-tabler/outline/abc.svg\")"
+  ],
+  "focused": true,
+  "open": "open",
+  "placeholder": "Search icons",
+  "style": [
+   "Outline"
+  ],
+  "tabs": [
+   "Emojis",
+   "Zen",
+   "Zia (selected)"
+  ]
+ },
+ "stillOpen": "open",
+ "ziaErrors": []
+}

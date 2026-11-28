@@ -1,0 +1,29 @@
+{
+ "back": {
+  "zia-compact-toolbar-over-page": "none",
+  "zia-sidebar-hide-space-name": "flex",
+  "zia-tab-numbers-always": "flex",
+  "zia-tab-numbers-color": "flex",
+  "zia-urlbar-center-text-pop-up-left": "none"
+ },
+ "before": {
+  "zia-compact-toolbar-over-page": "none",
+  "zia-sidebar-hide-space-name": "flex",
+  "zia-tab-numbers-always": "flex",
+  "zia-tab-numbers-color": "flex",
+  "zia-urlbar-center-text-pop-up-left": "none"
+ },
+ "changed": {
+  "zia-compact-toolbar-over-page": "none",
+  "zia-sidebar-hide-space-name": "none",
+  "zia-tab-numbers-always": "none",
+  "zia-tab-numbers-color": "none",
+  "zia-urlbar-center-text-pop-up-left": "none"
+ },
+ "checks": {
+  "and come back": true,
+  "the rows are there": true,
+  "they follow their settings": true
+ },
+ "ziaErrors": []
+}

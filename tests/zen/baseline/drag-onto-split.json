@@ -1,0 +1,13 @@
+{
+ "checks": {
+  "A is split with the open tab B": true
+ },
+ "seen": {
+  "dragging": true
+ },
+ "split": [
+  "B",
+  "A"
+ ],
+ "ziaErrors": []
+}

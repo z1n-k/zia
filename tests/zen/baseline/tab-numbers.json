@@ -1,0 +1,328 @@
+{
+ "after": [],
+ "checks": {
+  "Cmd+1 then Cmd+0 lights the tenth": true,
+  "and the keys slide away": true,
+  "another key puts them away": true,
+  "holding Cmd numbers the tabs": true,
+  "letting go chooses it": true,
+  "two digits widen the key": true
+ },
+ "chosen": "B",
+ "first": [
+  "1"
+ ],
+ "held": {
+  "flags": [
+   "zia-tab-numbers"
+  ],
+  "keys": [
+   {
+    "box": [
+     200,
+     158,
+     18,
+     18
+    ],
+    "tab": "K",
+    "target": false,
+    "text": "1",
+    "wide": false
+   },
+   {
+    "box": [
+     200,
+     196,
+     18,
+     18
+    ],
+    "tab": "J",
+    "target": false,
+    "text": "2",
+    "wide": false
+   },
+   {
+    "box": [
+     200,
+     234,
+     18,
+     18
+    ],
+    "tab": "I",
+    "target": false,
+    "text": "3",
+    "wide": false
+   },
+   {
+    "box": [
+     200,
+     272,
+     18,
+     18
+    ],
+    "tab": "H",
+    "target": false,
+    "text": "4",
+    "wide": false
+   },
+   {
+    "box": [
+     200,
+     310,
+     18,
+     18
+    ],
+    "tab": "G",
+    "target": false,
+    "text": "5",
+    "wide": false
+   },
+   {
+    "box": [
+     200,
+     348,
+     18,
+     18
+    ],
+    "tab": "F",
+    "target": false,
+    "text": "6",
+    "wide": false
+   },
+   {
+    "box": [
+     200,
+     386,
+     18,
+     18
+    ],
+    "tab": "E",
+    "target": false,
+    "text": "7",
+    "wide": false
+   },
+   {
+    "box": [
+     200,
+     424,
+     18,
+     18
+    ],
+    "tab": "D",
+    "target": false,
+    "text": "8",
+    "wide": false
+   },
+   {
+    "box": [
+     200,
+     462,
+     18,
+     18
+    ],
+    "tab": "C",
+    "target": false,
+    "text": "9",
+    "wide": false
+   },
+   {
+    "box": [
+     197,
+     500,
+     21,
+     18
+    ],
+    "tab": "B",
+    "target": false,
+    "text": "10",
+    "wide": true
+   },
+   {
+    "box": [
+     197,
+     538,
+     21,
+     18
+    ],
+    "tab": "A",
+    "target": false,
+    "text": "11",
+    "wide": true
+   },
+   {
+    "box": [
+     197,
+     576,
+     21,
+     18
+    ],
+    "tab": "New Tab",
+    "target": false,
+    "text": "12",
+    "wide": true
+   }
+  ]
+ },
+ "heldAgain": [
+  "zia-tab-numbers"
+ ],
+ "lettingGo": [
+  "zia-tab-numbers-leaving"
+ ],
+ "otherKey": [
+  "zia-tab-numbers-leaving"
+ ],
+ "stillChosen": "B",
+ "typed": {
+  "flags": [
+   "zia-tab-numbers"
+  ],
+  "keys": [
+   {
+    "box": [
+     200,
+     158,
+     18,
+     18
+    ],
+    "tab": "K",
+    "target": false,
+    "text": "1",
+    "wide": false
+   },
+   {
+    "box": [
+     200,
+     196,
+     18,
+     18
+    ],
+    "tab": "J",
+    "target": false,
+    "text": "2",
+    "wide": false
+   },
+   {
+    "box": [
+     200,
+     234,
+     18,
+     18
+    ],
+    "tab": "I",
+    "target": false,
+    "text": "3",
+    "wide": false
+   },
+   {
+    "box": [
+     200,
+     272,
+     18,
+     18
+    ],
+    "tab": "H",
+    "target": false,
+    "text": "4",
+    "wide": false
+   },
+   {
+    "box": [
+     200,
+     310,
+     18,
+     18
+    ],
+    "tab": "G",
+    "target": false,
+    "text": "5",
+    "wide": false
+   },
+   {
+    "box": [
+     200,
+     348,
+     18,
+     18
+    ],
+    "tab": "F",
+    "target": false,
+    "text": "6",
+    "wide": false
+   },
+   {
+    "box": [
+     200,
+     386,
+     18,
+     18
+    ],
+    "tab": "E",
+    "target": false,
+    "text": "7",
+    "wide": false
+   },
+   {
+    "box": [
+     200,
+     424,
+     18,
+     18
+    ],
+    "tab": "D",
+    "target": false,
+    "text": "8",
+    "wide": false
+   },
+   {
+    "box": [
+     200,
+     462,
+     18,
+     18
+    ],
+    "tab": "C",
+    "target": false,
+    "text": "9",
+    "wide": false
+   },
+   {
+    "box": [
+     197,
+     500,
+     21,
+     18
+    ],
+    "tab": "B",
+    "target": true,
+    "text": "10",
+    "wide": true
+   },
+   {
+    "box": [
+     197,
+     538,
+     21,
+     18
+    ],
+    "tab": "A",
+    "target": false,
+    "text": "11",
+    "wide": true
+   },
+   {
+    "box": [
+     197,
+     576,
+     21,
+     18
+    ],
+    "tab": "New Tab",
+    "target": false,
+    "text": "12",
+    "wide": true
+   }
+  ]
+ },
+ "ziaErrors": []
+}

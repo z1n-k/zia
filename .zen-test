@@ -1,0 +1,6 @@
+FLOWS=shot-media
+ARGS='--show --jobs=1'
+ZIA_PREFS='user_pref("layout.css.devPixelsPerPx", "1.5"); user_pref("zen.view.use-single-toolbar", false); user_pref("cookiebanners.service.mode", 2); user_pref("cookiebanners.service.mode.privateBrowsing", 2); user_pref("cookiebanners.ui.desktop.enabled", false); user_pref("browser.chrome.toolbar_tips", false); '
+ZIA_FLOW_TIMEOUT=1500
+ZIA_DISPLAY=1920x1080
+ZIA_FLOWS_DIR=promo

@@ -1,0 +1,126 @@
+{
+ "checks": {
+  "Full address stops trimming": true,
+  "every feature defaults on": true,
+  "picture-in-picture follows Zia's setting": true,
+  "the once-only fixes are marked done": true
+ },
+ "fullAddress": {
+  "default": false,
+  "own": null
+ },
+ "marks": {
+  "zia.acrylic-reset": {
+   "default": null,
+   "own": true
+  },
+  "zia.tabs.dim-asleep-reset": {
+   "default": null,
+   "own": true
+  },
+  "zia.trim-https-reset": {
+   "default": null,
+   "own": true
+  },
+  "zia.urlbar.zen-look": {
+   "default": null,
+   "own": null
+  }
+ },
+ "pipFrom": {
+  "default": false,
+  "own": null
+ },
+ "pipTo": {
+  "default": false,
+  "own": true
+ },
+ "trimmedAgain": {
+  "default": true,
+  "own": null
+ },
+ "zenAndFirefox": {
+  "browser.urlbar.suggest.calculator": {
+   "default": true,
+   "own": null
+  },
+  "browser.urlbar.trimHttps": {
+   "default": true,
+   "own": null
+  },
+  "browser.urlbar.unitConversion.enabled": {
+   "default": true,
+   "own": null
+  },
+  "browser.urlbar.untrimOnUserInteraction": {
+   "default": null,
+   "own": false
+  },
+  "browser.urlbar.untrimOnUserInteraction.featureGate": {
+   "default": false,
+   "own": null
+  },
+  "media.videocontrols.picture-in-picture.enable-when-switching-tabs.enabled": {
+   "default": false,
+   "own": null
+  },
+  "media.videocontrols.picture-in-picture.improved-video-controls.enabled": {
+   "default": true,
+   "own": null
+  },
+  "zen.splitView.enable-tab-drop": {
+   "default": false,
+   "own": null
+  },
+  "zen.theme.acrylic-elements": {
+   "default": null,
+   "own": false
+  },
+  "zen.urlbar.replace-newtab": {
+   "default": false,
+   "own": null
+  },
+  "zen.widget.mac.mono-window-controls": {
+   "default": false,
+   "own": null
+  }
+ },
+ "zia": {
+  "zia.acrylic-reset": null,
+  "zia.essentials.fill-row": false,
+  "zia.essentials.split": true,
+  "zia.features.find-bar": true,
+  "zia.features.folder-icon-suggest": false,
+  "zia.features.icon-picker": true,
+  "zia.features.media-player": true,
+  "zia.features.tab-hover-cards": true,
+  "zia.features.tab-numbers": true,
+  "zia.features.undo-close": true,
+  "zia.glass": false,
+  "zia.haptics.repaired": null,
+  "zia.install-count": true,
+  "zia.multiview": true,
+  "zia.newtab.real-tab": true,
+  "zia.page.rounding": true,
+  "zia.pip.auto-on-tab-switch": false,
+  "zia.pip.dia-style": true,
+  "zia.pip.tuck": true,
+  "zia.split.drop-cards": true,
+  "zia.swipe.dia-arrow": true,
+  "zia.tabs.dim-asleep": false,
+  "zia.tabs.dim-asleep-reset": null,
+  "zia.tabs.favicon-glow": false,
+  "zia.tabs.no-pin-slash": false,
+  "zia.tabs.sound-bars": true,
+  "zia.toolbar.menu-button": true,
+  "zia.toolbar.site-color": true,
+  "zia.trim-https-reset": null,
+  "zia.ultra": true,
+  "zia.urlbar.dia-style": true,
+  "zia.urlbar.position": "top",
+  "zia.urlbar.zia-look": true,
+  "zia.welcome.seen": null,
+  "zia.welcome.show": null
+ },
+ "ziaErrors": []
+}

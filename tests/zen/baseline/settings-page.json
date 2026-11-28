@@ -1,0 +1,30 @@
+{
+ "checks": {
+  "and their settings": true,
+  "it lists its sections": true,
+  "the menu item exists": true,
+  "the page opened": true
+ },
+ "closed": true,
+ "markedNew": [
+  "Look",
+  "Sidebar and folders",
+  "Address bar and new tabs",
+  "Install count"
+ ],
+ "menuItem": true,
+ "opened": true,
+ "rows": 90,
+ "sections": [
+  "Look",
+  "Tabs and essentials",
+  "Sidebar and folders",
+  "Address bar and new tabs",
+  "Page",
+  "Media",
+  "Rename downloads with AI",
+  "Install count",
+  "Welcome tour"
+ ],
+ "ziaErrors": []
+}

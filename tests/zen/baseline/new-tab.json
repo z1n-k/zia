@@ -1,0 +1,10 @@
+{
+ "checks": {
+  "it opened the search engine's page": true,
+  "the bar lets go": true
+ },
+ "focused": false,
+ "page": "www.google.com",
+ "value": "google.com",
+ "ziaErrors": []
+}

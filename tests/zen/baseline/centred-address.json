@@ -1,0 +1,21 @@
+{
+ "checks": {
+  "closed, the text shifts to the middle": true,
+  "it shifts again once closed": true,
+  "off, nothing shifts": true,
+  "opened, the bar opens": true
+ },
+ "closed": "-47px",
+ "closedAgain": "-47px",
+ "fromLeft": {
+  "open": true,
+  "shift": "none"
+ },
+ "off": "none",
+ "offAgain": "none",
+ "opened": {
+  "open": true,
+  "shift": "-73px"
+ },
+ "ziaErrors": []
+}
