@@ -4,6 +4,14 @@ Every release of Zia, newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.122.17] — 2026-11-28
+
+### Changed
+
+- With the toolbar along the top, Zen's sidebar button sits at the toolbar's start, before back
+  and forward, as in Dia (it sat in the sidebar's top row after the space's name). Moved by hand
+  elsewhere, it stays where you put it. Restart Zen once after updating.
+
 ## [2.122.16] — 2026-11-28
 
 ### Fixed

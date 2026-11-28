@@ -292,6 +292,7 @@
     safely("watchGlanceThumbs", watchGlanceThumbs);
     safely("watchGlanceLinks", watchGlanceLinks);
     safely("watchGlanceGenie", watchGlanceGenie);
+    safely("placeSidebarToggle", placeSidebarToggle);
     safely("watchButtonTooltips", watchButtonTooltips);
     safely("watchTipCards", watchTipCards);
     safely("watchSidebarPanels", watchSidebarPanels);
