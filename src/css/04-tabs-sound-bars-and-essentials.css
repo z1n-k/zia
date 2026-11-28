@@ -134,6 +134,12 @@
   & .tab-content .tab-audio-button {
     display: none !important;
   }
+
+  /* (nor Zen's badge on the favicon, drawn as small bars too: users saw it in the open
+     sidebar beside the bars, two waveforms on one tab; Discord, 28 Nov) */
+  & .tab-icon-overlay:not([crashed]) {
+    display: none !important;
+  }
 }
 }
 
