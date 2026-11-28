@@ -2293,8 +2293,14 @@
   // Zia's search page, unless an extension has a new tab page of its own: that comes
   // first, as whoever added it wants it. Replaced by Zia's, the extension looked broken,
   // and only on some starts, as the two raced (#543).
+  // Only with real new tabs: Zen hands Cmd/Ctrl+T to a tab, not its floating address bar,
+  // whenever the new tab page is someone else's, and Zia's search page counts (#618).
   function newTabSearchEnabled() {
-    return Services.prefs.getBoolPref("zia.newtab.search-engine", true) && !Services.prefs.getBoolPref(EXTENSION_NEW_TAB_PREF, false);
+    return (
+      Services.prefs.getBoolPref("zia.newtab.real-tab", true) &&
+      Services.prefs.getBoolPref("zia.newtab.search-engine", true) &&
+      !Services.prefs.getBoolPref(EXTENSION_NEW_TAB_PREF, false)
+    );
   }
 
   async function applyNewTabPage() {
@@ -2545,7 +2551,7 @@
     gBrowser.tabContainer.addEventListener("TabOpen", (event) => closeNewTabUrlbar(event.target));
     Services.obs.addObserver(applyNewTabPage, "browser-search-engine-modified");
     // (and back to Zia's once the extension's gone or switched off)
-    watchPrefs(["zia.newtab.search-engine", EXTENSION_NEW_TAB_PREF], applyNewTabPage);
+    watchPrefs(["zia.newtab.real-tab", "zia.newtab.search-engine", EXTENSION_NEW_TAB_PREF], applyNewTabPage);
     window.addEventListener("unload", () => Services.obs.removeObserver(applyNewTabPage, "browser-search-engine-modified"));
   }
 
